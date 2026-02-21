@@ -130,3 +130,26 @@ Thinking:
 - Aggregate final-state metrics are useful, but transient dynamics are still hidden.
 - Next iteration should compute per-tick cross-run envelopes (mean/variance, maybe quantiles)
   to compare regime trajectories and instability phases directly.
+
+## 2026-02-21 (session 7)
+- Added a new ecological nutrient-cycle mechanic in `src/simulation.ts`.
+- Extended `SimulationConfig` with:
+  - `decompositionBase`
+  - `decompositionEnergyFraction`
+- Implemented end-of-tick biomass recycling: each dead agent now contributes
+  local resources (`base + positive_energy * fraction`), clamped by `maxResource`.
+- Added deterministic test coverage in `test/simulation.test.ts` proving a survivor
+  gains energy on tick N+1 by harvesting nutrients produced by a death on tick N.
+- Ran verification: `npm test` (17 tests), `npm run build`, and CLI smoke run.
+
+Observed:
+- In the controlled 1x1 test world, one starvation death produced a measurable
+  next-tick energy rebound for the surviving agent, confirming cross-tick nutrient carryover.
+- Existing deterministic and export/experiment tests remained stable, so the mechanic
+  integrated without breaking telemetry or sweep workflows.
+
+Thinking:
+- The simulation now has a simple matter loop (death -> resource -> harvest), which adds
+  local ecological memory and can buffer starvation cascades.
+- Next useful depth is spatial heterogeneity so recycled nutrients interact with persistent
+  niches instead of a mostly homogeneous substrate.

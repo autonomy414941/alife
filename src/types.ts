@@ -95,6 +95,8 @@ export interface SimulationConfig {
   height: number;
   maxResource: number;
   resourceRegen: number;
+  decompositionBase: number;
+  decompositionEnergyFraction: number;
   initialAgents: number;
   initialEnergy: number;
   metabolismCostBase: number;

@@ -22,6 +22,8 @@ const DEFAULT_CONFIG: SimulationConfig = {
   height: 20,
   maxResource: 8,
   resourceRegen: 0.6,
+  decompositionBase: 0.6,
+  decompositionEnergyFraction: 0.25,
   initialAgents: 24,
   initialEnergy: 12,
   metabolismCostBase: 0.25,
@@ -138,6 +140,7 @@ export class LifeSimulation {
         deadAgents.push(agent);
       }
     }
+    this.recycleDeadAgents(deadAgents);
     this.agents = survivors;
 
     const afterCount = this.agents.length;
@@ -635,6 +638,22 @@ export class LifeSimulation {
           this.config.maxResource
         );
       }
+    }
+  }
+
+  private recycleDeadAgents(deadAgents: Agent[]): void {
+    for (const agent of deadAgents) {
+      const recycled =
+        this.config.decompositionBase +
+        Math.max(0, agent.energy) * this.config.decompositionEnergyFraction;
+      if (recycled <= 0) {
+        continue;
+      }
+      this.resources[agent.y][agent.x] = clamp(
+        this.resources[agent.y][agent.x] + recycled,
+        0,
+        this.config.maxResource
+      );
     }
   }
 

@@ -106,6 +106,51 @@ describe('LifeSimulation', () => {
     expect(passive.energy).toBeLessThan(10);
   });
 
+  it('recycles dead agents into local resources for survivors', () => {
+    const sim = new LifeSimulation({
+      seed: 17,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 10,
+        resourceRegen: 0,
+        decompositionBase: 2,
+        decompositionEnergyFraction: 0,
+        metabolismCostBase: 1,
+        moveCost: 0,
+        harvestCap: 2,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 5,
+          genome: { metabolism: 0.3, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 0.2,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+    sim.setResource(0, 0, 0);
+
+    const tick1 = sim.step();
+    const energyAfterTick1 = sim.snapshot().agents[0]!.energy;
+    const tick2 = sim.step();
+    const energyAfterTick2 = sim.snapshot().agents[0]!.energy;
+
+    expect(tick1.deaths).toBe(1);
+    expect(tick1.population).toBe(1);
+    expect(energyAfterTick1).toBeCloseTo(4.7, 10);
+    expect(tick2.population).toBe(1);
+    expect(energyAfterTick2).toBeGreaterThan(energyAfterTick1 + 1);
+  });
+
   it('removes agents that run out of energy', () => {
     const sim = new LifeSimulation({
       seed: 3,
