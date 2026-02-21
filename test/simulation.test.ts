@@ -346,6 +346,40 @@ describe('LifeSimulation', () => {
     expect(analytics.clades.extinctionRate).toBe(1);
   });
 
+  it('returns per-tick analytics aligned with summaries and supports early stop', () => {
+    const sim = new LifeSimulation({
+      seed: 35,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 1,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 0.2,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    const runData = sim.runWithAnalytics(5, 2, true);
+
+    expect(runData.summaries).toHaveLength(1);
+    expect(runData.analytics).toHaveLength(1);
+    expect(runData.summaries[0].tick).toBe(1);
+    expect(runData.analytics[0].tick).toBe(1);
+    expect(runData.summaries[0].population).toBe(0);
+    expect(runData.analytics[0].window).toEqual({ startTick: 1, endTick: 1, size: 1 });
+  });
+
   it('tracks rolling speciation rates from divergence events', () => {
     const sim = new LifeSimulation({
       seed: 41,

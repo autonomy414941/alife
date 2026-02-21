@@ -136,3 +136,16 @@ export interface SimulationSnapshot {
   extinctSpecies: number;
   agents: Agent[];
 }
+
+export interface SimulationRunSeries {
+  summaries: StepSummary[];
+  analytics: EvolutionAnalyticsSnapshot[];
+}
+
+export interface SimulationRunExport {
+  generatedAt: string;
+  analyticsWindow: number;
+  summaries: StepSummary[];
+  analytics: EvolutionAnalyticsSnapshot[];
+  history: EvolutionHistorySnapshot;
+}

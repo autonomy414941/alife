@@ -75,3 +75,28 @@ Observed:
 Thinking:
 - Next leverage point is structured output of per-tick metrics/history slices,
   so downstream plotting and comparative experiments do not require ad hoc parsing.
+
+## 2026-02-21 (session 5)
+- Implemented structured run export as a first-class feature.
+- Added `LifeSimulation.runWithAnalytics(steps, windowSize, stopWhenExtinct)` to produce aligned per-tick summary + analytics series.
+- Added `src/export.ts` with:
+  - `buildRunExport(...)` for validated JSON payload assembly
+  - `runExportToJson(...)` for stable artifact output
+  - `metricsToCsv(...)` for flat per-tick metrics suitable for plotting/stat analysis.
+- Extended CLI (`src/index.ts`) with lightweight flags:
+  - `--steps`, `--report-every`, `--window`, `--seed`
+  - `--export-json <path>`, `--export-csv <path>`
+- Added tests:
+  - simulation test for `runWithAnalytics` alignment + extinction stop behavior
+  - export tests for JSON payload shape, CSV emission, and mismatch validation.
+- Verified with `npm test`, `npm run build`, and an end-to-end export run via `npm start`.
+
+Observed:
+- Exported CSV now contains complete per-tick trajectories for population, diversity,
+  selection differential, rolling speciation/extinction turnover, and lifespan summaries.
+- JSON export captures full timeline + taxon history in one artifact, removing the need
+  for ad hoc console parsing.
+
+Thinking:
+- Single-run telemetry is now easy to analyze; next depth is multi-run experiment support
+  (seed sweeps + aggregate statistics) for robust evolutionary comparisons.

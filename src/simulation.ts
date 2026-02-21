@@ -7,6 +7,7 @@ import {
   EvolutionHistorySnapshot,
   Genome,
   SimulationConfig,
+  SimulationRunSeries,
   SimulationSnapshot,
   SpeciesTurnoverAnalytics,
   StepSummary,
@@ -185,6 +186,20 @@ export class LifeSimulation {
       summaries.push(this.step());
     }
     return summaries;
+  }
+
+  runWithAnalytics(steps: number, windowSize = 25, stopWhenExtinct = false): SimulationRunSeries {
+    const summaries: StepSummary[] = [];
+    const analytics: EvolutionAnalyticsSnapshot[] = [];
+    for (let i = 0; i < steps; i += 1) {
+      const summary = this.step();
+      summaries.push(summary);
+      analytics.push(this.analytics(windowSize));
+      if (stopWhenExtinct && summary.population === 0) {
+        break;
+      }
+    }
+    return { summaries, analytics };
   }
 
   snapshot(): SimulationSnapshot {
