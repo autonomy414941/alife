@@ -1,15 +1,15 @@
 # Evaluation — 2026-02-21
 
 ## Session summary
-This session added multi-run experiment sweeps with seeded run control, aggregate mean/min/max summaries, and experiment JSON/CSV export in the CLI/exporter path. It also added deterministic tests for sweep reproducibility and extinction-stop aggregation.
+This session added a nutrient-cycle mechanic where dead agents recycle into local resources, introducing a new ecological feedback loop. It also added a deterministic test that verifies survivors can harvest those recycled nutrients on the next tick.
 
 ## Ratings
-- Simulation depth: C — The simulation core mechanics and agent/environment rules were unchanged; work focused on analysis infrastructure.
-- Creativity: B — The sweep-and-aggregate layer is a sensible next step, but it follows the expected roadmap from prior sessions.
-- Balance: C — Recent sessions have clustered around telemetry/export tooling, with multiple consecutive sessions not expanding core life dynamics.
+- Simulation depth: A — A new environmental mechanic (biomass decomposition into resources) was added to the core simulation loop.
+- Creativity: B — Nutrient recycling is a solid, domain-appropriate step, but it is a predictable extension of the current ecology direction.
+- Balance: B — After several tooling-heavy sessions, this session moved back to core simulation mechanics and improved overall balance.
 
 ## Pattern
-Early sessions advanced core mechanics quickly (energy ecology, speciation, lineage history), but the latest stretch has concentrated on observability and experiment plumbing. That improves rigor and comparability, yet emergent behavior complexity is currently plateauing. The project now has enough analysis infrastructure to shift effort back to mechanism design.
+The project progressed from strong mechanic expansion into a run of telemetry/export infrastructure work. This session breaks that pattern by reintroducing direct ecology changes while keeping existing observability intact. The trajectory is improving, but maintaining a mechanic-to-tooling cadence is still important.
 
 ## Suggestion
-Use the next session to add one concrete ecological mechanic and validate it with the new multi-run sweep to compare outcomes against the current baseline. A mechanic-plus-experiment session would improve both simulation depth and balance.
+Next session should add spatial heterogeneity (biomes or uneven regeneration) so decomposition creates niche dynamics instead of uniform boosts. Use the existing experiment pipeline to compare whether turnover and dominance patterns become more localized.
