@@ -221,4 +221,75 @@ describe('LifeSimulation', () => {
     expect(summary.selectionDifferential.harvest).toBeCloseTo(-0.25, 10);
     expect(summary.selectionDifferential.aggression).toBeCloseTo(0.2, 10);
   });
+
+  it('tracks clade and species lifecycle history across ticks', () => {
+    const sim = new LifeSimulation({
+      seed: 31,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 1,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 2,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 },
+          lineage: 1,
+          species: 1
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 },
+          lineage: 2,
+          species: 2
+        }
+      ]
+    });
+
+    const step1 = sim.step();
+    expect(step1.speciesExtinctions).toBe(1);
+    expect(step1.cladeExtinctions).toBe(1);
+    expect(step1.cumulativeExtinctSpecies).toBe(1);
+    expect(step1.cumulativeExtinctClades).toBe(1);
+
+    const step2 = sim.step();
+    expect(step2.speciesExtinctions).toBe(1);
+    expect(step2.cladeExtinctions).toBe(1);
+    expect(step2.cumulativeExtinctSpecies).toBe(2);
+    expect(step2.cumulativeExtinctClades).toBe(2);
+
+    const history = sim.history();
+    expect(history.extinctSpecies).toBe(2);
+    expect(history.extinctClades).toBe(2);
+
+    const species1 = history.species.find((entry) => entry.id === 1);
+    const species2 = history.species.find((entry) => entry.id === 2);
+    expect(species1).toBeDefined();
+    expect(species2).toBeDefined();
+    expect(species1!.extinctTick).toBe(2);
+    expect(species2!.extinctTick).toBe(1);
+    expect(species1!.totalBirths).toBe(1);
+    expect(species1!.totalDeaths).toBe(1);
+    expect(species2!.totalBirths).toBe(1);
+    expect(species2!.totalDeaths).toBe(1);
+    expect(species2!.timeline).toEqual([
+      { tick: 0, population: 1, births: 1, deaths: 0 },
+      { tick: 1, population: 0, births: 0, deaths: 1 }
+    ]);
+    expect(species1!.timeline).toEqual([
+      { tick: 0, population: 1, births: 1, deaths: 0 },
+      { tick: 1, population: 1, births: 0, deaths: 0 },
+      { tick: 2, population: 0, births: 0, deaths: 1 }
+    ]);
+  });
 });

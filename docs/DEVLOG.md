@@ -30,3 +30,22 @@ Observed:
 Thinking:
 - Current metrics are snapshot-only; they reveal state but not turnover history.
 - Next step should persist species/clade lifecycle events over ticks (emergence, expansion, extinction).
+
+## 2026-02-21 (session 3)
+- Implemented persistent lifecycle history tracking for both clades and species in `LifeSimulation`.
+- Added tick timelines (`population`, `births`, `deaths`) plus cumulative births/deaths,
+  peak population, and `extinctTick` per tracked taxon.
+- Added step-level and cumulative extinction counters to `StepSummary` and simulation snapshots.
+- Exposed new `history()` API returning immutable history snapshots for analysis tooling.
+- Updated CLI output to report extinction signals during run plus final tracked history sizes.
+- Added a new deterministic test that forces sequential extinctions and validates history timelines/counters.
+- Ran `npm test` (7 tests), `npm run build`, and `npm start`; all succeeded.
+
+Observed:
+- Around tick 200, only 6 clades and 86 species remained alive, while historical totals were 24 clades and 229 species.
+- Cumulative extinctions reached 18 clades and 143 species in the sample 200-step run.
+- Extinction bursts appeared during population contraction windows, matching drops in active clade count.
+
+Thinking:
+- Raw history now exists, but interpretation still requires manual reading.
+- Next session should add derived turnover indicators (lifespan, speciation/extinction rates, turnover index).

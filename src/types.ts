@@ -4,6 +4,30 @@ export interface Genome {
   aggression: number;
 }
 
+export interface TaxonTimelinePoint {
+  tick: number;
+  population: number;
+  births: number;
+  deaths: number;
+}
+
+export interface TaxonHistory {
+  id: number;
+  firstSeenTick: number;
+  extinctTick: number | null;
+  totalBirths: number;
+  totalDeaths: number;
+  peakPopulation: number;
+  timeline: TaxonTimelinePoint[];
+}
+
+export interface EvolutionHistorySnapshot {
+  clades: TaxonHistory[];
+  species: TaxonHistory[];
+  extinctClades: number;
+  extinctSpecies: number;
+}
+
 export interface Agent {
   id: number;
   lineage: number;
@@ -54,6 +78,10 @@ export interface StepSummary {
   activeSpecies: number;
   dominantSpeciesShare: number;
   selectionDifferential: Genome;
+  cladeExtinctions: number;
+  speciesExtinctions: number;
+  cumulativeExtinctClades: number;
+  cumulativeExtinctSpecies: number;
 }
 
 export interface SimulationSnapshot {
@@ -63,5 +91,7 @@ export interface SimulationSnapshot {
   activeClades: number;
   activeSpecies: number;
   dominantSpeciesShare: number;
+  extinctClades: number;
+  extinctSpecies: number;
   agents: Agent[];
 }

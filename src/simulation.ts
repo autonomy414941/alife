@@ -2,10 +2,13 @@ import { Rng } from './rng';
 import {
   Agent,
   AgentSeed,
+  EvolutionHistorySnapshot,
   Genome,
   SimulationConfig,
   SimulationSnapshot,
-  StepSummary
+  StepSummary,
+  TaxonHistory,
+  TaxonTimelinePoint
 } from './types';
 
 const DEFAULT_CONFIG: SimulationConfig = {
@@ -44,6 +47,17 @@ export interface LifeSimulationOptions {
   initialAgents?: AgentSeed[];
 }
 
+interface TaxonHistoryState {
+  id: number;
+  firstSeenTick: number;
+  extinctTick: number | null;
+  totalBirths: number;
+  totalDeaths: number;
+  peakPopulation: number;
+  lastPopulation: number;
+  timeline: TaxonTimelinePoint[];
+}
+
 export class LifeSimulation {
   private readonly rng: Rng;
 
@@ -59,6 +73,14 @@ export class LifeSimulation {
 
   private nextSpeciesId = 1;
 
+  private readonly cladeHistory = new Map<number, TaxonHistoryState>();
+
+  private readonly speciesHistory = new Map<number, TaxonHistoryState>();
+
+  private extinctClades = 0;
+
+  private extinctSpecies = 0;
+
   constructor(options: LifeSimulationOptions = {}) {
     this.config = { ...DEFAULT_CONFIG, ...(options.config ?? {}) };
     this.rng = new Rng(options.seed ?? 1);
@@ -70,6 +92,7 @@ export class LifeSimulation {
       this.nextAgentId = Math.max(...this.agents.map((agent) => agent.id)) + 1;
       this.nextSpeciesId = Math.max(...this.agents.map((agent) => agent.species)) + 1;
     }
+    this.initializeEvolutionHistory();
   }
 
   step(): StepSummary {
@@ -87,7 +110,6 @@ export class LifeSimulation {
 
     this.resolveEncounters();
 
-    let births = 0;
     const offspring: Agent[] = [];
     for (const agent of [...this.agents]) {
       if (!this.isAlive(agent.id)) {
@@ -96,18 +118,43 @@ export class LifeSimulation {
       if (agent.energy >= this.config.reproduceThreshold && this.rng.float() < this.config.reproduceProbability) {
         const child = this.reproduce(agent);
         offspring.push(child);
-        births += 1;
       }
     }
+    const births = offspring.length;
     this.agents.push(...offspring);
 
-    this.agents = this.agents.filter((agent) => agent.energy > 0 && agent.age <= this.config.maxAge);
+    const survivors: Agent[] = [];
+    const deadAgents: Agent[] = [];
+    for (const agent of this.agents) {
+      if (agent.energy > 0 && agent.age <= this.config.maxAge) {
+        survivors.push(agent);
+      } else {
+        deadAgents.push(agent);
+      }
+    }
+    this.agents = survivors;
 
     const afterCount = this.agents.length;
     const meanEnergy = this.meanEnergy();
     const meanGenome = this.meanGenome();
     const diversity = this.diversityMetrics();
     this.tickCount += 1;
+    const cladeExtinctionDelta = this.updateTaxonHistory(
+      this.cladeHistory,
+      this.tickCount,
+      this.countBy(this.agents, (agent) => agent.lineage),
+      this.countBy(offspring, (agent) => agent.lineage),
+      this.countBy(deadAgents, (agent) => agent.lineage)
+    );
+    const speciesExtinctionDelta = this.updateTaxonHistory(
+      this.speciesHistory,
+      this.tickCount,
+      this.countBy(this.agents, (agent) => agent.species),
+      this.countBy(offspring, (agent) => agent.species),
+      this.countBy(deadAgents, (agent) => agent.species)
+    );
+    this.extinctClades += cladeExtinctionDelta;
+    this.extinctSpecies += speciesExtinctionDelta;
 
     return {
       tick: this.tickCount,
@@ -119,7 +166,11 @@ export class LifeSimulation {
       activeClades: diversity.activeClades,
       activeSpecies: diversity.activeSpecies,
       dominantSpeciesShare: diversity.dominantSpeciesShare,
-      selectionDifferential: this.selectionDifferential(meanGenome)
+      selectionDifferential: this.selectionDifferential(meanGenome),
+      cladeExtinctions: Math.max(0, cladeExtinctionDelta),
+      speciesExtinctions: Math.max(0, speciesExtinctionDelta),
+      cumulativeExtinctClades: this.extinctClades,
+      cumulativeExtinctSpecies: this.extinctSpecies
     };
   }
 
@@ -140,6 +191,8 @@ export class LifeSimulation {
       activeClades: diversity.activeClades,
       activeSpecies: diversity.activeSpecies,
       dominantSpeciesShare: diversity.dominantSpeciesShare,
+      extinctClades: this.extinctClades,
+      extinctSpecies: this.extinctSpecies,
       agents: this.agents.map((agent) => ({
         ...agent,
         genome: { ...agent.genome }
@@ -147,8 +200,123 @@ export class LifeSimulation {
     };
   }
 
+  history(): EvolutionHistorySnapshot {
+    return {
+      clades: this.exportTaxonHistory(this.cladeHistory),
+      species: this.exportTaxonHistory(this.speciesHistory),
+      extinctClades: this.extinctClades,
+      extinctSpecies: this.extinctSpecies
+    };
+  }
+
   setResource(x: number, y: number, value: number): void {
     this.resources[this.wrapY(y)][this.wrapX(x)] = clamp(value, 0, this.config.maxResource);
+  }
+
+  private initializeEvolutionHistory(): void {
+    this.seedTaxonHistory(this.cladeHistory, this.countBy(this.agents, (agent) => agent.lineage));
+    this.seedTaxonHistory(this.speciesHistory, this.countBy(this.agents, (agent) => agent.species));
+  }
+
+  private seedTaxonHistory(
+    history: Map<number, TaxonHistoryState>,
+    counts: Map<number, number>
+  ): void {
+    for (const [id, population] of counts) {
+      history.set(id, {
+        id,
+        firstSeenTick: 0,
+        extinctTick: null,
+        totalBirths: population,
+        totalDeaths: 0,
+        peakPopulation: population,
+        lastPopulation: population,
+        timeline: [{ tick: 0, population, births: population, deaths: 0 }]
+      });
+    }
+  }
+
+  private updateTaxonHistory(
+    history: Map<number, TaxonHistoryState>,
+    tick: number,
+    populationCounts: Map<number, number>,
+    birthsCounts: Map<number, number>,
+    deathsCounts: Map<number, number>
+  ): number {
+    const idsToRecord = new Set<number>();
+    for (const id of populationCounts.keys()) {
+      idsToRecord.add(id);
+    }
+    for (const id of birthsCounts.keys()) {
+      idsToRecord.add(id);
+    }
+    for (const id of deathsCounts.keys()) {
+      idsToRecord.add(id);
+    }
+    for (const [id, state] of history) {
+      if (state.extinctTick === null || state.lastPopulation > 0) {
+        idsToRecord.add(id);
+      }
+    }
+
+    let extinctionDelta = 0;
+
+    for (const id of idsToRecord) {
+      const population = populationCounts.get(id) ?? 0;
+      const births = birthsCounts.get(id) ?? 0;
+      const deaths = deathsCounts.get(id) ?? 0;
+
+      let state = history.get(id);
+      if (!state) {
+        state = {
+          id,
+          firstSeenTick: tick,
+          extinctTick: null,
+          totalBirths: 0,
+          totalDeaths: 0,
+          peakPopulation: 0,
+          lastPopulation: 0,
+          timeline: []
+        };
+        history.set(id, state);
+      }
+
+      const hadPopulationBeforeStep = state.lastPopulation > 0 || births > 0;
+      const wasExtinct = state.extinctTick !== null;
+
+      state.totalBirths += births;
+      state.totalDeaths += deaths;
+      state.peakPopulation = Math.max(state.peakPopulation, population);
+
+      if (wasExtinct && population > 0) {
+        state.extinctTick = null;
+        extinctionDelta -= 1;
+      }
+
+      if (state.extinctTick === null && hadPopulationBeforeStep && population === 0) {
+        state.extinctTick = tick;
+        extinctionDelta += 1;
+      }
+
+      state.timeline.push({ tick, population, births, deaths });
+      state.lastPopulation = population;
+    }
+
+    return extinctionDelta;
+  }
+
+  private exportTaxonHistory(history: Map<number, TaxonHistoryState>): TaxonHistory[] {
+    return [...history.values()]
+      .sort((a, b) => a.id - b.id)
+      .map((entry) => ({
+        id: entry.id,
+        firstSeenTick: entry.firstSeenTick,
+        extinctTick: entry.extinctTick,
+        totalBirths: entry.totalBirths,
+        totalDeaths: entry.totalDeaths,
+        peakPopulation: entry.peakPopulation,
+        timeline: entry.timeline.map((point) => ({ ...point }))
+      }));
   }
 
   private buildInitialResources(): number[][] {
@@ -337,6 +505,15 @@ export class LifeSimulation {
         );
       }
     }
+  }
+
+  private countBy(agents: Agent[], selector: (agent: Agent) => number): Map<number, number> {
+    const counts = new Map<number, number>();
+    for (const agent of agents) {
+      const key = selector(agent);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return counts;
   }
 
   private meanEnergy(): number {
