@@ -1,6 +1,7 @@
 import {
   EvolutionAnalyticsSnapshot,
   EvolutionHistorySnapshot,
+  SimulationExperimentExport,
   SimulationRunExport,
   StepSummary
 } from './types';
@@ -61,6 +62,39 @@ export const METRICS_CSV_COLUMNS = [
   'clade_active_age_max'
 ] as const;
 
+export const EXPERIMENT_AGGREGATE_CSV_COLUMNS = [
+  'runs',
+  'extinct_runs',
+  'extinction_rate',
+  'steps_executed_mean',
+  'steps_executed_min',
+  'steps_executed_max',
+  'final_population_mean',
+  'final_population_min',
+  'final_population_max',
+  'final_mean_energy_mean',
+  'final_mean_energy_min',
+  'final_mean_energy_max',
+  'final_active_clades_mean',
+  'final_active_clades_min',
+  'final_active_clades_max',
+  'final_active_species_mean',
+  'final_active_species_min',
+  'final_active_species_max',
+  'final_dominant_species_share_mean',
+  'final_dominant_species_share_min',
+  'final_dominant_species_share_max',
+  'final_species_speciation_rate_mean',
+  'final_species_speciation_rate_min',
+  'final_species_speciation_rate_max',
+  'final_species_extinction_rate_mean',
+  'final_species_extinction_rate_min',
+  'final_species_extinction_rate_max',
+  'final_species_net_diversification_rate_mean',
+  'final_species_net_diversification_rate_min',
+  'final_species_net_diversification_rate_max'
+] as const;
+
 export function buildRunExport(input: BuildRunExportInput): SimulationRunExport {
   assertAlignedSeries(input.summaries, input.analytics);
   return {
@@ -73,6 +107,10 @@ export function buildRunExport(input: BuildRunExportInput): SimulationRunExport 
 }
 
 export function runExportToJson(exportData: SimulationRunExport): string {
+  return `${JSON.stringify(exportData, null, 2)}\n`;
+}
+
+export function experimentExportToJson(exportData: SimulationExperimentExport): string {
   return `${JSON.stringify(exportData, null, 2)}\n`;
 }
 
@@ -135,6 +173,43 @@ export function metricsToCsv(summaries: StepSummary[], analytics: EvolutionAnaly
   }
 
   return `${rows.join('\n')}\n`;
+}
+
+export function experimentAggregateToCsv(exportData: SimulationExperimentExport): string {
+  const { aggregate } = exportData;
+  const row = toCsvRow([
+    aggregate.runs,
+    aggregate.extinctRuns,
+    aggregate.extinctionRate,
+    aggregate.stepsExecuted.mean,
+    aggregate.stepsExecuted.min,
+    aggregate.stepsExecuted.max,
+    aggregate.finalPopulation.mean,
+    aggregate.finalPopulation.min,
+    aggregate.finalPopulation.max,
+    aggregate.finalMeanEnergy.mean,
+    aggregate.finalMeanEnergy.min,
+    aggregate.finalMeanEnergy.max,
+    aggregate.finalActiveClades.mean,
+    aggregate.finalActiveClades.min,
+    aggregate.finalActiveClades.max,
+    aggregate.finalActiveSpecies.mean,
+    aggregate.finalActiveSpecies.min,
+    aggregate.finalActiveSpecies.max,
+    aggregate.finalDominantSpeciesShare.mean,
+    aggregate.finalDominantSpeciesShare.min,
+    aggregate.finalDominantSpeciesShare.max,
+    aggregate.finalSpeciesSpeciationRate.mean,
+    aggregate.finalSpeciesSpeciationRate.min,
+    aggregate.finalSpeciesSpeciationRate.max,
+    aggregate.finalSpeciesExtinctionRate.mean,
+    aggregate.finalSpeciesExtinctionRate.min,
+    aggregate.finalSpeciesExtinctionRate.max,
+    aggregate.finalSpeciesNetDiversificationRate.mean,
+    aggregate.finalSpeciesNetDiversificationRate.min,
+    aggregate.finalSpeciesNetDiversificationRate.max
+  ]);
+  return `${EXPERIMENT_AGGREGATE_CSV_COLUMNS.join(',')}\n${row}\n`;
 }
 
 function normalizeWindow(value: number): number {

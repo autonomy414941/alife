@@ -142,6 +142,52 @@ export interface SimulationRunSeries {
   analytics: EvolutionAnalyticsSnapshot[];
 }
 
+export interface NumericAggregate {
+  mean: number;
+  min: number;
+  max: number;
+}
+
+export interface ExperimentRunSummary {
+  run: number;
+  seed: number;
+  stepsExecuted: number;
+  extinct: boolean;
+  finalSummary: StepSummary;
+  finalAnalytics: EvolutionAnalyticsSnapshot;
+}
+
+export interface ExperimentAggregateSummary {
+  runs: number;
+  extinctRuns: number;
+  extinctionRate: number;
+  stepsExecuted: NumericAggregate;
+  finalPopulation: NumericAggregate;
+  finalMeanEnergy: NumericAggregate;
+  finalActiveClades: NumericAggregate;
+  finalActiveSpecies: NumericAggregate;
+  finalDominantSpeciesShare: NumericAggregate;
+  finalSpeciesSpeciationRate: NumericAggregate;
+  finalSpeciesExtinctionRate: NumericAggregate;
+  finalSpeciesNetDiversificationRate: NumericAggregate;
+}
+
+export interface SimulationExperimentConfig {
+  runs: number;
+  steps: number;
+  analyticsWindow: number;
+  seed: number;
+  seedStep: number;
+  stopWhenExtinct: boolean;
+}
+
+export interface SimulationExperimentExport {
+  generatedAt: string;
+  config: SimulationExperimentConfig;
+  runs: ExperimentRunSummary[];
+  aggregate: ExperimentAggregateSummary;
+}
+
 export interface SimulationRunExport {
   generatedAt: string;
   analyticsWindow: number;

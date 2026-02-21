@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { METRICS_CSV_COLUMNS, buildRunExport, metricsToCsv, runExportToJson } from '../src/export';
+import {
+  EXPERIMENT_AGGREGATE_CSV_COLUMNS,
+  METRICS_CSV_COLUMNS,
+  buildRunExport,
+  experimentAggregateToCsv,
+  metricsToCsv,
+  runExportToJson
+} from '../src/export';
+import { runExperiment } from '../src/experiment';
 import { LifeSimulation } from '../src/simulation';
 
 describe('run export', () => {
@@ -91,6 +99,27 @@ describe('run export', () => {
     const runData = sim.runWithAnalytics(2, 2);
     expect(() => metricsToCsv(runData.summaries.slice(0, 1), runData.analytics)).toThrow(
       'Summary/analytics length mismatch'
+    );
+  });
+
+  it('renders aggregate experiment metrics to one-row CSV', () => {
+    const experiment = runExperiment({
+      runs: 2,
+      steps: 4,
+      analyticsWindow: 2,
+      seed: 201,
+      generatedAt: '2026-02-21T00:00:00.000Z'
+    });
+
+    const csv = experimentAggregateToCsv(experiment);
+    const lines = csv.trimEnd().split('\n');
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toBe(EXPERIMENT_AGGREGATE_CSV_COLUMNS.join(','));
+
+    const row = lines[1].split(',');
+    expect(Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('runs')])).toBe(2);
+    expect(Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('extinct_runs')])).toBe(
+      experiment.aggregate.extinctRuns
     );
   });
 });

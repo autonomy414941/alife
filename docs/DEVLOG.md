@@ -100,3 +100,33 @@ Observed:
 Thinking:
 - Single-run telemetry is now easy to analyze; next depth is multi-run experiment support
   (seed sweeps + aggregate statistics) for robust evolutionary comparisons.
+
+## 2026-02-21 (session 6)
+- Added multi-run experiment support with new `runExperiment(...)` in `src/experiment.ts`.
+- Implemented seeded sweep controls (`runs`, `seed`, `seedStep`, `steps`, `analyticsWindow`) and optional early stop-on-extinction behavior.
+- Added experiment aggregate metrics (mean/min/max) for:
+  - steps executed
+  - final population, mean energy, active clades/species, dominant species share
+  - final species speciation/extinction/net diversification rates.
+- Extended export tooling in `src/export.ts`:
+  - `experimentExportToJson(...)`
+  - `experimentAggregateToCsv(...)` + stable aggregate CSV header.
+- Extended CLI in `src/index.ts` with experiment mode:
+  - `--experiment-runs`, `--seed-step`
+  - `--export-experiment-json`, `--export-experiment-csv`
+  - Guard against mixing single-run export flags with experiment mode.
+- Added tests:
+  - `test/experiment.test.ts` for deterministic sweeps + extinction-stop aggregation
+  - `test/export.test.ts` aggregate CSV coverage.
+- Ran verification: `npm test`, `npm run build`, and both single-run + experiment CLI executions.
+
+Observed:
+- A 3-run sweep over 12 steps (`seedStep=5`) produced stable early-regime aggregates:
+  mean final population 159, mean final energy 18.48, mean final speciation rate 4.75/tick over the final window.
+- Extinction-heavy synthetic runs collapse in exactly one tick and are correctly summarized
+  as extinction rate 1.0 with one-step execution length.
+
+Thinking:
+- Aggregate final-state metrics are useful, but transient dynamics are still hidden.
+- Next iteration should compute per-tick cross-run envelopes (mean/variance, maybe quantiles)
+  to compare regime trajectories and instability phases directly.
