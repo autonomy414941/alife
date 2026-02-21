@@ -292,4 +292,99 @@ describe('LifeSimulation', () => {
       { tick: 2, population: 0, births: 0, deaths: 1 }
     ]);
   });
+
+  it('derives rolling extinction rates and lifespan summaries from history', () => {
+    const sim = new LifeSimulation({
+      seed: 32,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 1,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 2,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 },
+          lineage: 1,
+          species: 1
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 },
+          lineage: 2,
+          species: 2
+        }
+      ]
+    });
+
+    sim.step();
+    sim.step();
+    const analytics = sim.analytics(2);
+
+    expect(analytics.tick).toBe(2);
+    expect(analytics.window).toEqual({ startTick: 1, endTick: 2, size: 2 });
+    expect(analytics.species.speciationsInWindow).toBe(0);
+    expect(analytics.species.extinctionsInWindow).toBe(2);
+    expect(analytics.species.speciationRate).toBe(0);
+    expect(analytics.species.extinctionRate).toBe(1);
+    expect(analytics.species.turnoverRate).toBe(1);
+    expect(analytics.species.netDiversificationRate).toBe(-1);
+    expect(analytics.species.extinctLifespan).toEqual({ count: 2, mean: 1.5, max: 2 });
+    expect(analytics.species.activeAge).toEqual({ count: 0, mean: 0, max: 0 });
+    expect(analytics.clades.originationsInWindow).toBe(0);
+    expect(analytics.clades.extinctionsInWindow).toBe(2);
+    expect(analytics.clades.extinctionRate).toBe(1);
+  });
+
+  it('tracks rolling speciation rates from divergence events', () => {
+    const sim = new LifeSimulation({
+      seed: 41,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.05,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 100,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    sim.run(4);
+    const analytics = sim.analytics(3);
+
+    expect(analytics.window).toEqual({ startTick: 2, endTick: 4, size: 3 });
+    expect(analytics.species.speciationsInWindow).toBe(3);
+    expect(analytics.species.extinctionsInWindow).toBe(0);
+    expect(analytics.species.speciationRate).toBeCloseTo(1, 10);
+    expect(analytics.species.extinctionRate).toBeCloseTo(0, 10);
+    expect(analytics.species.turnoverRate).toBeCloseTo(1, 10);
+    expect(analytics.species.netDiversificationRate).toBeCloseTo(1, 10);
+    expect(analytics.clades.originationsInWindow).toBe(0);
+    expect(analytics.clades.extinctionsInWindow).toBe(0);
+  });
 });

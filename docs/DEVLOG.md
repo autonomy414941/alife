@@ -49,3 +49,29 @@ Observed:
 Thinking:
 - Raw history now exists, but interpretation still requires manual reading.
 - Next session should add derived turnover indicators (lifespan, speciation/extinction rates, turnover index).
+
+## 2026-02-21 (session 4)
+- Added derived evolutionary turnover analytics on top of existing taxon history.
+- Implemented `LifeSimulation.analytics(windowSize)` in `src/simulation.ts`.
+  - Species: rolling speciation/extinction rates, turnover, net diversification.
+  - Clades: rolling origination/extinction rates, turnover, net diversification.
+  - Lifespan summaries for extinct taxa and active-age summaries for extant taxa.
+- Extended public types in `src/types.ts` to expose analytics snapshots.
+- Updated CLI (`src/index.ts`) to print rolling turnover rates at report intervals
+  and final lifespan statistics.
+- Added two deterministic tests:
+  - rolling extinction + lifespan summary derivation
+  - rolling speciation rate tracking under controlled divergence.
+- Ran full verification: `npm test`, `npm run build`, `npm start` (all succeeded).
+
+Observed:
+- Rolling species rates now clearly show regime shifts in the sample run:
+  early high speciation (~2.84/tick over first 25 ticks) transitions to
+  extinction-dominated turnover by late run (~0.76 speciation vs ~0.88 extinction).
+- Extinct species in the sample 200-tick run had long persistence on average
+  (mean lifespan ~102 ticks), indicating substantial taxon residence time
+  before collapse during contraction phases.
+
+Thinking:
+- Next leverage point is structured output of per-tick metrics/history slices,
+  so downstream plotting and comparative experiments do not require ad hoc parsing.

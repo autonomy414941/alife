@@ -2,13 +2,18 @@ import { Rng } from './rng';
 import {
   Agent,
   AgentSeed,
+  DurationStats,
+  EvolutionAnalyticsSnapshot,
   EvolutionHistorySnapshot,
   Genome,
   SimulationConfig,
   SimulationSnapshot,
+  SpeciesTurnoverAnalytics,
   StepSummary,
+  TaxonTurnoverAnalytics,
   TaxonHistory,
-  TaxonTimelinePoint
+  TaxonTimelinePoint,
+  TurnoverWindow
 } from './types';
 
 const DEFAULT_CONFIG: SimulationConfig = {
@@ -209,8 +214,119 @@ export class LifeSimulation {
     };
   }
 
+  analytics(windowSize = 25): EvolutionAnalyticsSnapshot {
+    const window = this.buildTurnoverWindow(windowSize);
+    return {
+      tick: this.tickCount,
+      window,
+      species: this.buildSpeciesTurnover(window),
+      clades: this.buildTaxonTurnover(this.cladeHistory, window)
+    };
+  }
+
   setResource(x: number, y: number, value: number): void {
     this.resources[this.wrapY(y)][this.wrapX(x)] = clamp(value, 0, this.config.maxResource);
+  }
+
+  private buildSpeciesTurnover(window: TurnoverWindow): SpeciesTurnoverAnalytics {
+    const speciationsInWindow = this.countOriginationsInWindow(this.speciesHistory, window);
+    const extinctionsInWindow = this.countExtinctionsInWindow(this.speciesHistory, window);
+    const denominator = window.size;
+    return {
+      speciationsInWindow,
+      extinctionsInWindow,
+      speciationRate: denominator === 0 ? 0 : speciationsInWindow / denominator,
+      extinctionRate: denominator === 0 ? 0 : extinctionsInWindow / denominator,
+      turnoverRate: denominator === 0 ? 0 : (speciationsInWindow + extinctionsInWindow) / denominator,
+      netDiversificationRate: denominator === 0 ? 0 : (speciationsInWindow - extinctionsInWindow) / denominator,
+      extinctLifespan: this.summarizeDurations(this.extinctDurations(this.speciesHistory)),
+      activeAge: this.summarizeDurations(this.activeDurations(this.speciesHistory))
+    };
+  }
+
+  private buildTaxonTurnover(
+    history: Map<number, TaxonHistoryState>,
+    window: TurnoverWindow
+  ): TaxonTurnoverAnalytics {
+    const originationsInWindow = this.countOriginationsInWindow(history, window);
+    const extinctionsInWindow = this.countExtinctionsInWindow(history, window);
+    const denominator = window.size;
+    return {
+      originationsInWindow,
+      extinctionsInWindow,
+      originationRate: denominator === 0 ? 0 : originationsInWindow / denominator,
+      extinctionRate: denominator === 0 ? 0 : extinctionsInWindow / denominator,
+      turnoverRate: denominator === 0 ? 0 : (originationsInWindow + extinctionsInWindow) / denominator,
+      netDiversificationRate: denominator === 0 ? 0 : (originationsInWindow - extinctionsInWindow) / denominator,
+      extinctLifespan: this.summarizeDurations(this.extinctDurations(history)),
+      activeAge: this.summarizeDurations(this.activeDurations(history))
+    };
+  }
+
+  private buildTurnoverWindow(windowSize: number): TurnoverWindow {
+    if (this.tickCount === 0) {
+      return { startTick: 0, endTick: 0, size: 0 };
+    }
+    const normalized = Math.max(1, Math.floor(windowSize));
+    const size = Math.min(normalized, this.tickCount);
+    return {
+      startTick: this.tickCount - size + 1,
+      endTick: this.tickCount,
+      size
+    };
+  }
+
+  private countOriginationsInWindow(history: Map<number, TaxonHistoryState>, window: TurnoverWindow): number {
+    let count = 0;
+    for (const state of history.values()) {
+      if (state.firstSeenTick > 0 && state.firstSeenTick >= window.startTick && state.firstSeenTick <= window.endTick) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  private countExtinctionsInWindow(history: Map<number, TaxonHistoryState>, window: TurnoverWindow): number {
+    let count = 0;
+    for (const state of history.values()) {
+      if (state.extinctTick !== null && state.extinctTick >= window.startTick && state.extinctTick <= window.endTick) {
+        count += 1;
+      }
+    }
+    return count;
+  }
+
+  private extinctDurations(history: Map<number, TaxonHistoryState>): number[] {
+    const values: number[] = [];
+    for (const state of history.values()) {
+      if (state.extinctTick !== null) {
+        values.push(state.extinctTick - state.firstSeenTick);
+      }
+    }
+    return values;
+  }
+
+  private activeDurations(history: Map<number, TaxonHistoryState>): number[] {
+    const values: number[] = [];
+    for (const state of history.values()) {
+      if (state.extinctTick === null) {
+        values.push(this.tickCount - state.firstSeenTick);
+      }
+    }
+    return values;
+  }
+
+  private summarizeDurations(values: number[]): DurationStats {
+    if (values.length === 0) {
+      return { count: 0, mean: 0, max: 0 };
+    }
+    const total = values.reduce((sum, value) => sum + value, 0);
+    const max = Math.max(...values);
+    return {
+      count: values.length,
+      mean: total / values.length,
+      max
+    };
   }
 
   private initializeEvolutionHistory(): void {

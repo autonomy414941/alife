@@ -28,6 +28,47 @@ export interface EvolutionHistorySnapshot {
   extinctSpecies: number;
 }
 
+export interface DurationStats {
+  count: number;
+  mean: number;
+  max: number;
+}
+
+export interface TurnoverWindow {
+  startTick: number;
+  endTick: number;
+  size: number;
+}
+
+export interface SpeciesTurnoverAnalytics {
+  speciationsInWindow: number;
+  extinctionsInWindow: number;
+  speciationRate: number;
+  extinctionRate: number;
+  turnoverRate: number;
+  netDiversificationRate: number;
+  extinctLifespan: DurationStats;
+  activeAge: DurationStats;
+}
+
+export interface TaxonTurnoverAnalytics {
+  originationsInWindow: number;
+  extinctionsInWindow: number;
+  originationRate: number;
+  extinctionRate: number;
+  turnoverRate: number;
+  netDiversificationRate: number;
+  extinctLifespan: DurationStats;
+  activeAge: DurationStats;
+}
+
+export interface EvolutionAnalyticsSnapshot {
+  tick: number;
+  window: TurnoverWindow;
+  species: SpeciesTurnoverAnalytics;
+  clades: TaxonTurnoverAnalytics;
+}
+
 export interface Agent {
   id: number;
   lineage: number;
