@@ -1,0 +1,17 @@
+{
+  "name": "alife-sim",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Artificial life simulation core",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+*.log
+*.log.err
+AGENTS.override.md
+CLAUDE.local.md
