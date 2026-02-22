@@ -1,23 +1,27 @@
-# Status - 2026-02-21
-Current phase: ecology expansion after telemetry baseline.
+# Status - 2026-02-22
+Current phase: spatial niche ecology.
 
 What exists now:
-- Deterministic TypeScript + Vitest artificial life simulation with resources,
-  movement, encounters, mutation/speciation, and taxon history/turnover analytics.
-- Single-run export (`runExportToJson`, `metricsToCsv`) plus seeded multi-run
-  experiment sweeps (`runExperiment`, aggregate CSV/JSON export).
-- New nutrient-cycle mechanic in `src/simulation.ts`:
-  - `decompositionBase` + `decompositionEnergyFraction` in `SimulationConfig`.
-  - Dead agents now recycle biomass into local cell resources at end-of-tick.
-  - Recycling is capped by `maxResource`, creating localized post-mortem pulses.
-- New deterministic test confirms survivors can harvest recycled nutrients on
-  the following tick.
+- Deterministic TypeScript + Vitest simulation with resources, movement, encounters,
+  mutation/speciation, taxon history/turnover analytics, and seeded experiment sweeps.
+- New biome fertility mechanic in `src/simulation.ts`:
+  - `biomeBands` + `biomeContrast` added to `SimulationConfig`.
+  - Deterministic per-cell fertility map (persistent spatial heterogeneity).
+  - Fertility now scales both per-tick resource regeneration and decomposition recycling.
+- New public inspection helpers for analysis/tests:
+  - `getResource(x, y)`
+  - `getBiomeFertility(x, y)`
+- New deterministic tests verify:
+  - heterogeneous regeneration rates across biome cells
+  - decomposition magnitude scales with local fertility.
 
 Verification:
-- `npm test` passes (17 tests).
+- `npm test` passes (19 tests).
 - `npm run build` passes.
-- `npm start -- --steps 20 --report-every 10 --seed 123` passes.
+- `npm start -- --steps 120 --window 30 --experiment-runs 8 --seed 20260222 --seed-step 7` passes.
+- Sweep comparison (`biomeContrast=0` vs default) shows higher mean speciation
+  (1.08 -> 1.63) and higher dominant-species share (0.175 -> 0.221) under biomes.
 
 Next focus:
-- Add spatial heterogeneity (resource biomes or seasonal regen waves) and
-  measure whether clade/species turnover becomes patch-structured.
+- Add explicit locality metrics (cell-level species dominance/turnover dispersion)
+  so patch-structured dynamics can be quantified directly over time.

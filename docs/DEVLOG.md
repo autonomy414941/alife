@@ -153,3 +153,36 @@ Thinking:
   local ecological memory and can buffer starvation cascades.
 - Next useful depth is spatial heterogeneity so recycled nutrients interact with persistent
   niches instead of a mostly homogeneous substrate.
+
+## 2026-02-22 (session 8)
+- Implemented persistent spatial heterogeneity via biome fertility in `src/simulation.ts`.
+- Extended `SimulationConfig` (`src/types.ts`) with:
+  - `biomeBands`
+  - `biomeContrast`
+- Added deterministic per-cell fertility map construction and applied it to:
+  - resource regeneration (`resourceRegen * fertility`)
+  - dead-agent nutrient recycling (`decomposition * fertility`)
+- Added two read accessors for instrumentation/tests:
+  - `getResource(x, y)`
+  - `getBiomeFertility(x, y)`
+- Added deterministic tests in `test/simulation.test.ts`:
+  - per-cell regeneration reflects fertility heterogeneity
+  - decomposition yield scales with local fertility.
+- Ran verification: `npm test` (19 tests), `npm run build`, and seeded experiment run.
+
+Observed:
+- Experiment sweep (`runs=8`, `steps=120`, seeds `20260222..20260271`) with biomes enabled:
+  - extinction rate: 0.00
+  - final population mean: 859.25
+  - final active species mean: 174.13
+  - final species speciation/extinction rates: 1.63 / 1.57
+- Direct comparison using identical seeds against uniform resources (`biomeContrast=0`):
+  - mean dominant species share increased from 0.175 -> 0.221 with biomes
+  - mean speciation rate increased from 1.08 -> 1.63
+  - mean extinction rate increased slightly from 1.49 -> 1.57
+
+Thinking:
+- Biomes are now creating stronger local selective gradients and faster taxon churn,
+  but we still quantify dynamics globally.
+- Next step should add explicit spatial-locality analytics so we can distinguish
+  true patch-structure from global turbulence.

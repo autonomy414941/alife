@@ -22,6 +22,8 @@ const DEFAULT_CONFIG: SimulationConfig = {
   height: 20,
   maxResource: 8,
   resourceRegen: 0.6,
+  biomeBands: 4,
+  biomeContrast: 0.45,
   decompositionBase: 0.6,
   decompositionEnergyFraction: 0.25,
   initialAgents: 24,
@@ -71,6 +73,8 @@ export class LifeSimulation {
 
   private readonly config: SimulationConfig;
 
+  private readonly biomeFertility: number[][];
+
   private resources: number[][];
 
   private agents: Agent[];
@@ -92,6 +96,7 @@ export class LifeSimulation {
   constructor(options: LifeSimulationOptions = {}) {
     this.config = { ...DEFAULT_CONFIG, ...(options.config ?? {}) };
     this.rng = new Rng(options.seed ?? 1);
+    this.biomeFertility = this.buildBiomeFertility();
     this.resources = this.buildInitialResources();
     this.agents = options.initialAgents
       ? options.initialAgents.map((seed, index) => this.createAgentFromSeed(seed, index + 1, index + 1))
@@ -244,6 +249,14 @@ export class LifeSimulation {
 
   setResource(x: number, y: number, value: number): void {
     this.resources[this.wrapY(y)][this.wrapX(x)] = clamp(value, 0, this.config.maxResource);
+  }
+
+  getResource(x: number, y: number): number {
+    return this.resources[this.wrapY(y)][this.wrapX(x)];
+  }
+
+  getBiomeFertility(x: number, y: number): number {
+    return this.biomeFertility[this.wrapY(y)][this.wrapX(x)];
   }
 
   private buildSpeciesTurnover(window: TurnoverWindow): SpeciesTurnoverAnalytics {
@@ -459,6 +472,30 @@ export class LifeSimulation {
     );
   }
 
+  private buildBiomeFertility(): number[][] {
+    const width = this.config.width;
+    const height = this.config.height;
+    const contrast = clamp(this.config.biomeContrast, 0, 0.95);
+    const bands = Math.max(1, Math.floor(this.config.biomeBands));
+
+    if (width < 2 || height < 2 || contrast === 0) {
+      return Array.from({ length: height }, () => Array.from({ length: width }, () => 1));
+    }
+
+    return Array.from({ length: height }, (_, y) =>
+      Array.from({ length: width }, (_, x) => {
+        const band = Math.floor((y / height) * bands);
+        const latPhase = (band + 0.5) / bands;
+        const lonPhase = (x + 0.5) / width;
+        const latWave = Math.sin(latPhase * Math.PI * 2);
+        const lonWave = Math.cos(lonPhase * Math.PI * 2);
+        const patchWave = Math.sin((latPhase + lonPhase) * Math.PI * 2);
+        const mixed = latWave * 0.55 + lonWave * 0.3 + patchWave * 0.15;
+        return clamp(1 + mixed * contrast, 0.1, 2);
+      })
+    );
+  }
+
   private spawnInitialPopulation(): Agent[] {
     const agents: Agent[] = [];
     for (let i = 0; i < this.config.initialAgents; i += 1) {
@@ -632,8 +669,9 @@ export class LifeSimulation {
   private regenerateResources(): void {
     for (let y = 0; y < this.config.height; y += 1) {
       for (let x = 0; x < this.config.width; x += 1) {
+        const fertility = this.biomeFertility[y][x];
         this.resources[y][x] = clamp(
-          this.resources[y][x] + this.config.resourceRegen,
+          this.resources[y][x] + this.config.resourceRegen * fertility,
           0,
           this.config.maxResource
         );
@@ -643,9 +681,11 @@ export class LifeSimulation {
 
   private recycleDeadAgents(deadAgents: Agent[]): void {
     for (const agent of deadAgents) {
+      const fertility = this.biomeFertility[agent.y][agent.x];
       const recycled =
-        this.config.decompositionBase +
-        Math.max(0, agent.energy) * this.config.decompositionEnergyFraction;
+        (this.config.decompositionBase +
+          Math.max(0, agent.energy) * this.config.decompositionEnergyFraction) *
+        fertility;
       if (recycled <= 0) {
         continue;
       }

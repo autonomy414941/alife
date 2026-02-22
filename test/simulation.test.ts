@@ -151,6 +151,90 @@ describe('LifeSimulation', () => {
     expect(energyAfterTick2).toBeGreaterThan(energyAfterTick1 + 1);
   });
 
+  it('applies biome fertility to per-cell resource regeneration', () => {
+    const sim = new LifeSimulation({
+      seed: 21,
+      config: {
+        width: 6,
+        height: 6,
+        maxResource: 100,
+        resourceRegen: 1,
+        biomeBands: 3,
+        biomeContrast: 0.8,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        initialAgents: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      }
+    });
+
+    const minCell = { x: 0, y: 0, fertility: Number.POSITIVE_INFINITY };
+    const maxCell = { x: 0, y: 0, fertility: Number.NEGATIVE_INFINITY };
+
+    for (let y = 0; y < 6; y += 1) {
+      for (let x = 0; x < 6; x += 1) {
+        sim.setResource(x, y, 0);
+        const fertility = sim.getBiomeFertility(x, y);
+        if (fertility < minCell.fertility) {
+          minCell.x = x;
+          minCell.y = y;
+          minCell.fertility = fertility;
+        }
+        if (fertility > maxCell.fertility) {
+          maxCell.x = x;
+          maxCell.y = y;
+          maxCell.fertility = fertility;
+        }
+      }
+    }
+
+    expect(maxCell.fertility).toBeGreaterThan(minCell.fertility);
+
+    sim.step();
+
+    expect(sim.getResource(maxCell.x, maxCell.y)).toBeCloseTo(maxCell.fertility, 10);
+    expect(sim.getResource(minCell.x, minCell.y)).toBeCloseTo(minCell.fertility, 10);
+  });
+
+  it('scales decomposition by local biome fertility', () => {
+    const sim = new LifeSimulation({
+      seed: 22,
+      config: {
+        width: 5,
+        height: 5,
+        maxResource: 100,
+        resourceRegen: 0,
+        biomeBands: 3,
+        biomeContrast: 0.8,
+        decompositionBase: 2,
+        decompositionEnergyFraction: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 0
+      },
+      initialAgents: [
+        {
+          x: 2,
+          y: 2,
+          energy: 5,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    const fertility = sim.getBiomeFertility(2, 2);
+    sim.setResource(2, 2, 0);
+
+    const summary = sim.step();
+
+    expect(summary.deaths).toBe(1);
+    expect(summary.population).toBe(0);
+    expect(sim.getResource(2, 2)).toBeCloseTo(2 * fertility, 10);
+  });
+
   it('removes agents that run out of energy', () => {
     const sim = new LifeSimulation({
       seed: 3,

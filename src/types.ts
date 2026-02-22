@@ -95,6 +95,8 @@ export interface SimulationConfig {
   height: number;
   maxResource: number;
   resourceRegen: number;
+  biomeBands: number;
+  biomeContrast: number;
   decompositionBase: number;
   decompositionEnergyFraction: number;
   initialAgents: number;
