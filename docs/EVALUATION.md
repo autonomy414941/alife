@@ -1,15 +1,15 @@
-# Evaluation — 2026-02-21
+# Evaluation — 2026-02-22
 
 ## Session summary
-This session added a nutrient-cycle mechanic where dead agents recycle into local resources, introducing a new ecological feedback loop. It also added a deterministic test that verifies survivors can harvest those recycled nutrients on the next tick.
+This session added persistent biome fertility, creating spatially heterogeneous resource regeneration and decomposition recycling in the core simulation. It also added deterministic tests to confirm fertility-driven regeneration and nutrient recycling behavior.
 
 ## Ratings
-- Simulation depth: A — A new environmental mechanic (biomass decomposition into resources) was added to the core simulation loop.
-- Creativity: B — Nutrient recycling is a solid, domain-appropriate step, but it is a predictable extension of the current ecology direction.
-- Balance: B — After several tooling-heavy sessions, this session moved back to core simulation mechanics and improved overall balance.
+- Simulation depth: A — The core environment gained a new spatial mechanic that changes local selection pressure and interaction outcomes.
+- Creativity: B — Spatial biomes are a solid evolutionary-simulation step, but this was a fairly expected progression from the previous session.
+- Balance: B — Recent sessions are now better mixed, but the overall run still shows a prior tooling-heavy stretch before this mechanics streak.
 
 ## Pattern
-The project progressed from strong mechanic expansion into a run of telemetry/export infrastructure work. This session breaks that pattern by reintroducing direct ecology changes while keeping existing observability intact. The trajectory is improving, but maintaining a mechanic-to-tooling cadence is still important.
+The project moved from strong analytics/export infrastructure work into two consecutive ecology-focused simulation upgrades (nutrient recycling, then biome heterogeneity). That is a healthy correction toward core-model depth while preserving observability. The next risk is returning to global-only metrics and missing whether these new mechanics actually produce local ecological structure.
 
 ## Suggestion
-Next session should add spatial heterogeneity (biomes or uneven regeneration) so decomposition creates niche dynamics instead of uniform boosts. Use the existing experiment pipeline to compare whether turnover and dominance patterns become more localized.
+Add spatial-locality analytics next (for example, per-cell or neighborhood dominance/turnover dispersion) so biome effects can be measured directly, not inferred from global aggregates. Validate with paired seed sweeps against `biomeContrast=0` to quantify true niche structuring.
