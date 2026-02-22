@@ -1,21 +1,20 @@
 # Status - 2026-02-22
-Current phase: spatial niche ecology with locality analytics.
+Current phase: neighborhood-aware dispersal dynamics.
 What exists now:
-- Deterministic TS+Vitest simulation with resources, movement, encounters, mutation/speciation, lifecycle history, turnover analytics, and experiment sweeps.
-- Added locality analytics in `src/simulation.ts`:
-  - `analytics().locality`: occupied-cell fraction, mean dominant-species share, dominance std-dev, mean local richness.
-  - `analytics().localityTurnover`: rolling dominant-cell change rate + per-cell turnover dispersion.
-- CSV/export + CLI now include locality metrics (`src/export.ts`, `src/index.ts`).
-- Added deterministic tests for locality state and turnover dispersion (`test/simulation.test.ts`).
+- Deterministic TS+Vitest simulation with resources, aggression encounters, mutation/speciation, decomposition, biome fertility, turnover history, and locality analytics.
+- Added movement-level dispersal pressure in `src/simulation.ts`:
+  - New config knobs: `dispersalPressure`, `dispersalRadius`.
+  - Destination scoring now balances resource reward against weighted neighborhood crowding.
+  - Per-step occupancy grid is updated as agents move/die so turn-order decisions share live local context.
+- Added deterministic test coverage in `test/simulation.test.ts` showing crowding pressure increases short-horizon spatial spread from identical seeds.
 Verification:
-- `npm test` passes (21 tests).
+- `npm test` passes (22 tests).
 - `npm run build` passes.
 - `npm start -- --steps 40 --report-every 20 --window 15 --seed 20260222` passes.
 - `npm start -- --steps 120 --window 30 --experiment-runs 8 --seed 20260222 --seed-step 7` passes.
-Paired sweep (`biomeContrast=0` vs default, same seeds):
-- Local dominance mean: `0.640 -> 0.688` (+0.047).
-- Local dominance std-dev: `0.276 -> 0.302` (+0.026).
-- Per-cell turnover-dispersion std-dev: `0.092 -> 0.118` (+0.026).
-- Occupied-cell fraction: `0.9997 -> 0.9334` (-0.0663).
+Paired sweep (`dispersalPressure=0` vs default `0.8`, same seeds):
+- Occupied-cell fraction: `0.9334 -> 0.9094` (-0.0241).
+- Local dominance mean: `0.6875 -> 0.6317` (-0.0558).
+- Dominant-cell turnover mean: `0.7839 -> 0.7099` (-0.0740).
 Next focus:
-- Add neighborhood-scale (radius-k) locality metrics to test whether biome patch boundaries persist above single-cell resolution.
+- Add radius-k locality analytics to measure patch structure at neighborhood scale and test how dispersal pressure reshapes meso-scale niches.

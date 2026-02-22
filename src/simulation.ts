@@ -32,6 +32,8 @@ const DEFAULT_CONFIG: SimulationConfig = {
   initialEnergy: 12,
   metabolismCostBase: 0.25,
   moveCost: 0.15,
+  dispersalPressure: 0.8,
+  dispersalRadius: 1,
   harvestCap: 2.5,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
@@ -125,12 +127,13 @@ export class LifeSimulation {
 
     this.regenerateResources();
 
+    const occupancy = this.buildOccupancyGrid();
     const turnOrder = this.rng.shuffle([...this.agents]);
     for (const agent of turnOrder) {
       if (!this.isAlive(agent.id)) {
         continue;
       }
-      this.processAgentTurn(agent);
+      this.processAgentTurn(agent, occupancy);
     }
 
     this.resolveEncounters();
@@ -601,6 +604,16 @@ export class LifeSimulation {
     );
   }
 
+  private buildOccupancyGrid(): number[][] {
+    const occupancy = Array.from({ length: this.config.height }, () =>
+      Array.from({ length: this.config.width }, () => 0)
+    );
+    for (const agent of this.agents) {
+      occupancy[agent.y][agent.x] += 1;
+    }
+    return occupancy;
+  }
+
   private buildBiomeFertility(): number[][] {
     const width = this.config.width;
     const height = this.config.height;
@@ -667,22 +680,28 @@ export class LifeSimulation {
     return agent;
   }
 
-  private processAgentTurn(agent: Agent): void {
+  private processAgentTurn(agent: Agent, occupancy: number[][]): void {
     agent.age += 1;
     agent.energy -= this.config.metabolismCostBase * agent.genome.metabolism;
     if (agent.energy <= 0 || agent.age > this.config.maxAge) {
+      occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
       return;
     }
 
-    const destination = this.pickDestination(agent);
+    const previousX = agent.x;
+    const previousY = agent.y;
+    const destination = this.pickDestination(agent, occupancy);
     const moved = destination.x !== agent.x || destination.y !== agent.y;
     agent.x = destination.x;
     agent.y = destination.y;
 
     if (moved) {
+      occupancy[previousY][previousX] = Math.max(0, occupancy[previousY][previousX] - 1);
+      occupancy[agent.y][agent.x] += 1;
       agent.energy -= this.config.moveCost * agent.genome.metabolism;
     }
     if (agent.energy <= 0) {
+      occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
       return;
     }
 
@@ -692,7 +711,7 @@ export class LifeSimulation {
     agent.energy += harvestAmount;
   }
 
-  private pickDestination(agent: Agent): { x: number; y: number } {
+  private pickDestination(agent: Agent, occupancy: number[][]): { x: number; y: number } {
     const options = [
       { x: agent.x, y: agent.y },
       { x: this.wrapX(agent.x + 1), y: agent.y },
@@ -706,7 +725,8 @@ export class LifeSimulation {
 
     for (const option of options) {
       const food = this.resources[option.y][option.x];
-      const score = food + this.rng.float() * 0.05;
+      const crowding = this.neighborhoodCrowding(option.x, option.y, occupancy);
+      const score = food - this.config.dispersalPressure * crowding + this.rng.float() * 0.05;
       if (score > bestScore) {
         bestScore = score;
         best = option;
@@ -714,6 +734,34 @@ export class LifeSimulation {
     }
 
     return best;
+  }
+
+  private neighborhoodCrowding(x: number, y: number, occupancy: number[][]): number {
+    const radius = Math.max(0, Math.floor(this.config.dispersalRadius));
+    if (radius === 0) {
+      return occupancy[this.wrapY(y)][this.wrapX(x)];
+    }
+
+    let weightedCount = 0;
+    let totalWeight = 0;
+    for (let dy = -radius; dy <= radius; dy += 1) {
+      for (let dx = -radius; dx <= radius; dx += 1) {
+        const distance = Math.abs(dx) + Math.abs(dy);
+        if (distance > radius) {
+          continue;
+        }
+        const weight = 1 / (distance + 1);
+        const nx = this.wrapX(x + dx);
+        const ny = this.wrapY(y + dy);
+        weightedCount += occupancy[ny][nx] * weight;
+        totalWeight += weight;
+      }
+    }
+
+    if (totalWeight === 0) {
+      return 0;
+    }
+    return weightedCount / totalWeight;
   }
 
   private resolveEncounters(): void {

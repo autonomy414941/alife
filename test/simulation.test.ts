@@ -106,6 +106,64 @@ describe('LifeSimulation', () => {
     expect(passive.energy).toBeLessThan(10);
   });
 
+  it('applies dispersal pressure to spread agents out of crowded neighborhoods', () => {
+    const initialAgents = Array.from({ length: 5 }, (_, index) => ({
+      x: 2,
+      y: 0,
+      energy: 10,
+      species: index + 1,
+      genome: { metabolism: 1, harvest: 1, aggression: 0 }
+    }));
+    const sharedConfig = {
+      width: 5,
+      height: 1,
+      maxResource: 2,
+      resourceRegen: 0,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      harvestCap: 0,
+      reproduceProbability: 0,
+      maxAge: 100,
+      dispersalRadius: 1
+    };
+
+    const noPressure = new LifeSimulation({
+      seed: 13,
+      config: {
+        ...sharedConfig,
+        dispersalPressure: 0
+      },
+      initialAgents
+    });
+    const withPressure = new LifeSimulation({
+      seed: 13,
+      config: {
+        ...sharedConfig,
+        dispersalPressure: 2.5
+      },
+      initialAgents
+    });
+
+    for (let x = 0; x < 5; x += 1) {
+      noPressure.setResource(x, 0, 0);
+      withPressure.setResource(x, 0, 0);
+    }
+    noPressure.setResource(2, 0, 1);
+    withPressure.setResource(2, 0, 1);
+
+    noPressure.step();
+    withPressure.step();
+
+    const occupiedWithoutPressure = new Set(noPressure.snapshot().agents.map((agent) => agent.x)).size;
+    const occupiedWithPressure = new Set(withPressure.snapshot().agents.map((agent) => agent.x)).size;
+
+    expect(occupiedWithoutPressure).toBe(1);
+    expect(occupiedWithPressure).toBeGreaterThan(1);
+    expect(withPressure.analytics(1).locality.occupiedCellFraction).toBeGreaterThan(
+      noPressure.analytics(1).locality.occupiedCellFraction
+    );
+  });
+
   it('recycles dead agents into local resources for survivors', () => {
     const sim = new LifeSimulation({
       seed: 17,

@@ -122,6 +122,8 @@ export interface SimulationConfig {
   initialEnergy: number;
   metabolismCostBase: number;
   moveCost: number;
+  dispersalPressure: number;
+  dispersalRadius: number;
   harvestCap: number;
   reproduceThreshold: number;
   reproduceProbability: number;

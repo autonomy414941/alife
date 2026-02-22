@@ -217,3 +217,25 @@ Thinking:
 - Current locality metrics are cell-granular and can be noisy when occupancy is sparse.
 - Next step should add neighborhood-scale (radius-k) locality summaries to test whether
   niche boundaries remain stable when measured above single-cell resolution.
+
+## 2026-02-22 (session 10)
+- Added neighborhood-aware dispersal pressure to movement in `src/simulation.ts`.
+- Extended `SimulationConfig` in `src/types.ts` with:
+  - `dispersalPressure`
+  - `dispersalRadius`
+- Introduced a per-step occupancy grid and updated movement flow so occupancy is adjusted immediately when agents move or die during their turn.
+- Updated destination scoring to include weighted neighborhood crowding (Manhattan radius-k with distance decay), creating explicit local dispersal pressure instead of food-only movement.
+- Added deterministic test coverage in `test/simulation.test.ts` that compares identical seeds with and without dispersal pressure and verifies increased short-horizon spatial spread.
+- Verified with `npm test` (22 tests), `npm run build`, and CLI smoke runs.
+
+Observed:
+- Single-run and experiment CLI paths remain stable after the mechanic change.
+- Paired sweep (`runs=8`, `steps=120`, seeds `20260222..20260271`) comparing `dispersalPressure=0` to default `0.8`:
+  - occupied-cell fraction: 0.9334 -> 0.9094 (-0.0241)
+  - mean local dominant-species share: 0.6875 -> 0.6317 (-0.0558)
+  - mean dominant-cell turnover fraction: 0.7839 -> 0.7099 (-0.0740)
+- Interpretation: dispersal pressure reduced dominant-species lock-in and lowered cell-to-cell regime churn over this window, while slightly concentrating occupancy.
+
+Thinking:
+- The new mechanic now gives neighborhood density a direct causal role in movement, not just a measured consequence.
+- Next step should be radius-k locality analytics so we can tell whether the lower turnover reflects smoother patch boundaries or larger coherent territories.
