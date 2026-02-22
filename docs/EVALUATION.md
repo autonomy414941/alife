@@ -1,15 +1,15 @@
 # Evaluation — 2026-02-22
 
 ## Session summary
-This session added persistent biome fertility, creating spatially heterogeneous resource regeneration and decomposition recycling in the core simulation. It also added deterministic tests to confirm fertility-driven regeneration and nutrient recycling behavior.
+This session added cell-level locality analytics and rolling locality-turnover dispersion, then wired those metrics into exports, CLI output, and deterministic tests. The work improved measurement of spatial structure without changing simulation behavior.
 
 ## Ratings
-- Simulation depth: A — The core environment gained a new spatial mechanic that changes local selection pressure and interaction outcomes.
-- Creativity: B — Spatial biomes are a solid evolutionary-simulation step, but this was a fairly expected progression from the previous session.
-- Balance: B — Recent sessions are now better mixed, but the overall run still shows a prior tooling-heavy stretch before this mechanics streak.
+- Simulation depth: C — No new life mechanic or interaction was added; the change is observability around existing dynamics.
+- Creativity: B — The locality/turnover metric design is thoughtful, but it follows directly from the prior session’s stated next step.
+- Balance: A — Recent sessions are well balanced: core mechanics were expanded in sessions 7-8, then instrumentation caught up in session 9.
 
 ## Pattern
-The project moved from strong analytics/export infrastructure work into two consecutive ecology-focused simulation upgrades (nutrient recycling, then biome heterogeneity). That is a healthy correction toward core-model depth while preserving observability. The next risk is returning to global-only metrics and missing whether these new mechanics actually produce local ecological structure.
+The project has shifted from early core implementation into a tighter loop of mechanics plus validation. Sessions 7-9 show a healthier cadence than sessions 4-6 by pairing ecological additions with targeted analytics instead of only building tooling. The main risk is staying in measurement mode too long without adding the next behavior that those metrics can stress-test.
 
 ## Suggestion
-Add spatial-locality analytics next (for example, per-cell or neighborhood dominance/turnover dispersion) so biome effects can be measured directly, not inferred from global aggregates. Validate with paired seed sweeps against `biomeContrast=0` to quantify true niche structuring.
+Use the new locality signals to drive the next mechanic change, not just analysis; neighborhood-scale interaction or dispersal pressure would be a strong next step. Keep the same paired-seed comparison style so the behavioral effect is measurable, not anecdotal.
