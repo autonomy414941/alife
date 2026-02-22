@@ -62,11 +62,30 @@ export interface TaxonTurnoverAnalytics {
   activeAge: DurationStats;
 }
 
+export interface LocalityStateAnalytics {
+  occupiedCells: number;
+  occupiedCellFraction: number;
+  meanDominantSpeciesShare: number;
+  dominantSpeciesShareStdDev: number;
+  meanSpeciesRichness: number;
+}
+
+export interface LocalityTurnoverAnalytics {
+  transitions: number;
+  changedDominantCellFractionMean: number;
+  changedDominantCellFractionStdDev: number;
+  perCellDominantTurnoverMean: number;
+  perCellDominantTurnoverStdDev: number;
+  perCellDominantTurnoverMax: number;
+}
+
 export interface EvolutionAnalyticsSnapshot {
   tick: number;
   window: TurnoverWindow;
   species: SpeciesTurnoverAnalytics;
   clades: TaxonTurnoverAnalytics;
+  locality: LocalityStateAnalytics;
+  localityTurnover: LocalityTurnoverAnalytics;
 }
 
 export interface Agent {

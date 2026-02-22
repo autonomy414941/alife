@@ -1,27 +1,21 @@
 # Status - 2026-02-22
-Current phase: spatial niche ecology.
-
+Current phase: spatial niche ecology with locality analytics.
 What exists now:
-- Deterministic TypeScript + Vitest simulation with resources, movement, encounters,
-  mutation/speciation, taxon history/turnover analytics, and seeded experiment sweeps.
-- New biome fertility mechanic in `src/simulation.ts`:
-  - `biomeBands` + `biomeContrast` added to `SimulationConfig`.
-  - Deterministic per-cell fertility map (persistent spatial heterogeneity).
-  - Fertility now scales both per-tick resource regeneration and decomposition recycling.
-- New public inspection helpers for analysis/tests:
-  - `getResource(x, y)`
-  - `getBiomeFertility(x, y)`
-- New deterministic tests verify:
-  - heterogeneous regeneration rates across biome cells
-  - decomposition magnitude scales with local fertility.
-
+- Deterministic TS+Vitest simulation with resources, movement, encounters, mutation/speciation, lifecycle history, turnover analytics, and experiment sweeps.
+- Added locality analytics in `src/simulation.ts`:
+  - `analytics().locality`: occupied-cell fraction, mean dominant-species share, dominance std-dev, mean local richness.
+  - `analytics().localityTurnover`: rolling dominant-cell change rate + per-cell turnover dispersion.
+- CSV/export + CLI now include locality metrics (`src/export.ts`, `src/index.ts`).
+- Added deterministic tests for locality state and turnover dispersion (`test/simulation.test.ts`).
 Verification:
-- `npm test` passes (19 tests).
+- `npm test` passes (21 tests).
 - `npm run build` passes.
+- `npm start -- --steps 40 --report-every 20 --window 15 --seed 20260222` passes.
 - `npm start -- --steps 120 --window 30 --experiment-runs 8 --seed 20260222 --seed-step 7` passes.
-- Sweep comparison (`biomeContrast=0` vs default) shows higher mean speciation
-  (1.08 -> 1.63) and higher dominant-species share (0.175 -> 0.221) under biomes.
-
+Paired sweep (`biomeContrast=0` vs default, same seeds):
+- Local dominance mean: `0.640 -> 0.688` (+0.047).
+- Local dominance std-dev: `0.276 -> 0.302` (+0.026).
+- Per-cell turnover-dispersion std-dev: `0.092 -> 0.118` (+0.026).
+- Occupied-cell fraction: `0.9997 -> 0.9334` (-0.0663).
 Next focus:
-- Add explicit locality metrics (cell-level species dominance/turnover dispersion)
-  so patch-structured dynamics can be quantified directly over time.
+- Add neighborhood-scale (radius-k) locality metrics to test whether biome patch boundaries persist above single-cell resolution.

@@ -475,6 +475,114 @@ describe('LifeSimulation', () => {
     expect(analytics.clades.extinctionRate).toBe(1);
   });
 
+  it('reports per-cell locality dominance and richness metrics', () => {
+    const sim = new LifeSimulation({
+      seed: 34,
+      config: {
+        width: 2,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          species: 2,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 1,
+          y: 0,
+          energy: 10,
+          species: 3,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    const analytics = sim.analytics(5);
+
+    expect(analytics.locality.occupiedCells).toBe(2);
+    expect(analytics.locality.occupiedCellFraction).toBe(1);
+    expect(analytics.locality.meanDominantSpeciesShare).toBeCloseTo(5 / 6, 10);
+    expect(analytics.locality.dominantSpeciesShareStdDev).toBeCloseTo(1 / 6, 10);
+    expect(analytics.locality.meanSpeciesRichness).toBeCloseTo(1.5, 10);
+    expect(analytics.localityTurnover).toEqual({
+      transitions: 0,
+      changedDominantCellFractionMean: 0,
+      changedDominantCellFractionStdDev: 0,
+      perCellDominantTurnoverMean: 0,
+      perCellDominantTurnoverStdDev: 0,
+      perCellDominantTurnoverMax: 0
+    });
+  });
+
+  it('tracks dominant-species turnover dispersion over a rolling window', () => {
+    const sim = new LifeSimulation({
+      seed: 36,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 1,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 3,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 1,
+          species: 2,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    sim.run(3);
+    const analytics = sim.analytics(2);
+
+    expect(analytics.window).toEqual({ startTick: 2, endTick: 3, size: 2 });
+    expect(analytics.locality.occupiedCells).toBe(0);
+    expect(analytics.localityTurnover.transitions).toBe(2);
+    expect(analytics.localityTurnover.changedDominantCellFractionMean).toBeCloseTo(0.5, 10);
+    expect(analytics.localityTurnover.changedDominantCellFractionStdDev).toBeCloseTo(0.5, 10);
+    expect(analytics.localityTurnover.perCellDominantTurnoverMean).toBeCloseTo(0.5, 10);
+    expect(analytics.localityTurnover.perCellDominantTurnoverStdDev).toBeCloseTo(0, 10);
+    expect(analytics.localityTurnover.perCellDominantTurnoverMax).toBeCloseTo(0.5, 10);
+  });
+
   it('returns per-tick analytics aligned with summaries and supports early stop', () => {
     const sim = new LifeSimulation({
       seed: 35,

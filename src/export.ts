@@ -59,7 +59,18 @@ export const METRICS_CSV_COLUMNS = [
   'clade_extinct_lifespan_max',
   'clade_active_age_count',
   'clade_active_age_mean',
-  'clade_active_age_max'
+  'clade_active_age_max',
+  'locality_occupied_cells',
+  'locality_occupied_cell_fraction',
+  'locality_mean_dominant_species_share',
+  'locality_dominant_species_share_stddev',
+  'locality_mean_species_richness',
+  'locality_turnover_transitions',
+  'locality_turnover_changed_cell_fraction_mean',
+  'locality_turnover_changed_cell_fraction_stddev',
+  'locality_turnover_per_cell_mean',
+  'locality_turnover_per_cell_stddev',
+  'locality_turnover_per_cell_max'
 ] as const;
 
 export const EXPERIMENT_AGGREGATE_CSV_COLUMNS = [
@@ -167,7 +178,18 @@ export function metricsToCsv(summaries: StepSummary[], analytics: EvolutionAnaly
         point.clades.extinctLifespan.max,
         point.clades.activeAge.count,
         point.clades.activeAge.mean,
-        point.clades.activeAge.max
+        point.clades.activeAge.max,
+        point.locality.occupiedCells,
+        point.locality.occupiedCellFraction,
+        point.locality.meanDominantSpeciesShare,
+        point.locality.dominantSpeciesShareStdDev,
+        point.locality.meanSpeciesRichness,
+        point.localityTurnover.transitions,
+        point.localityTurnover.changedDominantCellFractionMean,
+        point.localityTurnover.changedDominantCellFractionStdDev,
+        point.localityTurnover.perCellDominantTurnoverMean,
+        point.localityTurnover.perCellDominantTurnoverStdDev,
+        point.localityTurnover.perCellDominantTurnoverMax
       ])
     );
   }

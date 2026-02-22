@@ -77,7 +77,8 @@ function runSingleMode(options: CliOptions): void {
           `species=${summary.activeSpecies} clades=${summary.activeClades} domSpecies=${summary.dominantSpeciesShare.toFixed(2)} ` +
           `selection(dm=${summary.selectionDifferential.metabolism.toFixed(2)},dh=${summary.selectionDifferential.harvest.toFixed(2)},da=${summary.selectionDifferential.aggression.toFixed(2)}) ` +
           `extinctions(step:s=${summary.speciesExtinctions},c=${summary.cladeExtinctions};total:s=${summary.cumulativeExtinctSpecies},c=${summary.cumulativeExtinctClades}) ` +
-          `turnover(rate:spec=${turnover.species.speciationRate.toFixed(2)},ext=${turnover.species.extinctionRate.toFixed(2)},net=${turnover.species.netDiversificationRate.toFixed(2)})`
+          `turnover(rate:spec=${turnover.species.speciationRate.toFixed(2)},ext=${turnover.species.extinctionRate.toFixed(2)},net=${turnover.species.netDiversificationRate.toFixed(2)}) ` +
+          `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},dom=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},chg=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)})`
       );
     }
   }
@@ -96,7 +97,10 @@ function runSingleMode(options: CliOptions): void {
   console.log(
     `turnover window=${turnover.window.size} specRate=${turnover.species.speciationRate.toFixed(2)} ` +
       `extRate=${turnover.species.extinctionRate.toFixed(2)} netRate=${turnover.species.netDiversificationRate.toFixed(2)} ` +
-      `lifespan(extinctMean=${turnover.species.extinctLifespan.mean.toFixed(2)},extinctMax=${turnover.species.extinctLifespan.max.toFixed(2)},activeMean=${turnover.species.activeAge.mean.toFixed(2)})`
+      `lifespan(extinctMean=${turnover.species.extinctLifespan.mean.toFixed(2)},extinctMax=${turnover.species.extinctLifespan.max.toFixed(2)},activeMean=${turnover.species.activeAge.mean.toFixed(2)}) ` +
+      `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},domMean=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},` +
+      `domStd=${turnover.locality.dominantSpeciesShareStdDev.toFixed(2)},turnMean=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)},` +
+      `turnStd=${turnover.localityTurnover.changedDominantCellFractionStdDev.toFixed(2)})`
   );
 
   if (options.exportJson || options.exportCsv) {
@@ -128,6 +132,15 @@ function runExperimentMode(options: CliOptions): void {
   });
   const aggregate = experimentData.aggregate;
   const lastSeed = options.seed + (experimentData.config.runs - 1) * options.seedStep;
+  const localityOccupied = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.locality.occupiedCellFraction)
+  );
+  const localityDominance = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.locality.meanDominantSpeciesShare)
+  );
+  const localityTurnover = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.localityTurnover.changedDominantCellFractionMean)
+  );
 
   console.log(
     `experiment runs=${aggregate.runs} seeds=${options.seed}..${lastSeed} extinctionRate=${aggregate.extinctionRate.toFixed(2)} ` +
@@ -142,6 +155,11 @@ function runExperimentMode(options: CliOptions): void {
     `turnover species(speciation=${aggregate.finalSpeciesSpeciationRate.mean.toFixed(2)},` +
       `extinction=${aggregate.finalSpeciesExtinctionRate.mean.toFixed(2)},` +
       `net=${aggregate.finalSpeciesNetDiversificationRate.mean.toFixed(2)})`
+  );
+  console.log(
+    `locality occupied(mean=${localityOccupied.mean.toFixed(2)}) ` +
+      `dominance(mean=${localityDominance.mean.toFixed(2)}) ` +
+      `turnover(mean=${localityTurnover.mean.toFixed(2)})`
   );
 
   if (options.exportExperimentJson) {
@@ -222,6 +240,25 @@ function parsePath(flag: string, raw: string | undefined): string {
     throw new Error(`Missing value for ${flag}`);
   }
   return raw;
+}
+
+function summarizeNumbers(values: number[]): { mean: number; min: number; max: number } {
+  if (values.length === 0) {
+    return { mean: 0, min: 0, max: 0 };
+  }
+  let min = values[0];
+  let max = values[0];
+  let total = 0;
+  for (const value of values) {
+    if (value < min) {
+      min = value;
+    }
+    if (value > max) {
+      max = value;
+    }
+    total += value;
+  }
+  return { mean: total / values.length, min, max };
 }
 
 function writeOutputFile(outputPath: string, content: string): void {

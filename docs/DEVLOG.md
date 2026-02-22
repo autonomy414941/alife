@@ -186,3 +186,34 @@ Thinking:
   but we still quantify dynamics globally.
 - Next step should add explicit spatial-locality analytics so we can distinguish
   true patch-structure from global turbulence.
+
+## 2026-02-22 (session 9)
+- Added spatial-locality analytics to `LifeSimulation.analytics(...)`.
+  - New `locality`: occupied-cell fraction, mean dominant-species share, dominance dispersion,
+    and mean local species richness.
+  - New `localityTurnover`: rolling dominant-cell change fraction and per-cell turnover dispersion.
+- Implemented internal per-tick locality frame tracking (tick 0 baseline + each step) so
+  rolling locality turnover is deterministic and directly windowed.
+- Extended `src/types.ts` and `src/export.ts` so locality metrics are part of all analytics
+  payloads and per-tick CSV exports.
+- Updated CLI output (`src/index.ts`) to show locality signals in single-run logs and
+  experiment aggregates.
+- Added deterministic tests in `test/simulation.test.ts` for:
+  - static per-cell dominance/richness metrics
+  - rolling dominant-species turnover dispersion.
+- Verified with `npm test` (21 tests), `npm run build`, and CLI smoke runs.
+
+Observed:
+- Paired sweep (`runs=8`, `steps=120`, seeds `20260222..20260271`, window=30) shows
+  stronger locality structuring with biomes vs uniform fertility:
+  - local dominance mean: 0.640 -> 0.688 (+0.047)
+  - local dominance std-dev: 0.276 -> 0.302 (+0.026)
+  - per-cell turnover-dispersion std-dev: 0.092 -> 0.118 (+0.026)
+  - occupied-cell fraction: 0.9997 -> 0.9334 (-0.0663)
+- Interpretation: biome heterogeneity is not only increasing global turnover/speciation;
+  it is also increasing spatial concentration and unevenness of local regime changes.
+
+Thinking:
+- Current locality metrics are cell-granular and can be noisy when occupancy is sparse.
+- Next step should add neighborhood-scale (radius-k) locality summaries to test whether
+  niche boundaries remain stable when measured above single-cell resolution.

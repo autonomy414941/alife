@@ -6,6 +6,8 @@ import {
   EvolutionAnalyticsSnapshot,
   EvolutionHistorySnapshot,
   Genome,
+  LocalityStateAnalytics,
+  LocalityTurnoverAnalytics,
   SimulationConfig,
   SimulationRunSeries,
   SimulationSnapshot,
@@ -68,6 +70,13 @@ interface TaxonHistoryState {
   timeline: TaxonTimelinePoint[];
 }
 
+interface LocalityFrame {
+  dominantSpeciesByCell: number[];
+  dominanceSharesByOccupiedCell: number[];
+  speciesRichnessByOccupiedCell: number[];
+  occupiedCells: number;
+}
+
 export class LifeSimulation {
   private readonly rng: Rng;
 
@@ -89,6 +98,8 @@ export class LifeSimulation {
 
   private readonly speciesHistory = new Map<number, TaxonHistoryState>();
 
+  private readonly localityFrames: LocalityFrame[] = [];
+
   private extinctClades = 0;
 
   private extinctSpecies = 0;
@@ -106,6 +117,7 @@ export class LifeSimulation {
       this.nextSpeciesId = Math.max(...this.agents.map((agent) => agent.species)) + 1;
     }
     this.initializeEvolutionHistory();
+    this.recordLocalityFrame(0);
   }
 
   step(): StepSummary {
@@ -169,6 +181,7 @@ export class LifeSimulation {
     );
     this.extinctClades += cladeExtinctionDelta;
     this.extinctSpecies += speciesExtinctionDelta;
+    this.recordLocalityFrame(this.tickCount);
 
     return {
       tick: this.tickCount,
@@ -243,7 +256,9 @@ export class LifeSimulation {
       tick: this.tickCount,
       window,
       species: this.buildSpeciesTurnover(window),
-      clades: this.buildTaxonTurnover(this.cladeHistory, window)
+      clades: this.buildTaxonTurnover(this.cladeHistory, window),
+      locality: this.buildLocalityState(),
+      localityTurnover: this.buildLocalityTurnover(window)
     };
   }
 
@@ -257,6 +272,120 @@ export class LifeSimulation {
 
   getBiomeFertility(x: number, y: number): number {
     return this.biomeFertility[this.wrapY(y)][this.wrapX(x)];
+  }
+
+  private latestLocalityFrame(): LocalityFrame {
+    const frame = this.localityFrames[this.tickCount];
+    if (!frame) {
+      throw new Error(`Missing locality frame for tick ${this.tickCount}`);
+    }
+    return frame;
+  }
+
+  private buildLocalityState(): LocalityStateAnalytics {
+    const frame = this.latestLocalityFrame();
+    const totalCells = this.config.width * this.config.height;
+    return {
+      occupiedCells: frame.occupiedCells,
+      occupiedCellFraction: totalCells === 0 ? 0 : frame.occupiedCells / totalCells,
+      meanDominantSpeciesShare: this.mean(frame.dominanceSharesByOccupiedCell),
+      dominantSpeciesShareStdDev: this.standardDeviation(frame.dominanceSharesByOccupiedCell),
+      meanSpeciesRichness: this.mean(frame.speciesRichnessByOccupiedCell)
+    };
+  }
+
+  private buildLocalityTurnover(window: TurnoverWindow): LocalityTurnoverAnalytics {
+    const totalCells = this.config.width * this.config.height;
+    const startTick = Math.max(1, window.startTick);
+    const changedFractions: number[] = [];
+    const perCellChanges = Array.from({ length: totalCells }, () => 0);
+
+    let transitions = 0;
+    for (let tick = startTick; tick <= window.endTick; tick += 1) {
+      const previous = this.localityFrames[tick - 1];
+      const current = this.localityFrames[tick];
+      if (!previous || !current) {
+        continue;
+      }
+      transitions += 1;
+      let changedCells = 0;
+      for (let i = 0; i < totalCells; i += 1) {
+        if (previous.dominantSpeciesByCell[i] !== current.dominantSpeciesByCell[i]) {
+          changedCells += 1;
+          perCellChanges[i] += 1;
+        }
+      }
+      changedFractions.push(totalCells === 0 ? 0 : changedCells / totalCells);
+    }
+
+    if (transitions === 0) {
+      return {
+        transitions: 0,
+        changedDominantCellFractionMean: 0,
+        changedDominantCellFractionStdDev: 0,
+        perCellDominantTurnoverMean: 0,
+        perCellDominantTurnoverStdDev: 0,
+        perCellDominantTurnoverMax: 0
+      };
+    }
+
+    const perCellRates = perCellChanges.map((count) => count / transitions);
+    return {
+      transitions,
+      changedDominantCellFractionMean: this.mean(changedFractions),
+      changedDominantCellFractionStdDev: this.standardDeviation(changedFractions),
+      perCellDominantTurnoverMean: this.mean(perCellRates),
+      perCellDominantTurnoverStdDev: this.standardDeviation(perCellRates),
+      perCellDominantTurnoverMax: Math.max(...perCellRates)
+    };
+  }
+
+  private recordLocalityFrame(tick: number): void {
+    const width = this.config.width;
+    const totalCells = width * this.config.height;
+    const speciesCountsByCell = Array.from({ length: totalCells }, () => new Map<number, number>());
+
+    for (const agent of this.agents) {
+      const cellIndex = agent.y * width + agent.x;
+      const counts = speciesCountsByCell[cellIndex];
+      counts.set(agent.species, (counts.get(agent.species) ?? 0) + 1);
+    }
+
+    const dominantSpeciesByCell = Array.from({ length: totalCells }, () => 0);
+    const dominanceSharesByOccupiedCell: number[] = [];
+    const speciesRichnessByOccupiedCell: number[] = [];
+    let occupiedCells = 0;
+
+    for (let i = 0; i < totalCells; i += 1) {
+      const counts = speciesCountsByCell[i];
+      if (counts.size === 0) {
+        continue;
+      }
+
+      occupiedCells += 1;
+
+      let dominantSpecies = 0;
+      let dominantCount = 0;
+      let totalPopulation = 0;
+      for (const [species, count] of counts) {
+        totalPopulation += count;
+        if (count > dominantCount || (count === dominantCount && (dominantSpecies === 0 || species < dominantSpecies))) {
+          dominantSpecies = species;
+          dominantCount = count;
+        }
+      }
+
+      dominantSpeciesByCell[i] = dominantSpecies;
+      dominanceSharesByOccupiedCell.push(totalPopulation === 0 ? 0 : dominantCount / totalPopulation);
+      speciesRichnessByOccupiedCell.push(counts.size);
+    }
+
+    this.localityFrames[tick] = {
+      dominantSpeciesByCell,
+      dominanceSharesByOccupiedCell,
+      speciesRichnessByOccupiedCell,
+      occupiedCells
+    };
   }
 
   private buildSpeciesTurnover(window: TurnoverWindow): SpeciesTurnoverAnalytics {
@@ -704,6 +833,23 @@ export class LifeSimulation {
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     return counts;
+  }
+
+  private mean(values: number[]): number {
+    if (values.length === 0) {
+      return 0;
+    }
+    const total = values.reduce((sum, value) => sum + value, 0);
+    return total / values.length;
+  }
+
+  private standardDeviation(values: number[]): number {
+    if (values.length === 0) {
+      return 0;
+    }
+    const mean = this.mean(values);
+    const variance = values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length;
+    return Math.sqrt(variance);
   }
 
   private meanEnergy(): number {
