@@ -1,15 +1,12 @@
-# Evaluation — 2026-02-22
+# Action Evaluation — 2026-02-22
 
 ## Session summary
-This session added cell-level locality analytics and rolling locality-turnover dispersion, then wired those metrics into exports, CLI output, and deterministic tests. The work improved measurement of spatial structure without changing simulation behavior.
+The developer added neighborhood-aware dispersal pressure to movement, introducing `dispersalPressure` and `dispersalRadius` with live occupancy-based destination scoring. They also added deterministic tests and re-ran test/build/CLI checks to validate behavioral effects.
 
 ## Ratings
-- Simulation depth: C — No new life mechanic or interaction was added; the change is observability around existing dynamics.
-- Creativity: B — The locality/turnover metric design is thoughtful, but it follows directly from the prior session’s stated next step.
-- Balance: A — Recent sessions are well balanced: core mechanics were expanded in sessions 7-8, then instrumentation caught up in session 9.
+- Simulation depth: A — The session added a new movement mechanic that directly changes local interactions and spatial population dynamics.
+- Creativity: B — Dispersal pressure is a solid, coherent next mechanic, but it follows the recent locality-focused trajectory rather than opening a novel direction.
+- Balance: A — Recent sessions show a healthy alternation between core mechanics (sessions 7, 8, 10) and observability/analytics (session 9).
 
 ## Pattern
-The project has shifted from early core implementation into a tighter loop of mechanics plus validation. Sessions 7-9 show a healthier cadence than sessions 4-6 by pairing ecological additions with targeted analytics instead of only building tooling. The main risk is staying in measurement mode too long without adding the next behavior that those metrics can stress-test.
-
-## Suggestion
-Use the new locality signals to drive the next mechanic change, not just analysis; neighborhood-scale interaction or dispersal pressure would be a strong next step. Keep the same paired-seed comparison style so the behavioral effect is measurable, not anecdotal.
+Across sessions 7-10, the project has moved in a disciplined loop: add ecology/spatial mechanics, then measure their effects, then add another mechanic informed by those signals. This is stronger than the earlier tooling-heavy stretch because each instrumentation phase is now tied to concrete behavioral follow-up. The near-term risk is drifting back into metrics-only work unless the next step again introduces behavior that stresses the new locality/dispersal layer.
