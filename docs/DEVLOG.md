@@ -360,3 +360,33 @@ Observed:
 Thinking:
 - The trophic axis is now real and measurable, but currently asymmetric: pressure increases faster than prey-side counterplay.
 - Next session should add prey defense/escape or encounter-risk mitigation tied to heritable traits to create balanced coevolution rather than one-sided dominance.
+
+## 2026-02-23 (session 15)
+- Added prey-side anti-predator adaptation in `src/simulation.ts` as a species-level defense axis.
+- Extended `SimulationConfig` in `src/types.ts` with:
+  - `defenseMitigation`
+  - `defenseForagingPenalty`
+  - `defenseMutation`
+- Implemented defense mechanics:
+  - initialized per-species defense level from genome signal (low aggression + higher metabolism).
+  - reduced encounter stealing against defended prey (`defenseMitigation`).
+  - added defense-linked foraging penalty (`defenseForagingPenalty`) to enforce a tradeoff.
+  - propagated defense tendency through speciation via mutation-linked drift (`defenseMutation`).
+- Added deterministic tests in `test/simulation.test.ts`:
+  - defense mitigation lowers predator transfer in shared-cell encounters.
+  - defense foraging tradeoff lowers harvest for high-defense species.
+- Updated focused comparison tests to pin defense knobs to `0` when isolating other mechanics.
+- Verified with `npm test` (31 tests) and `npm run build`.
+- Ran seeded sweep (`runs=8`, `steps=120`, `window=30`, seeds `20260223..20260230`) comparing defense off vs defaults.
+
+Observed:
+- Defense defaults (`mitigation=0.45`, `foragingPenalty=0.2`, `mutation=0.16`) shifted regime metrics versus defense-off:
+  - active species mean: `180.88 -> 194.25`
+  - patch dominant-share mean: `0.2129 -> 0.2500`
+  - patch turnover mean: `0.2618 -> 0.2276`
+  - mean aggression: `0.8550 -> 0.8288`
+- Interpretation: prey defense counter-pressure is materially active and suppresses average aggression, but currently increases patch-level persistence.
+
+Thinking:
+- The ecology axis is now less one-sided than pure trophic pressure.
+- Next session should rebalance toward measurement by exporting strategy-axis observability (habitat/trophic/defense distributions) to validate whether this regime shift reflects stable coevolution or emergent lock-in.

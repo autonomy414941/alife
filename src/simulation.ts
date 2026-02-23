@@ -43,6 +43,9 @@ const DEFAULT_CONFIG: SimulationConfig = {
   predationPressure: 0.35,
   trophicForagingPenalty: 0.35,
   trophicMutation: 0.18,
+  defenseMitigation: 0.45,
+  defenseForagingPenalty: 0.2,
+  defenseMutation: 0.16,
   harvestCap: 2.5,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
@@ -117,6 +120,8 @@ export class LifeSimulation {
 
   private readonly speciesTrophicLevel = new Map<number, number>();
 
+  private readonly speciesDefenseLevel = new Map<number, number>();
+
   private readonly localityFrames: LocalityFrame[] = [];
 
   private extinctClades = 0;
@@ -137,6 +142,7 @@ export class LifeSimulation {
     }
     this.initializeSpeciesHabitatPreferences();
     this.initializeSpeciesTrophicLevels();
+    this.initializeSpeciesDefenseLevels();
     this.initializeEvolutionHistory();
     this.recordLocalityFrame(0);
   }
@@ -687,9 +693,29 @@ export class LifeSimulation {
     }
   }
 
+  private initializeSpeciesDefenseLevels(): void {
+    const sums = new Map<number, { total: number; count: number }>();
+    for (const agent of this.agents) {
+      const signal = this.genomeDefenseSignal(agent.genome);
+      const current = sums.get(agent.species) ?? { total: 0, count: 0 };
+      current.total += signal;
+      current.count += 1;
+      sums.set(agent.species, current);
+    }
+    for (const [species, { total, count }] of sums) {
+      const level = count === 0 ? 0 : total / count;
+      this.speciesDefenseLevel.set(species, clamp(level, 0, 1));
+    }
+  }
+
   private genomeTrophicSignal(genome: Genome): number {
     const harvestNormalized = normalizeTrait(genome.harvest, MIN_GENOME.harvest, MAX_GENOME.harvest);
     return clamp(genome.aggression * 0.7 + (1 - harvestNormalized) * 0.3, 0, 1);
+  }
+
+  private genomeDefenseSignal(genome: Genome): number {
+    const metabolismNormalized = normalizeTrait(genome.metabolism, MIN_GENOME.metabolism, MAX_GENOME.metabolism);
+    return clamp((1 - genome.aggression) * 0.65 + metabolismNormalized * 0.35, 0, 1);
   }
 
   private seedTaxonHistory(
@@ -904,9 +930,10 @@ export class LifeSimulation {
     const available = this.resources[agent.y][agent.x];
     const habitatEfficiency = this.habitatMatchEfficiency(agent.species, agent.x, agent.y);
     const trophicEfficiency = this.trophicForagingEfficiency(agent.species);
+    const defenseEfficiency = this.defenseForagingEfficiency(agent.species);
     const harvestAmount = Math.min(
       available,
-      this.config.harvestCap * agent.genome.harvest * habitatEfficiency * trophicEfficiency
+      this.config.harvestCap * agent.genome.harvest * habitatEfficiency * trophicEfficiency * defenseEfficiency
     );
     this.resources[agent.y][agent.x] -= harvestAmount;
     agent.energy += harvestAmount;
@@ -992,7 +1019,9 @@ export class LifeSimulation {
         const trophicGap =
           this.getSpeciesTrophicLevel(dominant.species) - this.getSpeciesTrophicLevel(target.species);
         const predationMultiplier = 1 + Math.max(0, this.config.predationPressure) * Math.max(0, trophicGap);
-        const stolen = Math.min(target.energy, target.energy * pressure * 0.25 * predationMultiplier);
+        const mitigation = clamp(this.config.defenseMitigation, 0, 0.95);
+        const defenseMultiplier = Math.max(0.05, 1 - mitigation * this.getSpeciesDefenseLevel(target.species));
+        const stolen = Math.min(target.energy, target.energy * pressure * 0.25 * predationMultiplier * defenseMultiplier);
         if (stolen <= 0) {
           continue;
         }
@@ -1016,6 +1045,9 @@ export class LifeSimulation {
       const parentTrophic = this.getSpeciesTrophicLevel(parent.species);
       const trophicDelta = this.trophicDeltaFromMutation(parent.genome, childGenome);
       this.speciesTrophicLevel.set(childSpecies, clamp(parentTrophic + trophicDelta, 0, 1));
+      const parentDefense = this.getSpeciesDefenseLevel(parent.species);
+      const defenseDelta = this.defenseDeltaFromMutation(parent.genome, childGenome);
+      this.speciesDefenseLevel.set(childSpecies, clamp(parentDefense + defenseDelta, 0, 1));
     }
 
     const neighbors = [
@@ -1081,12 +1113,26 @@ export class LifeSimulation {
     return Math.max(0.05, 1 - penalty * this.getSpeciesTrophicLevel(species));
   }
 
+  private defenseForagingEfficiency(species: number): number {
+    const penalty = clamp(this.config.defenseForagingPenalty, 0, 0.95);
+    return Math.max(0.05, 1 - penalty * this.getSpeciesDefenseLevel(species));
+  }
+
   private getSpeciesTrophicLevel(species: number): number {
     const existing = this.speciesTrophicLevel.get(species);
     if (existing !== undefined) {
       return existing;
     }
     this.speciesTrophicLevel.set(species, 0);
+    return 0;
+  }
+
+  private getSpeciesDefenseLevel(species: number): number {
+    const existing = this.speciesDefenseLevel.get(species);
+    if (existing !== undefined) {
+      return existing;
+    }
+    this.speciesDefenseLevel.set(species, 0);
     return 0;
   }
 
@@ -1109,6 +1155,17 @@ export class LifeSimulation {
     const aggressionShift = child.aggression - parent.aggression;
     const harvestShift = parent.harvest - child.harvest;
     const signal = aggressionShift * 0.7 + harvestShift * 0.3;
+    return clamp(signal, -1, 1) * mutationScale;
+  }
+
+  private defenseDeltaFromMutation(parent: Genome, child: Genome): number {
+    const mutationScale = Math.max(0, this.config.defenseMutation);
+    if (mutationScale === 0) {
+      return 0;
+    }
+    const aggressionShift = parent.aggression - child.aggression;
+    const metabolismShift = child.metabolism - parent.metabolism;
+    const signal = aggressionShift * 0.65 + metabolismShift * 0.35;
     return clamp(signal, -1, 1) * mutationScale;
   }
 

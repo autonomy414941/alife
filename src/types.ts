@@ -151,6 +151,9 @@ export interface SimulationConfig {
   predationPressure: number;
   trophicForagingPenalty: number;
   trophicMutation: number;
+  defenseMitigation: number;
+  defenseForagingPenalty: number;
+  defenseMutation: number;
   harvestCap: number;
   reproduceThreshold: number;
   reproduceProbability: number;

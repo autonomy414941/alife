@@ -125,7 +125,8 @@ describe('LifeSimulation', () => {
         reproduceProbability: 0,
         maxAge: 100,
         habitatPreferenceStrength: 0,
-        trophicForagingPenalty: 0.8
+        trophicForagingPenalty: 0.8,
+        defenseForagingPenalty: 0
       },
       initialAgents: [
         {
@@ -224,6 +225,129 @@ describe('LifeSimulation', () => {
 
     expect(withPressurePredator.energy).toBeGreaterThan(noPressurePredator.energy);
     expect(withPressurePrey.energy).toBeLessThan(noPressurePrey.energy);
+  });
+
+  it('reduces encounter transfer when prey defense mitigation is enabled', () => {
+    const baseConfig = {
+      width: 1,
+      height: 1,
+      maxResource: 0,
+      resourceRegen: 0,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      harvestCap: 0,
+      reproduceProbability: 0,
+      maxAge: 100,
+      predationPressure: 1.2,
+      trophicForagingPenalty: 0,
+      defenseForagingPenalty: 0
+    };
+    const initialAgents = [
+      {
+        x: 0,
+        y: 0,
+        energy: 10,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism: 1, harvest: 1, aggression: 1 }
+      },
+      {
+        x: 0,
+        y: 0,
+        energy: 10,
+        lineage: 2,
+        species: 2,
+        genome: { metabolism: 1, harvest: 1, aggression: 0 }
+      }
+    ];
+
+    const noMitigation = new LifeSimulation({
+      seed: 16,
+      config: {
+        ...baseConfig,
+        defenseMitigation: 0
+      },
+      initialAgents
+    });
+    const withMitigation = new LifeSimulation({
+      seed: 16,
+      config: {
+        ...baseConfig,
+        defenseMitigation: 0.9
+      },
+      initialAgents
+    });
+
+    noMitigation.step();
+    withMitigation.step();
+
+    const noMitigationPredator = noMitigation.snapshot().agents.find((agent) => agent.species === 1)!;
+    const noMitigationPrey = noMitigation.snapshot().agents.find((agent) => agent.species === 2)!;
+    const withMitigationPredator = withMitigation.snapshot().agents.find((agent) => agent.species === 1)!;
+    const withMitigationPrey = withMitigation.snapshot().agents.find((agent) => agent.species === 2)!;
+
+    expect(withMitigationPredator.energy).toBeLessThan(noMitigationPredator.energy);
+    expect(withMitigationPrey.energy).toBeGreaterThan(noMitigationPrey.energy);
+  });
+
+  it('applies foraging tradeoff pressure to high-defense species', () => {
+    const sim = new LifeSimulation({
+      seed: 18,
+      config: {
+        width: 4,
+        height: 1,
+        maxResource: 10,
+        resourceRegen: 0,
+        biomeBands: 1,
+        biomeContrast: 0,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        dispersalPressure: 0,
+        harvestCap: 2,
+        reproduceProbability: 0,
+        maxAge: 100,
+        habitatPreferenceStrength: 0,
+        trophicForagingPenalty: 0,
+        defenseForagingPenalty: 0.8
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 2,
+          y: 0,
+          energy: 10,
+          lineage: 2,
+          species: 2,
+          genome: { metabolism: 1, harvest: 1, aggression: 1 }
+        }
+      ]
+    });
+
+    for (let x = 0; x < 4; x += 1) {
+      sim.setResource(x, 0, 0);
+    }
+    sim.setResource(0, 0, 2);
+    sim.setResource(2, 0, 2);
+
+    sim.step();
+    const agents = sim.snapshot().agents;
+    const highDefense = agents.find((agent) => agent.species === 1);
+    const lowDefense = agents.find((agent) => agent.species === 2);
+
+    expect(highDefense).toBeDefined();
+    expect(lowDefense).toBeDefined();
+    expect(highDefense!.energy).toBeCloseTo(10.753684210526316, 10);
+    expect(lowDefense!.energy).toBeCloseTo(11.793684210526316, 10);
+    expect(highDefense!.energy).toBeLessThan(lowDefense!.energy);
   });
 
   it('applies dispersal pressure to spread agents out of crowded neighborhoods', () => {
@@ -664,7 +788,10 @@ describe('LifeSimulation', () => {
             habitatPreferenceStrength: 4,
             specializationMetabolicCost,
             predationPressure: 0,
-            trophicForagingPenalty: 0
+            trophicForagingPenalty: 0,
+            defenseMitigation: 0,
+            defenseForagingPenalty: 0,
+            defenseMutation: 0
           }
         });
         sim.run(steps);
