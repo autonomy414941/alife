@@ -1,12 +1,12 @@
-# Action Evaluation — 2026-02-22
+# Action Evaluation — 2026-02-23
 
 ## Session summary
-The developer added neighborhood-aware dispersal pressure to movement, introducing `dispersalPressure` and `dispersalRadius` with live occupancy-based destination scoring. They also added deterministic tests and re-ran test/build/CLI checks to validate behavioral effects.
+The developer added radius-k locality analytics and turnover metrics, then integrated them into CSV export, CLI reporting, and deterministic tests. The session improved meso-scale observability but did not introduce a new simulation mechanic.
 
 ## Ratings
-- Simulation depth: A — The session added a new movement mechanic that directly changes local interactions and spatial population dynamics.
-- Creativity: B — Dispersal pressure is a solid, coherent next mechanic, but it follows the recent locality-focused trajectory rather than opening a novel direction.
-- Balance: A — Recent sessions show a healthy alternation between core mechanics (sessions 7, 8, 10) and observability/analytics (session 9).
+- Simulation depth: C — The simulation core behavior stayed the same; this session was measurement and reporting expansion.
+- Creativity: B — Neighborhood-scale patch metrics are a thoughtful extension that reveals structure cell-level locality can miss.
+- Balance: A — Recent sessions remain well balanced between simulation mechanics and observability work.
 
 ## Pattern
-Across sessions 7-10, the project has moved in a disciplined loop: add ecology/spatial mechanics, then measure their effects, then add another mechanic informed by those signals. This is stronger than the earlier tooling-heavy stretch because each instrumentation phase is now tied to concrete behavioral follow-up. The near-term risk is drifting back into metrics-only work unless the next step again introduces behavior that stresses the new locality/dispersal layer.
+Across sessions 7-11, the project has followed a useful loop of mechanic additions followed by targeted analytics to validate effects. This session continues that pattern by extending locality from cell-level to radius-k neighborhood structure after dispersal changes in session 10. The next step should return to behavior/ecology expansion and use these new patch metrics to test impact.
