@@ -145,6 +145,8 @@ export interface SimulationConfig {
   dispersalPressure: number;
   dispersalRadius: number;
   localityRadius: number;
+  habitatPreferenceStrength: number;
+  habitatPreferenceMutation: number;
   harvestCap: number;
   reproduceThreshold: number;
   reproduceProbability: number;

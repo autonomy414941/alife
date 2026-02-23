@@ -267,3 +267,38 @@ Thinking:
 - This session was observability-heavy by design and now gives a clear meso-scale readout.
 - Next session should prioritize a behavior/ecology addition that can be evaluated with these
   new patch metrics (e.g., trait-mediated habitat preference or resource specialization).
+
+## 2026-02-23 (session 12)
+- Added a new ecology behavior: species-level habitat preference tied to biome fertility.
+- Extended `SimulationConfig` in `src/types.ts` with:
+  - `habitatPreferenceStrength`
+  - `habitatPreferenceMutation`
+- Implemented in `src/simulation.ts`:
+  - `speciesHabitatPreference` state initialized from each species' occupied fertility.
+  - Movement now scores cells by `resource * habitatMatchEfficiency` (not raw resource only).
+  - Harvest is scaled by habitat match efficiency.
+  - During speciation, child species preference shifts using a deterministic signal from
+    child-vs-parent genome mutation (no extra RNG draws, so baseline deterministic trajectories stay stable).
+- Added deterministic tests in `test/simulation.test.ts`:
+  - foraging penalty when a species is far from its preferred fertility.
+  - patch-structure stabilization check comparing `habitatPreferenceStrength=0` vs `4`
+    with radius-k metrics.
+- Verification run:
+  - `npm test` (25 tests)
+  - `npm run build`
+  - `npm start -- --steps 30 --report-every 10 --window 15 --seed 20260223`
+  - seeded sweep via `npx tsx -e ...` for metric deltas.
+
+Observed:
+- In an 8-run seeded sweep (`steps=90`, `window=30`), adding strong habitat preference
+  (`strength=4`) versus neutral (`0`) shifted patch metrics substantially:
+  - patch dominant-turnover mean: `0.2866 -> 0.1652`
+  - patch dominant-share mean: `0.7314 -> 0.9253`
+  - patch center-dominant alignment mean: `0.7552 -> 0.9688`
+- Interpretation: species-level habitat matching creates more stable and coherent meso-scale
+  territories under dispersal pressure, not just cell-level noise changes.
+
+Thinking:
+- This is the first explicit niche-specialization mechanic; it is simple and already measurable.
+- Next behavior step should add a cost side (demography or survival tradeoff) so specialization
+  does not trivially ratchet toward locked-in dominance in long runs.

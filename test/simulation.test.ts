@@ -293,6 +293,175 @@ describe('LifeSimulation', () => {
     expect(sim.getResource(2, 2)).toBeCloseTo(2 * fertility, 10);
   });
 
+  it('reduces harvest when a species forages far from its fertility preference', () => {
+    const baseConfig = {
+      width: 6,
+      height: 6,
+      maxResource: 10,
+      resourceRegen: 0,
+      biomeBands: 3,
+      biomeContrast: 0.8,
+      decompositionBase: 0,
+      decompositionEnergyFraction: 0,
+      metabolismCostBase: 1,
+      moveCost: 0,
+      dispersalPressure: 0,
+      harvestCap: 2,
+      reproduceProbability: 0,
+      maxAge: 100,
+      habitatPreferenceStrength: 4
+    };
+    const probe = new LifeSimulation({
+      seed: 52,
+      config: {
+        ...baseConfig,
+        initialAgents: 0
+      }
+    });
+    const cellsByFertility = listCellsByFertility(probe, baseConfig.width, baseConfig.height);
+    const lowCell = cellsByFertility[0]!;
+    const highCell = cellsByFertility[cellsByFertility.length - 1]!;
+    const genome = { metabolism: 0.3, harvest: 1, aggression: 0 };
+
+    const sim = new LifeSimulation({
+      seed: 52,
+      config: baseConfig,
+      initialAgents: [
+        {
+          x: lowCell.x,
+          y: lowCell.y,
+          energy: 0.1,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 2.2, harvest: 1, aggression: 0 }
+        },
+        {
+          x: lowCell.x,
+          y: lowCell.y,
+          energy: 0.1,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 2.2, harvest: 1, aggression: 0 }
+        },
+        {
+          x: lowCell.x,
+          y: lowCell.y,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome
+        },
+        {
+          x: highCell.x,
+          y: highCell.y,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome
+        }
+      ]
+    });
+
+    for (let y = 0; y < baseConfig.height; y += 1) {
+      for (let x = 0; x < baseConfig.width; x += 1) {
+        sim.setResource(x, y, 0);
+      }
+    }
+    sim.setResource(lowCell.x, lowCell.y, 2);
+    sim.setResource(highCell.x, highCell.y, 2);
+
+    sim.step();
+    const agents = sim.snapshot().agents;
+    const lowForager = agents.find((agent) => agent.species === 1 && agent.x === lowCell.x && agent.y === lowCell.y);
+    const highForager = agents.find((agent) => agent.species === 1 && agent.x === highCell.x && agent.y === highCell.y);
+
+    expect(lowForager).toBeDefined();
+    expect(highForager).toBeDefined();
+    expect(lowForager!.energy).toBeGreaterThan(highForager!.energy);
+  });
+
+  it('uses habitat preference to stabilize radius-k patch dominance under dispersal pressure', () => {
+    const baseConfig = {
+      width: 10,
+      height: 10,
+      maxResource: 8,
+      resourceRegen: 0.8,
+      biomeBands: 4,
+      biomeContrast: 0.85,
+      decompositionBase: 0,
+      decompositionEnergyFraction: 0,
+      metabolismCostBase: 0.2,
+      moveCost: 0.05,
+      dispersalPressure: 1.4,
+      dispersalRadius: 1,
+      localityRadius: 2,
+      harvestCap: 2,
+      reproduceProbability: 0,
+      maxAge: 200,
+      habitatPreferenceMutation: 0
+    };
+    const probe = new LifeSimulation({
+      seed: 53,
+      config: {
+        ...baseConfig,
+        initialAgents: 0,
+        habitatPreferenceStrength: 0
+      }
+    });
+    const cellsByFertility = listCellsByFertility(probe, baseConfig.width, baseConfig.height);
+    const clusterSize = 12;
+    const lowCells = cellsByFertility.slice(0, clusterSize);
+    const highCells = cellsByFertility.slice(-clusterSize);
+    const initialAgents = [
+      ...lowCells.map((cell) => ({
+        x: cell.x,
+        y: cell.y,
+        energy: 12,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism: 1, harvest: 1, aggression: 0 }
+      })),
+      ...highCells.map((cell) => ({
+        x: cell.x,
+        y: cell.y,
+        energy: 12,
+        lineage: 2,
+        species: 2,
+        genome: { metabolism: 1, harvest: 1, aggression: 0 }
+      }))
+    ];
+
+    const neutral = new LifeSimulation({
+      seed: 53,
+      config: {
+        ...baseConfig,
+        habitatPreferenceStrength: 0
+      },
+      initialAgents
+    });
+    const specialist = new LifeSimulation({
+      seed: 53,
+      config: {
+        ...baseConfig,
+        habitatPreferenceStrength: 4
+      },
+      initialAgents
+    });
+
+    neutral.run(70);
+    specialist.run(70);
+
+    const neutralAnalytics = neutral.analytics(30);
+    const specialistAnalytics = specialist.analytics(30);
+
+    expect(specialistAnalytics.localityRadiusTurnover.changedDominantCellFractionMean).toBeLessThan(
+      neutralAnalytics.localityRadiusTurnover.changedDominantCellFractionMean
+    );
+    expect(specialistAnalytics.localityRadius.meanDominantSpeciesShare).toBeGreaterThan(
+      neutralAnalytics.localityRadius.meanDominantSpeciesShare
+    );
+  });
+
   it('removes agents that run out of energy', () => {
     const sim = new LifeSimulation({
       seed: 3,
@@ -781,3 +950,18 @@ describe('LifeSimulation', () => {
     expect(analytics.clades.extinctionsInWindow).toBe(0);
   });
 });
+
+function listCellsByFertility(
+  sim: LifeSimulation,
+  width: number,
+  height: number
+): Array<{ x: number; y: number; fertility: number }> {
+  const cells: Array<{ x: number; y: number; fertility: number }> = [];
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      cells.push({ x, y, fertility: sim.getBiomeFertility(x, y) });
+    }
+  }
+  cells.sort((a, b) => a.fertility - b.fertility);
+  return cells;
+}

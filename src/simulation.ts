@@ -37,6 +37,8 @@ const DEFAULT_CONFIG: SimulationConfig = {
   dispersalPressure: 0.8,
   dispersalRadius: 1,
   localityRadius: 2,
+  habitatPreferenceStrength: 1.4,
+  habitatPreferenceMutation: 0.2,
   harvestCap: 2.5,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
@@ -107,6 +109,8 @@ export class LifeSimulation {
 
   private readonly speciesHistory = new Map<number, TaxonHistoryState>();
 
+  private readonly speciesHabitatPreference = new Map<number, number>();
+
   private readonly localityFrames: LocalityFrame[] = [];
 
   private extinctClades = 0;
@@ -125,6 +129,7 @@ export class LifeSimulation {
       this.nextAgentId = Math.max(...this.agents.map((agent) => agent.id)) + 1;
       this.nextSpeciesId = Math.max(...this.agents.map((agent) => agent.species)) + 1;
     }
+    this.initializeSpeciesHabitatPreferences();
     this.initializeEvolutionHistory();
     this.recordLocalityFrame(0);
   }
@@ -645,6 +650,21 @@ export class LifeSimulation {
     this.seedTaxonHistory(this.speciesHistory, this.countBy(this.agents, (agent) => agent.species));
   }
 
+  private initializeSpeciesHabitatPreferences(): void {
+    const sums = new Map<number, { total: number; count: number }>();
+    for (const agent of this.agents) {
+      const fertility = this.biomeFertility[agent.y][agent.x];
+      const current = sums.get(agent.species) ?? { total: 0, count: 0 };
+      current.total += fertility;
+      current.count += 1;
+      sums.set(agent.species, current);
+    }
+    for (const [species, { total, count }] of sums) {
+      const preference = count === 0 ? 1 : total / count;
+      this.speciesHabitatPreference.set(species, clamp(preference, 0.1, 2));
+    }
+  }
+
   private seedTaxonHistory(
     history: Map<number, TaxonHistoryState>,
     counts: Map<number, number>
@@ -854,7 +874,11 @@ export class LifeSimulation {
     }
 
     const available = this.resources[agent.y][agent.x];
-    const harvestAmount = Math.min(available, this.config.harvestCap * agent.genome.harvest);
+    const habitatEfficiency = this.habitatMatchEfficiency(agent.species, agent.x, agent.y);
+    const harvestAmount = Math.min(
+      available,
+      this.config.harvestCap * agent.genome.harvest * habitatEfficiency
+    );
     this.resources[agent.y][agent.x] -= harvestAmount;
     agent.energy += harvestAmount;
   }
@@ -872,7 +896,7 @@ export class LifeSimulation {
     let bestScore = -Infinity;
 
     for (const option of options) {
-      const food = this.resources[option.y][option.x];
+      const food = this.resources[option.y][option.x] * this.habitatMatchEfficiency(agent.species, option.x, option.y);
       const crowding = this.neighborhoodCrowding(option.x, option.y, occupancy);
       const score = food - this.config.dispersalPressure * crowding + this.rng.float() * 0.05;
       if (score > bestScore) {
@@ -952,6 +976,12 @@ export class LifeSimulation {
     const childGenome = this.mutateGenome(parent.genome);
     const diverged =
       genomeDistance(parent.genome, childGenome) >= this.config.speciationThreshold;
+    const childSpecies = diverged ? this.nextSpeciesId++ : parent.species;
+    if (diverged) {
+      const parentPreference = this.getSpeciesHabitatPreference(parent.species);
+      const delta = this.habitatPreferenceDeltaFromMutation(parent.genome, childGenome);
+      this.speciesHabitatPreference.set(childSpecies, clamp(parentPreference + delta, 0.1, 2));
+    }
 
     const neighbors = [
       { x: parent.x, y: parent.y },
@@ -965,7 +995,7 @@ export class LifeSimulation {
     return {
       id: this.nextAgentId++,
       lineage: parent.lineage,
-      species: diverged ? this.nextSpeciesId++ : parent.species,
+      species: childSpecies,
       x: childPos.x,
       y: childPos.y,
       energy: childEnergy,
@@ -989,6 +1019,37 @@ export class LifeSimulation {
 
   private randomTrait(min: number, max: number): number {
     return min + this.rng.float() * (max - min);
+  }
+
+  private habitatMatchEfficiency(species: number, x: number, y: number): number {
+    const strength = Math.max(0, this.config.habitatPreferenceStrength);
+    if (strength === 0) {
+      return 1;
+    }
+    const preference = this.getSpeciesHabitatPreference(species);
+    const fertility = this.biomeFertility[y][x];
+    const mismatch = fertility - preference;
+    return Math.max(0.05, Math.exp(-strength * mismatch * mismatch));
+  }
+
+  private getSpeciesHabitatPreference(species: number): number {
+    const existing = this.speciesHabitatPreference.get(species);
+    if (existing !== undefined) {
+      return existing;
+    }
+    this.speciesHabitatPreference.set(species, 1);
+    return 1;
+  }
+
+  private habitatPreferenceDeltaFromMutation(parent: Genome, child: Genome): number {
+    const mutationScale = Math.max(0, this.config.habitatPreferenceMutation);
+    if (mutationScale === 0) {
+      return 0;
+    }
+    const harvestShift = child.harvest - parent.harvest;
+    const metabolismShift = parent.metabolism - child.metabolism;
+    const signal = harvestShift * 0.65 + metabolismShift * 0.35;
+    return clamp(signal, -1, 1) * mutationScale;
   }
 
   private regenerateResources(): void {

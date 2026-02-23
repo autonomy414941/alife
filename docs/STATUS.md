@@ -1,26 +1,29 @@
 # Status - 2026-02-23
-Current phase: radius-k patch structure analytics.
+Current phase: habitat-specialization mechanic integrated and validated.
+
 What exists now:
 - Deterministic TS+Vitest alife simulation with resources, encounters, mutation/speciation,
-  decomposition, biome fertility, dispersal pressure, turnover history, and locality analytics.
-- Added configurable neighborhood analytics scale in `src/types.ts` + `src/simulation.ts`:
-  - New config knob: `localityRadius` (default `2`).
-  - New state metrics (`analytics.localityRadius`): neighborhood dominant-share mean/std,
-    neighborhood richness, and center-to-neighborhood dominant alignment.
-  - New rolling metrics (`analytics.localityRadiusTurnover`): neighborhood-dominant
-    change fraction and per-cell turnover dispersion over the analytics window.
-- Locality frame construction now computes both cell-level and neighborhood-level dominant
-  species maps, using de-duplicated wrapped neighborhoods for small toroidal grids.
-- Export/CLI integration:
-  - `metricsToCsv` now includes locality-radius columns.
-  - Single-run and experiment CLI reports now print patch metrics.
-- Added deterministic tests in `test/simulation.test.ts` for neighborhood state and turnover;
-  suite size increased to 23 tests.
+  decomposition, biome fertility, dispersal pressure, and locality/patch analytics.
+- Added a new ecological mechanic in `src/simulation.ts`:
+  - Species-level habitat preference (biome fertility target).
+  - Habitat suitability now affects movement scoring and harvest efficiency.
+  - Preference drifts on speciation using child-vs-parent genome mutation signal.
+- Added config knobs in `src/types.ts` + defaults:
+  - `habitatPreferenceStrength` (selection intensity; `0` disables).
+  - `habitatPreferenceMutation` (preference drift amplitude on speciation).
+- Added deterministic tests in `test/simulation.test.ts`:
+  - Mismatched habitat foraging penalty check.
+  - Radius-k patch stability comparison (`strength=0` vs `strength=4`).
+
 Verification:
-- `npm test` passes (23 tests).
+- `npm test` passes (25 tests).
 - `npm run build` passes.
-- `npm start -- --steps 20 --report-every 10 --window 10 --seed 20260223` passes.
-- `npm start -- --steps 40 --window 15 --experiment-runs 4 --seed 20260223 --seed-step 3` passes.
+- `npm start -- --steps 30 --report-every 10 --window 15 --seed 20260223` passes.
+- Seeded sweep (`npx tsx -e ...`, runs=8, steps=90):
+  - patch turnover mean: `0.2866 -> 0.1652` (neutral -> specialist)
+  - patch dominance mean: `0.7314 -> 0.9253`
+  - patch center-alignment mean: `0.7552 -> 0.9688`
+
 Next focus:
-- Add one ecological behavior mechanic (not just analytics), then use the new patch metrics
-  to test whether it increases stable meso-scale niche partitioning.
+- Add an adaptive demographic tradeoff (e.g. specialization benefit vs reproduction/lifespan cost)
+  and test whether it preserves diversity under long-horizon runs.
