@@ -78,6 +78,10 @@ function runSingleMode(options: CliOptions): void {
           `selection(dm=${summary.selectionDifferential.metabolism.toFixed(2)},dh=${summary.selectionDifferential.harvest.toFixed(2)},da=${summary.selectionDifferential.aggression.toFixed(2)}) ` +
           `extinctions(step:s=${summary.speciesExtinctions},c=${summary.cladeExtinctions};total:s=${summary.cumulativeExtinctSpecies},c=${summary.cumulativeExtinctClades}) ` +
           `turnover(rate:spec=${turnover.species.speciationRate.toFixed(2)},ext=${turnover.species.extinctionRate.toFixed(2)},net=${turnover.species.netDiversificationRate.toFixed(2)}) ` +
+          `strategy(active=${turnover.strategy.activeSpecies},mean(h=${turnover.strategy.habitatPreference.mean.toFixed(2)},` +
+          `t=${turnover.strategy.trophicLevel.mean.toFixed(2)},d=${turnover.strategy.defenseLevel.mean.toFixed(2)}),` +
+          `weighted(h=${turnover.strategy.habitatPreference.weightedMean.toFixed(2)},` +
+          `t=${turnover.strategy.trophicLevel.weightedMean.toFixed(2)},d=${turnover.strategy.defenseLevel.weightedMean.toFixed(2)})) ` +
           `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},dom=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},chg=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)}) ` +
           `patch(r=${turnover.localityRadius.radius},dom=${turnover.localityRadius.meanDominantSpeciesShare.toFixed(2)},` +
           `align=${turnover.localityRadius.centerDominantAlignment.toFixed(2)},` +
@@ -101,6 +105,10 @@ function runSingleMode(options: CliOptions): void {
     `turnover window=${turnover.window.size} specRate=${turnover.species.speciationRate.toFixed(2)} ` +
       `extRate=${turnover.species.extinctionRate.toFixed(2)} netRate=${turnover.species.netDiversificationRate.toFixed(2)} ` +
       `lifespan(extinctMean=${turnover.species.extinctLifespan.mean.toFixed(2)},extinctMax=${turnover.species.extinctLifespan.max.toFixed(2)},activeMean=${turnover.species.activeAge.mean.toFixed(2)}) ` +
+      `strategy(active=${turnover.strategy.activeSpecies},mean(h=${turnover.strategy.habitatPreference.mean.toFixed(2)},` +
+      `t=${turnover.strategy.trophicLevel.mean.toFixed(2)},d=${turnover.strategy.defenseLevel.mean.toFixed(2)}),` +
+      `weighted(h=${turnover.strategy.habitatPreference.weightedMean.toFixed(2)},` +
+      `t=${turnover.strategy.trophicLevel.weightedMean.toFixed(2)},d=${turnover.strategy.defenseLevel.weightedMean.toFixed(2)})) ` +
       `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},domMean=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},` +
       `domStd=${turnover.locality.dominantSpeciesShareStdDev.toFixed(2)},turnMean=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)},` +
       `turnStd=${turnover.localityTurnover.changedDominantCellFractionStdDev.toFixed(2)}) ` +
@@ -157,6 +165,24 @@ function runExperimentMode(options: CliOptions): void {
   const patchTurnover = summarizeNumbers(
     experimentData.runs.map((run) => run.finalAnalytics.localityRadiusTurnover.changedDominantCellFractionMean)
   );
+  const strategyHabitat = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.strategy.habitatPreference.mean)
+  );
+  const strategyTrophic = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.strategy.trophicLevel.mean)
+  );
+  const strategyDefense = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.strategy.defenseLevel.mean)
+  );
+  const strategyHabitatWeighted = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.strategy.habitatPreference.weightedMean)
+  );
+  const strategyTrophicWeighted = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.strategy.trophicLevel.weightedMean)
+  );
+  const strategyDefenseWeighted = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.strategy.defenseLevel.weightedMean)
+  );
 
   console.log(
     `experiment runs=${aggregate.runs} seeds=${options.seed}..${lastSeed} extinctionRate=${aggregate.extinctionRate.toFixed(2)} ` +
@@ -182,6 +208,11 @@ function runExperimentMode(options: CliOptions): void {
       `dominance(mean=${patchDominance.mean.toFixed(2)}) ` +
       `alignment(mean=${patchAlignment.mean.toFixed(2)}) ` +
       `turnover(mean=${patchTurnover.mean.toFixed(2)})`
+  );
+  console.log(
+    `strategy mean(h=${strategyHabitat.mean.toFixed(2)},t=${strategyTrophic.mean.toFixed(2)},d=${strategyDefense.mean.toFixed(2)}) ` +
+      `weighted(h=${strategyHabitatWeighted.mean.toFixed(2)},` +
+      `t=${strategyTrophicWeighted.mean.toFixed(2)},d=${strategyDefenseWeighted.mean.toFixed(2)})`
   );
 
   if (options.exportExperimentJson) {

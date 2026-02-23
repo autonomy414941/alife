@@ -13,6 +13,8 @@ import {
   SimulationConfig,
   SimulationRunSeries,
   SimulationSnapshot,
+  StrategyAnalytics,
+  StrategyAxisAnalytics,
   SpeciesTurnoverAnalytics,
   StepSummary,
   TaxonTurnoverAnalytics,
@@ -285,6 +287,7 @@ export class LifeSimulation {
       window,
       species: this.buildSpeciesTurnover(window),
       clades: this.buildTaxonTurnover(this.cladeHistory, window),
+      strategy: this.buildStrategyAnalytics(),
       locality: this.buildLocalityState(),
       localityTurnover: this.buildLocalityTurnover(window),
       localityRadius: this.buildLocalityRadiusState(),
@@ -589,6 +592,61 @@ export class LifeSimulation {
       netDiversificationRate: denominator === 0 ? 0 : (originationsInWindow - extinctionsInWindow) / denominator,
       extinctLifespan: this.summarizeDurations(this.extinctDurations(history)),
       activeAge: this.summarizeDurations(this.activeDurations(history))
+    };
+  }
+
+  private buildStrategyAnalytics(): StrategyAnalytics {
+    const speciesCounts = this.countBy(this.agents, (agent) => agent.species);
+    const habitatValues: number[] = [];
+    const trophicValues: number[] = [];
+    const defenseValues: number[] = [];
+    let habitatWeightedTotal = 0;
+    let trophicWeightedTotal = 0;
+    let defenseWeightedTotal = 0;
+    let totalPopulation = 0;
+
+    for (const [species, population] of speciesCounts) {
+      const habitat = this.getSpeciesHabitatPreference(species);
+      const trophic = this.getSpeciesTrophicLevel(species);
+      const defense = this.getSpeciesDefenseLevel(species);
+      habitatValues.push(habitat);
+      trophicValues.push(trophic);
+      defenseValues.push(defense);
+      habitatWeightedTotal += habitat * population;
+      trophicWeightedTotal += trophic * population;
+      defenseWeightedTotal += defense * population;
+      totalPopulation += population;
+    }
+
+    return {
+      activeSpecies: speciesCounts.size,
+      habitatPreference: this.summarizeStrategyAxis(habitatValues, habitatWeightedTotal, totalPopulation),
+      trophicLevel: this.summarizeStrategyAxis(trophicValues, trophicWeightedTotal, totalPopulation),
+      defenseLevel: this.summarizeStrategyAxis(defenseValues, defenseWeightedTotal, totalPopulation)
+    };
+  }
+
+  private summarizeStrategyAxis(
+    values: number[],
+    weightedTotal: number,
+    totalWeight: number
+  ): StrategyAxisAnalytics {
+    if (values.length === 0) {
+      return {
+        mean: 0,
+        stdDev: 0,
+        min: 0,
+        max: 0,
+        weightedMean: 0
+      };
+    }
+
+    return {
+      mean: this.mean(values),
+      stdDev: this.standardDeviation(values),
+      min: Math.min(...values),
+      max: Math.max(...values),
+      weightedMean: totalWeight === 0 ? 0 : weightedTotal / totalWeight
     };
   }
 

@@ -1053,6 +1053,84 @@ describe('LifeSimulation', () => {
     expect(analytics.clades.extinctionRate).toBe(1);
   });
 
+  it('reports species strategy-axis distributions in analytics', () => {
+    const sim = new LifeSimulation({
+      seed: 33,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        biomeBands: 1,
+        biomeContrast: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 1 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          species: 2,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          species: 2,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    const analytics = sim.analytics(5);
+
+    const harvestNormalized = (1 - 0.4) / (2.8 - 0.4);
+    const metabolismNormalized = (1 - 0.3) / (2.2 - 0.3);
+    const trophicSpecies1 = 1 * 0.7 + (1 - harvestNormalized) * 0.3;
+    const trophicSpecies2 = 0 * 0.7 + (1 - harvestNormalized) * 0.3;
+    const defenseSpecies1 = (1 - 1) * 0.65 + metabolismNormalized * 0.35;
+    const defenseSpecies2 = (1 - 0) * 0.65 + metabolismNormalized * 0.35;
+
+    expect(analytics.strategy.activeSpecies).toBe(2);
+    expect(analytics.strategy.habitatPreference).toEqual({
+      mean: 1,
+      stdDev: 0,
+      min: 1,
+      max: 1,
+      weightedMean: 1
+    });
+
+    expect(analytics.strategy.trophicLevel.mean).toBeCloseTo((trophicSpecies1 + trophicSpecies2) / 2, 10);
+    expect(analytics.strategy.trophicLevel.stdDev).toBeCloseTo(Math.abs(trophicSpecies1 - trophicSpecies2) / 2, 10);
+    expect(analytics.strategy.trophicLevel.min).toBeCloseTo(Math.min(trophicSpecies1, trophicSpecies2), 10);
+    expect(analytics.strategy.trophicLevel.max).toBeCloseTo(Math.max(trophicSpecies1, trophicSpecies2), 10);
+    expect(analytics.strategy.trophicLevel.weightedMean).toBeCloseTo(
+      (trophicSpecies1 + trophicSpecies2 * 2) / 3,
+      10
+    );
+
+    expect(analytics.strategy.defenseLevel.mean).toBeCloseTo((defenseSpecies1 + defenseSpecies2) / 2, 10);
+    expect(analytics.strategy.defenseLevel.stdDev).toBeCloseTo(Math.abs(defenseSpecies1 - defenseSpecies2) / 2, 10);
+    expect(analytics.strategy.defenseLevel.min).toBeCloseTo(Math.min(defenseSpecies1, defenseSpecies2), 10);
+    expect(analytics.strategy.defenseLevel.max).toBeCloseTo(Math.max(defenseSpecies1, defenseSpecies2), 10);
+    expect(analytics.strategy.defenseLevel.weightedMean).toBeCloseTo(
+      (defenseSpecies1 + defenseSpecies2 * 2) / 3,
+      10
+    );
+  });
+
   it('reports per-cell locality dominance and richness metrics', () => {
     const sim = new LifeSimulation({
       seed: 34,

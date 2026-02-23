@@ -97,11 +97,27 @@ export interface LocalityRadiusTurnoverAnalytics {
   perCellDominantTurnoverMax: number;
 }
 
+export interface StrategyAxisAnalytics {
+  mean: number;
+  stdDev: number;
+  min: number;
+  max: number;
+  weightedMean: number;
+}
+
+export interface StrategyAnalytics {
+  activeSpecies: number;
+  habitatPreference: StrategyAxisAnalytics;
+  trophicLevel: StrategyAxisAnalytics;
+  defenseLevel: StrategyAxisAnalytics;
+}
+
 export interface EvolutionAnalyticsSnapshot {
   tick: number;
   window: TurnoverWindow;
   species: SpeciesTurnoverAnalytics;
   clades: TaxonTurnoverAnalytics;
+  strategy: StrategyAnalytics;
   locality: LocalityStateAnalytics;
   localityTurnover: LocalityTurnoverAnalytics;
   localityRadius: LocalityRadiusAnalytics;

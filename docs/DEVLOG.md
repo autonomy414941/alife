@@ -390,3 +390,30 @@ Observed:
 Thinking:
 - The ecology axis is now less one-sided than pure trophic pressure.
 - Next session should rebalance toward measurement by exporting strategy-axis observability (habitat/trophic/defense distributions) to validate whether this regime shift reflects stable coevolution or emergent lock-in.
+
+## 2026-02-23 (session 16)
+- Implemented direct strategy-axis observability in `src/simulation.ts` analytics output.
+- Extended `EvolutionAnalyticsSnapshot` in `src/types.ts` with a new `strategy` block:
+  - `activeSpecies`
+  - per-axis stats for habitat preference, trophic level, and defense level:
+    `mean`, `stdDev`, `min`, `max`, `weightedMean` (population-weighted).
+- Wired strategy metrics into CSV export in `src/export.ts` with stable column additions.
+- Updated CLI reporting in `src/index.ts`:
+  - single-run progress/final lines now include strategy mean and weighted mean.
+  - experiment mode now reports aggregate strategy means and weighted means.
+- Added deterministic tests:
+  - `test/simulation.test.ts`: exact strategy-axis analytics in a controlled two-species setup.
+  - `test/export.test.ts`: strategy CSV column/value alignment.
+- Verified with `npm test` (32 tests) and `npm run build`.
+- Ran seeded sweep (`runs=8`, `steps=120`, `window=30`, seeds `20260223..20260230`) to capture strategy telemetry.
+
+Observed:
+- Strategy metrics now appear directly in runtime analytics/export rather than being inferred from indirect population/patch signals.
+- Sweep result with current defaults:
+  - strategy mean: `h=1.02, t=0.59, d=0.27`
+  - strategy weighted mean: `h=1.01, t=0.61, d=0.25`
+- Weighted trophic mean above unweighted mean suggests higher-abundance species are currently somewhat more trophic than the species-average baseline.
+
+Thinking:
+- Coevolution claims are now measurable directly from exported time-series.
+- Next depth should return to simulation dynamics: add environment forcing (seasonality or disturbance) and test whether strategy distributions track forcing cycles versus collapsing to fixed points.

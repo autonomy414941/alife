@@ -87,11 +87,19 @@ describe('run export', () => {
     const row3 = lines[3].split(',');
     const tickIndex = METRICS_CSV_COLUMNS.indexOf('tick');
     const windowSizeIndex = METRICS_CSV_COLUMNS.indexOf('window_size');
+    const strategySpeciesIndex = METRICS_CSV_COLUMNS.indexOf('strategy_active_species');
+    const habitatMeanIndex = METRICS_CSV_COLUMNS.indexOf('strategy_habitat_preference_mean');
+    const trophicWeightedIndex = METRICS_CSV_COLUMNS.indexOf('strategy_trophic_level_weighted_mean');
+    const defenseStdIndex = METRICS_CSV_COLUMNS.indexOf('strategy_defense_level_stddev');
 
     expect(Number(row1[tickIndex])).toBe(1);
     expect(Number(row1[windowSizeIndex])).toBe(1);
+    expect(Number(row1[strategySpeciesIndex])).toBe(runData.analytics[0].strategy.activeSpecies);
+    expect(Number(row1[habitatMeanIndex])).toBeCloseTo(runData.analytics[0].strategy.habitatPreference.mean, 10);
     expect(Number(row3[tickIndex])).toBe(3);
     expect(Number(row3[windowSizeIndex])).toBe(2);
+    expect(Number(row3[trophicWeightedIndex])).toBeCloseTo(runData.analytics[2].strategy.trophicLevel.weightedMean, 10);
+    expect(Number(row3[defenseStdIndex])).toBeCloseTo(runData.analytics[2].strategy.defenseLevel.stdDev, 10);
   });
 
   it('rejects mismatched summary and analytics lengths', () => {
