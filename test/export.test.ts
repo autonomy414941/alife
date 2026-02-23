@@ -91,15 +91,26 @@ describe('run export', () => {
     const habitatMeanIndex = METRICS_CSV_COLUMNS.indexOf('strategy_habitat_preference_mean');
     const trophicWeightedIndex = METRICS_CSV_COLUMNS.indexOf('strategy_trophic_level_weighted_mean');
     const defenseStdIndex = METRICS_CSV_COLUMNS.indexOf('strategy_defense_level_stddev');
+    const forcingCycleIndex = METRICS_CSV_COLUMNS.indexOf('forcing_cycle_length');
+    const forcingPhaseIndex = METRICS_CSV_COLUMNS.indexOf('forcing_phase');
+    const forcingRegenIndex = METRICS_CSV_COLUMNS.indexOf('forcing_regen_multiplier');
+    const forcingContrastIndex = METRICS_CSV_COLUMNS.indexOf('forcing_fertility_contrast_multiplier');
 
     expect(Number(row1[tickIndex])).toBe(1);
     expect(Number(row1[windowSizeIndex])).toBe(1);
     expect(Number(row1[strategySpeciesIndex])).toBe(runData.analytics[0].strategy.activeSpecies);
     expect(Number(row1[habitatMeanIndex])).toBeCloseTo(runData.analytics[0].strategy.habitatPreference.mean, 10);
+    expect(Number(row1[forcingCycleIndex])).toBe(runData.analytics[0].forcing.cycleLength);
+    expect(Number(row1[forcingPhaseIndex])).toBeCloseTo(runData.analytics[0].forcing.phase, 10);
     expect(Number(row3[tickIndex])).toBe(3);
     expect(Number(row3[windowSizeIndex])).toBe(2);
     expect(Number(row3[trophicWeightedIndex])).toBeCloseTo(runData.analytics[2].strategy.trophicLevel.weightedMean, 10);
     expect(Number(row3[defenseStdIndex])).toBeCloseTo(runData.analytics[2].strategy.defenseLevel.stdDev, 10);
+    expect(Number(row3[forcingRegenIndex])).toBeCloseTo(runData.analytics[2].forcing.regenMultiplier, 10);
+    expect(Number(row3[forcingContrastIndex])).toBeCloseTo(
+      runData.analytics[2].forcing.fertilityContrastMultiplier,
+      10
+    );
   });
 
   it('rejects mismatched summary and analytics lengths', () => {

@@ -112,12 +112,21 @@ export interface StrategyAnalytics {
   defenseLevel: StrategyAxisAnalytics;
 }
 
+export interface ForcingAnalytics {
+  cycleLength: number;
+  phase: number;
+  wave: number;
+  regenMultiplier: number;
+  fertilityContrastMultiplier: number;
+}
+
 export interface EvolutionAnalyticsSnapshot {
   tick: number;
   window: TurnoverWindow;
   species: SpeciesTurnoverAnalytics;
   clades: TaxonTurnoverAnalytics;
   strategy: StrategyAnalytics;
+  forcing: ForcingAnalytics;
   locality: LocalityStateAnalytics;
   localityTurnover: LocalityTurnoverAnalytics;
   localityRadius: LocalityRadiusAnalytics;
@@ -150,6 +159,9 @@ export interface SimulationConfig {
   height: number;
   maxResource: number;
   resourceRegen: number;
+  seasonalCycleLength: number;
+  seasonalRegenAmplitude: number;
+  seasonalFertilityContrastAmplitude: number;
   biomeBands: number;
   biomeContrast: number;
   decompositionBase: number;

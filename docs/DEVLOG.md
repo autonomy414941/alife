@@ -417,3 +417,42 @@ Observed:
 Thinking:
 - Coevolution claims are now measurable directly from exported time-series.
 - Next depth should return to simulation dynamics: add environment forcing (seasonality or disturbance) and test whether strategy distributions track forcing cycles versus collapsing to fixed points.
+
+## 2026-02-23 (session 17)
+- Added ecological seasonality forcing to `src/simulation.ts`.
+- Extended `SimulationConfig` in `src/types.ts` with:
+  - `seasonalCycleLength`
+  - `seasonalRegenAmplitude`
+  - `seasonalFertilityContrastAmplitude`
+- Implemented two forcing channels:
+  - regeneration multiplier oscillation (`resourceRegen` scaled by seasonal wave)
+  - dynamic fertility-contrast scaling (`effectiveFertility = 1 + (base-1)*contrastMultiplier`)
+- Wired forcing observability into analytics with a new `forcing` block:
+  - `cycleLength`, `phase`, `wave`, `regenMultiplier`, `fertilityContrastMultiplier`
+- Extended per-tick CSV export in `src/export.ts` with forcing columns.
+- Extended CLI in `src/index.ts`:
+  - new flags `--season-cycle`, `--season-regen-amp`, `--season-contrast-amp`
+  - forcing signals printed in single-run and experiment reporting
+  - experiment mode now passes forcing config into each run.
+- Added deterministic tests:
+  - `test/simulation.test.ts`: seasonal regen waveform/resource accumulation + forcing phase checks
+  - `test/simulation.test.ts`: fertility-contrast expansion/collapse across a 4-tick cycle
+  - `test/export.test.ts`: forcing CSV column/value checks
+- Verified with `npm test` (34 tests) and `npm run build`.
+- Ran comparison sweeps and CSV analyses for baseline vs seasonal forcing.
+
+Observed:
+- Sweep (`runs=8`, `steps=120`, `window=30`, seeds `20260223..20260230`) under seasonal forcing (`cycle=60`, `regenAmp=0.45`, `contrastAmp=0.7`) shifted turnover regime:
+  - species net diversification mean: `+0.58 -> -0.07`
+  - species extinction rate mean: `1.25 -> 1.99`
+  - final active species mean: `194.25 -> 184.25`
+- In a 240-step single-seed CSV (`seed=20260223`), forcing increased strategy variability:
+  - weighted habitat mean std: `0.0106 -> 0.0179`
+  - weighted trophic mean std: `0.0650 -> 0.0740`
+- Forcing telemetry behaved as expected:
+  - regen multiplier ranged `0.55..1.45`
+  - fertility-contrast multiplier ranged `0.30..1.70`.
+
+Thinking:
+- Seasonality is now an explicit, measurable ecological driver that can be toggled and swept.
+- Next useful depth is punctuated disturbance (rare shocks) plus resilience diagnostics so we can separate periodic adaptation from collapse/recovery dynamics.

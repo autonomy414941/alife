@@ -499,6 +499,102 @@ describe('LifeSimulation', () => {
     expect(sim.getResource(minCell.x, minCell.y)).toBeCloseTo(minCell.fertility, 10);
   });
 
+  it('applies seasonal regeneration forcing and exposes forcing analytics', () => {
+    const sim = new LifeSimulation({
+      seed: 60,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 100,
+        resourceRegen: 1,
+        biomeBands: 1,
+        biomeContrast: 0,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        initialAgents: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        seasonalCycleLength: 4,
+        seasonalRegenAmplitude: 0.5,
+        seasonalFertilityContrastAmplitude: 0
+      }
+    });
+    sim.setResource(0, 0, 0);
+
+    const resources: number[] = [];
+    const regenMultipliers: number[] = [];
+    const phases: number[] = [];
+
+    for (let i = 0; i < 4; i += 1) {
+      sim.step();
+      resources.push(sim.getResource(0, 0));
+      const forcing = sim.analytics(1).forcing;
+      regenMultipliers.push(forcing.regenMultiplier);
+      phases.push(forcing.phase);
+    }
+
+    expect(resources[0]).toBeCloseTo(1, 10);
+    expect(resources[1]).toBeCloseTo(2.5, 10);
+    expect(resources[2]).toBeCloseTo(3.5, 10);
+    expect(resources[3]).toBeCloseTo(4, 10);
+    expect(regenMultipliers[0]).toBeCloseTo(1, 10);
+    expect(regenMultipliers[1]).toBeCloseTo(1.5, 10);
+    expect(regenMultipliers[2]).toBeCloseTo(1, 10);
+    expect(regenMultipliers[3]).toBeCloseTo(0.5, 10);
+    expect(phases[0]).toBeCloseTo(0, 10);
+    expect(phases[1]).toBeCloseTo(0.25, 10);
+    expect(phases[2]).toBeCloseTo(0.5, 10);
+    expect(phases[3]).toBeCloseTo(0.75, 10);
+  });
+
+  it('modulates fertility contrast across seasonal phases', () => {
+    const sim = new LifeSimulation({
+      seed: 61,
+      config: {
+        width: 6,
+        height: 6,
+        maxResource: 100,
+        resourceRegen: 1,
+        biomeBands: 3,
+        biomeContrast: 0.8,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        initialAgents: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        seasonalCycleLength: 4,
+        seasonalRegenAmplitude: 0,
+        seasonalFertilityContrastAmplitude: 1
+      }
+    });
+
+    const cellsByFertility = listCellsByFertility(sim, 6, 6);
+    const lowCell = cellsByFertility[0]!;
+    const highCell = cellsByFertility[cellsByFertility.length - 1]!;
+    expect(highCell.fertility).toBeGreaterThan(lowCell.fertility);
+
+    const spreads: number[] = [];
+    const contrastMultipliers: number[] = [];
+    for (let tick = 0; tick < 4; tick += 1) {
+      for (let y = 0; y < 6; y += 1) {
+        for (let x = 0; x < 6; x += 1) {
+          sim.setResource(x, y, 0);
+        }
+      }
+      sim.step();
+      spreads.push(sim.getResource(highCell.x, highCell.y) - sim.getResource(lowCell.x, lowCell.y));
+      contrastMultipliers.push(sim.analytics(1).forcing.fertilityContrastMultiplier);
+    }
+
+    expect(contrastMultipliers[0]).toBeCloseTo(1, 10);
+    expect(contrastMultipliers[1]).toBeCloseTo(2, 10);
+    expect(contrastMultipliers[2]).toBeCloseTo(1, 10);
+    expect(contrastMultipliers[3]).toBeCloseTo(0, 10);
+    expect(spreads[1]).toBeGreaterThan(spreads[0]);
+    expect(spreads[2]).toBeCloseTo(spreads[0], 10);
+    expect(spreads[3]).toBeCloseTo(0, 10);
+  });
+
   it('scales decomposition by local biome fertility', () => {
     const sim = new LifeSimulation({
       seed: 22,

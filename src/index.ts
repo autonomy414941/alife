@@ -17,6 +17,9 @@ interface CliOptions {
   window: number;
   experimentRuns: number;
   seedStep: number;
+  seasonalCycleLength: number;
+  seasonalRegenAmplitude: number;
+  seasonalFertilityContrastAmplitude: number;
   exportJson?: string;
   exportCsv?: string;
   exportExperimentJson?: string;
@@ -29,7 +32,10 @@ const DEFAULT_OPTIONS: CliOptions = {
   seed: 20260221,
   window: 25,
   experimentRuns: 1,
-  seedStep: 1
+  seedStep: 1,
+  seasonalCycleLength: 120,
+  seasonalRegenAmplitude: 0,
+  seasonalFertilityContrastAmplitude: 0
 };
 
 main();
@@ -63,7 +69,14 @@ function main(): void {
 }
 
 function runSingleMode(options: CliOptions): void {
-  const simulation = new LifeSimulation({ seed: options.seed });
+  const simulation = new LifeSimulation({
+    seed: options.seed,
+    config: {
+      seasonalCycleLength: options.seasonalCycleLength,
+      seasonalRegenAmplitude: options.seasonalRegenAmplitude,
+      seasonalFertilityContrastAmplitude: options.seasonalFertilityContrastAmplitude
+    }
+  });
   const runData = simulation.runWithAnalytics(options.steps, options.window, true);
 
   for (let i = 0; i < runData.summaries.length; i += 1) {
@@ -82,6 +95,7 @@ function runSingleMode(options: CliOptions): void {
           `t=${turnover.strategy.trophicLevel.mean.toFixed(2)},d=${turnover.strategy.defenseLevel.mean.toFixed(2)}),` +
           `weighted(h=${turnover.strategy.habitatPreference.weightedMean.toFixed(2)},` +
           `t=${turnover.strategy.trophicLevel.weightedMean.toFixed(2)},d=${turnover.strategy.defenseLevel.weightedMean.toFixed(2)})) ` +
+          `forcing(regen=${turnover.forcing.regenMultiplier.toFixed(2)},contrast=${turnover.forcing.fertilityContrastMultiplier.toFixed(2)},phase=${turnover.forcing.phase.toFixed(2)}) ` +
           `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},dom=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},chg=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)}) ` +
           `patch(r=${turnover.localityRadius.radius},dom=${turnover.localityRadius.meanDominantSpeciesShare.toFixed(2)},` +
           `align=${turnover.localityRadius.centerDominantAlignment.toFixed(2)},` +
@@ -109,6 +123,7 @@ function runSingleMode(options: CliOptions): void {
       `t=${turnover.strategy.trophicLevel.mean.toFixed(2)},d=${turnover.strategy.defenseLevel.mean.toFixed(2)}),` +
       `weighted(h=${turnover.strategy.habitatPreference.weightedMean.toFixed(2)},` +
       `t=${turnover.strategy.trophicLevel.weightedMean.toFixed(2)},d=${turnover.strategy.defenseLevel.weightedMean.toFixed(2)})) ` +
+      `forcing(regen=${turnover.forcing.regenMultiplier.toFixed(2)},contrast=${turnover.forcing.fertilityContrastMultiplier.toFixed(2)},phase=${turnover.forcing.phase.toFixed(2)}) ` +
       `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},domMean=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},` +
       `domStd=${turnover.locality.dominantSpeciesShareStdDev.toFixed(2)},turnMean=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)},` +
       `turnStd=${turnover.localityTurnover.changedDominantCellFractionStdDev.toFixed(2)}) ` +
@@ -143,7 +158,14 @@ function runExperimentMode(options: CliOptions): void {
     analyticsWindow: options.window,
     seed: options.seed,
     seedStep: options.seedStep,
-    stopWhenExtinct: true
+    stopWhenExtinct: true,
+    simulation: {
+      config: {
+        seasonalCycleLength: options.seasonalCycleLength,
+        seasonalRegenAmplitude: options.seasonalRegenAmplitude,
+        seasonalFertilityContrastAmplitude: options.seasonalFertilityContrastAmplitude
+      }
+    }
   });
   const aggregate = experimentData.aggregate;
   const lastSeed = options.seed + (experimentData.config.runs - 1) * options.seedStep;
@@ -183,6 +205,12 @@ function runExperimentMode(options: CliOptions): void {
   const strategyDefenseWeighted = summarizeNumbers(
     experimentData.runs.map((run) => run.finalAnalytics.strategy.defenseLevel.weightedMean)
   );
+  const forcingRegen = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.forcing.regenMultiplier)
+  );
+  const forcingContrast = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.forcing.fertilityContrastMultiplier)
+  );
 
   console.log(
     `experiment runs=${aggregate.runs} seeds=${options.seed}..${lastSeed} extinctionRate=${aggregate.extinctionRate.toFixed(2)} ` +
@@ -213,6 +241,9 @@ function runExperimentMode(options: CliOptions): void {
     `strategy mean(h=${strategyHabitat.mean.toFixed(2)},t=${strategyTrophic.mean.toFixed(2)},d=${strategyDefense.mean.toFixed(2)}) ` +
       `weighted(h=${strategyHabitatWeighted.mean.toFixed(2)},` +
       `t=${strategyTrophicWeighted.mean.toFixed(2)},d=${strategyDefenseWeighted.mean.toFixed(2)})`
+  );
+  console.log(
+    `forcing regen(mean=${forcingRegen.mean.toFixed(2)}) contrast(mean=${forcingContrast.mean.toFixed(2)})`
   );
 
   if (options.exportExperimentJson) {
@@ -247,6 +278,15 @@ function parseCli(args: string[]): CliOptions {
         break;
       case '--seed-step':
         options.seedStep = parsePositiveInt(flag, args[++i]);
+        break;
+      case '--season-cycle':
+        options.seasonalCycleLength = parsePositiveInt(flag, args[++i]);
+        break;
+      case '--season-regen-amp':
+        options.seasonalRegenAmplitude = parseUnitInterval(flag, args[++i]);
+        break;
+      case '--season-contrast-amp':
+        options.seasonalFertilityContrastAmplitude = parseUnitInterval(flag, args[++i]);
         break;
       case '--export-json':
         options.exportJson = parsePath(flag, args[++i]);
@@ -286,6 +326,25 @@ function parseInteger(flag: string, raw: string | undefined): number {
     throw new Error(`Invalid integer for ${flag}: ${raw}`);
   }
   return Number(raw);
+}
+
+function parseNumber(flag: string, raw: string | undefined): number {
+  if (raw === undefined) {
+    throw new Error(`Missing value for ${flag}`);
+  }
+  const value = Number(raw);
+  if (!Number.isFinite(value)) {
+    throw new Error(`Invalid number for ${flag}: ${raw}`);
+  }
+  return value;
+}
+
+function parseUnitInterval(flag: string, raw: string | undefined): number {
+  const value = parseNumber(flag, raw);
+  if (value < 0 || value > 1) {
+    throw new Error(`${flag} must be between 0 and 1`);
+  }
+  return value;
 }
 
 function parsePath(flag: string, raw: string | undefined): string {
@@ -330,6 +389,9 @@ function printHelp(): void {
       '  --seed <n>          RNG seed (default: 20260221)',
       '  --experiment-runs <n> Run a seeded sweep with n runs (default: 1)',
       '  --seed-step <n>     Seed increment between experiment runs (default: 1)',
+      '  --season-cycle <n>  Seasonal cycle length in ticks (default: 120)',
+      '  --season-regen-amp <n> Seasonal regeneration amplitude 0..1 (default: 0)',
+      '  --season-contrast-amp <n> Seasonal fertility-contrast amplitude 0..1 (default: 0)',
       '  --export-json <p>   Write full run export JSON',
       '  --export-csv <p>    Write per-tick metrics CSV',
       '  --export-experiment-json <p>  Write experiment sweep JSON',

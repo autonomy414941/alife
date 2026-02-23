@@ -4,6 +4,7 @@ import {
   AgentSeed,
   DurationStats,
   EvolutionAnalyticsSnapshot,
+  ForcingAnalytics,
   EvolutionHistorySnapshot,
   Genome,
   LocalityRadiusAnalytics,
@@ -28,6 +29,9 @@ const DEFAULT_CONFIG: SimulationConfig = {
   height: 20,
   maxResource: 8,
   resourceRegen: 0.6,
+  seasonalCycleLength: 120,
+  seasonalRegenAmplitude: 0,
+  seasonalFertilityContrastAmplitude: 0,
   biomeBands: 4,
   biomeContrast: 0.45,
   decompositionBase: 0.6,
@@ -288,6 +292,7 @@ export class LifeSimulation {
       species: this.buildSpeciesTurnover(window),
       clades: this.buildTaxonTurnover(this.cladeHistory, window),
       strategy: this.buildStrategyAnalytics(),
+      forcing: this.buildForcingAnalytics(),
       locality: this.buildLocalityState(),
       localityTurnover: this.buildLocalityTurnover(window),
       localityRadius: this.buildLocalityRadiusState(),
@@ -305,6 +310,16 @@ export class LifeSimulation {
 
   getBiomeFertility(x: number, y: number): number {
     return this.biomeFertility[this.wrapY(y)][this.wrapX(x)];
+  }
+
+  private buildForcingAnalytics(): ForcingAnalytics {
+    return {
+      cycleLength: this.normalizedSeasonalCycleLength(),
+      phase: this.seasonalPhaseForTick(this.tickCount),
+      wave: this.seasonalWaveForTick(this.tickCount),
+      regenMultiplier: this.seasonalRegenMultiplierForTick(this.tickCount),
+      fertilityContrastMultiplier: this.seasonalFertilityContrastMultiplierForTick(this.tickCount)
+    };
   }
 
   private latestLocalityFrame(): LocalityFrame {
@@ -724,7 +739,7 @@ export class LifeSimulation {
   private initializeSpeciesHabitatPreferences(): void {
     const sums = new Map<number, { total: number; count: number }>();
     for (const agent of this.agents) {
-      const fertility = this.biomeFertility[agent.y][agent.x];
+      const fertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, 0);
       const current = sums.get(agent.species) ?? { total: 0, count: 0 };
       current.total += fertility;
       current.count += 1;
@@ -1152,7 +1167,7 @@ export class LifeSimulation {
       return 1;
     }
     const preference = this.getSpeciesHabitatPreference(species);
-    const fertility = this.biomeFertility[y][x];
+    const fertility = this.effectiveBiomeFertilityAt(x, y, this.tickCount + 1);
     const mismatch = fertility - preference;
     return Math.max(0.05, Math.exp(-strength * mismatch * mismatch));
   }
@@ -1240,11 +1255,13 @@ export class LifeSimulation {
   }
 
   private regenerateResources(): void {
+    const stepTick = this.tickCount + 1;
+    const regenMultiplier = this.seasonalRegenMultiplierForTick(stepTick);
     for (let y = 0; y < this.config.height; y += 1) {
       for (let x = 0; x < this.config.width; x += 1) {
-        const fertility = this.biomeFertility[y][x];
+        const fertility = this.effectiveBiomeFertilityAt(x, y, stepTick);
         this.resources[y][x] = clamp(
-          this.resources[y][x] + this.config.resourceRegen * fertility,
+          this.resources[y][x] + this.config.resourceRegen * regenMultiplier * fertility,
           0,
           this.config.maxResource
         );
@@ -1253,8 +1270,9 @@ export class LifeSimulation {
   }
 
   private recycleDeadAgents(deadAgents: Agent[]): void {
+    const stepTick = this.tickCount + 1;
     for (const agent of deadAgents) {
-      const fertility = this.biomeFertility[agent.y][agent.x];
+      const fertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, stepTick);
       const recycled =
         (this.config.decompositionBase +
           Math.max(0, agent.energy) * this.config.decompositionEnergyFraction) *
@@ -1268,6 +1286,45 @@ export class LifeSimulation {
         this.config.maxResource
       );
     }
+  }
+
+  private effectiveBiomeFertilityAt(x: number, y: number, tick: number): number {
+    const base = this.biomeFertility[this.wrapY(y)][this.wrapX(x)];
+    const contrastMultiplier = this.seasonalFertilityContrastMultiplierForTick(tick);
+    return clamp(1 + (base - 1) * contrastMultiplier, 0.1, 2);
+  }
+
+  private seasonalRegenMultiplierForTick(tick: number): number {
+    const amplitude = clamp(this.config.seasonalRegenAmplitude, 0, 1);
+    if (amplitude === 0) {
+      return 1;
+    }
+    return Math.max(0, 1 + amplitude * this.seasonalWaveForTick(tick));
+  }
+
+  private seasonalFertilityContrastMultiplierForTick(tick: number): number {
+    const amplitude = clamp(this.config.seasonalFertilityContrastAmplitude, 0, 1);
+    if (amplitude === 0) {
+      return 1;
+    }
+    return Math.max(0, 1 + amplitude * this.seasonalWaveForTick(tick));
+  }
+
+  private seasonalWaveForTick(tick: number): number {
+    return Math.sin(this.seasonalPhaseForTick(tick) * Math.PI * 2);
+  }
+
+  private seasonalPhaseForTick(tick: number): number {
+    const cycle = this.normalizedSeasonalCycleLength();
+    if (cycle <= 1) {
+      return 0;
+    }
+    const normalizedTick = tick <= 0 ? 0 : tick - 1;
+    return (normalizedTick % cycle) / cycle;
+  }
+
+  private normalizedSeasonalCycleLength(): number {
+    return Math.max(0, Math.floor(this.config.seasonalCycleLength));
   }
 
   private countBy(agents: Agent[], selector: (agent: Agent) => number): Map<number, number> {
