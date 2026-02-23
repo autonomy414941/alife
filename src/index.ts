@@ -78,7 +78,10 @@ function runSingleMode(options: CliOptions): void {
           `selection(dm=${summary.selectionDifferential.metabolism.toFixed(2)},dh=${summary.selectionDifferential.harvest.toFixed(2)},da=${summary.selectionDifferential.aggression.toFixed(2)}) ` +
           `extinctions(step:s=${summary.speciesExtinctions},c=${summary.cladeExtinctions};total:s=${summary.cumulativeExtinctSpecies},c=${summary.cumulativeExtinctClades}) ` +
           `turnover(rate:spec=${turnover.species.speciationRate.toFixed(2)},ext=${turnover.species.extinctionRate.toFixed(2)},net=${turnover.species.netDiversificationRate.toFixed(2)}) ` +
-          `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},dom=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},chg=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)})`
+          `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},dom=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},chg=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)}) ` +
+          `patch(r=${turnover.localityRadius.radius},dom=${turnover.localityRadius.meanDominantSpeciesShare.toFixed(2)},` +
+          `align=${turnover.localityRadius.centerDominantAlignment.toFixed(2)},` +
+          `chg=${turnover.localityRadiusTurnover.changedDominantCellFractionMean.toFixed(2)})`
       );
     }
   }
@@ -100,7 +103,11 @@ function runSingleMode(options: CliOptions): void {
       `lifespan(extinctMean=${turnover.species.extinctLifespan.mean.toFixed(2)},extinctMax=${turnover.species.extinctLifespan.max.toFixed(2)},activeMean=${turnover.species.activeAge.mean.toFixed(2)}) ` +
       `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},domMean=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},` +
       `domStd=${turnover.locality.dominantSpeciesShareStdDev.toFixed(2)},turnMean=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)},` +
-      `turnStd=${turnover.localityTurnover.changedDominantCellFractionStdDev.toFixed(2)})`
+      `turnStd=${turnover.localityTurnover.changedDominantCellFractionStdDev.toFixed(2)}) ` +
+      `patch(r=${turnover.localityRadius.radius},domMean=${turnover.localityRadius.meanDominantSpeciesShare.toFixed(2)},` +
+      `richness=${turnover.localityRadius.meanSpeciesRichness.toFixed(2)},align=${turnover.localityRadius.centerDominantAlignment.toFixed(2)},` +
+      `turnMean=${turnover.localityRadiusTurnover.changedDominantCellFractionMean.toFixed(2)},` +
+      `turnStd=${turnover.localityRadiusTurnover.changedDominantCellFractionStdDev.toFixed(2)})`
   );
 
   if (options.exportJson || options.exportCsv) {
@@ -141,6 +148,15 @@ function runExperimentMode(options: CliOptions): void {
   const localityTurnover = summarizeNumbers(
     experimentData.runs.map((run) => run.finalAnalytics.localityTurnover.changedDominantCellFractionMean)
   );
+  const patchDominance = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.localityRadius.meanDominantSpeciesShare)
+  );
+  const patchAlignment = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.localityRadius.centerDominantAlignment)
+  );
+  const patchTurnover = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.localityRadiusTurnover.changedDominantCellFractionMean)
+  );
 
   console.log(
     `experiment runs=${aggregate.runs} seeds=${options.seed}..${lastSeed} extinctionRate=${aggregate.extinctionRate.toFixed(2)} ` +
@@ -158,8 +174,14 @@ function runExperimentMode(options: CliOptions): void {
   );
   console.log(
     `locality occupied(mean=${localityOccupied.mean.toFixed(2)}) ` +
-      `dominance(mean=${localityDominance.mean.toFixed(2)}) ` +
-      `turnover(mean=${localityTurnover.mean.toFixed(2)})`
+    `dominance(mean=${localityDominance.mean.toFixed(2)}) ` +
+    `turnover(mean=${localityTurnover.mean.toFixed(2)})`
+  );
+  console.log(
+    `patch radius=${experimentData.runs[0]?.finalAnalytics.localityRadius.radius ?? 0} ` +
+      `dominance(mean=${patchDominance.mean.toFixed(2)}) ` +
+      `alignment(mean=${patchAlignment.mean.toFixed(2)}) ` +
+      `turnover(mean=${patchTurnover.mean.toFixed(2)})`
   );
 
   if (options.exportExperimentJson) {

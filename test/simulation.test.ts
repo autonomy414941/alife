@@ -586,7 +586,21 @@ describe('LifeSimulation', () => {
     expect(analytics.locality.meanDominantSpeciesShare).toBeCloseTo(5 / 6, 10);
     expect(analytics.locality.dominantSpeciesShareStdDev).toBeCloseTo(1 / 6, 10);
     expect(analytics.locality.meanSpeciesRichness).toBeCloseTo(1.5, 10);
+    expect(analytics.localityRadius.radius).toBe(2);
+    expect(analytics.localityRadius.meanDominantSpeciesShare).toBeCloseTo(0.5, 10);
+    expect(analytics.localityRadius.dominantSpeciesShareStdDev).toBeCloseTo(0, 10);
+    expect(analytics.localityRadius.meanSpeciesRichness).toBeCloseTo(3, 10);
+    expect(analytics.localityRadius.centerDominantAlignment).toBeCloseTo(0.5, 10);
     expect(analytics.localityTurnover).toEqual({
+      transitions: 0,
+      changedDominantCellFractionMean: 0,
+      changedDominantCellFractionStdDev: 0,
+      perCellDominantTurnoverMean: 0,
+      perCellDominantTurnoverStdDev: 0,
+      perCellDominantTurnoverMax: 0
+    });
+    expect(analytics.localityRadiusTurnover).toEqual({
+      radius: 2,
       transitions: 0,
       changedDominantCellFractionMean: 0,
       changedDominantCellFractionStdDev: 0,
@@ -639,6 +653,56 @@ describe('LifeSimulation', () => {
     expect(analytics.localityTurnover.perCellDominantTurnoverMean).toBeCloseTo(0.5, 10);
     expect(analytics.localityTurnover.perCellDominantTurnoverStdDev).toBeCloseTo(0, 10);
     expect(analytics.localityTurnover.perCellDominantTurnoverMax).toBeCloseTo(0.5, 10);
+  });
+
+  it('tracks radius-k neighborhood dominant turnover over rolling windows', () => {
+    const sim = new LifeSimulation({
+      seed: 37,
+      config: {
+        width: 3,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 1,
+        moveCost: 0,
+        dispersalPressure: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        localityRadius: 1,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 3,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 2,
+          y: 0,
+          energy: 1,
+          species: 2,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    sim.run(3);
+    const analytics = sim.analytics(3);
+
+    expect(analytics.window).toEqual({ startTick: 1, endTick: 3, size: 3 });
+    expect(analytics.localityRadiusTurnover.radius).toBe(1);
+    expect(analytics.localityRadiusTurnover.transitions).toBe(3);
+    expect(analytics.localityRadiusTurnover.changedDominantCellFractionMean).toBeCloseTo(1 / 3, 10);
+    expect(analytics.localityRadiusTurnover.changedDominantCellFractionStdDev).toBeCloseTo(
+      Math.sqrt(2) / 3,
+      10
+    );
+    expect(analytics.localityRadiusTurnover.perCellDominantTurnoverMean).toBeCloseTo(1 / 3, 10);
+    expect(analytics.localityRadiusTurnover.perCellDominantTurnoverStdDev).toBeCloseTo(0, 10);
+    expect(analytics.localityRadiusTurnover.perCellDominantTurnoverMax).toBeCloseTo(1 / 3, 10);
   });
 
   it('returns per-tick analytics aligned with summaries and supports early stop', () => {

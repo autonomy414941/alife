@@ -70,7 +70,18 @@ export const METRICS_CSV_COLUMNS = [
   'locality_turnover_changed_cell_fraction_stddev',
   'locality_turnover_per_cell_mean',
   'locality_turnover_per_cell_stddev',
-  'locality_turnover_per_cell_max'
+  'locality_turnover_per_cell_max',
+  'locality_radius',
+  'locality_radius_mean_dominant_species_share',
+  'locality_radius_dominant_species_share_stddev',
+  'locality_radius_mean_species_richness',
+  'locality_radius_center_dominant_alignment',
+  'locality_radius_turnover_transitions',
+  'locality_radius_turnover_changed_cell_fraction_mean',
+  'locality_radius_turnover_changed_cell_fraction_stddev',
+  'locality_radius_turnover_per_cell_mean',
+  'locality_radius_turnover_per_cell_stddev',
+  'locality_radius_turnover_per_cell_max'
 ] as const;
 
 export const EXPERIMENT_AGGREGATE_CSV_COLUMNS = [
@@ -189,7 +200,18 @@ export function metricsToCsv(summaries: StepSummary[], analytics: EvolutionAnaly
         point.localityTurnover.changedDominantCellFractionStdDev,
         point.localityTurnover.perCellDominantTurnoverMean,
         point.localityTurnover.perCellDominantTurnoverStdDev,
-        point.localityTurnover.perCellDominantTurnoverMax
+        point.localityTurnover.perCellDominantTurnoverMax,
+        point.localityRadius.radius,
+        point.localityRadius.meanDominantSpeciesShare,
+        point.localityRadius.dominantSpeciesShareStdDev,
+        point.localityRadius.meanSpeciesRichness,
+        point.localityRadius.centerDominantAlignment,
+        point.localityRadiusTurnover.transitions,
+        point.localityRadiusTurnover.changedDominantCellFractionMean,
+        point.localityRadiusTurnover.changedDominantCellFractionStdDev,
+        point.localityRadiusTurnover.perCellDominantTurnoverMean,
+        point.localityRadiusTurnover.perCellDominantTurnoverStdDev,
+        point.localityRadiusTurnover.perCellDominantTurnoverMax
       ])
     );
   }

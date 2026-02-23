@@ -6,6 +6,8 @@ import {
   EvolutionAnalyticsSnapshot,
   EvolutionHistorySnapshot,
   Genome,
+  LocalityRadiusAnalytics,
+  LocalityRadiusTurnoverAnalytics,
   LocalityStateAnalytics,
   LocalityTurnoverAnalytics,
   SimulationConfig,
@@ -34,6 +36,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   moveCost: 0.15,
   dispersalPressure: 0.8,
   dispersalRadius: 1,
+  localityRadius: 2,
   harvestCap: 2.5,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
@@ -76,6 +79,10 @@ interface LocalityFrame {
   dominantSpeciesByCell: number[];
   dominanceSharesByOccupiedCell: number[];
   speciesRichnessByOccupiedCell: number[];
+  neighborhoodDominantSpeciesByCell: number[];
+  neighborhoodDominanceSharesByOccupiedCell: number[];
+  neighborhoodSpeciesRichnessByOccupiedCell: number[];
+  neighborhoodCenterDominantAlignmentByOccupiedCell: number[];
   occupiedCells: number;
 }
 
@@ -261,7 +268,9 @@ export class LifeSimulation {
       species: this.buildSpeciesTurnover(window),
       clades: this.buildTaxonTurnover(this.cladeHistory, window),
       locality: this.buildLocalityState(),
-      localityTurnover: this.buildLocalityTurnover(window)
+      localityTurnover: this.buildLocalityTurnover(window),
+      localityRadius: this.buildLocalityRadiusState(),
+      localityRadiusTurnover: this.buildLocalityRadiusTurnover(window)
     };
   }
 
@@ -343,6 +352,67 @@ export class LifeSimulation {
     };
   }
 
+  private buildLocalityRadiusState(): LocalityRadiusAnalytics {
+    const frame = this.latestLocalityFrame();
+    const radius = this.normalizedLocalityRadius();
+    return {
+      radius,
+      meanDominantSpeciesShare: this.mean(frame.neighborhoodDominanceSharesByOccupiedCell),
+      dominantSpeciesShareStdDev: this.standardDeviation(frame.neighborhoodDominanceSharesByOccupiedCell),
+      meanSpeciesRichness: this.mean(frame.neighborhoodSpeciesRichnessByOccupiedCell),
+      centerDominantAlignment: this.mean(frame.neighborhoodCenterDominantAlignmentByOccupiedCell)
+    };
+  }
+
+  private buildLocalityRadiusTurnover(window: TurnoverWindow): LocalityRadiusTurnoverAnalytics {
+    const radius = this.normalizedLocalityRadius();
+    const totalCells = this.config.width * this.config.height;
+    const startTick = Math.max(1, window.startTick);
+    const changedFractions: number[] = [];
+    const perCellChanges = Array.from({ length: totalCells }, () => 0);
+
+    let transitions = 0;
+    for (let tick = startTick; tick <= window.endTick; tick += 1) {
+      const previous = this.localityFrames[tick - 1];
+      const current = this.localityFrames[tick];
+      if (!previous || !current) {
+        continue;
+      }
+      transitions += 1;
+      let changedCells = 0;
+      for (let i = 0; i < totalCells; i += 1) {
+        if (previous.neighborhoodDominantSpeciesByCell[i] !== current.neighborhoodDominantSpeciesByCell[i]) {
+          changedCells += 1;
+          perCellChanges[i] += 1;
+        }
+      }
+      changedFractions.push(totalCells === 0 ? 0 : changedCells / totalCells);
+    }
+
+    if (transitions === 0) {
+      return {
+        radius,
+        transitions: 0,
+        changedDominantCellFractionMean: 0,
+        changedDominantCellFractionStdDev: 0,
+        perCellDominantTurnoverMean: 0,
+        perCellDominantTurnoverStdDev: 0,
+        perCellDominantTurnoverMax: 0
+      };
+    }
+
+    const perCellRates = perCellChanges.map((count) => count / transitions);
+    return {
+      radius,
+      transitions,
+      changedDominantCellFractionMean: this.mean(changedFractions),
+      changedDominantCellFractionStdDev: this.standardDeviation(changedFractions),
+      perCellDominantTurnoverMean: this.mean(perCellRates),
+      perCellDominantTurnoverStdDev: this.standardDeviation(perCellRates),
+      perCellDominantTurnoverMax: Math.max(...perCellRates)
+    };
+  }
+
   private recordLocalityFrame(tick: number): void {
     const width = this.config.width;
     const totalCells = width * this.config.height;
@@ -357,6 +427,10 @@ export class LifeSimulation {
     const dominantSpeciesByCell = Array.from({ length: totalCells }, () => 0);
     const dominanceSharesByOccupiedCell: number[] = [];
     const speciesRichnessByOccupiedCell: number[] = [];
+    const neighborhoodDominantSpeciesByCell = Array.from({ length: totalCells }, () => 0);
+    const neighborhoodDominanceSharesByOccupiedCell: number[] = [];
+    const neighborhoodSpeciesRichnessByOccupiedCell: number[] = [];
+    const neighborhoodCenterDominantAlignmentByOccupiedCell: number[] = [];
     let occupiedCells = 0;
 
     for (let i = 0; i < totalCells; i += 1) {
@@ -366,29 +440,103 @@ export class LifeSimulation {
       }
 
       occupiedCells += 1;
+      const cellStats = this.describeSpeciesCounts(counts);
+      const dominantSpecies = cellStats.dominantSpecies;
+      dominantSpeciesByCell[i] = dominantSpecies;
+      dominanceSharesByOccupiedCell.push(cellStats.totalPopulation === 0 ? 0 : cellStats.dominantCount / cellStats.totalPopulation);
+      speciesRichnessByOccupiedCell.push(counts.size);
+    }
 
-      let dominantSpecies = 0;
-      let dominantCount = 0;
-      let totalPopulation = 0;
-      for (const [species, count] of counts) {
-        totalPopulation += count;
-        if (count > dominantCount || (count === dominantCount && (dominantSpecies === 0 || species < dominantSpecies))) {
-          dominantSpecies = species;
-          dominantCount = count;
-        }
+    const radius = this.normalizedLocalityRadius();
+    for (let i = 0; i < totalCells; i += 1) {
+      const centerX = i % width;
+      const centerY = Math.floor(i / width);
+      const neighborhoodCounts = this.collectNeighborhoodSpeciesCounts(
+        centerX,
+        centerY,
+        radius,
+        speciesCountsByCell
+      );
+      const neighborhoodStats = this.describeSpeciesCounts(neighborhoodCounts);
+      neighborhoodDominantSpeciesByCell[i] = neighborhoodStats.dominantSpecies;
+
+      if (speciesCountsByCell[i].size === 0) {
+        continue;
       }
 
-      dominantSpeciesByCell[i] = dominantSpecies;
-      dominanceSharesByOccupiedCell.push(totalPopulation === 0 ? 0 : dominantCount / totalPopulation);
-      speciesRichnessByOccupiedCell.push(counts.size);
+      neighborhoodDominanceSharesByOccupiedCell.push(
+        neighborhoodStats.totalPopulation === 0 ? 0 : neighborhoodStats.dominantCount / neighborhoodStats.totalPopulation
+      );
+      neighborhoodSpeciesRichnessByOccupiedCell.push(neighborhoodCounts.size);
+      const centerDominant = dominantSpeciesByCell[i];
+      neighborhoodCenterDominantAlignmentByOccupiedCell.push(
+        centerDominant !== 0 && centerDominant === neighborhoodStats.dominantSpecies ? 1 : 0
+      );
     }
 
     this.localityFrames[tick] = {
       dominantSpeciesByCell,
       dominanceSharesByOccupiedCell,
       speciesRichnessByOccupiedCell,
+      neighborhoodDominantSpeciesByCell,
+      neighborhoodDominanceSharesByOccupiedCell,
+      neighborhoodSpeciesRichnessByOccupiedCell,
+      neighborhoodCenterDominantAlignmentByOccupiedCell,
       occupiedCells
     };
+  }
+
+  private normalizedLocalityRadius(): number {
+    return Math.max(0, Math.floor(this.config.localityRadius));
+  }
+
+  private describeSpeciesCounts(counts: Map<number, number>): {
+    dominantSpecies: number;
+    dominantCount: number;
+    totalPopulation: number;
+  } {
+    let dominantSpecies = 0;
+    let dominantCount = 0;
+    let totalPopulation = 0;
+    for (const [species, count] of counts) {
+      totalPopulation += count;
+      if (count > dominantCount || (count === dominantCount && (dominantSpecies === 0 || species < dominantSpecies))) {
+        dominantSpecies = species;
+        dominantCount = count;
+      }
+    }
+    return { dominantSpecies, dominantCount, totalPopulation };
+  }
+
+  private collectNeighborhoodSpeciesCounts(
+    centerX: number,
+    centerY: number,
+    radius: number,
+    speciesCountsByCell: Map<number, number>[]
+  ): Map<number, number> {
+    const width = this.config.width;
+    const counts = new Map<number, number>();
+    const visited = new Set<number>();
+
+    for (let dy = -radius; dy <= radius; dy += 1) {
+      for (let dx = -radius; dx <= radius; dx += 1) {
+        if (Math.abs(dx) + Math.abs(dy) > radius) {
+          continue;
+        }
+        const x = this.wrapX(centerX + dx);
+        const y = this.wrapY(centerY + dy);
+        const index = y * width + x;
+        if (visited.has(index)) {
+          continue;
+        }
+        visited.add(index);
+        for (const [species, count] of speciesCountsByCell[index]) {
+          counts.set(species, (counts.get(species) ?? 0) + count);
+        }
+      }
+    }
+
+    return counts;
   }
 
   private buildSpeciesTurnover(window: TurnoverWindow): SpeciesTurnoverAnalytics {

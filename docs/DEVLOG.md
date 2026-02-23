@@ -239,3 +239,31 @@ Observed:
 Thinking:
 - The new mechanic now gives neighborhood density a direct causal role in movement, not just a measured consequence.
 - Next step should be radius-k locality analytics so we can tell whether the lower turnover reflects smoother patch boundaries or larger coherent territories.
+
+## 2026-02-23 (session 11)
+- Implemented radius-k locality analytics focused on meso-scale patch structure.
+- Extended simulation config with `localityRadius` (default `2`) and added new analytics fields:
+  - `localityRadius` (state): neighborhood dominant-share mean/std, neighborhood richness,
+    center-dominant alignment.
+  - `localityRadiusTurnover` (rolling): changed neighborhood-dominant fraction and per-cell
+    neighborhood turnover dispersion.
+- Updated locality frame generation to compute neighborhood dominant species maps from
+  de-duplicated toroidal neighborhoods, keeping behavior deterministic on small wrapped grids.
+- Extended CSV export (`src/export.ts`) with new locality-radius columns.
+- Updated CLI output (`src/index.ts`) to report patch metrics in single-run and experiment mode.
+- Added deterministic tests:
+  - neighborhood-scale locality state metrics
+  - rolling neighborhood-dominant turnover metrics.
+- Ran verification: `npm test`, `npm run build`, single-run CLI smoke, and experiment CLI smoke.
+
+Observed:
+- New patch metrics surface different structure than cell-level locality in the same runs
+  (example: high cell-level dominance can coexist with lower neighborhood dominance +
+  moderate center-alignment), which is the intended meso-scale signal.
+- CLI experiment summaries now show directly comparable `locality` vs `patch` aggregates,
+  making dispersal/biome effects easier to interpret without external post-processing.
+
+Thinking:
+- This session was observability-heavy by design and now gives a clear meso-scale readout.
+- Next session should prioritize a behavior/ecology addition that can be evaluated with these
+  new patch metrics (e.g., trait-mediated habitat preference or resource specialization).

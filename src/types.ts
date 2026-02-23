@@ -79,6 +79,24 @@ export interface LocalityTurnoverAnalytics {
   perCellDominantTurnoverMax: number;
 }
 
+export interface LocalityRadiusAnalytics {
+  radius: number;
+  meanDominantSpeciesShare: number;
+  dominantSpeciesShareStdDev: number;
+  meanSpeciesRichness: number;
+  centerDominantAlignment: number;
+}
+
+export interface LocalityRadiusTurnoverAnalytics {
+  radius: number;
+  transitions: number;
+  changedDominantCellFractionMean: number;
+  changedDominantCellFractionStdDev: number;
+  perCellDominantTurnoverMean: number;
+  perCellDominantTurnoverStdDev: number;
+  perCellDominantTurnoverMax: number;
+}
+
 export interface EvolutionAnalyticsSnapshot {
   tick: number;
   window: TurnoverWindow;
@@ -86,6 +104,8 @@ export interface EvolutionAnalyticsSnapshot {
   clades: TaxonTurnoverAnalytics;
   locality: LocalityStateAnalytics;
   localityTurnover: LocalityTurnoverAnalytics;
+  localityRadius: LocalityRadiusAnalytics;
+  localityRadiusTurnover: LocalityRadiusTurnoverAnalytics;
 }
 
 export interface Agent {
@@ -124,6 +144,7 @@ export interface SimulationConfig {
   moveCost: number;
   dispersalPressure: number;
   dispersalRadius: number;
+  localityRadius: number;
   harvestCap: number;
   reproduceThreshold: number;
   reproduceProbability: number;
