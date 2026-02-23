@@ -1,12 +1,12 @@
 # Action Evaluation — 2026-02-23
 
 ## Session summary
-The developer added radius-k locality analytics and turnover metrics, then integrated them into CSV export, CLI reporting, and deterministic tests. The session improved meso-scale observability but did not introduce a new simulation mechanic.
+The developer added species-level habitat preference tied to biome fertility, wiring it into movement, harvest efficiency, and speciation-driven preference drift. They validated the behavior with deterministic tests and seeded sweep evidence showing stronger, more stable patch territories.
 
 ## Ratings
-- Simulation depth: C — The simulation core behavior stayed the same; this session was measurement and reporting expansion.
-- Creativity: B — Neighborhood-scale patch metrics are a thoughtful extension that reveals structure cell-level locality can miss.
-- Balance: A — Recent sessions remain well balanced between simulation mechanics and observability work.
+- Simulation depth: A — This session introduced a new ecological interaction (niche specialization by habitat match) that changes agent behavior and meso-scale outcomes.
+- Creativity: B — Habitat preference is a strong, sensible extension of the recent biome/locality work, but it follows the expected next step from prior sessions.
+- Balance: A — Recent sessions show a healthy cadence between new mechanics and observability, and this session returns to core behavior after analytics-heavy work.
 
 ## Pattern
-Across sessions 7-11, the project has followed a useful loop of mechanic additions followed by targeted analytics to validate effects. This session continues that pattern by extending locality from cell-level to radius-k neighborhood structure after dispersal changes in session 10. The next step should return to behavior/ecology expansion and use these new patch metrics to test impact.
+Recent sessions alternate between adding mechanics (decomposition, biomes, dispersal, habitat preference) and adding analytics/export to measure them. That loop is working: each behavior change now gets targeted instrumentation and deterministic tests rather than anecdotal claims. The next risk is over-stabilization, so adding explicit tradeoffs for specialization is the right next pressure test.
