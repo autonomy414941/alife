@@ -329,3 +329,34 @@ Thinking:
 - Habitat specialization now has explicit upside and downside, which makes niche outcomes less one-directional.
 - Next improvement should add another ecological dimension (trophic or disturbance dynamics)
   so diversity is supported by interacting pressures rather than one tradeoff axis.
+
+## 2026-02-23 (session 14)
+- Added a second ecology axis in `src/simulation.ts`: species-level trophic strategy.
+- Extended `SimulationConfig` in `src/types.ts` with:
+  - `predationPressure`
+  - `trophicForagingPenalty`
+  - `trophicMutation`
+- Implemented trophic mechanics:
+  - species trophic level is initialized from genome signal (high aggression + low harvest bias).
+  - per-turn abiotic harvest is scaled by trophic foraging efficiency (`1 - penalty * trophicLevel`).
+  - encounter stealing now includes a trophic-gap multiplier to represent predation pressure.
+  - speciation now propagates trophic tendency using mutation-derived drift.
+- Added deterministic tests in `test/simulation.test.ts`:
+  - high-trophic species harvest less under equal abiotic resources.
+  - predation pressure amplifies predator energy gain in shared-cell encounters.
+- Stabilized an existing mechanism test by disabling trophic knobs inside
+  `uses specialization upkeep to counter habitat-lock patch dominance`, keeping that test focused.
+- Verified with `npm test` (29 tests) and `npm run build`.
+- Ran seeded sweep (`runs=8`, `steps=120`, `window=30`, seeds `20260223..20260230`) comparing trophic off vs defaults.
+
+Observed:
+- Trophic defaults (`predationPressure=0.35`, `trophicForagingPenalty=0.35`) changed regime metrics versus neutral (`0/0`):
+  - active species mean: `193.38 -> 180.88`
+  - patch dominant-share mean: `0.1999 -> 0.2129`
+  - patch turnover mean: `0.3164 -> 0.2618`
+  - mean aggression: `0.8475 -> 0.8550`
+- Interpretation: top-down pressure is now materially present; it increases persistence of stronger local dominants and slightly raises aggressive trait prevalence.
+
+Thinking:
+- The trophic axis is now real and measurable, but currently asymmetric: pressure increases faster than prey-side counterplay.
+- Next session should add prey defense/escape or encounter-risk mitigation tied to heritable traits to create balanced coevolution rather than one-sided dominance.

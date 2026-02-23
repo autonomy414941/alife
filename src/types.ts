@@ -148,6 +148,9 @@ export interface SimulationConfig {
   habitatPreferenceStrength: number;
   habitatPreferenceMutation: number;
   specializationMetabolicCost: number;
+  predationPressure: number;
+  trophicForagingPenalty: number;
+  trophicMutation: number;
   harvestCap: number;
   reproduceThreshold: number;
   reproduceProbability: number;

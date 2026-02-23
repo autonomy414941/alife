@@ -40,6 +40,9 @@ const DEFAULT_CONFIG: SimulationConfig = {
   habitatPreferenceStrength: 1.4,
   habitatPreferenceMutation: 0.2,
   specializationMetabolicCost: 0.08,
+  predationPressure: 0.35,
+  trophicForagingPenalty: 0.35,
+  trophicMutation: 0.18,
   harvestCap: 2.5,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
@@ -112,6 +115,8 @@ export class LifeSimulation {
 
   private readonly speciesHabitatPreference = new Map<number, number>();
 
+  private readonly speciesTrophicLevel = new Map<number, number>();
+
   private readonly localityFrames: LocalityFrame[] = [];
 
   private extinctClades = 0;
@@ -131,6 +136,7 @@ export class LifeSimulation {
       this.nextSpeciesId = Math.max(...this.agents.map((agent) => agent.species)) + 1;
     }
     this.initializeSpeciesHabitatPreferences();
+    this.initializeSpeciesTrophicLevels();
     this.initializeEvolutionHistory();
     this.recordLocalityFrame(0);
   }
@@ -666,6 +672,26 @@ export class LifeSimulation {
     }
   }
 
+  private initializeSpeciesTrophicLevels(): void {
+    const sums = new Map<number, { total: number; count: number }>();
+    for (const agent of this.agents) {
+      const signal = this.genomeTrophicSignal(agent.genome);
+      const current = sums.get(agent.species) ?? { total: 0, count: 0 };
+      current.total += signal;
+      current.count += 1;
+      sums.set(agent.species, current);
+    }
+    for (const [species, { total, count }] of sums) {
+      const level = count === 0 ? 0 : total / count;
+      this.speciesTrophicLevel.set(species, clamp(level, 0, 1));
+    }
+  }
+
+  private genomeTrophicSignal(genome: Genome): number {
+    const harvestNormalized = normalizeTrait(genome.harvest, MIN_GENOME.harvest, MAX_GENOME.harvest);
+    return clamp(genome.aggression * 0.7 + (1 - harvestNormalized) * 0.3, 0, 1);
+  }
+
   private seedTaxonHistory(
     history: Map<number, TaxonHistoryState>,
     counts: Map<number, number>
@@ -877,9 +903,10 @@ export class LifeSimulation {
 
     const available = this.resources[agent.y][agent.x];
     const habitatEfficiency = this.habitatMatchEfficiency(agent.species, agent.x, agent.y);
+    const trophicEfficiency = this.trophicForagingEfficiency(agent.species);
     const harvestAmount = Math.min(
       available,
-      this.config.harvestCap * agent.genome.harvest * habitatEfficiency
+      this.config.harvestCap * agent.genome.harvest * habitatEfficiency * trophicEfficiency
     );
     this.resources[agent.y][agent.x] -= harvestAmount;
     agent.energy += harvestAmount;
@@ -962,7 +989,10 @@ export class LifeSimulation {
 
       for (const target of agentsInCell.slice(1)) {
         const pressure = Math.max(0, dominant.genome.aggression - target.genome.aggression + 0.1);
-        const stolen = Math.min(target.energy, target.energy * pressure * 0.25);
+        const trophicGap =
+          this.getSpeciesTrophicLevel(dominant.species) - this.getSpeciesTrophicLevel(target.species);
+        const predationMultiplier = 1 + Math.max(0, this.config.predationPressure) * Math.max(0, trophicGap);
+        const stolen = Math.min(target.energy, target.energy * pressure * 0.25 * predationMultiplier);
         if (stolen <= 0) {
           continue;
         }
@@ -983,6 +1013,9 @@ export class LifeSimulation {
       const parentPreference = this.getSpeciesHabitatPreference(parent.species);
       const delta = this.habitatPreferenceDeltaFromMutation(parent.genome, childGenome);
       this.speciesHabitatPreference.set(childSpecies, clamp(parentPreference + delta, 0.1, 2));
+      const parentTrophic = this.getSpeciesTrophicLevel(parent.species);
+      const trophicDelta = this.trophicDeltaFromMutation(parent.genome, childGenome);
+      this.speciesTrophicLevel.set(childSpecies, clamp(parentTrophic + trophicDelta, 0, 1));
     }
 
     const neighbors = [
@@ -1043,6 +1076,20 @@ export class LifeSimulation {
     return 1;
   }
 
+  private trophicForagingEfficiency(species: number): number {
+    const penalty = clamp(this.config.trophicForagingPenalty, 0, 0.95);
+    return Math.max(0.05, 1 - penalty * this.getSpeciesTrophicLevel(species));
+  }
+
+  private getSpeciesTrophicLevel(species: number): number {
+    const existing = this.speciesTrophicLevel.get(species);
+    if (existing !== undefined) {
+      return existing;
+    }
+    this.speciesTrophicLevel.set(species, 0);
+    return 0;
+  }
+
   private habitatPreferenceDeltaFromMutation(parent: Genome, child: Genome): number {
     const mutationScale = Math.max(0, this.config.habitatPreferenceMutation);
     if (mutationScale === 0) {
@@ -1051,6 +1098,17 @@ export class LifeSimulation {
     const harvestShift = child.harvest - parent.harvest;
     const metabolismShift = parent.metabolism - child.metabolism;
     const signal = harvestShift * 0.65 + metabolismShift * 0.35;
+    return clamp(signal, -1, 1) * mutationScale;
+  }
+
+  private trophicDeltaFromMutation(parent: Genome, child: Genome): number {
+    const mutationScale = Math.max(0, this.config.trophicMutation);
+    if (mutationScale === 0) {
+      return 0;
+    }
+    const aggressionShift = child.aggression - parent.aggression;
+    const harvestShift = parent.harvest - child.harvest;
+    const signal = aggressionShift * 0.7 + harvestShift * 0.3;
     return clamp(signal, -1, 1) * mutationScale;
   }
 
@@ -1217,6 +1275,13 @@ export class LifeSimulation {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function normalizeTrait(value: number, min: number, max: number): number {
+  if (max <= min) {
+    return 0;
+  }
+  return clamp((value - min) / (max - min), 0, 1);
 }
 
 function genomeDistance(a: Genome, b: Genome): number {

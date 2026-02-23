@@ -106,6 +106,126 @@ describe('LifeSimulation', () => {
     expect(passive.energy).toBeLessThan(10);
   });
 
+  it('reduces abiotic harvest for high-trophic species', () => {
+    const sim = new LifeSimulation({
+      seed: 14,
+      config: {
+        width: 4,
+        height: 1,
+        maxResource: 10,
+        resourceRegen: 0,
+        biomeBands: 1,
+        biomeContrast: 0,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        dispersalPressure: 0,
+        harvestCap: 2,
+        reproduceProbability: 0,
+        maxAge: 100,
+        habitatPreferenceStrength: 0,
+        trophicForagingPenalty: 0.8
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 2,
+          y: 0,
+          energy: 10,
+          lineage: 2,
+          species: 2,
+          genome: { metabolism: 1, harvest: 1, aggression: 1 }
+        }
+      ]
+    });
+
+    for (let x = 0; x < 4; x += 1) {
+      sim.setResource(x, 0, 0);
+    }
+    sim.setResource(0, 0, 2);
+    sim.setResource(2, 0, 2);
+
+    sim.step();
+    const agents = sim.snapshot().agents;
+    const lowTrophic = agents.find((agent) => agent.species === 1);
+    const highTrophic = agents.find((agent) => agent.species === 2);
+
+    expect(lowTrophic).toBeDefined();
+    expect(highTrophic).toBeDefined();
+    expect(lowTrophic!.energy).toBeCloseTo(11.64, 10);
+    expect(highTrophic!.energy).toBeCloseTo(10.52, 10);
+    expect(lowTrophic!.energy).toBeGreaterThan(highTrophic!.energy);
+  });
+
+  it('amplifies encounter transfer when predation pressure is enabled', () => {
+    const baseConfig = {
+      width: 1,
+      height: 1,
+      maxResource: 0,
+      resourceRegen: 0,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      harvestCap: 0,
+      reproduceProbability: 0,
+      maxAge: 100,
+      trophicForagingPenalty: 0
+    };
+    const initialAgents = [
+      {
+        x: 0,
+        y: 0,
+        energy: 10,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism: 1, harvest: 1, aggression: 1 }
+      },
+      {
+        x: 0,
+        y: 0,
+        energy: 10,
+        lineage: 2,
+        species: 2,
+        genome: { metabolism: 1, harvest: 1, aggression: 0 }
+      }
+    ];
+
+    const noPressure = new LifeSimulation({
+      seed: 15,
+      config: {
+        ...baseConfig,
+        predationPressure: 0
+      },
+      initialAgents
+    });
+    const withPressure = new LifeSimulation({
+      seed: 15,
+      config: {
+        ...baseConfig,
+        predationPressure: 1.2
+      },
+      initialAgents
+    });
+
+    noPressure.step();
+    withPressure.step();
+
+    const noPressurePredator = noPressure.snapshot().agents.find((agent) => agent.species === 1)!;
+    const noPressurePrey = noPressure.snapshot().agents.find((agent) => agent.species === 2)!;
+    const withPressurePredator = withPressure.snapshot().agents.find((agent) => agent.species === 1)!;
+    const withPressurePrey = withPressure.snapshot().agents.find((agent) => agent.species === 2)!;
+
+    expect(withPressurePredator.energy).toBeGreaterThan(noPressurePredator.energy);
+    expect(withPressurePrey.energy).toBeLessThan(noPressurePrey.energy);
+  });
+
   it('applies dispersal pressure to spread agents out of crowded neighborhoods', () => {
     const initialAgents = Array.from({ length: 5 }, (_, index) => ({
       x: 2,
@@ -542,7 +662,9 @@ describe('LifeSimulation', () => {
           seed,
           config: {
             habitatPreferenceStrength: 4,
-            specializationMetabolicCost
+            specializationMetabolicCost,
+            predationPressure: 0,
+            trophicForagingPenalty: 0
           }
         });
         sim.run(steps);
