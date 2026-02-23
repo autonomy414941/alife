@@ -302,3 +302,30 @@ Thinking:
 - This is the first explicit niche-specialization mechanic; it is simple and already measurable.
 - Next behavior step should add a cost side (demography or survival tradeoff) so specialization
   does not trivially ratchet toward locked-in dominance in long runs.
+
+## 2026-02-23 (session 13)
+- Added a specialization tradeoff mechanic in `src/simulation.ts`.
+- Extended `SimulationConfig` in `src/types.ts` with `specializationMetabolicCost`.
+- Implemented per-turn metabolic upkeep penalty proportional to species specialization load:
+  `specializationLoad = abs(habitatPreference - 1)` and
+  `penalty = specializationMetabolicCost * specializationLoad * metabolism`.
+- Set default `specializationMetabolicCost` to `0.08` to keep the effect present but moderate.
+- Added deterministic tests in `test/simulation.test.ts`:
+  - direct penalty math check for an extreme-preference species
+  - multi-seed patch-metric comparison (`seeds 20260223..20260226`) confirming the tradeoff reduces patch dominance and raises patch turnover under strong habitat preference.
+- Verified with `npm test` (27 tests) and `npm run build`.
+- Ran seeded sweep (`runs=8`, `steps=120`, `window=30`) comparing no-tradeoff vs tradeoff.
+
+Observed:
+- With `habitatPreferenceStrength=4`, adding `specializationMetabolicCost=0.08` shifted
+  meso-scale structure away from lock-in while preserving species richness:
+  - active species mean: `190.50 -> 190.63`
+  - patch dominant-share mean: `0.2408 -> 0.2340`
+  - patch turnover mean: `0.2376 -> 0.2502`
+  - patch center-alignment mean: `0.3721 -> 0.3322`
+- Population mean dropped moderately (`979.63 -> 955.63`), indicating a real demographic cost.
+
+Thinking:
+- Habitat specialization now has explicit upside and downside, which makes niche outcomes less one-directional.
+- Next improvement should add another ecological dimension (trophic or disturbance dynamics)
+  so diversity is supported by interacting pressures rather than one tradeoff axis.

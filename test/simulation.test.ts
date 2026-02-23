@@ -462,6 +462,108 @@ describe('LifeSimulation', () => {
     );
   });
 
+  it('charges additional metabolic upkeep to species with extreme habitat preference', () => {
+    const baseConfig = {
+      width: 6,
+      height: 6,
+      maxResource: 0,
+      resourceRegen: 0,
+      biomeBands: 3,
+      biomeContrast: 0.8,
+      decompositionBase: 0,
+      decompositionEnergyFraction: 0,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      dispersalPressure: 0,
+      harvestCap: 0,
+      reproduceProbability: 0,
+      maxAge: 100
+    };
+    const probe = new LifeSimulation({
+      seed: 54,
+      config: {
+        ...baseConfig,
+        initialAgents: 0
+      }
+    });
+    const cellsByFertility = listCellsByFertility(probe, baseConfig.width, baseConfig.height);
+    const highCell = cellsByFertility[cellsByFertility.length - 1]!;
+    const metabolism = 2;
+    const initialAgents = [
+      {
+        x: highCell.x,
+        y: highCell.y,
+        energy: 10,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism, harvest: 1, aggression: 0 }
+      }
+    ];
+
+    const noCost = new LifeSimulation({
+      seed: 54,
+      config: {
+        ...baseConfig,
+        specializationMetabolicCost: 0
+      },
+      initialAgents
+    });
+    const withCost = new LifeSimulation({
+      seed: 54,
+      config: {
+        ...baseConfig,
+        specializationMetabolicCost: 0.8
+      },
+      initialAgents
+    });
+
+    noCost.step();
+    withCost.step();
+
+    const noCostEnergy = noCost.snapshot().agents[0]!.energy;
+    const withCostEnergy = withCost.snapshot().agents[0]!.energy;
+    const expectedPenalty = 0.8 * Math.abs(highCell.fertility - 1) * metabolism;
+
+    expect(noCostEnergy).toBeCloseTo(10, 10);
+    expect(withCostEnergy).toBeCloseTo(10 - expectedPenalty, 10);
+    expect(withCostEnergy).toBeLessThan(noCostEnergy);
+  });
+
+  it('uses specialization upkeep to counter habitat-lock patch dominance', () => {
+    const seeds = [20260223, 20260224, 20260225, 20260226];
+    const steps = 90;
+    const window = 30;
+    const summarize = (specializationMetabolicCost: number): { patchDominance: number; patchTurnover: number } => {
+      const patchDominance: number[] = [];
+      const patchTurnover: number[] = [];
+
+      for (const seed of seeds) {
+        const sim = new LifeSimulation({
+          seed,
+          config: {
+            habitatPreferenceStrength: 4,
+            specializationMetabolicCost
+          }
+        });
+        sim.run(steps);
+        const analytics = sim.analytics(window);
+        patchDominance.push(analytics.localityRadius.meanDominantSpeciesShare);
+        patchTurnover.push(analytics.localityRadiusTurnover.changedDominantCellFractionMean);
+      }
+
+      return {
+        patchDominance: patchDominance.reduce((sum, value) => sum + value, 0) / patchDominance.length,
+        patchTurnover: patchTurnover.reduce((sum, value) => sum + value, 0) / patchTurnover.length
+      };
+    };
+
+    const noCost = summarize(0);
+    const withCost = summarize(0.08);
+
+    expect(withCost.patchDominance).toBeLessThan(noCost.patchDominance);
+    expect(withCost.patchTurnover).toBeGreaterThan(noCost.patchTurnover);
+  });
+
   it('removes agents that run out of energy', () => {
     const sim = new LifeSimulation({
       seed: 3,

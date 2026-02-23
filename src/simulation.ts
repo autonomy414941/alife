@@ -39,6 +39,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   localityRadius: 2,
   habitatPreferenceStrength: 1.4,
   habitatPreferenceMutation: 0.2,
+  specializationMetabolicCost: 0.08,
   harvestCap: 2.5,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
@@ -851,6 +852,7 @@ export class LifeSimulation {
   private processAgentTurn(agent: Agent, occupancy: number[][]): void {
     agent.age += 1;
     agent.energy -= this.config.metabolismCostBase * agent.genome.metabolism;
+    agent.energy -= this.specializationMetabolicPenalty(agent);
     if (agent.energy <= 0 || agent.age > this.config.maxAge) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
       return;
@@ -1050,6 +1052,18 @@ export class LifeSimulation {
     const metabolismShift = parent.metabolism - child.metabolism;
     const signal = harvestShift * 0.65 + metabolismShift * 0.35;
     return clamp(signal, -1, 1) * mutationScale;
+  }
+
+  private specializationMetabolicPenalty(agent: Agent): number {
+    const scale = Math.max(0, this.config.specializationMetabolicCost);
+    if (scale === 0) {
+      return 0;
+    }
+    return scale * this.specializationLoad(agent.species) * agent.genome.metabolism;
+  }
+
+  private specializationLoad(species: number): number {
+    return Math.min(1, Math.abs(this.getSpeciesHabitatPreference(species) - 1));
   }
 
   private regenerateResources(): void {

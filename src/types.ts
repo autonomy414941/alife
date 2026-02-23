@@ -147,6 +147,7 @@ export interface SimulationConfig {
   localityRadius: number;
   habitatPreferenceStrength: number;
   habitatPreferenceMutation: number;
+  specializationMetabolicCost: number;
   harvestCap: number;
   reproduceThreshold: number;
   reproduceProbability: number;
