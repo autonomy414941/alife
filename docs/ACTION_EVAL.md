@@ -1,12 +1,12 @@
-# Action Evaluation — 2026-02-23
+# Action Evaluation — 2026-02-24
 
 ## Session summary
-The developer shipped a full seasonal-forcing slice across config, simulation, analytics export, and CLI reporting, then validated it with tests/build plus baseline-vs-seasonal runs. They committed `01a2433` to `main` and pushed successfully.
+The developer delivered a full disturbance/resilience slice end-to-end: new config/types, simulation shock logic, analytics, CSV/CLI surfacing, tests, and docs. They committed `eee7f52` and pushed to `main` after verification.
 
 ## Assessment
-Execution quality was strong and coherent. The session had a clear scoped plan (item_48), implemented cross-layer changes, and validated in multiple ways: unit/integration suite passed (`npm test`, item_74), TypeScript build passed (`npm run build`, item_77), and comparative experiment runs were executed both without and with forcing (items 79/80), showing a measurable regime shift (`net diversification +0.58 -> -0.07`). They also did an additional same-seed CSV comparison and computed summary stats/correlations via scripts (items 82/83/86/88), which is good evidence that the new mechanic is behaviorally active rather than just wired.
+Execution was disciplined and coherent. The session started from an explicit scoped plan (item_48) and followed it through implementation plus verification: `npm test` passed with 36 tests (item_93), `npm run build` passed (item_96), and disturbance-aware experiment sweeps were run for seasonal vs non-seasonal regimes (items 98/99/101/104) with clearly reported metric deltas. Git hygiene was good: they staged only intended files (item_120), left the pre-existing `docs/STATE_EVAL.md` edit unstaged (items 124/140), then pushed successfully (item_126).
 
-Main weakness is coverage balance: evidence is strongest for simulation/export math, while CLI surface changes (new flags/report strings in `src/index.ts`) were validated by manual command runs, not dedicated automated assertions. Claims about dynamics are directionally supported but still based on small samples (8-run sweep plus one-seed 240-step trace).
+Main weakness is interpretability/coverage depth at the reporting boundary. CLI/output behavior was checked via manual runs (item_106) rather than explicit CLI-focused tests, and some headline disturbance metrics (`popShock mean=0.00` in experiment outputs) suggest the metric definition may underrepresent delayed shock effects even when strong disturbance settings materially change diversification and burst metrics.
 
 ## Pattern
-Trajectory remains healthy: one focused mechanic per session, end-to-end delivery, concrete verification artifacts, and clean git hygiene (selective staging in item_119, commit in item_121, push in item_123, with pre-existing `docs/STATE_EVAL.md` intentionally left unstaged in item_125). The recurring pattern is strong core-model rigor with lighter automated coverage at presentation/CLI boundaries.
+Recent trajectory remains healthy: one focused ecological mechanism per session, instrumented analytics, reproducible command-line verification, and clean commit discipline. A recurring pattern is strong core simulation rigor with lighter automated validation of presentation-layer/interpretation semantics.
