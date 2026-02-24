@@ -120,6 +120,25 @@ export interface ForcingAnalytics {
   fertilityContrastMultiplier: number;
 }
 
+export interface DisturbanceAnalytics {
+  interval: number;
+  energyLoss: number;
+  resourceLoss: number;
+  eventsInWindow: number;
+  lastEventTick: number;
+  lastEventPopulationShock: number;
+  lastEventResourceShock: number;
+}
+
+export interface ResilienceAnalytics {
+  recoveryTicks: number;
+  recoveryProgress: number;
+  preDisturbanceTurnoverRate: number;
+  postDisturbanceTurnoverRate: number;
+  turnoverSpike: number;
+  extinctionBurstDepth: number;
+}
+
 export interface EvolutionAnalyticsSnapshot {
   tick: number;
   window: TurnoverWindow;
@@ -127,6 +146,8 @@ export interface EvolutionAnalyticsSnapshot {
   clades: TaxonTurnoverAnalytics;
   strategy: StrategyAnalytics;
   forcing: ForcingAnalytics;
+  disturbance: DisturbanceAnalytics;
+  resilience: ResilienceAnalytics;
   locality: LocalityStateAnalytics;
   localityTurnover: LocalityTurnoverAnalytics;
   localityRadius: LocalityRadiusAnalytics;
@@ -162,6 +183,9 @@ export interface SimulationConfig {
   seasonalCycleLength: number;
   seasonalRegenAmplitude: number;
   seasonalFertilityContrastAmplitude: number;
+  disturbanceInterval: number;
+  disturbanceEnergyLoss: number;
+  disturbanceResourceLoss: number;
   biomeBands: number;
   biomeContrast: number;
   decompositionBase: number;

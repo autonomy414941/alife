@@ -2,11 +2,13 @@ import { Rng } from './rng';
 import {
   Agent,
   AgentSeed,
+  DisturbanceAnalytics,
   DurationStats,
   EvolutionAnalyticsSnapshot,
   ForcingAnalytics,
   EvolutionHistorySnapshot,
   Genome,
+  ResilienceAnalytics,
   LocalityRadiusAnalytics,
   LocalityRadiusTurnoverAnalytics,
   LocalityStateAnalytics,
@@ -32,6 +34,9 @@ const DEFAULT_CONFIG: SimulationConfig = {
   seasonalCycleLength: 120,
   seasonalRegenAmplitude: 0,
   seasonalFertilityContrastAmplitude: 0,
+  disturbanceInterval: 0,
+  disturbanceEnergyLoss: 0,
+  disturbanceResourceLoss: 0,
   biomeBands: 4,
   biomeContrast: 0.45,
   decompositionBase: 0.6,
@@ -101,6 +106,19 @@ interface LocalityFrame {
   occupiedCells: number;
 }
 
+interface DisturbanceEventState {
+  tick: number;
+  populationBefore: number;
+  populationAfterShock: number;
+  activeSpeciesBefore: number;
+  activeSpeciesAfterShock: number;
+  totalResourcesBefore: number;
+  totalResourcesAfterShock: number;
+  minPopulationSinceEvent: number;
+  minActiveSpeciesSinceEvent: number;
+  recoveryTick: number | null;
+}
+
 export class LifeSimulation {
   private readonly rng: Rng;
 
@@ -130,6 +148,8 @@ export class LifeSimulation {
 
   private readonly localityFrames: LocalityFrame[] = [];
 
+  private readonly disturbanceEvents: DisturbanceEventState[] = [];
+
   private extinctClades = 0;
 
   private extinctSpecies = 0;
@@ -157,6 +177,7 @@ export class LifeSimulation {
     const beforeCount = this.agents.length;
 
     this.regenerateResources();
+    this.applyDisturbanceIfScheduled(this.tickCount + 1);
 
     const occupancy = this.buildOccupancyGrid();
     const turnOrder = this.rng.shuffle([...this.agents]);
@@ -216,6 +237,7 @@ export class LifeSimulation {
     this.extinctClades += cladeExtinctionDelta;
     this.extinctSpecies += speciesExtinctionDelta;
     this.recordLocalityFrame(this.tickCount);
+    this.updateDisturbanceEventState(this.tickCount, afterCount, diversity.activeSpecies);
 
     return {
       tick: this.tickCount,
@@ -293,6 +315,8 @@ export class LifeSimulation {
       clades: this.buildTaxonTurnover(this.cladeHistory, window),
       strategy: this.buildStrategyAnalytics(),
       forcing: this.buildForcingAnalytics(),
+      disturbance: this.buildDisturbanceAnalytics(window),
+      resilience: this.buildResilienceAnalytics(),
       locality: this.buildLocalityState(),
       localityTurnover: this.buildLocalityTurnover(window),
       localityRadius: this.buildLocalityRadiusState(),
@@ -319,6 +343,125 @@ export class LifeSimulation {
       wave: this.seasonalWaveForTick(this.tickCount),
       regenMultiplier: this.seasonalRegenMultiplierForTick(this.tickCount),
       fertilityContrastMultiplier: this.seasonalFertilityContrastMultiplierForTick(this.tickCount)
+    };
+  }
+
+  private buildDisturbanceAnalytics(window: TurnoverWindow): DisturbanceAnalytics {
+    const latestEvent = this.latestDisturbanceEvent();
+    const lastEventPopulationShock =
+      latestEvent === null || latestEvent.populationBefore <= 0
+        ? 0
+        : clamp(
+            (latestEvent.populationBefore - latestEvent.populationAfterShock) / latestEvent.populationBefore,
+            0,
+            1
+          );
+    const lastEventResourceShock =
+      latestEvent === null || latestEvent.totalResourcesBefore <= 0
+        ? 0
+        : clamp(
+            (latestEvent.totalResourcesBefore - latestEvent.totalResourcesAfterShock) / latestEvent.totalResourcesBefore,
+            0,
+            1
+          );
+
+    return {
+      interval: this.normalizedDisturbanceInterval(),
+      energyLoss: clamp(this.config.disturbanceEnergyLoss, 0, 1),
+      resourceLoss: clamp(this.config.disturbanceResourceLoss, 0, 1),
+      eventsInWindow: this.countDisturbanceEventsInWindow(window),
+      lastEventTick: latestEvent?.tick ?? 0,
+      lastEventPopulationShock,
+      lastEventResourceShock
+    };
+  }
+
+  private buildResilienceAnalytics(): ResilienceAnalytics {
+    const latestEvent = this.latestDisturbanceEvent();
+    if (latestEvent === null) {
+      return {
+        recoveryTicks: 0,
+        recoveryProgress: 0,
+        preDisturbanceTurnoverRate: 0,
+        postDisturbanceTurnoverRate: 0,
+        turnoverSpike: 0,
+        extinctionBurstDepth: 0
+      };
+    }
+
+    const recoveryTicks =
+      latestEvent.populationBefore <= 0
+        ? 0
+        : latestEvent.recoveryTick === null
+          ? -1
+          : latestEvent.recoveryTick - latestEvent.tick;
+    const recoveryProgress =
+      latestEvent.populationBefore <= 0 ? 1 : clamp(this.agents.length / latestEvent.populationBefore, 0, 1);
+
+    const postRates = this.buildSpeciesTurnoverRatesBetween(latestEvent.tick, this.tickCount);
+    const preEndTick = latestEvent.tick - 1;
+    const preStartTick = Math.max(1, preEndTick - postRates.size + 1);
+    const preRates =
+      preEndTick < preStartTick
+        ? { size: 0, turnoverRate: 0 }
+        : this.buildSpeciesTurnoverRatesBetween(preStartTick, preEndTick);
+    const preDisturbanceTurnoverRate = preRates.turnoverRate;
+    const postDisturbanceTurnoverRate = postRates.turnoverRate;
+    const turnoverSpike =
+      preDisturbanceTurnoverRate <= 0
+        ? postDisturbanceTurnoverRate
+        : postDisturbanceTurnoverRate / preDisturbanceTurnoverRate;
+    const extinctionBurstDepth = Math.max(
+      0,
+      latestEvent.activeSpeciesBefore - latestEvent.minActiveSpeciesSinceEvent
+    );
+
+    return {
+      recoveryTicks,
+      recoveryProgress,
+      preDisturbanceTurnoverRate,
+      postDisturbanceTurnoverRate,
+      turnoverSpike,
+      extinctionBurstDepth
+    };
+  }
+
+  private countDisturbanceEventsInWindow(window: TurnoverWindow): number {
+    let events = 0;
+    for (const event of this.disturbanceEvents) {
+      if (event.tick >= window.startTick && event.tick <= window.endTick) {
+        events += 1;
+      }
+    }
+    return events;
+  }
+
+  private latestDisturbanceEvent(): DisturbanceEventState | null {
+    if (this.disturbanceEvents.length === 0) {
+      return null;
+    }
+    return this.disturbanceEvents[this.disturbanceEvents.length - 1];
+  }
+
+  private buildSpeciesTurnoverRatesBetween(startTick: number, endTick: number): {
+    size: number;
+    turnoverRate: number;
+  } {
+    const start = Math.max(1, startTick);
+    const end = Math.max(0, endTick);
+    if (end < start) {
+      return { size: 0, turnoverRate: 0 };
+    }
+    const window = {
+      startTick: start,
+      endTick: end,
+      size: end - start + 1
+    };
+    const speciations = this.countOriginationsInWindow(this.speciesHistory, window);
+    const extinctions = this.countExtinctionsInWindow(this.speciesHistory, window);
+    return {
+      size: window.size,
+      turnoverRate: window.size === 0 ? 0 : (speciations + extinctions) / window.size
     };
   }
 
@@ -1269,6 +1412,97 @@ export class LifeSimulation {
     }
   }
 
+  private applyDisturbanceIfScheduled(stepTick: number): void {
+    if (!this.shouldApplyDisturbance(stepTick)) {
+      return;
+    }
+
+    const energyLoss = clamp(this.config.disturbanceEnergyLoss, 0, 1);
+    const resourceLoss = clamp(this.config.disturbanceResourceLoss, 0, 1);
+    if (energyLoss <= 0 && resourceLoss <= 0) {
+      return;
+    }
+
+    const populationBefore = this.agents.filter((agent) => agent.energy > 0).length;
+    const activeSpeciesBefore = this.activeSpeciesCountFromLivingAgents();
+    const totalResourcesBefore = this.totalResources();
+
+    if (resourceLoss > 0) {
+      const resourceMultiplier = 1 - resourceLoss;
+      for (let y = 0; y < this.config.height; y += 1) {
+        for (let x = 0; x < this.config.width; x += 1) {
+          this.resources[y][x] = clamp(this.resources[y][x] * resourceMultiplier, 0, this.config.maxResource);
+        }
+      }
+    }
+
+    if (energyLoss > 0) {
+      const energyMultiplier = 1 - energyLoss;
+      for (const agent of this.agents) {
+        agent.energy *= energyMultiplier;
+      }
+    }
+
+    const populationAfterShock = this.agents.filter((agent) => agent.energy > 0).length;
+    const activeSpeciesAfterShock = this.activeSpeciesCountFromLivingAgents();
+    const totalResourcesAfterShock = this.totalResources();
+
+    this.disturbanceEvents.push({
+      tick: stepTick,
+      populationBefore,
+      populationAfterShock,
+      activeSpeciesBefore,
+      activeSpeciesAfterShock,
+      totalResourcesBefore,
+      totalResourcesAfterShock,
+      minPopulationSinceEvent: populationAfterShock,
+      minActiveSpeciesSinceEvent: activeSpeciesAfterShock,
+      recoveryTick:
+        populationBefore <= 0 || populationAfterShock >= populationBefore ? stepTick : null
+    });
+  }
+
+  private updateDisturbanceEventState(
+    currentTick: number,
+    currentPopulation: number,
+    currentActiveSpecies: number
+  ): void {
+    for (const event of this.disturbanceEvents) {
+      if (event.tick > currentTick) {
+        continue;
+      }
+      event.minPopulationSinceEvent = Math.min(event.minPopulationSinceEvent, currentPopulation);
+      event.minActiveSpeciesSinceEvent = Math.min(event.minActiveSpeciesSinceEvent, currentActiveSpecies);
+      if (
+        event.recoveryTick === null &&
+        event.populationBefore > 0 &&
+        currentPopulation >= event.populationBefore
+      ) {
+        event.recoveryTick = currentTick;
+      }
+    }
+  }
+
+  private activeSpeciesCountFromLivingAgents(): number {
+    const species = new Set<number>();
+    for (const agent of this.agents) {
+      if (agent.energy > 0) {
+        species.add(agent.species);
+      }
+    }
+    return species.size;
+  }
+
+  private totalResources(): number {
+    let total = 0;
+    for (let y = 0; y < this.config.height; y += 1) {
+      for (let x = 0; x < this.config.width; x += 1) {
+        total += this.resources[y][x];
+      }
+    }
+    return total;
+  }
+
   private recycleDeadAgents(deadAgents: Agent[]): void {
     const stepTick = this.tickCount + 1;
     for (const agent of deadAgents) {
@@ -1325,6 +1559,15 @@ export class LifeSimulation {
 
   private normalizedSeasonalCycleLength(): number {
     return Math.max(0, Math.floor(this.config.seasonalCycleLength));
+  }
+
+  private shouldApplyDisturbance(stepTick: number): boolean {
+    const interval = this.normalizedDisturbanceInterval();
+    return interval > 0 && stepTick > 0 && stepTick % interval === 0;
+  }
+
+  private normalizedDisturbanceInterval(): number {
+    return Math.max(0, Math.floor(this.config.disturbanceInterval));
   }
 
   private countBy(agents: Agent[], selector: (agent: Agent) => number): Map<number, number> {

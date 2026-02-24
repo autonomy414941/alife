@@ -456,3 +456,41 @@ Observed:
 Thinking:
 - Seasonality is now an explicit, measurable ecological driver that can be toggled and swept.
 - Next useful depth is punctuated disturbance (rare shocks) plus resilience diagnostics so we can separate periodic adaptation from collapse/recovery dynamics.
+
+## 2026-02-24 (session 18)
+- Added discrete disturbance mechanics in `src/simulation.ts`.
+- Extended `SimulationConfig` in `src/types.ts` with:
+  - `disturbanceInterval`
+  - `disturbanceEnergyLoss`
+  - `disturbanceResourceLoss`
+- Implemented deterministic periodic shocks (tick-aligned) applied before agent turns:
+  - per-agent multiplicative energy loss
+  - per-cell multiplicative resource loss.
+- Added disturbance event tracking in simulation state:
+  pre/post-shock population/resources, active-species levels, minima since shock, and first recovery tick.
+- Extended analytics with two new blocks:
+  - `disturbance`: interval/intensity, events-in-window, last event shock depths
+  - `resilience`: recovery ticks/progress, pre/post turnover rates, turnover spike, extinction burst depth.
+- Updated CSV export (`src/export.ts`) with stable disturbance/resilience columns.
+- Updated CLI (`src/index.ts`):
+  - new flags: `--disturbance-interval`, `--disturbance-energy-loss`, `--disturbance-resource-loss`
+  - single-run and experiment reporting now include disturbance/resilience telemetry.
+- Added deterministic tests:
+  - `test/simulation.test.ts`: periodic shock behavior + resilience spike/burst derivation
+  - `test/export.test.ts`: disturbance/resilience CSV mapping.
+- Verified with `npm test` (36 tests) and `npm run build`.
+- Ran seasonal vs non-seasonal disturbance sweeps to validate behavioral signal.
+
+Observed:
+- With strong disturbances (`interval=30`, `energyLoss=0.85`, `resourceLoss=0.35`,
+  `runs=8`, `steps=120`, seeds `20260224..20260231`):
+  - non-seasonal: species net diversification `-0.02`, resilience spike `1.71`, burst `1.88`.
+  - seasonal forcing (`cycle=60`, `regenAmp=0.45`, `contrastAmp=0.7`):
+    net diversification `-0.65`, resilience spike `10.63`, burst `10.63`.
+- Interpretation: disturbance+seasonality coupling now produces much deeper extinction bursts
+  than disturbance alone under the same seeds and shock schedule.
+
+Thinking:
+- We now have a measurable resilience surface, not just forcing and turnover.
+- Next step should localize disturbances spatially (instead of global shocks) to test whether
+  refugia and patch structure dampen burst depth while preserving adaptive turnover.

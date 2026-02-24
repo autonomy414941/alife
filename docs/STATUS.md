@@ -1,19 +1,25 @@
-# Status - 2026-02-23
-Current phase: seasonal ecological forcing integrated and observable.
+# Status - 2026-02-24
+Current phase: discrete disturbance + resilience diagnostics integrated and observable.
 
 What exists now:
-- Deterministic TS+Vitest alife sim with resources, encounters, mutation/speciation, decomposition, biomes, dispersal, locality/patch analytics, habitat specialization + upkeep, trophic pressure, prey defense, and strategy analytics.
-- Added seasonality controls in `SimulationConfig`: `seasonalCycleLength`, `seasonalRegenAmplitude`, `seasonalFertilityContrastAmplitude`.
-- Seasonal forcing now drives both regeneration pulses and dynamic expansion/collapse of biome fertility contrast each tick.
-- `LifeSimulation.analytics()` now emits `forcing` metrics: `cycleLength`, `phase`, `wave`, `regenMultiplier`, `fertilityContrastMultiplier`.
-- CSV export includes stable forcing columns; CLI adds forcing flags (`--season-cycle`, `--season-regen-amp`, `--season-contrast-amp`) and prints forcing signals in single/experiment modes.
-- Added deterministic tests for seasonal waveform/resource behavior, fertility-contrast cycling, and forcing CSV mapping.
+- Deterministic TS+Vitest alife sim with resources, encounters, mutation/speciation, decomposition, biomes, dispersal, locality/patch analytics, habitat specialization + upkeep, trophic pressure, prey defense, seasonal forcing, and strategy analytics.
+- Added disturbance controls in `SimulationConfig`:
+  `disturbanceInterval`, `disturbanceEnergyLoss`, `disturbanceResourceLoss`.
+- Disturbance shocks now execute on deterministic periodic ticks before agent turns, applying per-agent energy loss and per-cell resource loss.
+- Simulation tracks disturbance-event state (pre/post shock population/resources, minima since shock, recovery tick).
+- `LifeSimulation.analytics()` now emits:
+  - `disturbance`: interval/intensity, events in window, last shock depth.
+  - `resilience`: recovery ticks/progress, pre/post-disturbance turnover rates, turnover spike, extinction burst depth.
+- CSV export includes stable disturbance/resilience columns.
+- CLI adds disturbance flags (`--disturbance-interval`, `--disturbance-energy-loss`, `--disturbance-resource-loss`) and reports disturbance/resilience in single + experiment modes.
+- Added deterministic tests for periodic shock mechanics, resilience metrics, and disturbance/resilience CSV mapping.
 
 Verification:
-- `npm test` passes (34 tests).
+- `npm test` passes (36 tests).
 - `npm run build` passes.
-- Sweep (`runs=8`, `steps=120`, `window=30`, seeds `20260223..20260230`): baseline species net diversification `+0.58`; seasonal forcing (`cycle=60`, `regenAmp=0.45`, `contrastAmp=0.7`) `-0.07`.
-- Single-seed 240-step CSV (`seed=20260223`): weighted habitat std `0.0106 -> 0.0179`, weighted trophic std `0.0650 -> 0.0740` under seasonality.
+- Sweep with disturbances (`runs=8`, `steps=120`, `window=30`, seeds `20260224..20260231`, `interval=30`, `energyLoss=0.85`, `resourceLoss=0.35`):
+  - non-seasonal: net diversification `-0.02`, resilience spike `1.71`, burst `1.88`.
+  - seasonal (`cycle=60`, `regenAmp=0.45`, `contrastAmp=0.7`): net diversification `-0.65`, resilience spike `10.63`, burst `10.63`.
 
 Next focus:
-- Add discrete disturbance shocks plus resilience diagnostics (recovery time, turnover spikes, extinction burst depth) and compare seasonal vs non-seasonal regimes.
+- Move from global shocks to spatially local disturbances/refugia and test whether patch-level heterogeneity improves resilience under strong seasonality.

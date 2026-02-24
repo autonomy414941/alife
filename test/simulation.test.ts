@@ -595,6 +595,109 @@ describe('LifeSimulation', () => {
     expect(spreads[3]).toBeCloseTo(0, 10);
   });
 
+  it('applies periodic disturbance shocks and reports disturbance analytics', () => {
+    const sim = new LifeSimulation({
+      seed: 62,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 100,
+        resourceRegen: 0,
+        biomeBands: 1,
+        biomeContrast: 0,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        disturbanceInterval: 2,
+        disturbanceEnergyLoss: 0.5,
+        disturbanceResourceLoss: 0.25
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+    sim.setResource(0, 0, 8);
+
+    sim.step();
+    expect(sim.getResource(0, 0)).toBeCloseTo(8, 10);
+    expect(sim.snapshot().agents[0]?.energy).toBeCloseTo(10, 10);
+
+    sim.step();
+    const analytics = sim.analytics(2);
+    expect(sim.getResource(0, 0)).toBeCloseTo(6, 10);
+    expect(sim.snapshot().agents[0]?.energy).toBeCloseTo(5, 10);
+    expect(analytics.disturbance.interval).toBe(2);
+    expect(analytics.disturbance.energyLoss).toBeCloseTo(0.5, 10);
+    expect(analytics.disturbance.resourceLoss).toBeCloseTo(0.25, 10);
+    expect(analytics.disturbance.eventsInWindow).toBe(1);
+    expect(analytics.disturbance.lastEventTick).toBe(2);
+    expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(0, 10);
+    expect(analytics.disturbance.lastEventResourceShock).toBeCloseTo(0.25, 10);
+    expect(analytics.resilience.recoveryTicks).toBe(0);
+    expect(analytics.resilience.extinctionBurstDepth).toBe(0);
+  });
+
+  it('reports disturbance-driven turnover spikes and extinction burst depth', () => {
+    const sim = new LifeSimulation({
+      seed: 63,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        disturbanceInterval: 1,
+        disturbanceEnergyLoss: 1,
+        disturbanceResourceLoss: 0
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 1,
+          species: 2,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    const summary = sim.step();
+    const analytics = sim.analytics(1);
+
+    expect(summary.population).toBe(0);
+    expect(summary.speciesExtinctions).toBe(2);
+    expect(analytics.disturbance.eventsInWindow).toBe(1);
+    expect(analytics.disturbance.lastEventTick).toBe(1);
+    expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(1, 10);
+    expect(analytics.resilience.recoveryTicks).toBe(-1);
+    expect(analytics.resilience.recoveryProgress).toBeCloseTo(0, 10);
+    expect(analytics.resilience.preDisturbanceTurnoverRate).toBeCloseTo(0, 10);
+    expect(analytics.resilience.postDisturbanceTurnoverRate).toBeCloseTo(2, 10);
+    expect(analytics.resilience.turnoverSpike).toBeCloseTo(2, 10);
+    expect(analytics.resilience.extinctionBurstDepth).toBe(2);
+  });
+
   it('scales decomposition by local biome fertility', () => {
     const sim = new LifeSimulation({
       seed: 22,

@@ -20,6 +20,9 @@ interface CliOptions {
   seasonalCycleLength: number;
   seasonalRegenAmplitude: number;
   seasonalFertilityContrastAmplitude: number;
+  disturbanceInterval: number;
+  disturbanceEnergyLoss: number;
+  disturbanceResourceLoss: number;
   exportJson?: string;
   exportCsv?: string;
   exportExperimentJson?: string;
@@ -35,7 +38,10 @@ const DEFAULT_OPTIONS: CliOptions = {
   seedStep: 1,
   seasonalCycleLength: 120,
   seasonalRegenAmplitude: 0,
-  seasonalFertilityContrastAmplitude: 0
+  seasonalFertilityContrastAmplitude: 0,
+  disturbanceInterval: 0,
+  disturbanceEnergyLoss: 0,
+  disturbanceResourceLoss: 0
 };
 
 main();
@@ -74,7 +80,10 @@ function runSingleMode(options: CliOptions): void {
     config: {
       seasonalCycleLength: options.seasonalCycleLength,
       seasonalRegenAmplitude: options.seasonalRegenAmplitude,
-      seasonalFertilityContrastAmplitude: options.seasonalFertilityContrastAmplitude
+      seasonalFertilityContrastAmplitude: options.seasonalFertilityContrastAmplitude,
+      disturbanceInterval: options.disturbanceInterval,
+      disturbanceEnergyLoss: options.disturbanceEnergyLoss,
+      disturbanceResourceLoss: options.disturbanceResourceLoss
     }
   });
   const runData = simulation.runWithAnalytics(options.steps, options.window, true);
@@ -96,6 +105,9 @@ function runSingleMode(options: CliOptions): void {
           `weighted(h=${turnover.strategy.habitatPreference.weightedMean.toFixed(2)},` +
           `t=${turnover.strategy.trophicLevel.weightedMean.toFixed(2)},d=${turnover.strategy.defenseLevel.weightedMean.toFixed(2)})) ` +
           `forcing(regen=${turnover.forcing.regenMultiplier.toFixed(2)},contrast=${turnover.forcing.fertilityContrastMultiplier.toFixed(2)},phase=${turnover.forcing.phase.toFixed(2)}) ` +
+          `disturbance(last=${turnover.disturbance.lastEventTick},events=${turnover.disturbance.eventsInWindow},` +
+          `recovery=${turnover.resilience.recoveryTicks},spike=${turnover.resilience.turnoverSpike.toFixed(2)},` +
+          `burst=${turnover.resilience.extinctionBurstDepth.toFixed(2)}) ` +
           `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},dom=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},chg=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)}) ` +
           `patch(r=${turnover.localityRadius.radius},dom=${turnover.localityRadius.meanDominantSpeciesShare.toFixed(2)},` +
           `align=${turnover.localityRadius.centerDominantAlignment.toFixed(2)},` +
@@ -124,6 +136,14 @@ function runSingleMode(options: CliOptions): void {
       `weighted(h=${turnover.strategy.habitatPreference.weightedMean.toFixed(2)},` +
       `t=${turnover.strategy.trophicLevel.weightedMean.toFixed(2)},d=${turnover.strategy.defenseLevel.weightedMean.toFixed(2)})) ` +
       `forcing(regen=${turnover.forcing.regenMultiplier.toFixed(2)},contrast=${turnover.forcing.fertilityContrastMultiplier.toFixed(2)},phase=${turnover.forcing.phase.toFixed(2)}) ` +
+      `disturbance(last=${turnover.disturbance.lastEventTick},events=${turnover.disturbance.eventsInWindow},` +
+      `popShock=${turnover.disturbance.lastEventPopulationShock.toFixed(2)},` +
+      `resShock=${turnover.disturbance.lastEventResourceShock.toFixed(2)}) ` +
+      `resilience(recovery=${turnover.resilience.recoveryTicks},progress=${turnover.resilience.recoveryProgress.toFixed(2)},` +
+      `preTurn=${turnover.resilience.preDisturbanceTurnoverRate.toFixed(2)},` +
+      `postTurn=${turnover.resilience.postDisturbanceTurnoverRate.toFixed(2)},` +
+      `spike=${turnover.resilience.turnoverSpike.toFixed(2)},` +
+      `burst=${turnover.resilience.extinctionBurstDepth.toFixed(2)}) ` +
       `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},domMean=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},` +
       `domStd=${turnover.locality.dominantSpeciesShareStdDev.toFixed(2)},turnMean=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)},` +
       `turnStd=${turnover.localityTurnover.changedDominantCellFractionStdDev.toFixed(2)}) ` +
@@ -163,7 +183,10 @@ function runExperimentMode(options: CliOptions): void {
       config: {
         seasonalCycleLength: options.seasonalCycleLength,
         seasonalRegenAmplitude: options.seasonalRegenAmplitude,
-        seasonalFertilityContrastAmplitude: options.seasonalFertilityContrastAmplitude
+        seasonalFertilityContrastAmplitude: options.seasonalFertilityContrastAmplitude,
+        disturbanceInterval: options.disturbanceInterval,
+        disturbanceEnergyLoss: options.disturbanceEnergyLoss,
+        disturbanceResourceLoss: options.disturbanceResourceLoss
       }
     }
   });
@@ -211,6 +234,27 @@ function runExperimentMode(options: CliOptions): void {
   const forcingContrast = summarizeNumbers(
     experimentData.runs.map((run) => run.finalAnalytics.forcing.fertilityContrastMultiplier)
   );
+  const disturbanceEvents = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.disturbance.eventsInWindow)
+  );
+  const disturbancePopulationShock = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.disturbance.lastEventPopulationShock)
+  );
+  const disturbanceResourceShock = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.disturbance.lastEventResourceShock)
+  );
+  const resilienceRecoveryTicks = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.resilience.recoveryTicks)
+  );
+  const resilienceRecoveryProgress = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.resilience.recoveryProgress)
+  );
+  const resilienceTurnoverSpike = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.resilience.turnoverSpike)
+  );
+  const resilienceExtinctionBurst = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.resilience.extinctionBurstDepth)
+  );
 
   console.log(
     `experiment runs=${aggregate.runs} seeds=${options.seed}..${lastSeed} extinctionRate=${aggregate.extinctionRate.toFixed(2)} ` +
@@ -244,6 +288,16 @@ function runExperimentMode(options: CliOptions): void {
   );
   console.log(
     `forcing regen(mean=${forcingRegen.mean.toFixed(2)}) contrast(mean=${forcingContrast.mean.toFixed(2)})`
+  );
+  console.log(
+    `disturbance events(mean=${disturbanceEvents.mean.toFixed(2)}) ` +
+      `popShock(mean=${disturbancePopulationShock.mean.toFixed(2)}) ` +
+      `resShock(mean=${disturbanceResourceShock.mean.toFixed(2)})`
+  );
+  console.log(
+    `resilience recovery(mean=${resilienceRecoveryTicks.mean.toFixed(2)},progress=${resilienceRecoveryProgress.mean.toFixed(2)}) ` +
+      `spike(mean=${resilienceTurnoverSpike.mean.toFixed(2)}) ` +
+      `burst(mean=${resilienceExtinctionBurst.mean.toFixed(2)})`
   );
 
   if (options.exportExperimentJson) {
@@ -288,6 +342,15 @@ function parseCli(args: string[]): CliOptions {
       case '--season-contrast-amp':
         options.seasonalFertilityContrastAmplitude = parseUnitInterval(flag, args[++i]);
         break;
+      case '--disturbance-interval':
+        options.disturbanceInterval = parseNonNegativeInt(flag, args[++i]);
+        break;
+      case '--disturbance-energy-loss':
+        options.disturbanceEnergyLoss = parseUnitInterval(flag, args[++i]);
+        break;
+      case '--disturbance-resource-loss':
+        options.disturbanceResourceLoss = parseUnitInterval(flag, args[++i]);
+        break;
       case '--export-json':
         options.exportJson = parsePath(flag, args[++i]);
         break;
@@ -314,6 +377,14 @@ function parsePositiveInt(flag: string, raw: string | undefined): number {
   const value = parseInteger(flag, raw);
   if (value <= 0) {
     throw new Error(`${flag} must be > 0`);
+  }
+  return value;
+}
+
+function parseNonNegativeInt(flag: string, raw: string | undefined): number {
+  const value = parseInteger(flag, raw);
+  if (value < 0) {
+    throw new Error(`${flag} must be >= 0`);
   }
   return value;
 }
@@ -392,6 +463,9 @@ function printHelp(): void {
       '  --season-cycle <n>  Seasonal cycle length in ticks (default: 120)',
       '  --season-regen-amp <n> Seasonal regeneration amplitude 0..1 (default: 0)',
       '  --season-contrast-amp <n> Seasonal fertility-contrast amplitude 0..1 (default: 0)',
+      '  --disturbance-interval <n> Disturbance interval in ticks; 0 disables (default: 0)',
+      '  --disturbance-energy-loss <n> Disturbance per-agent energy-loss fraction 0..1 (default: 0)',
+      '  --disturbance-resource-loss <n> Disturbance per-cell resource-loss fraction 0..1 (default: 0)',
       '  --export-json <p>   Write full run export JSON',
       '  --export-csv <p>    Write per-tick metrics CSV',
       '  --export-experiment-json <p>  Write experiment sweep JSON',
