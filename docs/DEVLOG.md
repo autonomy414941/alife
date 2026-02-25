@@ -494,3 +494,36 @@ Thinking:
 - We now have a measurable resilience surface, not just forcing and turnover.
 - Next step should localize disturbances spatially (instead of global shocks) to test whether
   refugia and patch structure dampen burst depth while preserving adaptive turnover.
+
+## 2026-02-25 (session 19)
+- Localized disturbance mechanics implemented in `src/simulation.ts`.
+- Extended `SimulationConfig` in `src/types.ts` with:
+  - `disturbanceRadius` (`-1` global, `>=0` local Manhattan footprint)
+  - `disturbanceRefugiaFraction` (fraction of targeted cells spared)
+- Refactored disturbance application:
+  - energy/resource shocks now apply only on affected cells
+  - event footprint sampled deterministically from seeded RNG
+  - refugia sampled per-event from targeted footprint.
+- Extended disturbance event state + analytics with spatial observability:
+  - config echo: `radius`, `refugiaFraction`
+  - event geometry: `lastEventAffectedCellFraction`, `lastEventRefugiaCellFraction`.
+- Updated CSV export in `src/export.ts` with stable new disturbance columns.
+- Updated CLI in `src/index.ts`:
+  - new flags `--disturbance-radius`, `--disturbance-refugia`
+  - single-run and experiment reporting now includes spatial disturbance fractions.
+- Added deterministic tests:
+  - `test/simulation.test.ts`: local footprint shock behavior
+  - `test/simulation.test.ts`: refugia preservation inside targeted footprint
+  - `test/export.test.ts`: CSV column/value mapping for new disturbance fields.
+- Verified with `npm test` (38 tests) and `npm run build`.
+- Ran seasonality+disturbance sweep comparison (same seeds/config, only scope/refugia changed).
+
+Observed:
+- Under strong seasonal forcing and disturbance intensity (`runs=8`, `steps=120`, `window=30`, seeds `20260225..20260232`, `cycle=60`, `regenAmp=0.45`, `contrastAmp=0.7`, `interval=30`, `energyLoss=0.85`, `resourceLoss=0.35`):
+  - global shocks (`radius=-1`, `refugia=0`): net diversification `-0.65`, spike `11.25`, burst `11.25`.
+  - local shocks with refugia (`radius=2`, `refugia=0.35`): net diversification `-0.45`, spike `2.58`, burst `1.63`.
+- `popShock` remains near `0` in these runs, but new affected/refugia and resource-shock fields now expose actual disturbance footprint and intensity directly.
+
+Thinking:
+- Spatially local shocks appear to preserve diversity and damp burst depth under the same forcing regime.
+- Next session should add delayed-population shock metrics (event-to-trough depth and lag) to capture disturbances whose mortality is indirect rather than immediate.

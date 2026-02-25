@@ -124,10 +124,14 @@ export interface DisturbanceAnalytics {
   interval: number;
   energyLoss: number;
   resourceLoss: number;
+  radius: number;
+  refugiaFraction: number;
   eventsInWindow: number;
   lastEventTick: number;
   lastEventPopulationShock: number;
   lastEventResourceShock: number;
+  lastEventAffectedCellFraction: number;
+  lastEventRefugiaCellFraction: number;
 }
 
 export interface ResilienceAnalytics {
@@ -186,6 +190,8 @@ export interface SimulationConfig {
   disturbanceInterval: number;
   disturbanceEnergyLoss: number;
   disturbanceResourceLoss: number;
+  disturbanceRadius: number;
+  disturbanceRefugiaFraction: number;
   biomeBands: number;
   biomeContrast: number;
   decompositionBase: number;

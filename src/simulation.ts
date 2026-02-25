@@ -37,6 +37,8 @@ const DEFAULT_CONFIG: SimulationConfig = {
   disturbanceInterval: 0,
   disturbanceEnergyLoss: 0,
   disturbanceResourceLoss: 0,
+  disturbanceRadius: -1,
+  disturbanceRefugiaFraction: 0,
   biomeBands: 4,
   biomeContrast: 0.45,
   decompositionBase: 0.6,
@@ -114,6 +116,9 @@ interface DisturbanceEventState {
   activeSpeciesAfterShock: number;
   totalResourcesBefore: number;
   totalResourcesAfterShock: number;
+  targetedCells: number;
+  affectedCells: number;
+  totalCells: number;
   minPopulationSinceEvent: number;
   minActiveSpeciesSinceEvent: number;
   recoveryTick: number | null;
@@ -364,15 +369,27 @@ export class LifeSimulation {
             0,
             1
           );
+    const lastEventAffectedCellFraction =
+      latestEvent === null || latestEvent.totalCells <= 0
+        ? 0
+        : clamp(latestEvent.affectedCells / latestEvent.totalCells, 0, 1);
+    const lastEventRefugiaCellFraction =
+      latestEvent === null || latestEvent.targetedCells <= 0
+        ? 0
+        : clamp((latestEvent.targetedCells - latestEvent.affectedCells) / latestEvent.targetedCells, 0, 1);
 
     return {
       interval: this.normalizedDisturbanceInterval(),
       energyLoss: clamp(this.config.disturbanceEnergyLoss, 0, 1),
       resourceLoss: clamp(this.config.disturbanceResourceLoss, 0, 1),
+      radius: this.normalizedDisturbanceRadius(),
+      refugiaFraction: this.normalizedDisturbanceRefugiaFraction(),
       eventsInWindow: this.countDisturbanceEventsInWindow(window),
       lastEventTick: latestEvent?.tick ?? 0,
       lastEventPopulationShock,
-      lastEventResourceShock
+      lastEventResourceShock,
+      lastEventAffectedCellFraction,
+      lastEventRefugiaCellFraction
     };
   }
 
@@ -716,6 +733,25 @@ export class LifeSimulation {
     }
 
     return counts;
+  }
+
+  private collectCellIndicesWithinRadius(centerX: number, centerY: number, radius: number): number[] {
+    const visited = new Set<number>();
+    const width = this.config.width;
+    const normalizedRadius = Math.max(0, radius);
+
+    for (let dy = -normalizedRadius; dy <= normalizedRadius; dy += 1) {
+      for (let dx = -normalizedRadius; dx <= normalizedRadius; dx += 1) {
+        if (Math.abs(dx) + Math.abs(dy) > normalizedRadius) {
+          continue;
+        }
+        const x = this.wrapX(centerX + dx);
+        const y = this.wrapY(centerY + dy);
+        visited.add(y * width + x);
+      }
+    }
+
+    return [...visited];
   }
 
   private buildSpeciesTurnover(window: TurnoverWindow): SpeciesTurnoverAnalytics {
@@ -1422,6 +1458,10 @@ export class LifeSimulation {
     if (energyLoss <= 0 && resourceLoss <= 0) {
       return;
     }
+    const { targetedCellIndices, affectedCellIndices } = this.buildDisturbanceCellSets();
+    if (affectedCellIndices.size === 0) {
+      return;
+    }
 
     const populationBefore = this.agents.filter((agent) => agent.energy > 0).length;
     const activeSpeciesBefore = this.activeSpeciesCountFromLivingAgents();
@@ -1429,16 +1469,20 @@ export class LifeSimulation {
 
     if (resourceLoss > 0) {
       const resourceMultiplier = 1 - resourceLoss;
-      for (let y = 0; y < this.config.height; y += 1) {
-        for (let x = 0; x < this.config.width; x += 1) {
-          this.resources[y][x] = clamp(this.resources[y][x] * resourceMultiplier, 0, this.config.maxResource);
-        }
+      for (const index of affectedCellIndices) {
+        const x = index % this.config.width;
+        const y = Math.floor(index / this.config.width);
+        this.resources[y][x] = clamp(this.resources[y][x] * resourceMultiplier, 0, this.config.maxResource);
       }
     }
 
     if (energyLoss > 0) {
       const energyMultiplier = 1 - energyLoss;
       for (const agent of this.agents) {
+        const cellIndex = agent.y * this.config.width + agent.x;
+        if (!affectedCellIndices.has(cellIndex)) {
+          continue;
+        }
         agent.energy *= energyMultiplier;
       }
     }
@@ -1455,11 +1499,57 @@ export class LifeSimulation {
       activeSpeciesAfterShock,
       totalResourcesBefore,
       totalResourcesAfterShock,
+      targetedCells: targetedCellIndices.length,
+      affectedCells: affectedCellIndices.size,
+      totalCells: this.config.width * this.config.height,
       minPopulationSinceEvent: populationAfterShock,
       minActiveSpeciesSinceEvent: activeSpeciesAfterShock,
       recoveryTick:
         populationBefore <= 0 || populationAfterShock >= populationBefore ? stepTick : null
     });
+  }
+
+  private buildDisturbanceCellSets(): {
+    targetedCellIndices: number[];
+    affectedCellIndices: Set<number>;
+  } {
+    const totalCells = this.config.width * this.config.height;
+    if (totalCells <= 0) {
+      return { targetedCellIndices: [], affectedCellIndices: new Set<number>() };
+    }
+
+    const radius = this.normalizedDisturbanceRadius();
+    const targetedCellIndices =
+      radius < 0
+        ? Array.from({ length: totalCells }, (_, index) => index)
+        : this.collectCellIndicesWithinRadius(
+            this.rng.int(this.config.width),
+            this.rng.int(this.config.height),
+            radius
+          );
+    if (targetedCellIndices.length === 0) {
+      return { targetedCellIndices, affectedCellIndices: new Set<number>() };
+    }
+
+    const refugiaFraction = this.normalizedDisturbanceRefugiaFraction();
+    if (refugiaFraction <= 0) {
+      return { targetedCellIndices, affectedCellIndices: new Set<number>(targetedCellIndices) };
+    }
+
+    const affectedCount = Math.max(0, Math.floor(targetedCellIndices.length * (1 - refugiaFraction)));
+    if (affectedCount <= 0) {
+      return { targetedCellIndices, affectedCellIndices: new Set<number>() };
+    }
+    if (affectedCount >= targetedCellIndices.length) {
+      return { targetedCellIndices, affectedCellIndices: new Set<number>(targetedCellIndices) };
+    }
+
+    return {
+      targetedCellIndices,
+      affectedCellIndices: new Set<number>(
+        this.rng.shuffle([...targetedCellIndices]).slice(0, affectedCount)
+      )
+    };
   }
 
   private updateDisturbanceEventState(
@@ -1568,6 +1658,14 @@ export class LifeSimulation {
 
   private normalizedDisturbanceInterval(): number {
     return Math.max(0, Math.floor(this.config.disturbanceInterval));
+  }
+
+  private normalizedDisturbanceRadius(): number {
+    return Math.max(-1, Math.floor(this.config.disturbanceRadius));
+  }
+
+  private normalizedDisturbanceRefugiaFraction(): number {
+    return clamp(this.config.disturbanceRefugiaFraction, 0, 1);
   }
 
   private countBy(agents: Agent[], selector: (agent: Agent) => number): Map<number, number> {

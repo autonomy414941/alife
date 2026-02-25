@@ -23,6 +23,8 @@ interface CliOptions {
   disturbanceInterval: number;
   disturbanceEnergyLoss: number;
   disturbanceResourceLoss: number;
+  disturbanceRadius: number;
+  disturbanceRefugiaFraction: number;
   exportJson?: string;
   exportCsv?: string;
   exportExperimentJson?: string;
@@ -41,7 +43,9 @@ const DEFAULT_OPTIONS: CliOptions = {
   seasonalFertilityContrastAmplitude: 0,
   disturbanceInterval: 0,
   disturbanceEnergyLoss: 0,
-  disturbanceResourceLoss: 0
+  disturbanceResourceLoss: 0,
+  disturbanceRadius: -1,
+  disturbanceRefugiaFraction: 0
 };
 
 main();
@@ -83,7 +87,9 @@ function runSingleMode(options: CliOptions): void {
       seasonalFertilityContrastAmplitude: options.seasonalFertilityContrastAmplitude,
       disturbanceInterval: options.disturbanceInterval,
       disturbanceEnergyLoss: options.disturbanceEnergyLoss,
-      disturbanceResourceLoss: options.disturbanceResourceLoss
+      disturbanceResourceLoss: options.disturbanceResourceLoss,
+      disturbanceRadius: options.disturbanceRadius,
+      disturbanceRefugiaFraction: options.disturbanceRefugiaFraction
     }
   });
   const runData = simulation.runWithAnalytics(options.steps, options.window, true);
@@ -106,6 +112,7 @@ function runSingleMode(options: CliOptions): void {
           `t=${turnover.strategy.trophicLevel.weightedMean.toFixed(2)},d=${turnover.strategy.defenseLevel.weightedMean.toFixed(2)})) ` +
           `forcing(regen=${turnover.forcing.regenMultiplier.toFixed(2)},contrast=${turnover.forcing.fertilityContrastMultiplier.toFixed(2)},phase=${turnover.forcing.phase.toFixed(2)}) ` +
           `disturbance(last=${turnover.disturbance.lastEventTick},events=${turnover.disturbance.eventsInWindow},` +
+          `scope=${turnover.disturbance.radius},affected=${turnover.disturbance.lastEventAffectedCellFraction.toFixed(2)},` +
           `recovery=${turnover.resilience.recoveryTicks},spike=${turnover.resilience.turnoverSpike.toFixed(2)},` +
           `burst=${turnover.resilience.extinctionBurstDepth.toFixed(2)}) ` +
           `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},dom=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},chg=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)}) ` +
@@ -137,8 +144,11 @@ function runSingleMode(options: CliOptions): void {
       `t=${turnover.strategy.trophicLevel.weightedMean.toFixed(2)},d=${turnover.strategy.defenseLevel.weightedMean.toFixed(2)})) ` +
       `forcing(regen=${turnover.forcing.regenMultiplier.toFixed(2)},contrast=${turnover.forcing.fertilityContrastMultiplier.toFixed(2)},phase=${turnover.forcing.phase.toFixed(2)}) ` +
       `disturbance(last=${turnover.disturbance.lastEventTick},events=${turnover.disturbance.eventsInWindow},` +
+      `scope=${turnover.disturbance.radius},refugia=${turnover.disturbance.refugiaFraction.toFixed(2)},` +
       `popShock=${turnover.disturbance.lastEventPopulationShock.toFixed(2)},` +
-      `resShock=${turnover.disturbance.lastEventResourceShock.toFixed(2)}) ` +
+      `resShock=${turnover.disturbance.lastEventResourceShock.toFixed(2)},` +
+      `affected=${turnover.disturbance.lastEventAffectedCellFraction.toFixed(2)},` +
+      `eventRefugia=${turnover.disturbance.lastEventRefugiaCellFraction.toFixed(2)}) ` +
       `resilience(recovery=${turnover.resilience.recoveryTicks},progress=${turnover.resilience.recoveryProgress.toFixed(2)},` +
       `preTurn=${turnover.resilience.preDisturbanceTurnoverRate.toFixed(2)},` +
       `postTurn=${turnover.resilience.postDisturbanceTurnoverRate.toFixed(2)},` +
@@ -186,7 +196,9 @@ function runExperimentMode(options: CliOptions): void {
         seasonalFertilityContrastAmplitude: options.seasonalFertilityContrastAmplitude,
         disturbanceInterval: options.disturbanceInterval,
         disturbanceEnergyLoss: options.disturbanceEnergyLoss,
-        disturbanceResourceLoss: options.disturbanceResourceLoss
+        disturbanceResourceLoss: options.disturbanceResourceLoss,
+        disturbanceRadius: options.disturbanceRadius,
+        disturbanceRefugiaFraction: options.disturbanceRefugiaFraction
       }
     }
   });
@@ -243,6 +255,12 @@ function runExperimentMode(options: CliOptions): void {
   const disturbanceResourceShock = summarizeNumbers(
     experimentData.runs.map((run) => run.finalAnalytics.disturbance.lastEventResourceShock)
   );
+  const disturbanceAffectedCellFraction = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.disturbance.lastEventAffectedCellFraction)
+  );
+  const disturbanceEventRefugiaFraction = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.disturbance.lastEventRefugiaCellFraction)
+  );
   const resilienceRecoveryTicks = summarizeNumbers(
     experimentData.runs.map((run) => run.finalAnalytics.resilience.recoveryTicks)
   );
@@ -292,7 +310,9 @@ function runExperimentMode(options: CliOptions): void {
   console.log(
     `disturbance events(mean=${disturbanceEvents.mean.toFixed(2)}) ` +
       `popShock(mean=${disturbancePopulationShock.mean.toFixed(2)}) ` +
-      `resShock(mean=${disturbanceResourceShock.mean.toFixed(2)})`
+      `resShock(mean=${disturbanceResourceShock.mean.toFixed(2)}) ` +
+      `affected(mean=${disturbanceAffectedCellFraction.mean.toFixed(2)}) ` +
+      `eventRefugia(mean=${disturbanceEventRefugiaFraction.mean.toFixed(2)})`
   );
   console.log(
     `resilience recovery(mean=${resilienceRecoveryTicks.mean.toFixed(2)},progress=${resilienceRecoveryProgress.mean.toFixed(2)}) ` +
@@ -350,6 +370,12 @@ function parseCli(args: string[]): CliOptions {
         break;
       case '--disturbance-resource-loss':
         options.disturbanceResourceLoss = parseUnitInterval(flag, args[++i]);
+        break;
+      case '--disturbance-radius':
+        options.disturbanceRadius = parseInteger(flag, args[++i]);
+        break;
+      case '--disturbance-refugia':
+        options.disturbanceRefugiaFraction = parseUnitInterval(flag, args[++i]);
         break;
       case '--export-json':
         options.exportJson = parsePath(flag, args[++i]);
@@ -466,6 +492,8 @@ function printHelp(): void {
       '  --disturbance-interval <n> Disturbance interval in ticks; 0 disables (default: 0)',
       '  --disturbance-energy-loss <n> Disturbance per-agent energy-loss fraction 0..1 (default: 0)',
       '  --disturbance-resource-loss <n> Disturbance per-cell resource-loss fraction 0..1 (default: 0)',
+      '  --disturbance-radius <n> Disturbance Manhattan radius; -1 applies globally (default: -1)',
+      '  --disturbance-refugia <n> Fraction of targeted disturbance cells spared as refugia 0..1 (default: 0)',
       '  --export-json <p>   Write full run export JSON',
       '  --export-csv <p>    Write per-tick metrics CSV',
       '  --export-experiment-json <p>  Write experiment sweep JSON',

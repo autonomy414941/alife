@@ -96,7 +96,11 @@ describe('run export', () => {
     const forcingRegenIndex = METRICS_CSV_COLUMNS.indexOf('forcing_regen_multiplier');
     const forcingContrastIndex = METRICS_CSV_COLUMNS.indexOf('forcing_fertility_contrast_multiplier');
     const disturbanceEventsIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_events_window');
+    const disturbanceRadiusIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_radius');
+    const disturbanceRefugiaIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_refugia_fraction');
     const disturbancePopulationShockIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_last_population_shock');
+    const disturbanceAffectedCellIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_last_affected_cell_fraction');
+    const disturbanceEventRefugiaIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_last_refugia_cell_fraction');
     const resilienceRecoveryTicksIndex = METRICS_CSV_COLUMNS.indexOf('resilience_recovery_ticks');
     const resilienceTurnoverSpikeIndex = METRICS_CSV_COLUMNS.indexOf('resilience_turnover_spike');
 
@@ -116,8 +120,21 @@ describe('run export', () => {
       10
     );
     expect(Number(row1[disturbanceEventsIndex])).toBe(runData.analytics[0].disturbance.eventsInWindow);
+    expect(Number(row1[disturbanceRadiusIndex])).toBe(runData.analytics[0].disturbance.radius);
+    expect(Number(row1[disturbanceRefugiaIndex])).toBeCloseTo(
+      runData.analytics[0].disturbance.refugiaFraction,
+      10
+    );
     expect(Number(row1[disturbancePopulationShockIndex])).toBeCloseTo(
       runData.analytics[0].disturbance.lastEventPopulationShock,
+      10
+    );
+    expect(Number(row1[disturbanceAffectedCellIndex])).toBeCloseTo(
+      runData.analytics[0].disturbance.lastEventAffectedCellFraction,
+      10
+    );
+    expect(Number(row1[disturbanceEventRefugiaIndex])).toBeCloseTo(
+      runData.analytics[0].disturbance.lastEventRefugiaCellFraction,
       10
     );
     expect(Number(row3[resilienceRecoveryTicksIndex])).toBe(runData.analytics[2].resilience.recoveryTicks);

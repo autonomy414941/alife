@@ -698,6 +698,96 @@ describe('LifeSimulation', () => {
     expect(analytics.resilience.extinctionBurstDepth).toBe(2);
   });
 
+  it('applies localized disturbance shocks to a footprint instead of the full map', () => {
+    const initialAgents = Array.from({ length: 5 }, (_, x) => ({
+      x,
+      y: 0,
+      energy: 1,
+      species: x + 1,
+      genome: { metabolism: 1, harvest: 1, aggression: 0 }
+    }));
+    const sim = new LifeSimulation({
+      seed: 64,
+      config: {
+        width: 5,
+        height: 1,
+        maxResource: 100,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        disturbanceInterval: 1,
+        disturbanceEnergyLoss: 1,
+        disturbanceResourceLoss: 0.5,
+        disturbanceRadius: 0,
+        disturbanceRefugiaFraction: 0
+      },
+      initialAgents
+    });
+    for (let x = 0; x < 5; x += 1) {
+      sim.setResource(x, 0, 10);
+    }
+
+    const summary = sim.step();
+    const analytics = sim.analytics(1);
+
+    expect(summary.population).toBe(4);
+    expect(analytics.disturbance.eventsInWindow).toBe(1);
+    expect(analytics.disturbance.radius).toBe(0);
+    expect(analytics.disturbance.refugiaFraction).toBe(0);
+    expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(0.2, 10);
+    expect(analytics.disturbance.lastEventResourceShock).toBeCloseTo(0.1, 10);
+    expect(analytics.disturbance.lastEventAffectedCellFraction).toBeCloseTo(0.2, 10);
+    expect(analytics.disturbance.lastEventRefugiaCellFraction).toBeCloseTo(0, 10);
+  });
+
+  it('preserves disturbance refugia inside the targeted footprint', () => {
+    const initialAgents = Array.from({ length: 5 }, (_, x) => ({
+      x,
+      y: 0,
+      energy: 1,
+      species: x + 1,
+      genome: { metabolism: 1, harvest: 1, aggression: 0 }
+    }));
+    const sim = new LifeSimulation({
+      seed: 65,
+      config: {
+        width: 5,
+        height: 1,
+        maxResource: 100,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        disturbanceInterval: 1,
+        disturbanceEnergyLoss: 1,
+        disturbanceResourceLoss: 0.5,
+        disturbanceRadius: -1,
+        disturbanceRefugiaFraction: 0.4
+      },
+      initialAgents
+    });
+    for (let x = 0; x < 5; x += 1) {
+      sim.setResource(x, 0, 10);
+    }
+
+    const summary = sim.step();
+    const analytics = sim.analytics(1);
+
+    expect(summary.population).toBe(2);
+    expect(analytics.disturbance.eventsInWindow).toBe(1);
+    expect(analytics.disturbance.radius).toBe(-1);
+    expect(analytics.disturbance.refugiaFraction).toBeCloseTo(0.4, 10);
+    expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(0.6, 10);
+    expect(analytics.disturbance.lastEventResourceShock).toBeCloseTo(0.3, 10);
+    expect(analytics.disturbance.lastEventAffectedCellFraction).toBeCloseTo(0.6, 10);
+    expect(analytics.disturbance.lastEventRefugiaCellFraction).toBeCloseTo(0.4, 10);
+  });
+
   it('scales decomposition by local biome fertility', () => {
     const sim = new LifeSimulation({
       seed: 22,
