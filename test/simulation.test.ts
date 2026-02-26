@@ -644,6 +644,9 @@ describe('LifeSimulation', () => {
     expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(0, 10);
     expect(analytics.disturbance.lastEventResourceShock).toBeCloseTo(0.25, 10);
     expect(analytics.resilience.recoveryTicks).toBe(0);
+    expect(analytics.resilience.populationTroughDepth).toBeCloseTo(0, 10);
+    expect(analytics.resilience.populationTroughTicks).toBe(0);
+    expect(analytics.resilience.delayedPopulationShockDepth).toBeCloseTo(0, 10);
     expect(analytics.resilience.extinctionBurstDepth).toBe(0);
   });
 
@@ -692,10 +695,55 @@ describe('LifeSimulation', () => {
     expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(1, 10);
     expect(analytics.resilience.recoveryTicks).toBe(-1);
     expect(analytics.resilience.recoveryProgress).toBeCloseTo(0, 10);
+    expect(analytics.resilience.populationTroughDepth).toBeCloseTo(1, 10);
+    expect(analytics.resilience.populationTroughTicks).toBe(0);
+    expect(analytics.resilience.delayedPopulationShockDepth).toBeCloseTo(0, 10);
     expect(analytics.resilience.preDisturbanceTurnoverRate).toBeCloseTo(0, 10);
     expect(analytics.resilience.postDisturbanceTurnoverRate).toBeCloseTo(2, 10);
     expect(analytics.resilience.turnoverSpike).toBeCloseTo(2, 10);
     expect(analytics.resilience.extinctionBurstDepth).toBe(2);
+  });
+
+  it('captures delayed population-shock trough depth and timing after a disturbance event', () => {
+    const sim = new LifeSimulation({
+      seed: 66,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0.5,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        disturbanceInterval: 2,
+        disturbanceEnergyLoss: 0.5,
+        disturbanceResourceLoss: 0
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 2,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    sim.step();
+    sim.step();
+    const summary = sim.step();
+    const analytics = sim.analytics(2);
+
+    expect(summary.population).toBe(0);
+    expect(analytics.disturbance.eventsInWindow).toBe(1);
+    expect(analytics.disturbance.lastEventTick).toBe(2);
+    expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(0, 10);
+    expect(analytics.resilience.populationTroughDepth).toBeCloseTo(1, 10);
+    expect(analytics.resilience.populationTroughTicks).toBe(1);
+    expect(analytics.resilience.delayedPopulationShockDepth).toBeCloseTo(1, 10);
   });
 
   it('applies localized disturbance shocks to a footprint instead of the full map', () => {

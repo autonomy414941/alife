@@ -120,6 +120,7 @@ interface DisturbanceEventState {
   affectedCells: number;
   totalCells: number;
   minPopulationSinceEvent: number;
+  minPopulationTickSinceEvent: number;
   minActiveSpeciesSinceEvent: number;
   recoveryTick: number | null;
 }
@@ -399,6 +400,9 @@ export class LifeSimulation {
       return {
         recoveryTicks: 0,
         recoveryProgress: 0,
+        populationTroughDepth: 0,
+        populationTroughTicks: 0,
+        delayedPopulationShockDepth: 0,
         preDisturbanceTurnoverRate: 0,
         postDisturbanceTurnoverRate: 0,
         turnoverSpike: 0,
@@ -414,6 +418,27 @@ export class LifeSimulation {
           : latestEvent.recoveryTick - latestEvent.tick;
     const recoveryProgress =
       latestEvent.populationBefore <= 0 ? 1 : clamp(this.agents.length / latestEvent.populationBefore, 0, 1);
+    const immediatePopulationShock =
+      latestEvent.populationBefore <= 0
+        ? 0
+        : clamp(
+            (latestEvent.populationBefore - latestEvent.populationAfterShock) / latestEvent.populationBefore,
+            0,
+            1
+          );
+    const populationTroughDepth =
+      latestEvent.populationBefore <= 0
+        ? 0
+        : clamp(
+            (latestEvent.populationBefore - latestEvent.minPopulationSinceEvent) / latestEvent.populationBefore,
+            0,
+            1
+          );
+    const populationTroughTicks =
+      latestEvent.populationBefore <= 0
+        ? 0
+        : Math.max(0, latestEvent.minPopulationTickSinceEvent - latestEvent.tick);
+    const delayedPopulationShockDepth = Math.max(0, populationTroughDepth - immediatePopulationShock);
 
     const postRates = this.buildSpeciesTurnoverRatesBetween(latestEvent.tick, this.tickCount);
     const preEndTick = latestEvent.tick - 1;
@@ -436,6 +461,9 @@ export class LifeSimulation {
     return {
       recoveryTicks,
       recoveryProgress,
+      populationTroughDepth,
+      populationTroughTicks,
+      delayedPopulationShockDepth,
       preDisturbanceTurnoverRate,
       postDisturbanceTurnoverRate,
       turnoverSpike,
@@ -1503,6 +1531,7 @@ export class LifeSimulation {
       affectedCells: affectedCellIndices.size,
       totalCells: this.config.width * this.config.height,
       minPopulationSinceEvent: populationAfterShock,
+      minPopulationTickSinceEvent: stepTick,
       minActiveSpeciesSinceEvent: activeSpeciesAfterShock,
       recoveryTick:
         populationBefore <= 0 || populationAfterShock >= populationBefore ? stepTick : null
@@ -1561,7 +1590,10 @@ export class LifeSimulation {
       if (event.tick > currentTick) {
         continue;
       }
-      event.minPopulationSinceEvent = Math.min(event.minPopulationSinceEvent, currentPopulation);
+      if (currentPopulation < event.minPopulationSinceEvent) {
+        event.minPopulationSinceEvent = currentPopulation;
+        event.minPopulationTickSinceEvent = currentTick;
+      }
       event.minActiveSpeciesSinceEvent = Math.min(event.minActiveSpeciesSinceEvent, currentActiveSpecies);
       if (
         event.recoveryTick === null &&

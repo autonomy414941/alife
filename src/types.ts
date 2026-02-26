@@ -137,6 +137,9 @@ export interface DisturbanceAnalytics {
 export interface ResilienceAnalytics {
   recoveryTicks: number;
   recoveryProgress: number;
+  populationTroughDepth: number;
+  populationTroughTicks: number;
+  delayedPopulationShockDepth: number;
   preDisturbanceTurnoverRate: number;
   postDisturbanceTurnoverRate: number;
   turnoverSpike: number;

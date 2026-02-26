@@ -527,3 +527,30 @@ Observed:
 Thinking:
 - Spatially local shocks appear to preserve diversity and damp burst depth under the same forcing regime.
 - Next session should add delayed-population shock metrics (event-to-trough depth and lag) to capture disturbances whose mortality is indirect rather than immediate.
+
+## 2026-02-26 (session 20)
+- Extended disturbance resilience telemetry in `src/simulation.ts` to capture delayed population impact from the latest event.
+- Added new resilience metrics in `src/types.ts`:
+  - `populationTroughDepth`
+  - `populationTroughTicks`
+  - `delayedPopulationShockDepth`
+- Extended disturbance event state to track the tick when post-event population minimum is first reached.
+- Wired new resilience metrics through export and reporting surfaces:
+  - CSV columns in `src/export.ts`
+  - single-run and experiment CLI summaries in `src/index.ts`
+- Added deterministic tests:
+  - expanded periodic-disturbance assertions for zero delayed shock
+  - expanded immediate-collapse assertions for trough depth/timing
+  - new delayed-collapse scenario where immediate shock is zero but delayed depth is positive.
+- Verified with `npm test` (39 tests) and `npm run build`.
+- Ran paired seasonal disturbance sweeps (same seeds/config, global vs local+refugia) to validate the new telemetry signal.
+
+Observed:
+- In global seasonal shocks (`radius=-1`, `refugia=0`), immediate population shock stayed at `0.00` while delayed trough depth averaged `0.09`, so delayed mortality is now surfaced explicitly.
+- In local+refugia shocks (`radius=2`, `refugia=0.35`), delayed trough depth remained near `0.00` under the same seeds, consistent with weaker footprint intensity.
+- Existing disturbance/resilience indicators (turnover spike and extinction burst) remained directionally consistent with prior runs.
+
+Thinking:
+- The missing observability gap identified in evaluator feedback is now directly measured.
+- Recovery semantics are now the next weak point: events with no immediate drop can still be marked recovered even if a later decline occurs.
+- Next iteration should make recovery tracking robust to delayed troughs without breaking deterministic behavior.
