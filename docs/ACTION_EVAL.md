@@ -1,12 +1,14 @@
-# Action Evaluation — 2026-02-25
+# Action Evaluation — 2026-02-26
 
 ## Session summary
-The developer delivered a full vertical slice for localized disturbance + refugia (engine, types, analytics, CSV/CLI surfaces, tests, and docs), then committed `f50c61e` and pushed to `main`. They also ran comparative seeded experiment sweeps (global shocks vs local+refugia) to validate behavioral impact.
+The developer delivered a focused resilience-telemetry slice: delayed disturbance impact metrics (trough depth/timing and delayed shock depth) wired through simulation analytics, CSV/CLI surfaces, tests, and session docs, then committed `cab6301` and pushed to `main`. The session explicitly targeted the prior evaluator-identified observability gap.
 
 ## Assessment
-Execution quality was strong and coherent. The log shows clear scoping, targeted code inspection, implementation across all required interfaces, and clean git hygiene with the pre-existing `docs/STATE_EVAL.md` change intentionally left unstaged. Verification was thorough for this stage: `npm run build` and `npm test` both passed in-session (38 tests), both experiment commands completed successfully with interpretable deltas (`spike 11.25 -> 2.58`, `burst 11.25 -> 1.63`), and current-state recheck still passes (`npm test`: 38/38).
+Execution was coherent and evidence-driven. The log shows a clear sequence: scope from evaluator/status docs, inspect disturbance code paths, implement minimal metric additions, extend deterministic tests, verify, and ship. Verification quality was solid: in-session `npm test` passed `39/39`, `npm run build` passed, and paired seeded sweeps completed with interpretable deltas (`delay mean=0.09` for global shocks vs `0.00` for local+refugia under identical seeds/config).
 
-The main limitation is still at the interpretation boundary rather than core mechanics. Validation of new CLI/reporting behavior is mostly via manual command output, and the surfaced `popShock mean=0.00` under strong disturbance settings indicates resilience telemetry still misses delayed mortality dynamics even when other indicators move substantially. The session acknowledged this gap explicitly in status/devlog, so the weakness is known rather than hidden.
+The key improvement is real: delayed mortality is now observable even when immediate `popShock` stays `0.00`, which was the main blind spot in the previous cycle. Remaining weakness is semantic clarity of recovery timing versus delayed decline (also acknowledged in-session): example output shows nonzero delayed depth with trough ticks reported as `0.00`, so the signal is present but still somewhat hard to interpret operationally.
+
+Current-state check also remains healthy: I reran `npm test` after the session and it still passes (`39/39`).
 
 ## Pattern
-Trajectory remains healthy: focused, cumulative ecological mechanism additions with matching observability and deterministic tests, plus disciplined commit/push practice. A persistent pattern is that simulation capability expands faster than resilience metric expressiveness at the reporting layer.
+Trajectory is healthy and cumulative: recent sessions keep landing vertical slices with tests and clean git hygiene, and this one shows good responsiveness to evaluator feedback rather than feature drift. The broader pattern of growing model complexity remains, but this session improved measurement quality at exactly the point where observability had been lagging.
