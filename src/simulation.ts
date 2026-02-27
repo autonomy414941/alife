@@ -1595,11 +1595,12 @@ export class LifeSimulation {
         event.minPopulationTickSinceEvent = currentTick;
       }
       event.minActiveSpeciesSinceEvent = Math.min(event.minActiveSpeciesSinceEvent, currentActiveSpecies);
-      if (
-        event.recoveryTick === null &&
-        event.populationBefore > 0 &&
-        currentPopulation >= event.populationBefore
-      ) {
+      if (event.populationBefore <= 0) {
+        continue;
+      }
+      if (currentPopulation < event.populationBefore) {
+        event.recoveryTick = null;
+      } else if (event.recoveryTick === null) {
         event.recoveryTick = currentTick;
       }
     }

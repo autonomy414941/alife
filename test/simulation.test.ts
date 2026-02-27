@@ -704,7 +704,7 @@ describe('LifeSimulation', () => {
     expect(analytics.resilience.extinctionBurstDepth).toBe(2);
   });
 
-  it('captures delayed population-shock trough depth and timing after a disturbance event', () => {
+  it('captures delayed population-shock trough timing and revokes immediate recovery after delayed collapse', () => {
     const sim = new LifeSimulation({
       seed: 66,
       config: {
@@ -741,6 +741,8 @@ describe('LifeSimulation', () => {
     expect(analytics.disturbance.eventsInWindow).toBe(1);
     expect(analytics.disturbance.lastEventTick).toBe(2);
     expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(0, 10);
+    expect(analytics.resilience.recoveryTicks).toBe(-1);
+    expect(analytics.resilience.recoveryProgress).toBeCloseTo(0, 10);
     expect(analytics.resilience.populationTroughDepth).toBeCloseTo(1, 10);
     expect(analytics.resilience.populationTroughTicks).toBe(1);
     expect(analytics.resilience.delayedPopulationShockDepth).toBeCloseTo(1, 10);
