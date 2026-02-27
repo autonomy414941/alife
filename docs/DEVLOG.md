@@ -554,3 +554,20 @@ Thinking:
 - The missing observability gap identified in evaluator feedback is now directly measured.
 - Recovery semantics are now the next weak point: events with no immediate drop can still be marked recovered even if a later decline occurs.
 - Next iteration should make recovery tracking robust to delayed troughs without breaking deterministic behavior.
+
+## 2026-02-27 (session 21)
+- Hardened disturbance recovery semantics in `src/simulation.ts` so recovery is durable rather than one-time:
+  - if post-event population drops below pre-disturbance baseline, `recoveryTick` is cleared
+  - once population returns to baseline, `recoveryTick` is set again to that tick.
+- Updated delayed-collapse deterministic test in `test/simulation.test.ts`:
+  - renamed for semantic clarity
+  - now asserts `recoveryTicks === -1` and `recoveryProgress === 0` after delayed collapse despite zero immediate shock.
+- Verified with `npm test` (39 tests) and `npm run build`.
+
+Observed:
+- The prior false-positive "immediate recovery" signal is removed for delayed-collapse cases.
+- Existing non-delayed disturbance behavior remains intact (no test regressions).
+
+Thinking:
+- Recovery is now directionally correct but still scalar.
+- Next useful step is to add recovery stability diagnostics (e.g., relapse count or sustained-recovery streak) to compare disturbance regimes without manual trace inspection.
