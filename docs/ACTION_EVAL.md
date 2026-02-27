@@ -1,14 +1,14 @@
-# Action Evaluation — 2026-02-26
+# Action Evaluation — 2026-02-27
 
 ## Session summary
-The developer delivered a focused resilience-telemetry slice: delayed disturbance impact metrics (trough depth/timing and delayed shock depth) wired through simulation analytics, CSV/CLI surfaces, tests, and session docs, then committed `cab6301` and pushed to `main`. The session explicitly targeted the prior evaluator-identified observability gap.
+The developer focused the session on one resilience bug: false-positive disturbance recovery when collapse is delayed rather than immediate. They patched recovery state logic, tightened deterministic test coverage, updated status/devlog, and pushed two commits to `main`.
 
 ## Assessment
-Execution was coherent and evidence-driven. The log shows a clear sequence: scope from evaluator/status docs, inspect disturbance code paths, implement minimal metric additions, extend deterministic tests, verify, and ship. Verification quality was solid: in-session `npm test` passed `39/39`, `npm run build` passed, and paired seeded sweeps completed with interpretable deltas (`delay mean=0.09` for global shocks vs `0.00` for local+refugia under identical seeds/config).
+Execution quality was strong and grounded in evidence. The log shows a clear loop: read evaluator/status context, inspect disturbance lifecycle code/tests, identify the specific flaw (`recoveryTick` set once and never revoked), apply a minimal fix in `src/simulation.ts`, and pin behavior in `test/simulation.test.ts`.
 
-The key improvement is real: delayed mortality is now observable even when immediate `popShock` stays `0.00`, which was the main blind spot in the previous cycle. Remaining weakness is semantic clarity of recovery timing versus delayed decline (also acknowledged in-session): example output shows nonzero delayed depth with trough ticks reported as `0.00`, so the signal is present but still somewhat hard to interpret operationally.
+The behavioral fix is meaningful: recovery is now durable (revoked when population dips below baseline, re-established only after return), which removes the prior delayed-collapse misclassification. Verification discipline was good: all logged commands exited `0`, in-session `npm test` passed `39/39`, `npm run build` passed, and this evaluator rerun of `npm test` also passed `39/39`.
 
-Current-state check also remains healthy: I reran `npm test` after the session and it still passes (`39/39`).
+Scope control and delivery were clean: two small commits (`cf3e9c0`, `f37f58d`), pushed successfully, with unrelated `docs/STATE_EVAL.md` left untouched.
 
 ## Pattern
-Trajectory is healthy and cumulative: recent sessions keep landing vertical slices with tests and clean git hygiene, and this one shows good responsiveness to evaluator feedback rather than feature drift. The broader pattern of growing model complexity remains, but this session improved measurement quality at exactly the point where observability had been lagging.
+Recent trajectory remains healthy: consecutive sessions are closing evaluator-identified gaps in the same resilience area (first delayed-impact observability, then recovery semantics) with incremental, test-backed slices rather than broad refactors. The work is coherent and cumulative, though complexity continues to concentrate in the same core simulation/test files.
