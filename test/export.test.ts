@@ -116,6 +116,11 @@ describe('run export', () => {
       'resilience_delayed_population_shock_depth'
     );
     const resilienceTurnoverSpikeIndex = METRICS_CSV_COLUMNS.indexOf('resilience_turnover_spike');
+    const resilienceMemoryEventCountIndex = METRICS_CSV_COLUMNS.indexOf('resilience_memory_event_count');
+    const resilienceMemoryRelapseFractionIndex = METRICS_CSV_COLUMNS.indexOf(
+      'resilience_memory_relapse_event_fraction'
+    );
+    const resilienceMemoryStabilityMeanIndex = METRICS_CSV_COLUMNS.indexOf('resilience_memory_stability_index_mean');
 
     expect(Number(row1[tickIndex])).toBe(1);
     expect(Number(row1[windowSizeIndex])).toBe(1);
@@ -172,6 +177,15 @@ describe('run export', () => {
       runData.analytics[2].resilience.turnoverSpike,
       10
     );
+    expect(Number(row3[resilienceMemoryEventCountIndex])).toBe(runData.analytics[2].resilience.memoryEventCount);
+    expect(Number(row3[resilienceMemoryRelapseFractionIndex])).toBeCloseTo(
+      runData.analytics[2].resilience.memoryRelapseEventFraction,
+      10
+    );
+    expect(Number(row3[resilienceMemoryStabilityMeanIndex])).toBeCloseTo(
+      runData.analytics[2].resilience.memoryStabilityIndexMean,
+      10
+    );
   });
 
   it('rejects mismatched summary and analytics lengths', () => {
@@ -213,5 +227,23 @@ describe('run export', () => {
       experiment.aggregate.finalResilienceStabilityIndex.max,
       10
     );
+    expect(
+      Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('final_resilience_memory_stability_index_mean')])
+    ).toBeCloseTo(experiment.aggregate.finalResilienceMemoryStabilityIndex.mean, 10);
+    expect(
+      Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('final_resilience_memory_stability_index_min')])
+    ).toBeCloseTo(experiment.aggregate.finalResilienceMemoryStabilityIndex.min, 10);
+    expect(
+      Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('final_resilience_memory_stability_index_max')])
+    ).toBeCloseTo(experiment.aggregate.finalResilienceMemoryStabilityIndex.max, 10);
+    expect(
+      Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('final_resilience_relapse_event_fraction_mean')])
+    ).toBeCloseTo(experiment.aggregate.finalResilienceRelapseEventFraction.mean, 10);
+    expect(
+      Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('final_resilience_relapse_event_fraction_min')])
+    ).toBeCloseTo(experiment.aggregate.finalResilienceRelapseEventFraction.min, 10);
+    expect(
+      Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('final_resilience_relapse_event_fraction_max')])
+    ).toBeCloseTo(experiment.aggregate.finalResilienceRelapseEventFraction.max, 10);
   });
 });

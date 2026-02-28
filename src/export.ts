@@ -103,6 +103,9 @@ export const METRICS_CSV_COLUMNS = [
   'resilience_post_turnover_rate',
   'resilience_turnover_spike',
   'resilience_extinction_burst_depth',
+  'resilience_memory_event_count',
+  'resilience_memory_relapse_event_fraction',
+  'resilience_memory_stability_index_mean',
   'locality_occupied_cells',
   'locality_occupied_cell_fraction',
   'locality_mean_dominant_species_share',
@@ -160,7 +163,13 @@ export const EXPERIMENT_AGGREGATE_CSV_COLUMNS = [
   'final_species_net_diversification_rate_max',
   'final_resilience_stability_index_mean',
   'final_resilience_stability_index_min',
-  'final_resilience_stability_index_max'
+  'final_resilience_stability_index_max',
+  'final_resilience_memory_stability_index_mean',
+  'final_resilience_memory_stability_index_min',
+  'final_resilience_memory_stability_index_max',
+  'final_resilience_relapse_event_fraction_mean',
+  'final_resilience_relapse_event_fraction_min',
+  'final_resilience_relapse_event_fraction_max'
 ] as const;
 
 export function buildRunExport(input: BuildRunExportInput): SimulationRunExport {
@@ -279,6 +288,9 @@ export function metricsToCsv(summaries: StepSummary[], analytics: EvolutionAnaly
         point.resilience.postDisturbanceTurnoverRate,
         point.resilience.turnoverSpike,
         point.resilience.extinctionBurstDepth,
+        point.resilience.memoryEventCount,
+        point.resilience.memoryRelapseEventFraction,
+        point.resilience.memoryStabilityIndexMean,
         point.locality.occupiedCells,
         point.locality.occupiedCellFraction,
         point.locality.meanDominantSpeciesShare,
@@ -343,7 +355,13 @@ export function experimentAggregateToCsv(exportData: SimulationExperimentExport)
     aggregate.finalSpeciesNetDiversificationRate.max,
     aggregate.finalResilienceStabilityIndex.mean,
     aggregate.finalResilienceStabilityIndex.min,
-    aggregate.finalResilienceStabilityIndex.max
+    aggregate.finalResilienceStabilityIndex.max,
+    aggregate.finalResilienceMemoryStabilityIndex.mean,
+    aggregate.finalResilienceMemoryStabilityIndex.min,
+    aggregate.finalResilienceMemoryStabilityIndex.max,
+    aggregate.finalResilienceRelapseEventFraction.mean,
+    aggregate.finalResilienceRelapseEventFraction.min,
+    aggregate.finalResilienceRelapseEventFraction.max
   ]);
   return `${EXPERIMENT_AGGREGATE_CSV_COLUMNS.join(',')}\n${row}\n`;
 }

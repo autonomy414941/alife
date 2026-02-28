@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runExperiment } from '../src/experiment';
+import { computeResilienceStabilityIndex, runExperiment } from '../src/experiment';
 
 describe('runExperiment', () => {
   it('is deterministic for the same seed sweep configuration', () => {
@@ -61,8 +61,42 @@ describe('runExperiment', () => {
     expect(result.aggregate.finalSpeciesExtinctionRate).toEqual({ mean: 1, min: 1, max: 1 });
     expect(result.aggregate.finalSpeciesNetDiversificationRate).toEqual({ mean: -1, min: -1, max: -1 });
     const resilienceStability = result.runs.map((run) => run.finalResilienceStabilityIndex);
+    const resilienceMemoryStability = result.runs.map((run) => run.finalResilienceMemoryStabilityIndex);
+    const resilienceRelapseEventFraction = result.runs.map((run) => run.finalResilienceRelapseEventFraction);
     expect(resilienceStability.every((value) => value >= 0 && value <= 1)).toBe(true);
+    expect(resilienceMemoryStability.every((value) => value >= 0 && value <= 1)).toBe(true);
+    expect(resilienceRelapseEventFraction.every((value) => value >= 0 && value <= 1)).toBe(true);
     expect(result.aggregate.finalResilienceStabilityIndex).toEqual(summarize(resilienceStability));
+    expect(result.aggregate.finalResilienceMemoryStabilityIndex).toEqual(summarize(resilienceMemoryStability));
+    expect(result.aggregate.finalResilienceRelapseEventFraction).toEqual(summarize(resilienceRelapseEventFraction));
+  });
+
+  it('clamps resilience stability-index inputs to keep formula bounded', () => {
+    const clippedHigh = computeResilienceStabilityIndex(
+      resilienceSnapshot({
+        recoveryProgress: 2,
+        sustainedRecoveryTicks: -2,
+        recoveryRelapses: -5
+      })
+    );
+    const clippedLow = computeResilienceStabilityIndex(
+      resilienceSnapshot({
+        recoveryProgress: -0.5,
+        sustainedRecoveryTicks: 4,
+        recoveryRelapses: 2
+      })
+    );
+    const relapsePenalty = computeResilienceStabilityIndex(
+      resilienceSnapshot({
+        recoveryProgress: 1,
+        sustainedRecoveryTicks: 2,
+        recoveryRelapses: 3
+      })
+    );
+
+    expect(clippedHigh).toBeCloseTo(1, 10);
+    expect(clippedLow).toBeCloseTo(0, 10);
+    expect(relapsePenalty).toBeCloseTo(0.5, 10);
   });
 });
 
@@ -83,4 +117,24 @@ function summarize(values: number[]): { mean: number; min: number; max: number }
     total += value;
   }
   return { mean: total / values.length, min, max };
+}
+
+function resilienceSnapshot(overrides: Partial<Parameters<typeof computeResilienceStabilityIndex>[0]>) {
+  return {
+    recoveryTicks: 0,
+    recoveryProgress: 0,
+    recoveryRelapses: 0,
+    sustainedRecoveryTicks: 0,
+    populationTroughDepth: 0,
+    populationTroughTicks: 0,
+    delayedPopulationShockDepth: 0,
+    preDisturbanceTurnoverRate: 0,
+    postDisturbanceTurnoverRate: 0,
+    turnoverSpike: 0,
+    extinctionBurstDepth: 0,
+    memoryEventCount: 0,
+    memoryRelapseEventFraction: 0,
+    memoryStabilityIndexMean: 0,
+    ...overrides
+  };
 }

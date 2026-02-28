@@ -47,6 +47,8 @@ export function runExperiment(input: RunExperimentInput): SimulationExperimentEx
       stepsExecuted: series.summaries.length,
       extinct: finalSummary.population === 0,
       finalResilienceStabilityIndex: computeResilienceStabilityIndex(finalAnalytics.resilience),
+      finalResilienceMemoryStabilityIndex: clampUnitInterval(finalAnalytics.resilience.memoryStabilityIndexMean),
+      finalResilienceRelapseEventFraction: clampUnitInterval(finalAnalytics.resilience.memoryRelapseEventFraction),
       finalSummary,
       finalAnalytics
     });
@@ -116,11 +118,13 @@ function aggregateRuns(runs: ExperimentRunSummary[]): ExperimentAggregateSummary
     finalSpeciesNetDiversificationRate: summarize(
       runs.map((run) => run.finalAnalytics.species.netDiversificationRate)
     ),
-    finalResilienceStabilityIndex: summarize(runs.map((run) => run.finalResilienceStabilityIndex))
+    finalResilienceStabilityIndex: summarize(runs.map((run) => run.finalResilienceStabilityIndex)),
+    finalResilienceMemoryStabilityIndex: summarize(runs.map((run) => run.finalResilienceMemoryStabilityIndex)),
+    finalResilienceRelapseEventFraction: summarize(runs.map((run) => run.finalResilienceRelapseEventFraction))
   };
 }
 
-function computeResilienceStabilityIndex(resilience: ResilienceAnalytics): number {
+export function computeResilienceStabilityIndex(resilience: ResilienceAnalytics): number {
   const progress = clampUnitInterval(resilience.recoveryProgress);
   const sustained = Math.max(0, resilience.sustainedRecoveryTicks);
   const relapses = Math.max(0, resilience.recoveryRelapses);

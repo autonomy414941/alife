@@ -692,6 +692,87 @@ describe('LifeSimulation', () => {
     expect(analytics.resilience.recoveryProgress).toBeCloseTo(1, 10);
   });
 
+  it('reports full resilience memory stability when repeated disturbances recover without relapses', () => {
+    const sim = new LifeSimulation({
+      seed: 68,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        disturbanceInterval: 1,
+        disturbanceEnergyLoss: 0.5,
+        disturbanceResourceLoss: 0
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 2,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    sim.step();
+    sim.step();
+    sim.step();
+    const analytics = sim.analytics(2);
+
+    expect(analytics.resilience.memoryEventCount).toBe(3);
+    expect(analytics.resilience.memoryRelapseEventFraction).toBeCloseTo(0, 10);
+    expect(analytics.resilience.memoryStabilityIndexMean).toBeCloseTo(1, 10);
+  });
+
+  it('tracks relapse history across disturbance events in resilience memory', () => {
+    const sim = new LifeSimulation({
+      seed: 5,
+      config: {
+        width: 2,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        dispersalPressure: -5,
+        dispersalRadius: 0,
+        disturbanceInterval: 1,
+        disturbanceEnergyLoss: 1,
+        disturbanceResourceLoss: 0,
+        disturbanceRadius: 0,
+        disturbanceRefugiaFraction: 0
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    const tick1 = sim.step();
+    const tick2 = sim.step();
+    const analytics = sim.analytics(2);
+
+    expect(tick1.population).toBe(1);
+    expect(tick2.population).toBe(0);
+    expect(analytics.resilience.memoryEventCount).toBe(2);
+    expect(analytics.resilience.memoryRelapseEventFraction).toBeCloseTo(0.5, 10);
+    expect(analytics.resilience.memoryStabilityIndexMean).toBeCloseTo(0, 10);
+  });
+
   it('reports disturbance-driven turnover spikes and extinction burst depth', () => {
     const sim = new LifeSimulation({
       seed: 63,

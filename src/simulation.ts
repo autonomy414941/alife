@@ -397,6 +397,25 @@ export class LifeSimulation {
 
   private buildResilienceAnalytics(): ResilienceAnalytics {
     const latestEvent = this.latestDisturbanceEvent();
+    const currentPopulation = this.agents.length;
+    const memoryEvents = this.disturbanceEvents.filter((event) => event.populationBefore > 0);
+    let memoryRelapseEvents = 0;
+    let memoryStabilityIndexTotal = 0;
+    for (const event of memoryEvents) {
+      const recovery = this.buildRecoveryStateForEvent(event, currentPopulation);
+      if (recovery.recoveryRelapses > 0) {
+        memoryRelapseEvents += 1;
+      }
+      memoryStabilityIndexTotal += this.computeResilienceStabilityIndex(
+        recovery.recoveryProgress,
+        recovery.sustainedRecoveryTicks,
+        recovery.recoveryRelapses
+      );
+    }
+    const memoryEventCount = memoryEvents.length;
+    const memoryRelapseEventFraction = memoryEventCount === 0 ? 0 : memoryRelapseEvents / memoryEventCount;
+    const memoryStabilityIndexMean = memoryEventCount === 0 ? 0 : memoryStabilityIndexTotal / memoryEventCount;
+
     if (latestEvent === null) {
       return {
         recoveryTicks: 0,
@@ -409,23 +428,14 @@ export class LifeSimulation {
         preDisturbanceTurnoverRate: 0,
         postDisturbanceTurnoverRate: 0,
         turnoverSpike: 0,
-        extinctionBurstDepth: 0
+        extinctionBurstDepth: 0,
+        memoryEventCount: 0,
+        memoryRelapseEventFraction: 0,
+        memoryStabilityIndexMean: 0
       };
     }
 
-    const recoveryTicks =
-      latestEvent.populationBefore <= 0
-        ? 0
-        : latestEvent.recoveryTick === null
-          ? -1
-          : latestEvent.recoveryTick - latestEvent.tick;
-    const recoveryRelapses = latestEvent.populationBefore <= 0 ? 0 : latestEvent.recoveryRelapses;
-    const sustainedRecoveryTicks =
-      latestEvent.populationBefore <= 0 || latestEvent.recoveryTick === null
-        ? 0
-        : Math.max(0, this.tickCount - latestEvent.recoveryTick);
-    const recoveryProgress =
-      latestEvent.populationBefore <= 0 ? 1 : clamp(this.agents.length / latestEvent.populationBefore, 0, 1);
+    const latestRecovery = this.buildRecoveryStateForEvent(latestEvent, currentPopulation);
     const immediatePopulationShock =
       latestEvent.populationBefore <= 0
         ? 0
@@ -467,18 +477,57 @@ export class LifeSimulation {
     );
 
     return {
-      recoveryTicks,
-      recoveryProgress,
-      recoveryRelapses,
-      sustainedRecoveryTicks,
+      recoveryTicks: latestRecovery.recoveryTicks,
+      recoveryProgress: latestRecovery.recoveryProgress,
+      recoveryRelapses: latestRecovery.recoveryRelapses,
+      sustainedRecoveryTicks: latestRecovery.sustainedRecoveryTicks,
       populationTroughDepth,
       populationTroughTicks,
       delayedPopulationShockDepth,
       preDisturbanceTurnoverRate,
       postDisturbanceTurnoverRate,
       turnoverSpike,
-      extinctionBurstDepth
+      extinctionBurstDepth,
+      memoryEventCount,
+      memoryRelapseEventFraction,
+      memoryStabilityIndexMean
     };
+  }
+
+  private buildRecoveryStateForEvent(
+    event: DisturbanceEventState,
+    currentPopulation: number
+  ): {
+    recoveryTicks: number;
+    recoveryProgress: number;
+    recoveryRelapses: number;
+    sustainedRecoveryTicks: number;
+  } {
+    if (event.populationBefore <= 0) {
+      return {
+        recoveryTicks: 0,
+        recoveryProgress: 1,
+        recoveryRelapses: 0,
+        sustainedRecoveryTicks: 0
+      };
+    }
+    return {
+      recoveryTicks: event.recoveryTick === null ? -1 : event.recoveryTick - event.tick,
+      recoveryProgress: clamp(currentPopulation / event.populationBefore, 0, 1),
+      recoveryRelapses: event.recoveryRelapses,
+      sustainedRecoveryTicks: event.recoveryTick === null ? 0 : Math.max(0, this.tickCount - event.recoveryTick)
+    };
+  }
+
+  private computeResilienceStabilityIndex(
+    recoveryProgress: number,
+    sustainedRecoveryTicks: number,
+    recoveryRelapses: number
+  ): number {
+    const progress = clamp(recoveryProgress, 0, 1);
+    const sustained = Math.max(0, sustainedRecoveryTicks);
+    const relapses = Math.max(0, recoveryRelapses);
+    return (progress * (sustained + 1)) / (sustained + relapses + 1);
   }
 
   private countDisturbanceEventsInWindow(window: TurnoverWindow): number {

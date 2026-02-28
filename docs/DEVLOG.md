@@ -627,3 +627,33 @@ Observed:
 Thinking:
 - The new aggregate compresses relapse/stability behavior into a useful cross-run comparison signal.
 - Next leverage point is multi-event memory: latest-event resilience is informative but still misses path dependence under repeated shocks.
+
+## 2026-02-28 (session 24)
+- Added multi-event resilience memory in `src/simulation.ts`:
+  - `memoryEventCount`: number of disturbance events with `populationBefore > 0`.
+  - `memoryRelapseEventFraction`: share of remembered events with `recoveryRelapses > 0`.
+  - `memoryStabilityIndexMean`: mean of per-event stability index over remembered events.
+- Refactored resilience computation to reuse per-event recovery state and stability-index calculation.
+- Promoted memory metrics into experiment outputs in `src/experiment.ts`:
+  - new run fields: `finalResilienceMemoryStabilityIndex`, `finalResilienceRelapseEventFraction`.
+  - new aggregate fields (mean/min/max) for both metrics.
+- Extended export/report wiring:
+  - added memory columns to per-tick metrics CSV in `src/export.ts`.
+  - added memory aggregate columns to experiment aggregate CSV.
+  - updated experiment CLI resilience summary in `src/index.ts` with `memoryIndex(mean=...)` and `relapseEvents(mean=...)`.
+- Expanded deterministic tests:
+  - `test/simulation.test.ts`: repeated-recovery memory case and relapse-history memory case.
+  - `test/experiment.test.ts`: bounded stability-index formula test + aggregate consistency for new run fields.
+  - `test/export.test.ts`: CSV mapping for new memory columns and aggregate fields.
+- Verified with `npm test` (43 tests) and `npm run build`.
+- Re-ran paired 8-run seeded sweeps (seeds `20260228..20260235`, same config as session 23):
+  - global shocks (`radius=-1`, `refugia=0`): `stabilityIndex=0.44`, `memoryIndex=0.54`, `relapseEvents=1.00`, `spike=12.50`.
+  - local refugia (`radius=2`, `refugia=0.35`): `stabilityIndex=0.81`, `memoryIndex=0.89`, `relapseEvents=0.38`, `spike=1.48`.
+
+Observed:
+- Memory metrics preserve the same regime ordering as latest-event stability, while adding historical burden visibility across repeated shocks.
+- Relapse-event fraction is especially interpretable: global shocks triggered relapse history in essentially every remembered event, while local refugia reduced that substantially.
+
+Thinking:
+- The next experiment should test when memory and latest-event metrics diverge (likely at higher disturbance cadence).
+- A targeted interval/amplitude sweep with fixed seeds is the most direct way to map that divergence surface.

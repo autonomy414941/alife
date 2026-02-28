@@ -146,6 +146,9 @@ export interface ResilienceAnalytics {
   postDisturbanceTurnoverRate: number;
   turnoverSpike: number;
   extinctionBurstDepth: number;
+  memoryEventCount: number;
+  memoryRelapseEventFraction: number;
+  memoryStabilityIndexMean: number;
 }
 
 export interface EvolutionAnalyticsSnapshot {
@@ -272,6 +275,8 @@ export interface ExperimentRunSummary {
   stepsExecuted: number;
   extinct: boolean;
   finalResilienceStabilityIndex: number;
+  finalResilienceMemoryStabilityIndex: number;
+  finalResilienceRelapseEventFraction: number;
   finalSummary: StepSummary;
   finalAnalytics: EvolutionAnalyticsSnapshot;
 }
@@ -290,6 +295,8 @@ export interface ExperimentAggregateSummary {
   finalSpeciesExtinctionRate: NumericAggregate;
   finalSpeciesNetDiversificationRate: NumericAggregate;
   finalResilienceStabilityIndex: NumericAggregate;
+  finalResilienceMemoryStabilityIndex: NumericAggregate;
+  finalResilienceRelapseEventFraction: NumericAggregate;
 }
 
 export interface SimulationExperimentConfig {
