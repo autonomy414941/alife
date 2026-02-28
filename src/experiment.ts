@@ -3,6 +3,7 @@ import {
   ExperimentAggregateSummary,
   ExperimentRunSummary,
   NumericAggregate,
+  ResilienceAnalytics,
   SimulationExperimentConfig,
   SimulationExperimentExport
 } from './types';
@@ -45,6 +46,7 @@ export function runExperiment(input: RunExperimentInput): SimulationExperimentEx
       seed,
       stepsExecuted: series.summaries.length,
       extinct: finalSummary.population === 0,
+      finalResilienceStabilityIndex: computeResilienceStabilityIndex(finalAnalytics.resilience),
       finalSummary,
       finalAnalytics
     });
@@ -113,8 +115,26 @@ function aggregateRuns(runs: ExperimentRunSummary[]): ExperimentAggregateSummary
     finalSpeciesExtinctionRate: summarize(runs.map((run) => run.finalAnalytics.species.extinctionRate)),
     finalSpeciesNetDiversificationRate: summarize(
       runs.map((run) => run.finalAnalytics.species.netDiversificationRate)
-    )
+    ),
+    finalResilienceStabilityIndex: summarize(runs.map((run) => run.finalResilienceStabilityIndex))
   };
+}
+
+function computeResilienceStabilityIndex(resilience: ResilienceAnalytics): number {
+  const progress = clampUnitInterval(resilience.recoveryProgress);
+  const sustained = Math.max(0, resilience.sustainedRecoveryTicks);
+  const relapses = Math.max(0, resilience.recoveryRelapses);
+  return (progress * (sustained + 1)) / (sustained + relapses + 1);
+}
+
+function clampUnitInterval(value: number): number {
+  if (value < 0) {
+    return 0;
+  }
+  if (value > 1) {
+    return 1;
+  }
+  return value;
 }
 
 function summarize(values: number[]): NumericAggregate {

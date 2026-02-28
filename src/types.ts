@@ -271,6 +271,7 @@ export interface ExperimentRunSummary {
   seed: number;
   stepsExecuted: number;
   extinct: boolean;
+  finalResilienceStabilityIndex: number;
   finalSummary: StepSummary;
   finalAnalytics: EvolutionAnalyticsSnapshot;
 }
@@ -288,6 +289,7 @@ export interface ExperimentAggregateSummary {
   finalSpeciesSpeciationRate: NumericAggregate;
   finalSpeciesExtinctionRate: NumericAggregate;
   finalSpeciesNetDiversificationRate: NumericAggregate;
+  finalResilienceStabilityIndex: NumericAggregate;
 }
 
 export interface SimulationExperimentConfig {

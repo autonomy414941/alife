@@ -201,5 +201,17 @@ describe('run export', () => {
     expect(Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('extinct_runs')])).toBe(
       experiment.aggregate.extinctRuns
     );
+    expect(Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('final_resilience_stability_index_mean')])).toBeCloseTo(
+      experiment.aggregate.finalResilienceStabilityIndex.mean,
+      10
+    );
+    expect(Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('final_resilience_stability_index_min')])).toBeCloseTo(
+      experiment.aggregate.finalResilienceStabilityIndex.min,
+      10
+    );
+    expect(Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('final_resilience_stability_index_max')])).toBeCloseTo(
+      experiment.aggregate.finalResilienceStabilityIndex.max,
+      10
+    );
   });
 });

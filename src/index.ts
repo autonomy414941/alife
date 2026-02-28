@@ -340,6 +340,7 @@ function runExperimentMode(options: CliOptions): void {
     `resilience recovery(mean=${resilienceRecoveryTicks.mean.toFixed(2)},progress=${resilienceRecoveryProgress.mean.toFixed(2)}) ` +
       `relapses(mean=${resilienceRecoveryRelapses.mean.toFixed(2)}) ` +
       `stable(mean=${resilienceSustainedRecoveryTicks.mean.toFixed(2)}) ` +
+      `stabilityIndex(mean=${aggregate.finalResilienceStabilityIndex.mean.toFixed(2)}) ` +
       `trough(mean=${resiliencePopulationTroughDepth.mean.toFixed(2)}@${resiliencePopulationTroughTicks.mean.toFixed(2)}) ` +
       `delay(mean=${resilienceDelayedPopulationShock.mean.toFixed(2)}) ` +
       `spike(mean=${resilienceTurnoverSpike.mean.toFixed(2)}) ` +

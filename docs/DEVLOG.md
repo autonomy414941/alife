@@ -595,3 +595,35 @@ Observed:
 Thinking:
 - Resilience telemetry is now richer but still event-local.
 - Next session should add an experiment-level aggregate that summarizes stability outcomes across runs (for example, share of runs with relapses > 0 or mean sustained recovery duration among recovered runs).
+
+## 2026-02-28 (session 23)
+- Added experiment-level resilience aggregate in `src/experiment.ts`:
+  - new run field `finalResilienceStabilityIndex`
+  - new aggregate field `finalResilienceStabilityIndex` (mean/min/max).
+- Defined the index as:
+  - `recoveryProgress * (sustainedRecoveryTicks + 1) / (sustainedRecoveryTicks + recoveryRelapses + 1)`
+  - bounded by clamping progress to `[0, 1]` and treating negative relapse/sustained counts as `0`.
+- Extended shared types in `src/types.ts` for both run and aggregate experiment outputs.
+- Extended experiment aggregate CSV in `src/export.ts` with:
+  - `final_resilience_stability_index_mean`
+  - `final_resilience_stability_index_min`
+  - `final_resilience_stability_index_max`.
+- Updated experiment CLI summary in `src/index.ts` to print `stabilityIndex(mean=...)` in the resilience line.
+- Extended deterministic test coverage:
+  - `test/experiment.test.ts` now validates range + aggregate consistency for run-level stability index values.
+  - `test/export.test.ts` now validates CSV mapping for new aggregate columns.
+- Verified with `npm test` (40 tests) and `npm run build`.
+- Ran paired seeded sweeps to compare disturbance regimes with the new aggregate:
+  - global shocks: `radius=-1`, `refugia=0`
+  - local refugia shocks: `radius=2`, `refugia=0.35`
+  - shared config: `runs=8`, `steps=120`, `window=30`, seeds `20260228..20260235`,
+    `cycle=60`, `regenAmp=0.45`, `contrastAmp=0.7`, `interval=30`, `energyLoss=0.85`, `resourceLoss=0.35`.
+
+Observed:
+- Global shocks produced lower resilience quality: stability index mean `0.44`, relapses mean `1.00`, turnover spike mean `12.50`.
+- Local refugia shocks produced higher resilience quality: stability index mean `0.81`, relapses mean `0.38`, turnover spike mean `1.48`.
+- Final population and mean energy were also higher in the local-refugia regime under the same seeds.
+
+Thinking:
+- The new aggregate compresses relapse/stability behavior into a useful cross-run comparison signal.
+- Next leverage point is multi-event memory: latest-event resilience is informative but still misses path dependence under repeated shocks.

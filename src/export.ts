@@ -157,7 +157,10 @@ export const EXPERIMENT_AGGREGATE_CSV_COLUMNS = [
   'final_species_extinction_rate_max',
   'final_species_net_diversification_rate_mean',
   'final_species_net_diversification_rate_min',
-  'final_species_net_diversification_rate_max'
+  'final_species_net_diversification_rate_max',
+  'final_resilience_stability_index_mean',
+  'final_resilience_stability_index_min',
+  'final_resilience_stability_index_max'
 ] as const;
 
 export function buildRunExport(input: BuildRunExportInput): SimulationRunExport {
@@ -337,7 +340,10 @@ export function experimentAggregateToCsv(exportData: SimulationExperimentExport)
     aggregate.finalSpeciesExtinctionRate.max,
     aggregate.finalSpeciesNetDiversificationRate.mean,
     aggregate.finalSpeciesNetDiversificationRate.min,
-    aggregate.finalSpeciesNetDiversificationRate.max
+    aggregate.finalSpeciesNetDiversificationRate.max,
+    aggregate.finalResilienceStabilityIndex.mean,
+    aggregate.finalResilienceStabilityIndex.min,
+    aggregate.finalResilienceStabilityIndex.max
   ]);
   return `${EXPERIMENT_AGGREGATE_CSV_COLUMNS.join(',')}\n${row}\n`;
 }

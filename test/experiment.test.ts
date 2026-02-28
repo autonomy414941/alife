@@ -60,5 +60,27 @@ describe('runExperiment', () => {
     expect(result.aggregate.finalPopulation).toEqual({ mean: 0, min: 0, max: 0 });
     expect(result.aggregate.finalSpeciesExtinctionRate).toEqual({ mean: 1, min: 1, max: 1 });
     expect(result.aggregate.finalSpeciesNetDiversificationRate).toEqual({ mean: -1, min: -1, max: -1 });
+    const resilienceStability = result.runs.map((run) => run.finalResilienceStabilityIndex);
+    expect(resilienceStability.every((value) => value >= 0 && value <= 1)).toBe(true);
+    expect(result.aggregate.finalResilienceStabilityIndex).toEqual(summarize(resilienceStability));
   });
 });
+
+function summarize(values: number[]): { mean: number; min: number; max: number } {
+  if (values.length === 0) {
+    return { mean: 0, min: 0, max: 0 };
+  }
+  let min = values[0];
+  let max = values[0];
+  let total = 0;
+  for (const value of values) {
+    if (value < min) {
+      min = value;
+    }
+    if (value > max) {
+      max = value;
+    }
+    total += value;
+  }
+  return { mean: total / values.length, min, max };
+}
