@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { computeResilienceStabilityIndex, runExperiment } from '../src/experiment';
+import {
+  computeResilienceStabilityIndex,
+  runDisturbanceGridStudy,
+  runExperiment
+} from '../src/experiment';
 
 describe('runExperiment', () => {
   it('is deterministic for the same seed sweep configuration', () => {
@@ -100,6 +104,84 @@ describe('runExperiment', () => {
   });
 });
 
+describe('runDisturbanceGridStudy', () => {
+  it('is deterministic and preserves paired-delta invariants', () => {
+    const input = {
+      runs: 2,
+      steps: 16,
+      analyticsWindow: 6,
+      seed: 41,
+      seedStep: 1,
+      intervals: [8, 12],
+      amplitudes: [0.2, 0.35],
+      localRadius: 2,
+      localRefugiaFraction: 0.35,
+      generatedAt: '2026-02-28T00:00:00.000Z'
+    };
+
+    const first = runDisturbanceGridStudy(input);
+    const second = runDisturbanceGridStudy(input);
+
+    expect(first).toEqual(second);
+    expect(first.cells).toHaveLength(4);
+    expect(first.summary.cells).toBe(4);
+    expect(first.summary.supportedCells).toBeGreaterThanOrEqual(0);
+    expect(first.summary.supportedCells).toBeLessThanOrEqual(4);
+    expect(first.summary.supportFraction).toBeGreaterThanOrEqual(0);
+    expect(first.summary.supportFraction).toBeLessThanOrEqual(1);
+
+    for (const cell of first.cells) {
+      const resilienceDelta = cell.pairedDeltas.resilienceStabilityDelta.mean;
+      const memoryDelta = cell.pairedDeltas.memoryStabilityDelta.mean;
+      expect(cell.pairedDeltas.pathDependenceGain.mean).toBeCloseTo(memoryDelta - resilienceDelta, 10);
+      expect(cell.hypothesisSupport).toBe(
+        cell.pairedDeltas.relapseEventReduction.mean > 0 && cell.pairedDeltas.pathDependenceGain.mean > 0
+      );
+      expectPairedAggregate(cell.pairedDeltas.resilienceStabilityDelta);
+      expectPairedAggregate(cell.pairedDeltas.memoryStabilityDelta);
+      expectPairedAggregate(cell.pairedDeltas.relapseEventReduction);
+      expectPairedAggregate(cell.pairedDeltas.turnoverSpikeReduction);
+      expectPairedAggregate(cell.pairedDeltas.pathDependenceGain);
+    }
+  });
+
+  it('validates grid inputs', () => {
+    expect(() =>
+      runDisturbanceGridStudy({
+        runs: 1,
+        steps: 8,
+        analyticsWindow: 4,
+        seed: 3,
+        intervals: [],
+        amplitudes: [0.2]
+      })
+    ).toThrow('intervals must not be empty');
+
+    expect(() =>
+      runDisturbanceGridStudy({
+        runs: 1,
+        steps: 8,
+        analyticsWindow: 4,
+        seed: 3,
+        intervals: [6],
+        amplitudes: [1.2]
+      })
+    ).toThrow('amplitudes[0] must be between 0 and 1');
+
+    expect(() =>
+      runDisturbanceGridStudy({
+        runs: 1,
+        steps: 8,
+        analyticsWindow: 4,
+        seed: 3,
+        intervals: [6],
+        amplitudes: [0.2],
+        localRadius: -1
+      })
+    ).toThrow('localRadius must be >= 0');
+  });
+});
+
 function summarize(values: number[]): { mean: number; min: number; max: number } {
   if (values.length === 0) {
     return { mean: 0, min: 0, max: 0 };
@@ -117,6 +199,18 @@ function summarize(values: number[]): { mean: number; min: number; max: number }
     total += value;
   }
   return { mean: total / values.length, min, max };
+}
+
+function expectPairedAggregate(value: {
+  mean: number;
+  min: number;
+  max: number;
+  positiveFraction: number;
+}): void {
+  expect(value.mean).toBeGreaterThanOrEqual(value.min);
+  expect(value.mean).toBeLessThanOrEqual(value.max);
+  expect(value.positiveFraction).toBeGreaterThanOrEqual(0);
+  expect(value.positiveFraction).toBeLessThanOrEqual(1);
 }
 
 function resilienceSnapshot(overrides: Partial<Parameters<typeof computeResilienceStabilityIndex>[0]>) {

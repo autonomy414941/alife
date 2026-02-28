@@ -657,3 +657,41 @@ Observed:
 Thinking:
 - The next experiment should test when memory and latest-event metrics diverge (likely at higher disturbance cadence).
 - A targeted interval/amplitude sweep with fixed seeds is the most direct way to map that divergence surface.
+
+## 2026-02-28 (session 25)
+- Implemented a hypothesis-driven disturbance grid study API in `src/experiment.ts`:
+  - added `runDisturbanceGridStudy(...)` for paired-seed global-vs-local disturbance comparisons over interval/amplitude grids.
+  - added strict study input normalization/validation (`intervals`, `amplitudes`, local radius/refugia bounds).
+  - added per-cell paired delta metrics:
+    - `resilienceStabilityDelta`
+    - `memoryStabilityDelta`
+    - `relapseEventReduction`
+    - `turnoverSpikeReduction`
+    - `pathDependenceGain` (`memoryDelta - latestDelta`)
+  - added per-cell `hypothesisSupport` flag and study-level summary aggregates.
+- Extended shared result types in `src/types.ts` for grid study outputs and paired-delta aggregates.
+- Added study export support in `src/export.ts`:
+  - `disturbanceGridStudyToJson(...)`
+  - `disturbanceGridStudyToCsv(...)`
+  - `DISTURBANCE_GRID_STUDY_CSV_COLUMNS`.
+- Added deterministic tests:
+  - `test/experiment.test.ts`: study determinism, paired-delta invariants, and validation errors.
+  - `test/export.test.ts`: study JSON/CSV schema and field mapping checks.
+- Verified with `npm test` (46 tests) and `npm run build`.
+- Ran a paired seeded grid sweep using the new API:
+  - seeds `20260228..20260231`, `runs=4`, `steps=260`, `window=30`
+  - intervals `{24,40}`, amplitudes `{0.2,0.35,0.5}`
+  - shared forcing: `cycle=120`, `regenAmp=0.3`, `contrastAmp=0.2`
+  - global regime: `radius=-1`, `refugia=0`
+  - local regime: `radius=2`, `refugia=0.35`.
+
+Observed:
+- Local refugia improved latest-event stability in all 6 cells (mean delta range `+0.096..+0.488`).
+- Local refugia improved memory stability in all 6 cells (mean delta range `+0.049..+0.263`).
+- Relapse-event fraction was lower in all 6 cells (mean reduction `+0.250..+0.500`).
+- Path-dependence gain was negative in all 6 cells (mean `-0.308..-0.040`), so memory improvement lagged immediate-buffer improvement in this sampled region.
+
+Thinking:
+- The earlier qualitative claim (refugia helps resilience) remains robust across this small interval/amplitude grid.
+- The stronger claim (refugia helps path-dependent memory beyond immediate buffering) is not supported yet under current cadence/intensity settings.
+- Next step should instrument disturbance timing relative to seasonal phase and event-level recovery lag so we can identify when path gain changes sign.

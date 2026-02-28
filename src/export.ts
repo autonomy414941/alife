@@ -1,4 +1,5 @@
 import {
+  DisturbanceGridStudyExport,
   EvolutionAnalyticsSnapshot,
   EvolutionHistorySnapshot,
   SimulationExperimentExport,
@@ -172,6 +173,38 @@ export const EXPERIMENT_AGGREGATE_CSV_COLUMNS = [
   'final_resilience_relapse_event_fraction_max'
 ] as const;
 
+export const DISTURBANCE_GRID_STUDY_CSV_COLUMNS = [
+  'interval',
+  'amplitude',
+  'global_resilience_stability_mean',
+  'local_resilience_stability_mean',
+  'global_memory_stability_mean',
+  'local_memory_stability_mean',
+  'global_relapse_event_fraction_mean',
+  'local_relapse_event_fraction_mean',
+  'delta_resilience_stability_mean',
+  'delta_resilience_stability_min',
+  'delta_resilience_stability_max',
+  'delta_resilience_stability_positive_fraction',
+  'delta_memory_stability_mean',
+  'delta_memory_stability_min',
+  'delta_memory_stability_max',
+  'delta_memory_stability_positive_fraction',
+  'relapse_event_reduction_mean',
+  'relapse_event_reduction_min',
+  'relapse_event_reduction_max',
+  'relapse_event_reduction_positive_fraction',
+  'turnover_spike_reduction_mean',
+  'turnover_spike_reduction_min',
+  'turnover_spike_reduction_max',
+  'turnover_spike_reduction_positive_fraction',
+  'path_dependence_gain_mean',
+  'path_dependence_gain_min',
+  'path_dependence_gain_max',
+  'path_dependence_gain_positive_fraction',
+  'hypothesis_support'
+] as const;
+
 export function buildRunExport(input: BuildRunExportInput): SimulationRunExport {
   assertAlignedSeries(input.summaries, input.analytics);
   return {
@@ -188,6 +221,10 @@ export function runExportToJson(exportData: SimulationRunExport): string {
 }
 
 export function experimentExportToJson(exportData: SimulationExperimentExport): string {
+  return `${JSON.stringify(exportData, null, 2)}\n`;
+}
+
+export function disturbanceGridStudyToJson(exportData: DisturbanceGridStudyExport): string {
   return `${JSON.stringify(exportData, null, 2)}\n`;
 }
 
@@ -364,6 +401,48 @@ export function experimentAggregateToCsv(exportData: SimulationExperimentExport)
     aggregate.finalResilienceRelapseEventFraction.max
   ]);
   return `${EXPERIMENT_AGGREGATE_CSV_COLUMNS.join(',')}\n${row}\n`;
+}
+
+export function disturbanceGridStudyToCsv(exportData: DisturbanceGridStudyExport): string {
+  const rows = [DISTURBANCE_GRID_STUDY_CSV_COLUMNS.join(',')];
+
+  for (const cell of exportData.cells) {
+    rows.push(
+      toCsvRow([
+        cell.interval,
+        cell.amplitude,
+        cell.global.finalResilienceStabilityIndex.mean,
+        cell.local.finalResilienceStabilityIndex.mean,
+        cell.global.finalResilienceMemoryStabilityIndex.mean,
+        cell.local.finalResilienceMemoryStabilityIndex.mean,
+        cell.global.finalResilienceRelapseEventFraction.mean,
+        cell.local.finalResilienceRelapseEventFraction.mean,
+        cell.pairedDeltas.resilienceStabilityDelta.mean,
+        cell.pairedDeltas.resilienceStabilityDelta.min,
+        cell.pairedDeltas.resilienceStabilityDelta.max,
+        cell.pairedDeltas.resilienceStabilityDelta.positiveFraction,
+        cell.pairedDeltas.memoryStabilityDelta.mean,
+        cell.pairedDeltas.memoryStabilityDelta.min,
+        cell.pairedDeltas.memoryStabilityDelta.max,
+        cell.pairedDeltas.memoryStabilityDelta.positiveFraction,
+        cell.pairedDeltas.relapseEventReduction.mean,
+        cell.pairedDeltas.relapseEventReduction.min,
+        cell.pairedDeltas.relapseEventReduction.max,
+        cell.pairedDeltas.relapseEventReduction.positiveFraction,
+        cell.pairedDeltas.turnoverSpikeReduction.mean,
+        cell.pairedDeltas.turnoverSpikeReduction.min,
+        cell.pairedDeltas.turnoverSpikeReduction.max,
+        cell.pairedDeltas.turnoverSpikeReduction.positiveFraction,
+        cell.pairedDeltas.pathDependenceGain.mean,
+        cell.pairedDeltas.pathDependenceGain.min,
+        cell.pairedDeltas.pathDependenceGain.max,
+        cell.pairedDeltas.pathDependenceGain.positiveFraction,
+        cell.hypothesisSupport ? 1 : 0
+      ])
+    );
+  }
+
+  return `${rows.join('\n')}\n`;
 }
 
 function normalizeWindow(value: number): number {

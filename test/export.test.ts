@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
+  DISTURBANCE_GRID_STUDY_CSV_COLUMNS,
   EXPERIMENT_AGGREGATE_CSV_COLUMNS,
   METRICS_CSV_COLUMNS,
   buildRunExport,
+  disturbanceGridStudyToCsv,
+  disturbanceGridStudyToJson,
   experimentAggregateToCsv,
   metricsToCsv,
   runExportToJson
 } from '../src/export';
-import { runExperiment } from '../src/experiment';
+import { runDisturbanceGridStudy, runExperiment } from '../src/experiment';
 import { LifeSimulation } from '../src/simulation';
 
 describe('run export', () => {
@@ -245,5 +248,42 @@ describe('run export', () => {
     expect(
       Number(row[EXPERIMENT_AGGREGATE_CSV_COLUMNS.indexOf('final_resilience_relapse_event_fraction_max')])
     ).toBeCloseTo(experiment.aggregate.finalResilienceRelapseEventFraction.max, 10);
+  });
+
+  it('renders disturbance grid study JSON and one row per grid cell in CSV', () => {
+    const study = runDisturbanceGridStudy({
+      runs: 2,
+      steps: 12,
+      analyticsWindow: 4,
+      seed: 71,
+      intervals: [6, 9],
+      amplitudes: [0.2],
+      localRadius: 2,
+      localRefugiaFraction: 0.35,
+      generatedAt: '2026-02-28T00:00:00.000Z'
+    });
+
+    const parsedJson = JSON.parse(disturbanceGridStudyToJson(study));
+    expect(parsedJson.generatedAt).toBe('2026-02-28T00:00:00.000Z');
+    expect(parsedJson.cells).toHaveLength(2);
+    expect(parsedJson.summary.cells).toBe(2);
+
+    const csv = disturbanceGridStudyToCsv(study);
+    const lines = csv.trimEnd().split('\n');
+    expect(lines).toHaveLength(3);
+    expect(lines[0]).toBe(DISTURBANCE_GRID_STUDY_CSV_COLUMNS.join(','));
+
+    const firstRow = lines[1].split(',');
+    expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('interval')])).toBe(study.cells[0].interval);
+    expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('amplitude')])).toBeCloseTo(
+      study.cells[0].amplitude,
+      10
+    );
+    expect(
+      Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('path_dependence_gain_mean')])
+    ).toBeCloseTo(study.cells[0].pairedDeltas.pathDependenceGain.mean, 10);
+    expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('hypothesis_support')])).toBe(
+      study.cells[0].hypothesisSupport ? 1 : 0
+    );
   });
 });

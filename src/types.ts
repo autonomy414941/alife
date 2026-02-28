@@ -315,6 +315,56 @@ export interface SimulationExperimentExport {
   aggregate: ExperimentAggregateSummary;
 }
 
+export interface PairedDeltaAggregate extends NumericAggregate {
+  positiveFraction: number;
+}
+
+export interface DisturbanceGridCellPairedDeltas {
+  resilienceStabilityDelta: PairedDeltaAggregate;
+  memoryStabilityDelta: PairedDeltaAggregate;
+  relapseEventReduction: PairedDeltaAggregate;
+  turnoverSpikeReduction: PairedDeltaAggregate;
+  pathDependenceGain: PairedDeltaAggregate;
+}
+
+export interface DisturbanceGridCellSummary {
+  interval: number;
+  amplitude: number;
+  global: ExperimentAggregateSummary;
+  local: ExperimentAggregateSummary;
+  pairedDeltas: DisturbanceGridCellPairedDeltas;
+  hypothesisSupport: boolean;
+}
+
+export interface DisturbanceGridStudySummary {
+  cells: number;
+  supportedCells: number;
+  supportFraction: number;
+  memoryStabilityDelta: NumericAggregate;
+  relapseEventReduction: NumericAggregate;
+  pathDependenceGain: NumericAggregate;
+}
+
+export interface DisturbanceGridStudyConfig {
+  runs: number;
+  steps: number;
+  analyticsWindow: number;
+  seed: number;
+  seedStep: number;
+  stopWhenExtinct: boolean;
+  intervals: number[];
+  amplitudes: number[];
+  localRadius: number;
+  localRefugiaFraction: number;
+}
+
+export interface DisturbanceGridStudyExport {
+  generatedAt: string;
+  config: DisturbanceGridStudyConfig;
+  cells: DisturbanceGridCellSummary[];
+  summary: DisturbanceGridStudySummary;
+}
+
 export interface SimulationRunExport {
   generatedAt: string;
   analyticsWindow: number;

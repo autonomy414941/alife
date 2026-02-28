@@ -1,9 +1,16 @@
 import { LifeSimulation, LifeSimulationOptions } from './simulation';
 import {
+  DisturbanceGridCellPairedDeltas,
+  DisturbanceGridCellSummary,
+  DisturbanceGridStudyConfig,
+  DisturbanceGridStudyExport,
+  DisturbanceGridStudySummary,
   ExperimentAggregateSummary,
   ExperimentRunSummary,
   NumericAggregate,
+  PairedDeltaAggregate,
   ResilienceAnalytics,
+  SimulationConfig,
   SimulationExperimentConfig,
   SimulationExperimentExport
 } from './types';
@@ -20,6 +27,25 @@ export interface RunExperimentInput {
 }
 
 interface NormalizedExperimentConfig extends SimulationExperimentConfig {
+  simulation: Omit<LifeSimulationOptions, 'seed'>;
+}
+
+export interface RunDisturbanceGridStudyInput {
+  runs: number;
+  steps: number;
+  analyticsWindow: number;
+  seed: number;
+  seedStep?: number;
+  stopWhenExtinct?: boolean;
+  intervals: number[];
+  amplitudes: number[];
+  localRadius?: number;
+  localRefugiaFraction?: number;
+  simulation?: Omit<LifeSimulationOptions, 'seed'>;
+  generatedAt?: string;
+}
+
+interface NormalizedDisturbanceGridStudyConfig extends DisturbanceGridStudyConfig {
   simulation: Omit<LifeSimulationOptions, 'seed'>;
 }
 
@@ -69,6 +95,75 @@ export function runExperiment(input: RunExperimentInput): SimulationExperimentEx
   };
 }
 
+export function runDisturbanceGridStudy(input: RunDisturbanceGridStudyInput): DisturbanceGridStudyExport {
+  const config = normalizeDisturbanceGridStudyConfig(input);
+  const cells: DisturbanceGridCellSummary[] = [];
+
+  for (const interval of config.intervals) {
+    for (const amplitude of config.amplitudes) {
+      const global = runExperiment({
+        runs: config.runs,
+        steps: config.steps,
+        analyticsWindow: config.analyticsWindow,
+        seed: config.seed,
+        seedStep: config.seedStep,
+        stopWhenExtinct: config.stopWhenExtinct,
+        simulation: withDisturbanceConfig(config.simulation, {
+          disturbanceInterval: interval,
+          disturbanceEnergyLoss: amplitude,
+          disturbanceResourceLoss: amplitude,
+          disturbanceRadius: -1,
+          disturbanceRefugiaFraction: 0
+        })
+      });
+      const local = runExperiment({
+        runs: config.runs,
+        steps: config.steps,
+        analyticsWindow: config.analyticsWindow,
+        seed: config.seed,
+        seedStep: config.seedStep,
+        stopWhenExtinct: config.stopWhenExtinct,
+        simulation: withDisturbanceConfig(config.simulation, {
+          disturbanceInterval: interval,
+          disturbanceEnergyLoss: amplitude,
+          disturbanceResourceLoss: amplitude,
+          disturbanceRadius: config.localRadius,
+          disturbanceRefugiaFraction: config.localRefugiaFraction
+        })
+      });
+
+      const pairedDeltas = summarizeDisturbancePairedDeltas(global.runs, local.runs);
+      cells.push({
+        interval,
+        amplitude,
+        global: global.aggregate,
+        local: local.aggregate,
+        pairedDeltas,
+        hypothesisSupport:
+          pairedDeltas.relapseEventReduction.mean > 0 && pairedDeltas.pathDependenceGain.mean > 0
+      });
+    }
+  }
+
+  return {
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    config: {
+      runs: config.runs,
+      steps: config.steps,
+      analyticsWindow: config.analyticsWindow,
+      seed: config.seed,
+      seedStep: config.seedStep,
+      stopWhenExtinct: config.stopWhenExtinct,
+      intervals: config.intervals,
+      amplitudes: config.amplitudes,
+      localRadius: config.localRadius,
+      localRefugiaFraction: config.localRefugiaFraction
+    },
+    cells,
+    summary: summarizeDisturbanceGridStudy(cells)
+  };
+}
+
 function normalizeConfig(input: RunExperimentInput): NormalizedExperimentConfig {
   const runs = toPositiveInt('runs', input.runs);
   const steps = toPositiveInt('steps', input.steps);
@@ -86,6 +181,25 @@ function normalizeConfig(input: RunExperimentInput): NormalizedExperimentConfig 
   };
 }
 
+function normalizeDisturbanceGridStudyConfig(
+  input: RunDisturbanceGridStudyInput
+): NormalizedDisturbanceGridStudyConfig {
+  const baseConfig = normalizeConfig(input);
+  return {
+    runs: baseConfig.runs,
+    steps: baseConfig.steps,
+    analyticsWindow: baseConfig.analyticsWindow,
+    seed: baseConfig.seed,
+    seedStep: baseConfig.seedStep,
+    stopWhenExtinct: baseConfig.stopWhenExtinct,
+    simulation: baseConfig.simulation,
+    intervals: toPositiveIntList('intervals', input.intervals),
+    amplitudes: toUnitIntervalList('amplitudes', input.amplitudes),
+    localRadius: toNonNegativeInt('localRadius', input.localRadius ?? 2),
+    localRefugiaFraction: toUnitInterval('localRefugiaFraction', input.localRefugiaFraction ?? 0.35)
+  };
+}
+
 function toInteger(name: string, value: number): number {
   if (!Number.isFinite(value)) {
     throw new Error(`${name} must be finite`);
@@ -99,6 +213,143 @@ function toPositiveInt(name: string, value: number): number {
     throw new Error(`${name} must be > 0`);
   }
   return normalized;
+}
+
+function toNonNegativeInt(name: string, value: number): number {
+  const normalized = toInteger(name, value);
+  if (normalized < 0) {
+    throw new Error(`${name} must be >= 0`);
+  }
+  return normalized;
+}
+
+function toPositiveIntList(name: string, values: number[]): number[] {
+  if (values.length === 0) {
+    throw new Error(`${name} must not be empty`);
+  }
+  return values.map((value, index) => toPositiveInt(`${name}[${index}]`, value));
+}
+
+function toUnitInterval(name: string, value: number): number {
+  if (!Number.isFinite(value)) {
+    throw new Error(`${name} must be finite`);
+  }
+  if (value < 0 || value > 1) {
+    throw new Error(`${name} must be between 0 and 1`);
+  }
+  return value;
+}
+
+function toUnitIntervalList(name: string, values: number[]): number[] {
+  if (values.length === 0) {
+    throw new Error(`${name} must not be empty`);
+  }
+  return values.map((value, index) => toUnitInterval(`${name}[${index}]`, value));
+}
+
+function withDisturbanceConfig(
+  simulation: Omit<LifeSimulationOptions, 'seed'>,
+  overrides: Pick<
+    SimulationConfig,
+    | 'disturbanceInterval'
+    | 'disturbanceEnergyLoss'
+    | 'disturbanceResourceLoss'
+    | 'disturbanceRadius'
+    | 'disturbanceRefugiaFraction'
+  >
+): Omit<LifeSimulationOptions, 'seed'> {
+  return {
+    ...simulation,
+    config: {
+      ...(simulation.config ?? {}),
+      ...overrides
+    }
+  };
+}
+
+function summarizeDisturbancePairedDeltas(
+  globalRuns: ExperimentRunSummary[],
+  localRuns: ExperimentRunSummary[]
+): DisturbanceGridCellPairedDeltas {
+  return {
+    resilienceStabilityDelta: summarizePairedRuns(
+      globalRuns,
+      localRuns,
+      (global, local) => local.finalResilienceStabilityIndex - global.finalResilienceStabilityIndex
+    ),
+    memoryStabilityDelta: summarizePairedRuns(
+      globalRuns,
+      localRuns,
+      (global, local) =>
+        local.finalResilienceMemoryStabilityIndex - global.finalResilienceMemoryStabilityIndex
+    ),
+    relapseEventReduction: summarizePairedRuns(
+      globalRuns,
+      localRuns,
+      (global, local) =>
+        global.finalResilienceRelapseEventFraction - local.finalResilienceRelapseEventFraction
+    ),
+    turnoverSpikeReduction: summarizePairedRuns(
+      globalRuns,
+      localRuns,
+      (global, local) =>
+        global.finalAnalytics.resilience.turnoverSpike - local.finalAnalytics.resilience.turnoverSpike
+    ),
+    pathDependenceGain: summarizePairedRuns(globalRuns, localRuns, (global, local) => {
+      const memoryDelta =
+        local.finalResilienceMemoryStabilityIndex - global.finalResilienceMemoryStabilityIndex;
+      const immediateDelta = local.finalResilienceStabilityIndex - global.finalResilienceStabilityIndex;
+      return memoryDelta - immediateDelta;
+    })
+  };
+}
+
+function summarizePairedRuns(
+  globalRuns: ExperimentRunSummary[],
+  localRuns: ExperimentRunSummary[],
+  delta: (global: ExperimentRunSummary, local: ExperimentRunSummary) => number
+): PairedDeltaAggregate {
+  if (globalRuns.length !== localRuns.length) {
+    throw new Error(
+      `Mismatched paired runs: global=${globalRuns.length} local=${localRuns.length}`
+    );
+  }
+  const values: number[] = [];
+  let positive = 0;
+
+  for (let i = 0; i < globalRuns.length; i += 1) {
+    const globalRun = globalRuns[i];
+    const localRun = localRuns[i];
+    if (globalRun.seed !== localRun.seed) {
+      throw new Error(
+        `Seed mismatch for paired runs at index ${i}: globalSeed=${globalRun.seed} localSeed=${localRun.seed}`
+      );
+    }
+
+    const value = delta(globalRun, localRun);
+    values.push(value);
+    if (value > 0) {
+      positive += 1;
+    }
+  }
+
+  const aggregate = summarize(values);
+  return {
+    ...aggregate,
+    positiveFraction: values.length === 0 ? 0 : positive / values.length
+  };
+}
+
+function summarizeDisturbanceGridStudy(cells: DisturbanceGridCellSummary[]): DisturbanceGridStudySummary {
+  const supportedCells = cells.reduce((count, cell) => count + (cell.hypothesisSupport ? 1 : 0), 0);
+  return {
+    cells: cells.length,
+    supportedCells,
+    supportFraction: cells.length === 0 ? 0 : supportedCells / cells.length,
+    memoryStabilityDelta: summarize(cells.map((cell) => cell.pairedDeltas.memoryStabilityDelta.mean)),
+    relapseEventReduction: summarize(cells.map((cell) => cell.pairedDeltas.relapseEventReduction.mean)),
+    pathDependenceGain: summarize(cells.map((cell) => cell.pairedDeltas.pathDependenceGain.mean))
+  };
 }
 
 function aggregateRuns(runs: ExperimentRunSummary[]): ExperimentAggregateSummary {

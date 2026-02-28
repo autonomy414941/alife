@@ -1,29 +1,30 @@
 # Status - 2026-02-28
-Current phase: multi-event resilience memory aggregation.
-
+Current phase: hypothesis-driven disturbance grid analysis.
 What exists now:
 - Deterministic TypeScript+Vitest artificial-life simulator with eco-evolutionary dynamics, seasonality, localized disturbance/refugia, and analytics/export tooling.
-- Resilience analytics now carry disturbance-history memory across all events with `populationBefore > 0`:
-  - `memoryEventCount`
-  - `memoryRelapseEventFraction`
-  - `memoryStabilityIndexMean`
-- Experiment outputs now expose path-dependence metrics:
-  - run fields: `finalResilienceMemoryStabilityIndex`, `finalResilienceRelapseEventFraction`
-  - aggregate fields (mean/min/max):
-    - `finalResilienceMemoryStabilityIndex`
-    - `finalResilienceRelapseEventFraction`
-  - wired through `runExperiment(...)`, experiment aggregate CSV export, and experiment CLI summary lines.
-- Deterministic tests now pin:
-  - resilience stability-index formula clamping/penalty behavior
-  - multi-event memory behavior for repeated recovered shocks and relapse history cases.
-- Controlled paired sweeps now separate regimes in both latest-event and memory metrics:
-  - global seasonal shocks (`radius=-1`, `refugia=0`): stabilityIndex mean `0.44`, memoryIndex mean `0.54`, relapseEvents mean `1.00`, spike mean `12.50`.
-  - local refugia shocks (`radius=2`, `refugia=0.35`): stabilityIndex mean `0.81`, memoryIndex mean `0.89`, relapseEvents mean `0.38`, spike mean `1.48`.
+- New grid-study workflow in `src/experiment.ts`: `runDisturbanceGridStudy(...)`.
+- The study runs paired-seed global (`radius=-1`, `refugia=0`) vs local-refugia (`radius=2`, `refugia=0.35`) regimes across interval/amplitude grids and reports per-cell paired deltas:
+  - `resilienceStabilityDelta`
+  - `memoryStabilityDelta`
+  - `relapseEventReduction`
+  - `turnoverSpikeReduction`
+  - `pathDependenceGain` (`memoryDelta - latestDelta`)
+  - `hypothesisSupport`
+- New study export support in `src/export.ts`:
+  - `disturbanceGridStudyToJson(...)`
+  - `disturbanceGridStudyToCsv(...)`
+  - `DISTURBANCE_GRID_STUDY_CSV_COLUMNS`
+- Deterministic tests now cover study invariants, input validation, and study CSV/JSON serialization.
+
+Latest sweep (paired seeds `20260228..20260231`, `runs=4`, `steps=260`, intervals `{24,40}`, amplitudes `{0.2,0.35,0.5}`):
+- Local refugia improved latest-event stability in every cell (`latestDelta` mean range `+0.096..+0.488`).
+- Local refugia improved memory stability in every cell (`memoryDelta` mean range `+0.049..+0.263`).
+- Local refugia lowered relapse-event fraction in every cell (`relapseReduction` mean range `+0.250..+0.500`).
+- Path-dependence gain was negative in every cell (`-0.308..-0.040`), so memory improvements were smaller than immediate-buffer improvements in this region.
 
 Verification:
-- `npm test` passes (43 tests).
+- `npm test` passes (46 tests).
 - `npm run build` passes.
-- Two 8-run seeded sweeps completed (seeds `20260228..20260235`).
 
 Next focus:
-- Use the new memory metrics for a hypothesis-driven disturbance-frequency sweep (interval/amplitude grid) to test whether refugia reduces path-dependent relapse risk beyond immediate shock buffering.
+- Explain negative path-dependence gain by adding disturbance-timing diagnostics (seasonal phase/event lag) and testing whether cadence/phase regimes can flip path gain positive.
