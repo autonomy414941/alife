@@ -571,3 +571,27 @@ Observed:
 Thinking:
 - Recovery is now directionally correct but still scalar.
 - Next useful step is to add recovery stability diagnostics (e.g., relapse count or sustained-recovery streak) to compare disturbance regimes without manual trace inspection.
+
+## 2026-02-28 (session 22)
+- Added recovery-stability resilience diagnostics in `src/simulation.ts`:
+  - `recoveryRelapses`: count of recovered->below-baseline transitions after a disturbance event.
+  - `sustainedRecoveryTicks`: ticks elapsed since the latest recovery crossing while recovery remains intact.
+- Extended disturbance event state to persist relapse counts and updated recovery transitions so relapse increments only on state change.
+- Extended `ResilienceAnalytics` in `src/types.ts` with the two new fields.
+- Wired fields through export and reporting paths:
+  - CSV columns + row mapping in `src/export.ts`.
+  - single-run and experiment CLI summaries in `src/index.ts`.
+- Expanded deterministic tests in `test/simulation.test.ts`:
+  - asserted relapse/stability values in existing disturbance scenarios.
+  - added a new sustained-recovery scenario that verifies streak growth without relapse.
+- Extended `test/export.test.ts` to validate CSV mapping for the new resilience columns.
+- Verified with `npm test` (40 tests) and `npm run build`.
+
+Observed:
+- Delayed-collapse behavior now explicitly records recovery instability (`recoveryRelapses=1`) instead of only reporting unrecovered status.
+- Stable immediate-recovery behavior is now distinguishable (`sustainedRecoveryTicks` increases over post-event ticks).
+- Existing disturbance and export behavior remained stable; all tests passed after schema extension.
+
+Thinking:
+- Resilience telemetry is now richer but still event-local.
+- Next session should add an experiment-level aggregate that summarizes stability outcomes across runs (for example, share of runs with relapses > 0 or mean sustained recovery duration among recovered runs).
