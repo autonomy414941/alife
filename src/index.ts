@@ -113,7 +113,9 @@ function runSingleMode(options: CliOptions): void {
           `forcing(regen=${turnover.forcing.regenMultiplier.toFixed(2)},contrast=${turnover.forcing.fertilityContrastMultiplier.toFixed(2)},phase=${turnover.forcing.phase.toFixed(2)}) ` +
           `disturbance(last=${turnover.disturbance.lastEventTick},events=${turnover.disturbance.eventsInWindow},` +
           `scope=${turnover.disturbance.radius},affected=${turnover.disturbance.lastEventAffectedCellFraction.toFixed(2)},` +
-          `recovery=${turnover.resilience.recoveryTicks},trough=${turnover.resilience.populationTroughDepth.toFixed(2)}@${turnover.resilience.populationTroughTicks},` +
+          `recovery=${turnover.resilience.recoveryTicks},relapses=${turnover.resilience.recoveryRelapses},` +
+          `stable=${turnover.resilience.sustainedRecoveryTicks},` +
+          `trough=${turnover.resilience.populationTroughDepth.toFixed(2)}@${turnover.resilience.populationTroughTicks},` +
           `delay=${turnover.resilience.delayedPopulationShockDepth.toFixed(2)},spike=${turnover.resilience.turnoverSpike.toFixed(2)},` +
           `burst=${turnover.resilience.extinctionBurstDepth.toFixed(2)}) ` +
           `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},dom=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},chg=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)}) ` +
@@ -151,6 +153,8 @@ function runSingleMode(options: CliOptions): void {
       `affected=${turnover.disturbance.lastEventAffectedCellFraction.toFixed(2)},` +
       `eventRefugia=${turnover.disturbance.lastEventRefugiaCellFraction.toFixed(2)}) ` +
       `resilience(recovery=${turnover.resilience.recoveryTicks},progress=${turnover.resilience.recoveryProgress.toFixed(2)},` +
+      `relapses=${turnover.resilience.recoveryRelapses},` +
+      `stable=${turnover.resilience.sustainedRecoveryTicks},` +
       `trough=${turnover.resilience.populationTroughDepth.toFixed(2)}@${turnover.resilience.populationTroughTicks},` +
       `delay=${turnover.resilience.delayedPopulationShockDepth.toFixed(2)},` +
       `preTurn=${turnover.resilience.preDisturbanceTurnoverRate.toFixed(2)},` +
@@ -270,6 +274,12 @@ function runExperimentMode(options: CliOptions): void {
   const resilienceRecoveryProgress = summarizeNumbers(
     experimentData.runs.map((run) => run.finalAnalytics.resilience.recoveryProgress)
   );
+  const resilienceRecoveryRelapses = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.resilience.recoveryRelapses)
+  );
+  const resilienceSustainedRecoveryTicks = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.resilience.sustainedRecoveryTicks)
+  );
   const resiliencePopulationTroughDepth = summarizeNumbers(
     experimentData.runs.map((run) => run.finalAnalytics.resilience.populationTroughDepth)
   );
@@ -328,6 +338,8 @@ function runExperimentMode(options: CliOptions): void {
   );
   console.log(
     `resilience recovery(mean=${resilienceRecoveryTicks.mean.toFixed(2)},progress=${resilienceRecoveryProgress.mean.toFixed(2)}) ` +
+      `relapses(mean=${resilienceRecoveryRelapses.mean.toFixed(2)}) ` +
+      `stable(mean=${resilienceSustainedRecoveryTicks.mean.toFixed(2)}) ` +
       `trough(mean=${resiliencePopulationTroughDepth.mean.toFixed(2)}@${resiliencePopulationTroughTicks.mean.toFixed(2)}) ` +
       `delay(mean=${resilienceDelayedPopulationShock.mean.toFixed(2)}) ` +
       `spike(mean=${resilienceTurnoverSpike.mean.toFixed(2)}) ` +

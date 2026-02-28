@@ -102,6 +102,10 @@ describe('run export', () => {
     const disturbanceAffectedCellIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_last_affected_cell_fraction');
     const disturbanceEventRefugiaIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_last_refugia_cell_fraction');
     const resilienceRecoveryTicksIndex = METRICS_CSV_COLUMNS.indexOf('resilience_recovery_ticks');
+    const resilienceRecoveryRelapsesIndex = METRICS_CSV_COLUMNS.indexOf('resilience_recovery_relapses');
+    const resilienceSustainedRecoveryTicksIndex = METRICS_CSV_COLUMNS.indexOf(
+      'resilience_sustained_recovery_ticks'
+    );
     const resiliencePopulationTroughDepthIndex = METRICS_CSV_COLUMNS.indexOf(
       'resilience_population_trough_depth'
     );
@@ -147,6 +151,12 @@ describe('run export', () => {
       10
     );
     expect(Number(row3[resilienceRecoveryTicksIndex])).toBe(runData.analytics[2].resilience.recoveryTicks);
+    expect(Number(row3[resilienceRecoveryRelapsesIndex])).toBe(
+      runData.analytics[2].resilience.recoveryRelapses
+    );
+    expect(Number(row3[resilienceSustainedRecoveryTicksIndex])).toBe(
+      runData.analytics[2].resilience.sustainedRecoveryTicks
+    );
     expect(Number(row3[resiliencePopulationTroughDepthIndex])).toBeCloseTo(
       runData.analytics[2].resilience.populationTroughDepth,
       10

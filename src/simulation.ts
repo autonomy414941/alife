@@ -123,6 +123,7 @@ interface DisturbanceEventState {
   minPopulationTickSinceEvent: number;
   minActiveSpeciesSinceEvent: number;
   recoveryTick: number | null;
+  recoveryRelapses: number;
 }
 
 export class LifeSimulation {
@@ -400,6 +401,8 @@ export class LifeSimulation {
       return {
         recoveryTicks: 0,
         recoveryProgress: 0,
+        recoveryRelapses: 0,
+        sustainedRecoveryTicks: 0,
         populationTroughDepth: 0,
         populationTroughTicks: 0,
         delayedPopulationShockDepth: 0,
@@ -416,6 +419,11 @@ export class LifeSimulation {
         : latestEvent.recoveryTick === null
           ? -1
           : latestEvent.recoveryTick - latestEvent.tick;
+    const recoveryRelapses = latestEvent.populationBefore <= 0 ? 0 : latestEvent.recoveryRelapses;
+    const sustainedRecoveryTicks =
+      latestEvent.populationBefore <= 0 || latestEvent.recoveryTick === null
+        ? 0
+        : Math.max(0, this.tickCount - latestEvent.recoveryTick);
     const recoveryProgress =
       latestEvent.populationBefore <= 0 ? 1 : clamp(this.agents.length / latestEvent.populationBefore, 0, 1);
     const immediatePopulationShock =
@@ -461,6 +469,8 @@ export class LifeSimulation {
     return {
       recoveryTicks,
       recoveryProgress,
+      recoveryRelapses,
+      sustainedRecoveryTicks,
       populationTroughDepth,
       populationTroughTicks,
       delayedPopulationShockDepth,
@@ -1534,7 +1544,8 @@ export class LifeSimulation {
       minPopulationTickSinceEvent: stepTick,
       minActiveSpeciesSinceEvent: activeSpeciesAfterShock,
       recoveryTick:
-        populationBefore <= 0 || populationAfterShock >= populationBefore ? stepTick : null
+        populationBefore <= 0 || populationAfterShock >= populationBefore ? stepTick : null,
+      recoveryRelapses: 0
     });
   }
 
@@ -1599,6 +1610,9 @@ export class LifeSimulation {
         continue;
       }
       if (currentPopulation < event.populationBefore) {
+        if (event.recoveryTick !== null) {
+          event.recoveryRelapses += 1;
+        }
         event.recoveryTick = null;
       } else if (event.recoveryTick === null) {
         event.recoveryTick = currentTick;

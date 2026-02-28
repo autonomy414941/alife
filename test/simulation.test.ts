@@ -644,10 +644,52 @@ describe('LifeSimulation', () => {
     expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(0, 10);
     expect(analytics.disturbance.lastEventResourceShock).toBeCloseTo(0.25, 10);
     expect(analytics.resilience.recoveryTicks).toBe(0);
+    expect(analytics.resilience.recoveryRelapses).toBe(0);
+    expect(analytics.resilience.sustainedRecoveryTicks).toBe(0);
     expect(analytics.resilience.populationTroughDepth).toBeCloseTo(0, 10);
     expect(analytics.resilience.populationTroughTicks).toBe(0);
     expect(analytics.resilience.delayedPopulationShockDepth).toBeCloseTo(0, 10);
     expect(analytics.resilience.extinctionBurstDepth).toBe(0);
+  });
+
+  it('tracks sustained recovery ticks when population remains recovered', () => {
+    const sim = new LifeSimulation({
+      seed: 67,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        disturbanceInterval: 2,
+        disturbanceEnergyLoss: 0.5,
+        disturbanceResourceLoss: 0
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 2,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    sim.step();
+    sim.step();
+    sim.step();
+    const analytics = sim.analytics(2);
+
+    expect(analytics.disturbance.lastEventTick).toBe(2);
+    expect(analytics.resilience.recoveryTicks).toBe(0);
+    expect(analytics.resilience.recoveryRelapses).toBe(0);
+    expect(analytics.resilience.sustainedRecoveryTicks).toBe(1);
+    expect(analytics.resilience.recoveryProgress).toBeCloseTo(1, 10);
   });
 
   it('reports disturbance-driven turnover spikes and extinction burst depth', () => {
@@ -695,6 +737,8 @@ describe('LifeSimulation', () => {
     expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(1, 10);
     expect(analytics.resilience.recoveryTicks).toBe(-1);
     expect(analytics.resilience.recoveryProgress).toBeCloseTo(0, 10);
+    expect(analytics.resilience.recoveryRelapses).toBe(0);
+    expect(analytics.resilience.sustainedRecoveryTicks).toBe(0);
     expect(analytics.resilience.populationTroughDepth).toBeCloseTo(1, 10);
     expect(analytics.resilience.populationTroughTicks).toBe(0);
     expect(analytics.resilience.delayedPopulationShockDepth).toBeCloseTo(0, 10);
@@ -743,6 +787,8 @@ describe('LifeSimulation', () => {
     expect(analytics.disturbance.lastEventPopulationShock).toBeCloseTo(0, 10);
     expect(analytics.resilience.recoveryTicks).toBe(-1);
     expect(analytics.resilience.recoveryProgress).toBeCloseTo(0, 10);
+    expect(analytics.resilience.recoveryRelapses).toBe(1);
+    expect(analytics.resilience.sustainedRecoveryTicks).toBe(0);
     expect(analytics.resilience.populationTroughDepth).toBeCloseTo(1, 10);
     expect(analytics.resilience.populationTroughTicks).toBe(1);
     expect(analytics.resilience.delayedPopulationShockDepth).toBeCloseTo(1, 10);
