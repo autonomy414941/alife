@@ -129,6 +129,10 @@ describe('runDisturbanceGridStudy', () => {
     expect(first.summary.supportedCells).toBeLessThanOrEqual(4);
     expect(first.summary.supportFraction).toBeGreaterThanOrEqual(0);
     expect(first.summary.supportFraction).toBeLessThanOrEqual(1);
+    expect(first.summary.globalMemoryEventPhaseConcentration.mean).toBeGreaterThanOrEqual(0);
+    expect(first.summary.globalMemoryEventPhaseConcentration.mean).toBeLessThanOrEqual(1);
+    expect(first.summary.localMemoryEventPhaseConcentration.mean).toBeGreaterThanOrEqual(0);
+    expect(first.summary.localMemoryEventPhaseConcentration.mean).toBeLessThanOrEqual(1);
 
     for (const cell of first.cells) {
       const resilienceDelta = cell.pairedDeltas.resilienceStabilityDelta.mean;
@@ -142,6 +146,16 @@ describe('runDisturbanceGridStudy', () => {
       expectPairedAggregate(cell.pairedDeltas.relapseEventReduction);
       expectPairedAggregate(cell.pairedDeltas.turnoverSpikeReduction);
       expectPairedAggregate(cell.pairedDeltas.pathDependenceGain);
+      expectPairedAggregate(cell.pairedDeltas.latestRecoveryLagReduction);
+      expectPairedAggregate(cell.pairedDeltas.memoryRecoveryLagReduction);
+      expect(cell.timingDiagnostics.globalLatestEventPhaseMean).toBeGreaterThanOrEqual(0);
+      expect(cell.timingDiagnostics.globalLatestEventPhaseMean).toBeLessThanOrEqual(1);
+      expect(cell.timingDiagnostics.localLatestEventPhaseMean).toBeGreaterThanOrEqual(0);
+      expect(cell.timingDiagnostics.localLatestEventPhaseMean).toBeLessThanOrEqual(1);
+      expect(cell.timingDiagnostics.globalMemoryEventPhaseConcentrationMean).toBeGreaterThanOrEqual(0);
+      expect(cell.timingDiagnostics.globalMemoryEventPhaseConcentrationMean).toBeLessThanOrEqual(1);
+      expect(cell.timingDiagnostics.localMemoryEventPhaseConcentrationMean).toBeGreaterThanOrEqual(0);
+      expect(cell.timingDiagnostics.localMemoryEventPhaseConcentrationMean).toBeLessThanOrEqual(1);
     }
   });
 
@@ -227,8 +241,14 @@ function resilienceSnapshot(overrides: Partial<Parameters<typeof computeResilien
     turnoverSpike: 0,
     extinctionBurstDepth: 0,
     memoryEventCount: 0,
+    memoryRecoveredEventFraction: 0,
     memoryRelapseEventFraction: 0,
     memoryStabilityIndexMean: 0,
+    latestEventSeasonalPhase: 0,
+    latestEventRecoveryLagTicks: 0,
+    memoryRecoveryLagTicksMean: 0,
+    memoryEventPhaseMean: 0,
+    memoryEventPhaseConcentration: 0,
     ...overrides
   };
 }

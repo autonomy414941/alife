@@ -695,3 +695,38 @@ Thinking:
 - The earlier qualitative claim (refugia helps resilience) remains robust across this small interval/amplitude grid.
 - The stronger claim (refugia helps path-dependent memory beyond immediate buffering) is not supported yet under current cadence/intensity settings.
 - Next step should instrument disturbance timing relative to seasonal phase and event-level recovery lag so we can identify when path gain changes sign.
+
+## 2026-03-01 (session 26)
+- Added disturbance timing diagnostics to resilience analytics in `src/simulation.ts`:
+  - `latestEventSeasonalPhase`
+  - `latestEventRecoveryLagTicks`
+  - `memoryRecoveredEventFraction`
+  - `memoryRecoveryLagTicksMean`
+  - `memoryEventPhaseMean`
+  - `memoryEventPhaseConcentration`
+- Added timing-aware paired deltas to grid-study comparisons in `src/experiment.ts`:
+  - `latestRecoveryLagReduction`
+  - `memoryRecoveryLagReduction`
+  - per-cell timing diagnostics (`global/local latest phase mean`, `global/local memory phase concentration mean`).
+- Extended study summary aggregates with lag-reduction and phase-concentration summaries.
+- Wired all new fields into exports in `src/export.ts`:
+  - per-tick metrics CSV resilience columns
+  - disturbance grid study CSV columns.
+- Updated CLI reporting in `src/index.ts` to surface phase/lag diagnostics in single-run and experiment summaries.
+- Extended deterministic tests:
+  - `test/simulation.test.ts` for timing metrics and lag semantics.
+  - `test/experiment.test.ts` for new paired-delta/timing invariants.
+  - `test/export.test.ts` for CSV mapping of new resilience and grid-study columns.
+- Verification: `npm test` (46/46) and `npm run build` both pass.
+- Ran targeted paired sweeps:
+  - Sweep A: seeds `20260301..20260304`, `runs=4`, `steps=260`, intervals `{12,24,40}`, amplitudes `{0.2,0.35,0.5}`.
+  - Sweep B: seeds `20260310..20260315`, `runs=6`, `steps=260`, intervals `{20,24,30}`, amplitude `{0.2}`.
+
+Observed:
+- Local refugia still strongly reduce recovery lag in most cells, but memory-lag reduction is usually smaller than latest-lag reduction.
+- Sweep A produced one weak positive path-gain cell (`interval=24`, `amplitude=0.2`, `+0.040`) with support fraction `1/9`.
+- Sweep B did not reproduce a positive cell (`supportFraction=0/3`), suggesting current sign flips are near-boundary or seed-sensitive.
+
+Thinking:
+- Timing diagnostics now expose a concrete mechanism candidate: acute recovery acceleration outpaces historical-memory improvement.
+- Next step should be an explicit phase-offset control for disturbance scheduling to directly test reproducible phase-dependent sign flips in `pathDependenceGain`.

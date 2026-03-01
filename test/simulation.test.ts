@@ -650,6 +650,12 @@ describe('LifeSimulation', () => {
     expect(analytics.resilience.populationTroughTicks).toBe(0);
     expect(analytics.resilience.delayedPopulationShockDepth).toBeCloseTo(0, 10);
     expect(analytics.resilience.extinctionBurstDepth).toBe(0);
+    expect(analytics.resilience.latestEventSeasonalPhase).toBeCloseTo(1 / 120, 10);
+    expect(analytics.resilience.latestEventRecoveryLagTicks).toBe(0);
+    expect(analytics.resilience.memoryRecoveredEventFraction).toBeCloseTo(1, 10);
+    expect(analytics.resilience.memoryRecoveryLagTicksMean).toBeCloseTo(0, 10);
+    expect(analytics.resilience.memoryEventPhaseMean).toBeCloseTo(1 / 120, 10);
+    expect(analytics.resilience.memoryEventPhaseConcentration).toBeCloseTo(1, 10);
   });
 
   it('tracks sustained recovery ticks when population remains recovered', () => {
@@ -726,8 +732,12 @@ describe('LifeSimulation', () => {
     const analytics = sim.analytics(2);
 
     expect(analytics.resilience.memoryEventCount).toBe(3);
+    expect(analytics.resilience.memoryRecoveredEventFraction).toBeCloseTo(1, 10);
     expect(analytics.resilience.memoryRelapseEventFraction).toBeCloseTo(0, 10);
     expect(analytics.resilience.memoryStabilityIndexMean).toBeCloseTo(1, 10);
+    expect(analytics.resilience.memoryRecoveryLagTicksMean).toBeCloseTo(0, 10);
+    expect(analytics.resilience.memoryEventPhaseConcentration).toBeGreaterThan(0.99);
+    expect(analytics.resilience.memoryEventPhaseConcentration).toBeLessThanOrEqual(1);
   });
 
   it('tracks relapse history across disturbance events in resilience memory', () => {
@@ -769,6 +779,7 @@ describe('LifeSimulation', () => {
     expect(tick1.population).toBe(1);
     expect(tick2.population).toBe(0);
     expect(analytics.resilience.memoryEventCount).toBe(2);
+    expect(analytics.resilience.memoryRecoveredEventFraction).toBeCloseTo(0, 10);
     expect(analytics.resilience.memoryRelapseEventFraction).toBeCloseTo(0.5, 10);
     expect(analytics.resilience.memoryStabilityIndexMean).toBeCloseTo(0, 10);
   });
@@ -823,6 +834,9 @@ describe('LifeSimulation', () => {
     expect(analytics.resilience.populationTroughDepth).toBeCloseTo(1, 10);
     expect(analytics.resilience.populationTroughTicks).toBe(0);
     expect(analytics.resilience.delayedPopulationShockDepth).toBeCloseTo(0, 10);
+    expect(analytics.resilience.latestEventRecoveryLagTicks).toBe(-1);
+    expect(analytics.resilience.memoryRecoveredEventFraction).toBeCloseTo(0, 10);
+    expect(analytics.resilience.memoryRecoveryLagTicksMean).toBeCloseTo(0, 10);
     expect(analytics.resilience.preDisturbanceTurnoverRate).toBeCloseTo(0, 10);
     expect(analytics.resilience.postDisturbanceTurnoverRate).toBeCloseTo(2, 10);
     expect(analytics.resilience.turnoverSpike).toBeCloseTo(2, 10);
@@ -873,6 +887,8 @@ describe('LifeSimulation', () => {
     expect(analytics.resilience.populationTroughDepth).toBeCloseTo(1, 10);
     expect(analytics.resilience.populationTroughTicks).toBe(1);
     expect(analytics.resilience.delayedPopulationShockDepth).toBeCloseTo(1, 10);
+    expect(analytics.resilience.latestEventRecoveryLagTicks).toBe(-1);
+    expect(analytics.resilience.memoryRecoveredEventFraction).toBeCloseTo(0, 10);
   });
 
   it('applies localized disturbance shocks to a footprint instead of the full map', () => {

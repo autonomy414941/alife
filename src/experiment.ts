@@ -2,6 +2,7 @@ import { LifeSimulation, LifeSimulationOptions } from './simulation';
 import {
   DisturbanceGridCellPairedDeltas,
   DisturbanceGridCellSummary,
+  DisturbanceGridCellTimingDiagnostics,
   DisturbanceGridStudyConfig,
   DisturbanceGridStudyExport,
   DisturbanceGridStudySummary,
@@ -133,12 +134,14 @@ export function runDisturbanceGridStudy(input: RunDisturbanceGridStudyInput): Di
       });
 
       const pairedDeltas = summarizeDisturbancePairedDeltas(global.runs, local.runs);
+      const timingDiagnostics = summarizeDisturbanceTimingDiagnostics(global.runs, local.runs);
       cells.push({
         interval,
         amplitude,
         global: global.aggregate,
         local: local.aggregate,
         pairedDeltas,
+        timingDiagnostics,
         hypothesisSupport:
           pairedDeltas.relapseEventReduction.mean > 0 && pairedDeltas.pathDependenceGain.mean > 0
       });
@@ -300,7 +303,38 @@ function summarizeDisturbancePairedDeltas(
         local.finalResilienceMemoryStabilityIndex - global.finalResilienceMemoryStabilityIndex;
       const immediateDelta = local.finalResilienceStabilityIndex - global.finalResilienceStabilityIndex;
       return memoryDelta - immediateDelta;
-    })
+    }),
+    latestRecoveryLagReduction: summarizePairedRuns(
+      globalRuns,
+      localRuns,
+      (global, local) => comparableLatestRecoveryLag(global) - comparableLatestRecoveryLag(local)
+    ),
+    memoryRecoveryLagReduction: summarizePairedRuns(
+      globalRuns,
+      localRuns,
+      (global, local) => comparableMemoryRecoveryLag(global) - comparableMemoryRecoveryLag(local)
+    )
+  };
+}
+
+function summarizeDisturbanceTimingDiagnostics(
+  globalRuns: ExperimentRunSummary[],
+  localRuns: ExperimentRunSummary[]
+): DisturbanceGridCellTimingDiagnostics {
+  ensurePairedRuns(globalRuns, localRuns);
+  return {
+    globalLatestEventPhaseMean: summarize(
+      globalRuns.map((run) => run.finalAnalytics.resilience.latestEventSeasonalPhase)
+    ).mean,
+    localLatestEventPhaseMean: summarize(
+      localRuns.map((run) => run.finalAnalytics.resilience.latestEventSeasonalPhase)
+    ).mean,
+    globalMemoryEventPhaseConcentrationMean: summarize(
+      globalRuns.map((run) => run.finalAnalytics.resilience.memoryEventPhaseConcentration)
+    ).mean,
+    localMemoryEventPhaseConcentrationMean: summarize(
+      localRuns.map((run) => run.finalAnalytics.resilience.memoryEventPhaseConcentration)
+    ).mean
   };
 }
 
@@ -309,22 +343,13 @@ function summarizePairedRuns(
   localRuns: ExperimentRunSummary[],
   delta: (global: ExperimentRunSummary, local: ExperimentRunSummary) => number
 ): PairedDeltaAggregate {
-  if (globalRuns.length !== localRuns.length) {
-    throw new Error(
-      `Mismatched paired runs: global=${globalRuns.length} local=${localRuns.length}`
-    );
-  }
+  ensurePairedRuns(globalRuns, localRuns);
   const values: number[] = [];
   let positive = 0;
 
   for (let i = 0; i < globalRuns.length; i += 1) {
     const globalRun = globalRuns[i];
     const localRun = localRuns[i];
-    if (globalRun.seed !== localRun.seed) {
-      throw new Error(
-        `Seed mismatch for paired runs at index ${i}: globalSeed=${globalRun.seed} localSeed=${localRun.seed}`
-      );
-    }
 
     const value = delta(globalRun, localRun);
     values.push(value);
@@ -348,8 +373,46 @@ function summarizeDisturbanceGridStudy(cells: DisturbanceGridCellSummary[]): Dis
     supportFraction: cells.length === 0 ? 0 : supportedCells / cells.length,
     memoryStabilityDelta: summarize(cells.map((cell) => cell.pairedDeltas.memoryStabilityDelta.mean)),
     relapseEventReduction: summarize(cells.map((cell) => cell.pairedDeltas.relapseEventReduction.mean)),
-    pathDependenceGain: summarize(cells.map((cell) => cell.pairedDeltas.pathDependenceGain.mean))
+    pathDependenceGain: summarize(cells.map((cell) => cell.pairedDeltas.pathDependenceGain.mean)),
+    latestRecoveryLagReduction: summarize(
+      cells.map((cell) => cell.pairedDeltas.latestRecoveryLagReduction.mean)
+    ),
+    memoryRecoveryLagReduction: summarize(
+      cells.map((cell) => cell.pairedDeltas.memoryRecoveryLagReduction.mean)
+    ),
+    globalMemoryEventPhaseConcentration: summarize(
+      cells.map((cell) => cell.timingDiagnostics.globalMemoryEventPhaseConcentrationMean)
+    ),
+    localMemoryEventPhaseConcentration: summarize(
+      cells.map((cell) => cell.timingDiagnostics.localMemoryEventPhaseConcentrationMean)
+    )
   };
+}
+
+function ensurePairedRuns(globalRuns: ExperimentRunSummary[], localRuns: ExperimentRunSummary[]): void {
+  if (globalRuns.length !== localRuns.length) {
+    throw new Error(
+      `Mismatched paired runs: global=${globalRuns.length} local=${localRuns.length}`
+    );
+  }
+  for (let i = 0; i < globalRuns.length; i += 1) {
+    if (globalRuns[i].seed !== localRuns[i].seed) {
+      throw new Error(
+        `Seed mismatch for paired runs at index ${i}: globalSeed=${globalRuns[i].seed} localSeed=${localRuns[i].seed}`
+      );
+    }
+  }
+}
+
+function comparableLatestRecoveryLag(run: ExperimentRunSummary): number {
+  const lag = run.finalAnalytics.resilience.latestEventRecoveryLagTicks;
+  return lag < 0 ? run.stepsExecuted + 1 : lag;
+}
+
+function comparableMemoryRecoveryLag(run: ExperimentRunSummary): number {
+  const lag = Math.max(0, run.finalAnalytics.resilience.memoryRecoveryLagTicksMean);
+  const recoveredFraction = clampUnitInterval(run.finalAnalytics.resilience.memoryRecoveredEventFraction);
+  return lag + (1 - recoveredFraction) * (run.stepsExecuted + 1);
 }
 
 function aggregateRuns(runs: ExperimentRunSummary[]): ExperimentAggregateSummary {

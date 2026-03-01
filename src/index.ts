@@ -117,7 +117,10 @@ function runSingleMode(options: CliOptions): void {
           `stable=${turnover.resilience.sustainedRecoveryTicks},` +
           `trough=${turnover.resilience.populationTroughDepth.toFixed(2)}@${turnover.resilience.populationTroughTicks},` +
           `delay=${turnover.resilience.delayedPopulationShockDepth.toFixed(2)},spike=${turnover.resilience.turnoverSpike.toFixed(2)},` +
-          `burst=${turnover.resilience.extinctionBurstDepth.toFixed(2)}) ` +
+          `burst=${turnover.resilience.extinctionBurstDepth.toFixed(2)},` +
+          `phase=${turnover.resilience.latestEventSeasonalPhase.toFixed(2)},` +
+          `lag=${turnover.resilience.latestEventRecoveryLagTicks},` +
+          `memLag=${turnover.resilience.memoryRecoveryLagTicksMean.toFixed(2)}) ` +
           `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},dom=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},chg=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)}) ` +
           `patch(r=${turnover.localityRadius.radius},dom=${turnover.localityRadius.meanDominantSpeciesShare.toFixed(2)},` +
           `align=${turnover.localityRadius.centerDominantAlignment.toFixed(2)},` +
@@ -160,7 +163,11 @@ function runSingleMode(options: CliOptions): void {
       `preTurn=${turnover.resilience.preDisturbanceTurnoverRate.toFixed(2)},` +
       `postTurn=${turnover.resilience.postDisturbanceTurnoverRate.toFixed(2)},` +
       `spike=${turnover.resilience.turnoverSpike.toFixed(2)},` +
-      `burst=${turnover.resilience.extinctionBurstDepth.toFixed(2)}) ` +
+      `burst=${turnover.resilience.extinctionBurstDepth.toFixed(2)},` +
+      `phase=${turnover.resilience.latestEventSeasonalPhase.toFixed(2)},` +
+      `lag=${turnover.resilience.latestEventRecoveryLagTicks},` +
+      `memLag=${turnover.resilience.memoryRecoveryLagTicksMean.toFixed(2)},` +
+      `phaseConc=${turnover.resilience.memoryEventPhaseConcentration.toFixed(2)}) ` +
       `locality(occ=${turnover.locality.occupiedCellFraction.toFixed(2)},domMean=${turnover.locality.meanDominantSpeciesShare.toFixed(2)},` +
       `domStd=${turnover.locality.dominantSpeciesShareStdDev.toFixed(2)},turnMean=${turnover.localityTurnover.changedDominantCellFractionMean.toFixed(2)},` +
       `turnStd=${turnover.localityTurnover.changedDominantCellFractionStdDev.toFixed(2)}) ` +
@@ -295,6 +302,18 @@ function runExperimentMode(options: CliOptions): void {
   const resilienceExtinctionBurst = summarizeNumbers(
     experimentData.runs.map((run) => run.finalAnalytics.resilience.extinctionBurstDepth)
   );
+  const resilienceLatestEventPhase = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.resilience.latestEventSeasonalPhase)
+  );
+  const resilienceLatestRecoveryLag = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.resilience.latestEventRecoveryLagTicks)
+  );
+  const resilienceMemoryRecoveryLag = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.resilience.memoryRecoveryLagTicksMean)
+  );
+  const resilienceMemoryPhaseConcentration = summarizeNumbers(
+    experimentData.runs.map((run) => run.finalAnalytics.resilience.memoryEventPhaseConcentration)
+  );
 
   console.log(
     `experiment runs=${aggregate.runs} seeds=${options.seed}..${lastSeed} extinctionRate=${aggregate.extinctionRate.toFixed(2)} ` +
@@ -346,7 +365,11 @@ function runExperimentMode(options: CliOptions): void {
       `trough(mean=${resiliencePopulationTroughDepth.mean.toFixed(2)}@${resiliencePopulationTroughTicks.mean.toFixed(2)}) ` +
       `delay(mean=${resilienceDelayedPopulationShock.mean.toFixed(2)}) ` +
       `spike(mean=${resilienceTurnoverSpike.mean.toFixed(2)}) ` +
-      `burst(mean=${resilienceExtinctionBurst.mean.toFixed(2)})`
+      `burst(mean=${resilienceExtinctionBurst.mean.toFixed(2)}) ` +
+      `phase(mean=${resilienceLatestEventPhase.mean.toFixed(2)}) ` +
+      `lag(mean=${resilienceLatestRecoveryLag.mean.toFixed(2)}) ` +
+      `memoryLag(mean=${resilienceMemoryRecoveryLag.mean.toFixed(2)}) ` +
+      `phaseConc(mean=${resilienceMemoryPhaseConcentration.mean.toFixed(2)})`
   );
 
   if (options.exportExperimentJson) {

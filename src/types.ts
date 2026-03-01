@@ -147,8 +147,14 @@ export interface ResilienceAnalytics {
   turnoverSpike: number;
   extinctionBurstDepth: number;
   memoryEventCount: number;
+  memoryRecoveredEventFraction: number;
   memoryRelapseEventFraction: number;
   memoryStabilityIndexMean: number;
+  latestEventSeasonalPhase: number;
+  latestEventRecoveryLagTicks: number;
+  memoryRecoveryLagTicksMean: number;
+  memoryEventPhaseMean: number;
+  memoryEventPhaseConcentration: number;
 }
 
 export interface EvolutionAnalyticsSnapshot {
@@ -325,6 +331,15 @@ export interface DisturbanceGridCellPairedDeltas {
   relapseEventReduction: PairedDeltaAggregate;
   turnoverSpikeReduction: PairedDeltaAggregate;
   pathDependenceGain: PairedDeltaAggregate;
+  latestRecoveryLagReduction: PairedDeltaAggregate;
+  memoryRecoveryLagReduction: PairedDeltaAggregate;
+}
+
+export interface DisturbanceGridCellTimingDiagnostics {
+  globalLatestEventPhaseMean: number;
+  localLatestEventPhaseMean: number;
+  globalMemoryEventPhaseConcentrationMean: number;
+  localMemoryEventPhaseConcentrationMean: number;
 }
 
 export interface DisturbanceGridCellSummary {
@@ -333,6 +348,7 @@ export interface DisturbanceGridCellSummary {
   global: ExperimentAggregateSummary;
   local: ExperimentAggregateSummary;
   pairedDeltas: DisturbanceGridCellPairedDeltas;
+  timingDiagnostics: DisturbanceGridCellTimingDiagnostics;
   hypothesisSupport: boolean;
 }
 
@@ -343,6 +359,10 @@ export interface DisturbanceGridStudySummary {
   memoryStabilityDelta: NumericAggregate;
   relapseEventReduction: NumericAggregate;
   pathDependenceGain: NumericAggregate;
+  latestRecoveryLagReduction: NumericAggregate;
+  memoryRecoveryLagReduction: NumericAggregate;
+  globalMemoryEventPhaseConcentration: NumericAggregate;
+  localMemoryEventPhaseConcentration: NumericAggregate;
 }
 
 export interface DisturbanceGridStudyConfig {

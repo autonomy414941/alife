@@ -120,10 +120,28 @@ describe('run export', () => {
     );
     const resilienceTurnoverSpikeIndex = METRICS_CSV_COLUMNS.indexOf('resilience_turnover_spike');
     const resilienceMemoryEventCountIndex = METRICS_CSV_COLUMNS.indexOf('resilience_memory_event_count');
+    const resilienceMemoryRecoveredFractionIndex = METRICS_CSV_COLUMNS.indexOf(
+      'resilience_memory_recovered_event_fraction'
+    );
     const resilienceMemoryRelapseFractionIndex = METRICS_CSV_COLUMNS.indexOf(
       'resilience_memory_relapse_event_fraction'
     );
     const resilienceMemoryStabilityMeanIndex = METRICS_CSV_COLUMNS.indexOf('resilience_memory_stability_index_mean');
+    const resilienceLatestEventPhaseIndex = METRICS_CSV_COLUMNS.indexOf(
+      'resilience_latest_event_seasonal_phase'
+    );
+    const resilienceLatestRecoveryLagTicksIndex = METRICS_CSV_COLUMNS.indexOf(
+      'resilience_latest_event_recovery_lag_ticks'
+    );
+    const resilienceMemoryRecoveryLagMeanIndex = METRICS_CSV_COLUMNS.indexOf(
+      'resilience_memory_recovery_lag_ticks_mean'
+    );
+    const resilienceMemoryEventPhaseMeanIndex = METRICS_CSV_COLUMNS.indexOf(
+      'resilience_memory_event_phase_mean'
+    );
+    const resilienceMemoryEventPhaseConcentrationIndex = METRICS_CSV_COLUMNS.indexOf(
+      'resilience_memory_event_phase_concentration'
+    );
 
     expect(Number(row1[tickIndex])).toBe(1);
     expect(Number(row1[windowSizeIndex])).toBe(1);
@@ -181,12 +199,36 @@ describe('run export', () => {
       10
     );
     expect(Number(row3[resilienceMemoryEventCountIndex])).toBe(runData.analytics[2].resilience.memoryEventCount);
+    expect(Number(row3[resilienceMemoryRecoveredFractionIndex])).toBeCloseTo(
+      runData.analytics[2].resilience.memoryRecoveredEventFraction,
+      10
+    );
     expect(Number(row3[resilienceMemoryRelapseFractionIndex])).toBeCloseTo(
       runData.analytics[2].resilience.memoryRelapseEventFraction,
       10
     );
     expect(Number(row3[resilienceMemoryStabilityMeanIndex])).toBeCloseTo(
       runData.analytics[2].resilience.memoryStabilityIndexMean,
+      10
+    );
+    expect(Number(row3[resilienceLatestEventPhaseIndex])).toBeCloseTo(
+      runData.analytics[2].resilience.latestEventSeasonalPhase,
+      10
+    );
+    expect(Number(row3[resilienceLatestRecoveryLagTicksIndex])).toBeCloseTo(
+      runData.analytics[2].resilience.latestEventRecoveryLagTicks,
+      10
+    );
+    expect(Number(row3[resilienceMemoryRecoveryLagMeanIndex])).toBeCloseTo(
+      runData.analytics[2].resilience.memoryRecoveryLagTicksMean,
+      10
+    );
+    expect(Number(row3[resilienceMemoryEventPhaseMeanIndex])).toBeCloseTo(
+      runData.analytics[2].resilience.memoryEventPhaseMean,
+      10
+    );
+    expect(Number(row3[resilienceMemoryEventPhaseConcentrationIndex])).toBeCloseTo(
+      runData.analytics[2].resilience.memoryEventPhaseConcentration,
       10
     );
   });
@@ -282,6 +324,24 @@ describe('run export', () => {
     expect(
       Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('path_dependence_gain_mean')])
     ).toBeCloseTo(study.cells[0].pairedDeltas.pathDependenceGain.mean, 10);
+    expect(
+      Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('global_latest_event_phase_mean')])
+    ).toBeCloseTo(study.cells[0].timingDiagnostics.globalLatestEventPhaseMean, 10);
+    expect(
+      Number(
+        firstRow[
+          DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf(
+            'global_memory_event_phase_concentration_mean'
+          )
+        ]
+      )
+    ).toBeCloseTo(study.cells[0].timingDiagnostics.globalMemoryEventPhaseConcentrationMean, 10);
+    expect(
+      Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('latest_recovery_lag_reduction_mean')])
+    ).toBeCloseTo(study.cells[0].pairedDeltas.latestRecoveryLagReduction.mean, 10);
+    expect(
+      Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('memory_recovery_lag_reduction_mean')])
+    ).toBeCloseTo(study.cells[0].pairedDeltas.memoryRecoveryLagReduction.mean, 10);
     expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('hypothesis_support')])).toBe(
       study.cells[0].hypothesisSupport ? 1 : 0
     );

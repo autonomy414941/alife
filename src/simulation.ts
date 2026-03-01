@@ -399,10 +399,20 @@ export class LifeSimulation {
     const latestEvent = this.latestDisturbanceEvent();
     const currentPopulation = this.agents.length;
     const memoryEvents = this.disturbanceEvents.filter((event) => event.populationBefore > 0);
+    const memoryPhaseStats = this.summarizeCircularPhase(
+      memoryEvents.map((event) => this.seasonalPhaseForTick(event.tick))
+    );
+    let memoryRecoveredEvents = 0;
+    let memoryRecoveryLagTicksTotal = 0;
     let memoryRelapseEvents = 0;
     let memoryStabilityIndexTotal = 0;
     for (const event of memoryEvents) {
       const recovery = this.buildRecoveryStateForEvent(event, currentPopulation);
+      const recoveryLagTicks = this.recoveryLagTicksForEvent(event);
+      if (recoveryLagTicks >= 0) {
+        memoryRecoveredEvents += 1;
+        memoryRecoveryLagTicksTotal += recoveryLagTicks;
+      }
       if (recovery.recoveryRelapses > 0) {
         memoryRelapseEvents += 1;
       }
@@ -413,8 +423,11 @@ export class LifeSimulation {
       );
     }
     const memoryEventCount = memoryEvents.length;
+    const memoryRecoveredEventFraction = memoryEventCount === 0 ? 0 : memoryRecoveredEvents / memoryEventCount;
     const memoryRelapseEventFraction = memoryEventCount === 0 ? 0 : memoryRelapseEvents / memoryEventCount;
     const memoryStabilityIndexMean = memoryEventCount === 0 ? 0 : memoryStabilityIndexTotal / memoryEventCount;
+    const memoryRecoveryLagTicksMean =
+      memoryRecoveredEvents === 0 ? 0 : memoryRecoveryLagTicksTotal / memoryRecoveredEvents;
 
     if (latestEvent === null) {
       return {
@@ -430,12 +443,19 @@ export class LifeSimulation {
         turnoverSpike: 0,
         extinctionBurstDepth: 0,
         memoryEventCount: 0,
+        memoryRecoveredEventFraction: 0,
         memoryRelapseEventFraction: 0,
-        memoryStabilityIndexMean: 0
+        memoryStabilityIndexMean: 0,
+        latestEventSeasonalPhase: 0,
+        latestEventRecoveryLagTicks: 0,
+        memoryRecoveryLagTicksMean: 0,
+        memoryEventPhaseMean: 0,
+        memoryEventPhaseConcentration: 0
       };
     }
 
     const latestRecovery = this.buildRecoveryStateForEvent(latestEvent, currentPopulation);
+    const latestEventRecoveryLagTicks = this.recoveryLagTicksForEvent(latestEvent);
     const immediatePopulationShock =
       latestEvent.populationBefore <= 0
         ? 0
@@ -489,9 +509,22 @@ export class LifeSimulation {
       turnoverSpike,
       extinctionBurstDepth,
       memoryEventCount,
+      memoryRecoveredEventFraction,
       memoryRelapseEventFraction,
-      memoryStabilityIndexMean
+      memoryStabilityIndexMean,
+      latestEventSeasonalPhase: this.seasonalPhaseForTick(latestEvent.tick),
+      latestEventRecoveryLagTicks,
+      memoryRecoveryLagTicksMean,
+      memoryEventPhaseMean: memoryPhaseStats.mean,
+      memoryEventPhaseConcentration: memoryPhaseStats.concentration
     };
+  }
+
+  private recoveryLagTicksForEvent(event: DisturbanceEventState): number {
+    if (event.recoveryTick === null) {
+      return -1;
+    }
+    return Math.max(0, event.recoveryTick - event.tick);
   }
 
   private buildRecoveryStateForEvent(
@@ -517,6 +550,33 @@ export class LifeSimulation {
       recoveryRelapses: event.recoveryRelapses,
       sustainedRecoveryTicks: event.recoveryTick === null ? 0 : Math.max(0, this.tickCount - event.recoveryTick)
     };
+  }
+
+  private summarizeCircularPhase(phases: number[]): { mean: number; concentration: number } {
+    if (phases.length === 0) {
+      return { mean: 0, concentration: 0 };
+    }
+
+    let sinTotal = 0;
+    let cosTotal = 0;
+    for (const phase of phases) {
+      const angle = phase * Math.PI * 2;
+      sinTotal += Math.sin(angle);
+      cosTotal += Math.cos(angle);
+    }
+
+    const meanSin = sinTotal / phases.length;
+    const meanCos = cosTotal / phases.length;
+    const concentration = clamp(Math.sqrt(meanSin ** 2 + meanCos ** 2), 0, 1);
+    if (concentration === 0) {
+      return { mean: 0, concentration: 0 };
+    }
+
+    let mean = Math.atan2(meanSin, meanCos) / (Math.PI * 2);
+    if (mean < 0) {
+      mean += 1;
+    }
+    return { mean, concentration };
   }
 
   private computeResilienceStabilityIndex(
