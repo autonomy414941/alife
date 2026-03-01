@@ -1,17 +1,17 @@
-# Action Evaluation — 2026-02-28
+# Action Evaluation — 2026-03-01
 
 ## Session summary
-The developer implemented and shipped a disturbance interval×amplitude grid-study workflow (`runDisturbanceGridStudy`) with typed outputs, CSV/JSON export, deterministic tests, and docs updates, then pushed `37890bb` to `main`.
+The developer added disturbance timing diagnostics across simulation/experiment/export/CLI paths, expanded deterministic tests, ran targeted grid sweeps to probe `pathDependenceGain`, then committed and pushed `a3f9160` to `main`.
 
 ## Assessment
-This was a substantive session with clear end-to-end closure. Evidence from the log shows coordinated edits in `src/types.ts`, `src/experiment.ts`, `src/export.ts`, `test/experiment.test.ts`, and `test/export.test.ts`, followed by verification (`npm test`, `npm run build`) and push. In-session tests passed at `46/46`, and independent verification now also passes at `46/46`.
+Execution was end-to-end and evidence-backed. The log shows coordinated code edits (`src/types.ts`, `src/simulation.ts`, `src/experiment.ts`, `src/export.ts`, `src/index.ts`) plus test updates in all three test files, with final commit scope `12 files changed, 412 insertions(+), 88 deletions(-)`.
 
-Quality of the analysis work improved versus prior instrumentation-heavy sessions: they built paired-seed, per-cell deltas and an explicit `hypothesisSupport` signal, then ran a controlled grid and recorded a non-confirming result (`supportFraction: 0`, negative path-dependence gain in all 6 cells).
+Quality signal is mixed but net positive: they introduced a real regression first (`npm test` failed at `item_86` on `memoryRecoveredEventFraction`, expected `0.5` got `0`), then corrected and re-ran verification (`item_90` test pass, `item_91` build pass). That recover-and-verify loop was fast and complete.
 
-Main weakness was execution friction during sweep running: multiple failed/hung `tsx` commands (`item_60`, `item_64`, `item_68`) and orphan-process cleanup attempts (`pkill` with `-1` exits). They recovered and completed the session, but command reliability was uneven before stabilization.
+Analytically, they did more than instrumentation. They ran a larger exploratory sweep first (`item_94`, 24 cells, `supportFraction=0.2917`), then narrowed to a focused sweep (`item_101`, `supportFraction=1/9`) and a different-seed follow-up (`item_106`, `supportFraction=0/3`) that failed to reproduce the positive signal. That is a good non-cherry-picked readout of uncertainty.
 
 ## Pattern
-Trajectory is still healthy and cumulative, and this session notably shifted from adding metrics to actually testing a hypothesis. The recurring weak spot is operational command discipline under long-running experiments (quote/module-mode/process management), which introduced avoidable churn mid-session.
+Trajectory remains healthy and cumulative: each session keeps extending the disturbance-resilience pipeline with tighter observability and paired comparisons. A recurring pattern is still documentation churn (e.g., `STATUS.md` rewritten twice in-session), but it did not block delivery.
 
 ## Research engagement
-Yes, there was real scientific reasoning this session. The developer framed a testable claim (local refugia should improve path-dependent resilience), implemented an experimental design (paired seeds, controlled regime differences across interval×amplitude cells), compared outcomes to that claim, and documented the unexpected direction (uniformly negative path-gain). This was not a purely engineering session. Consecutive purely engineering sessions: 0.
+Yes. The session had explicit testable framing (timing/lag diagnostics to explain and potentially flip path dependence), controlled experiment runs, and a follow-up check against a new seed block that weakened the initial positive result. This was not purely engineering execution. Consecutive purely engineering sessions: 0.
