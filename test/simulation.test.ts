@@ -637,6 +637,7 @@ describe('LifeSimulation', () => {
     expect(sim.getResource(0, 0)).toBeCloseTo(6, 10);
     expect(sim.snapshot().agents[0]?.energy).toBeCloseTo(5, 10);
     expect(analytics.disturbance.interval).toBe(2);
+    expect(analytics.disturbance.phaseOffset).toBeCloseTo(0, 10);
     expect(analytics.disturbance.energyLoss).toBeCloseTo(0.5, 10);
     expect(analytics.disturbance.resourceLoss).toBeCloseTo(0.25, 10);
     expect(analytics.disturbance.eventsInWindow).toBe(1);
@@ -656,6 +657,45 @@ describe('LifeSimulation', () => {
     expect(analytics.resilience.memoryRecoveryLagTicksMean).toBeCloseTo(0, 10);
     expect(analytics.resilience.memoryEventPhaseMean).toBeCloseTo(1 / 120, 10);
     expect(analytics.resilience.memoryEventPhaseConcentration).toBeCloseTo(1, 10);
+  });
+
+  it('supports disturbance phase offset scheduling', () => {
+    const sim = new LifeSimulation({
+      seed: 72,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 100,
+        resourceRegen: 0,
+        biomeBands: 1,
+        biomeContrast: 0,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        initialAgents: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        disturbanceInterval: 4,
+        disturbancePhaseOffset: 0.5,
+        disturbanceEnergyLoss: 0,
+        disturbanceResourceLoss: 0.5
+      }
+    });
+    sim.setResource(0, 0, 8);
+
+    sim.step();
+    expect(sim.getResource(0, 0)).toBeCloseTo(8, 10);
+    sim.step();
+    expect(sim.getResource(0, 0)).toBeCloseTo(4, 10);
+    sim.step();
+    expect(sim.getResource(0, 0)).toBeCloseTo(4, 10);
+    sim.step();
+    expect(sim.getResource(0, 0)).toBeCloseTo(4, 10);
+
+    const analytics = sim.analytics(4);
+    expect(analytics.disturbance.interval).toBe(4);
+    expect(analytics.disturbance.phaseOffset).toBeCloseTo(0.5, 10);
+    expect(analytics.disturbance.eventsInWindow).toBe(1);
+    expect(analytics.disturbance.lastEventTick).toBe(2);
   });
 
   it('tracks sustained recovery ticks when population remains recovered', () => {

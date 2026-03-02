@@ -1,32 +1,32 @@
-# State Evaluation — 2026-03-01
+# State Evaluation — 2026-03-02
 
 ## Project State
-- The core is a deterministic TypeScript simulator (`src/simulation.ts`) with seeded RNG, toroidal spatial dynamics, mutation/speciation, biome heterogeneity, seasonality, predation/defense tradeoffs, and localized disturbance with configurable radius/refugia.
-- Observability is broad: per-tick analytics include species/clade turnover, strategy axes, forcing phase, disturbance footprint, locality and radius-k turnover, and resilience signals (delayed troughs, relapse count, sustained recovery, memory-event aggregates).
-- Experiment tooling is now first-class: `runExperiment(...)` plus `runDisturbanceGridStudy(...)` (`src/experiment.ts`) with paired-seed deltas and `pathDependenceGain`/`hypothesisSupport`; JSON/CSV export is wired in `src/export.ts`.
-- Interface maturity is practical: CLI supports single runs and seeded sweeps with export paths (`src/index.ts`).
-- Verification is solid for deterministic behavior but narrow scientifically: `npm test` passes at 46 tests and `npm run build` passes today; tests are concentrated in deterministic unit/integration checks across 3 files, with little uncertainty or long-horizon statistical validation.
+- The project is a deterministic TypeScript alife simulator with broad eco-evolutionary mechanics in `src/simulation.ts` (1,962 LOC): mutation/speciation, trophic/defense tradeoffs, habitat preference, toroidal spatial locality, seasonality, and localized disturbance with radius/refugia.
+- Observability is strong: per-tick analytics now include disturbance footprint, delayed trough/recovery behavior, relapse and sustained-recovery metrics, multi-event memory metrics, and seasonal-phase timing diagnostics.
+- Experiment surface is mature for paired studies: `runExperiment(...)` and `runDisturbanceGridStudy(...)` in `src/experiment.ts` produce paired seeded deltas including `pathDependenceGain`, lag reductions, and hypothesis-support fractions.
+- Export/CLI coverage is complete for current schema (`src/export.ts`, `src/index.ts`), including JSON/CSV for single runs, aggregate runs, and disturbance grids.
+- Verification is good at implementation level: `npm test && npm run build` passes today (46 tests across simulation/experiment/export), but test style is mostly deterministic invariants rather than statistical robustness.
 
 ## Trajectory
-- Recent sessions are coherent and cumulative: disturbance mechanics -> delayed impact tracking -> recovery semantics -> relapse/memory metrics -> paired grid-study API.
-- Direction is productive and recently became hypothesis-driven (explicit paired global-vs-local tests), not just instrumentation.
-- The trajectory is still tightly centered on disturbance resilience; exploration breadth (other ecological mechanisms and hypotheses) remains limited.
+- Recent commits show a tight sequence around disturbance resilience: delayed impact -> durable recovery semantics -> relapse/stability indices -> multi-event memory -> interval/amplitude paired grid -> timing diagnostics.
+- Direction is productive and increasingly hypothesis-driven, but narrow: most sessions continue to deepen the same disturbance-resilience axis instead of expanding model breadth.
+- Current empirical signal is unstable: one weak positive `pathDependenceGain` cell appeared in one seed block and disappeared in follow-up seeds.
 
 ## Gaps
-- Ecological expressivity is still constrained (single abiotic resource field and simplified interaction channels), which limits macroecological pattern realism.
-- Current evaluation focuses on endpoint aggregates; open-ended dynamics/novelty metrics are still thin compared with recent ALife practice.
-- Statistical confidence is underdeveloped: paired deltas are present, but uncertainty estimates and robustness across larger parameter volumes are minimal.
-- Complexity concentration in `src/simulation.ts` continues to raise coupling/regression risk as mechanics accumulate.
+- Model breadth remains limited relative to the stated alife ambition: single-resource ecology and fixed periodic disturbance scheduling constrain ecological realism.
+- Uncertainty handling is thin: outputs emphasize mean/min/max and positive fractions, with no interval estimates or significance diagnostics for sweep claims.
+- Disturbance timing is observed but not directly controlled (no explicit phase-offset parameter yet), which limits causal tests of phase-driven effects.
+- Core complexity remains concentrated in one large simulation file, increasing coupling risk as new mechanisms are added.
 
 ## Research Gaps
-- Does disturbance timing relative to seasonal phase (already observable via `forcing.phase`) determine when `pathDependenceGain` flips from negative to positive under fixed amplitude and locality settings?
-- Across biome heterogeneity and disturbance locality, can this simulator sustain both high memory resilience and ongoing evolutionary turnover (speciation/extinction activity), or are those outcomes mutually constraining?
-- When searching for resilient regimes, do manual interval×amplitude grids miss qualitatively different regions that automated exploration methods (curiosity/FMs) tend to reveal in related ALife systems?
+- Under equal mean disturbance intensity, does a narrow seasonal phase window produce reproducible positive `pathDependenceGain`, and is that window predictable from `memoryEventPhaseConcentration`?
+- Do localized refugia create a measurable tradeoff frontier between resilience memory (`memoryStabilityIndexMean`, `memoryRecoveryLagTicksMean`) and ongoing diversification (`netDiversificationRate`, turnover), or can both improve together across regimes?
+- Compared with manual interval-amplitude grids, do adaptive search strategies (intrinsic multi-objective exploration or FM-guided target evolution) find robust positive-memory regimes with fewer simulation evaluations?
 
 ## External Context
-- **ALIFE 2026** is active now (Waterloo, Aug 17-21, 2026), with full-paper submission listed for **March 30, 2026**: https://2026.alife.org/
-- **ASAL** is now peer-reviewed in *Artificial Life* (2025 Sep 4;31(3):368-396, DOI `10.1162/ARTL.a.8`), moving FM-guided ALife search from preprint to journal status: https://pubmed.ncbi.nlm.nih.gov/40911297/
-- **ASAL++** extends that line with evolving FM-generated targets and reports ALife 2025 proceedings acceptance: https://arxiv.org/abs/2509.22447
-- **Flow-Lenia** is now in *Artificial Life* 31(2):228-248 (DOI `10.1162/artl_a_00471`) and explicitly uses evolutionary-activity framing for open-ended dynamics: https://arxiv.org/abs/2506.08569
-- A follow-on **curiosity-driven AI scientist** workflow for Flow-Lenia (revised Jan 29, 2026; ALife 2025 proceedings DOI `10.1162/ISAL.a.896`) emphasizes automated discovery using evolutionary activity, compression, and entropy metrics: https://arxiv.org/abs/2505.15998
-- ABM tooling is shifting toward scalable/differentiable workflows: Mesa 3 in JOSS (2025) plus active migration guidance, ABMax (JAX ABM), and AD-enabled ABM calibration papers: https://joss.theoj.org/papers/10.21105/joss.07668 , https://mesa.readthedocs.io/latest/migration_guide.html , https://arxiv.org/abs/2508.16508 , https://arxiv.org/abs/2509.03303
+- **Mesa 3 (JOSS 2025)** formalized a widely used ABM stack with emphasis on modernized APIs and reproducible stepping/tooling, relevant to this project’s experiment orchestration needs: https://joss.theoj.org/papers/10.21105/joss.07668 and migration guidance: https://mesa.readthedocs.io/latest/migration_guide.html
+- **Adaptive Exploration in Lenia** (Lorantos & Spector, 2025) reports intrinsic multi-objective ranking (distinctiveness/sparsity/homeostasis) as a practical path toward open-ended exploratory dynamics: https://arxiv.org/abs/2506.02990
+- **ASAL++** (Baid et al., 2025) extends FM-guided alife search with evolving targets (EST/ETT) and reports stronger novelty/coherence behavior in Lenia experiments: https://arxiv.org/abs/2509.22447
+- **Resource and Population Dynamics in an Agent-Environment Interaction Model** (Briozzo et al., 2025) reinforces current field focus on explicitly coupling agent behavior with resource landscape feedbacks: https://arxiv.org/abs/2506.15485
+- **Global Forest Disturbance Regime Dataset (1986-2020)** provides empirically grounded disturbance heterogeneity (frequency/severity/size) that could benchmark synthetic regime realism: https://essd.copernicus.org/preprints/essd-2024-91/
+- **Climate-disturbance interaction evidence** (Stenzel et al., *Biogeosciences*, 2025) highlights that disturbance and climate exposure jointly shape ecosystem functioning/resilience, relevant to this project’s seasonality-disturbance coupling questions: https://bg.copernicus.org/articles/22/1259/2025/

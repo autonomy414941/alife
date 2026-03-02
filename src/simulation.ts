@@ -35,6 +35,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   seasonalRegenAmplitude: 0,
   seasonalFertilityContrastAmplitude: 0,
   disturbanceInterval: 0,
+  disturbancePhaseOffset: 0,
   disturbanceEnergyLoss: 0,
   disturbanceResourceLoss: 0,
   disturbanceRadius: -1,
@@ -382,6 +383,7 @@ export class LifeSimulation {
 
     return {
       interval: this.normalizedDisturbanceInterval(),
+      phaseOffset: this.normalizedDisturbancePhaseOffset(),
       energyLoss: clamp(this.config.disturbanceEnergyLoss, 0, 1),
       resourceLoss: clamp(this.config.disturbanceResourceLoss, 0, 1),
       radius: this.normalizedDisturbanceRadius(),
@@ -1809,11 +1811,29 @@ export class LifeSimulation {
 
   private shouldApplyDisturbance(stepTick: number): boolean {
     const interval = this.normalizedDisturbanceInterval();
-    return interval > 0 && stepTick > 0 && stepTick % interval === 0;
+    if (interval <= 0 || stepTick <= 0) {
+      return false;
+    }
+    return stepTick % interval === this.normalizedDisturbancePhaseOffsetTick(interval);
   }
 
   private normalizedDisturbanceInterval(): number {
     return Math.max(0, Math.floor(this.config.disturbanceInterval));
+  }
+
+  private normalizedDisturbancePhaseOffset(): number {
+    if (!Number.isFinite(this.config.disturbancePhaseOffset)) {
+      return 0;
+    }
+    const wrapped = this.config.disturbancePhaseOffset % 1;
+    return wrapped < 0 ? wrapped + 1 : wrapped;
+  }
+
+  private normalizedDisturbancePhaseOffsetTick(interval: number): number {
+    if (interval <= 0) {
+      return 0;
+    }
+    return Math.floor(this.normalizedDisturbancePhaseOffset() * interval);
   }
 
   private normalizedDisturbanceRadius(): number {

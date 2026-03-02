@@ -122,6 +122,7 @@ export interface ForcingAnalytics {
 
 export interface DisturbanceAnalytics {
   interval: number;
+  phaseOffset: number;
   energyLoss: number;
   resourceLoss: number;
   radius: number;
@@ -202,6 +203,7 @@ export interface SimulationConfig {
   seasonalRegenAmplitude: number;
   seasonalFertilityContrastAmplitude: number;
   disturbanceInterval: number;
+  disturbancePhaseOffset: number;
   disturbanceEnergyLoss: number;
   disturbanceResourceLoss: number;
   disturbanceRadius: number;
@@ -345,6 +347,7 @@ export interface DisturbanceGridCellTimingDiagnostics {
 export interface DisturbanceGridCellSummary {
   interval: number;
   amplitude: number;
+  phase: number;
   global: ExperimentAggregateSummary;
   local: ExperimentAggregateSummary;
   pairedDeltas: DisturbanceGridCellPairedDeltas;
@@ -374,6 +377,7 @@ export interface DisturbanceGridStudyConfig {
   stopWhenExtinct: boolean;
   intervals: number[];
   amplitudes: number[];
+  phases: number[];
   localRadius: number;
   localRefugiaFraction: number;
 }

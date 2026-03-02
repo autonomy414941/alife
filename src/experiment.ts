@@ -40,6 +40,7 @@ export interface RunDisturbanceGridStudyInput {
   stopWhenExtinct?: boolean;
   intervals: number[];
   amplitudes: number[];
+  phases?: number[];
   localRadius?: number;
   localRefugiaFraction?: number;
   simulation?: Omit<LifeSimulationOptions, 'seed'>;
@@ -102,49 +103,54 @@ export function runDisturbanceGridStudy(input: RunDisturbanceGridStudyInput): Di
 
   for (const interval of config.intervals) {
     for (const amplitude of config.amplitudes) {
-      const global = runExperiment({
-        runs: config.runs,
-        steps: config.steps,
-        analyticsWindow: config.analyticsWindow,
-        seed: config.seed,
-        seedStep: config.seedStep,
-        stopWhenExtinct: config.stopWhenExtinct,
-        simulation: withDisturbanceConfig(config.simulation, {
-          disturbanceInterval: interval,
-          disturbanceEnergyLoss: amplitude,
-          disturbanceResourceLoss: amplitude,
-          disturbanceRadius: -1,
-          disturbanceRefugiaFraction: 0
-        })
-      });
-      const local = runExperiment({
-        runs: config.runs,
-        steps: config.steps,
-        analyticsWindow: config.analyticsWindow,
-        seed: config.seed,
-        seedStep: config.seedStep,
-        stopWhenExtinct: config.stopWhenExtinct,
-        simulation: withDisturbanceConfig(config.simulation, {
-          disturbanceInterval: interval,
-          disturbanceEnergyLoss: amplitude,
-          disturbanceResourceLoss: amplitude,
-          disturbanceRadius: config.localRadius,
-          disturbanceRefugiaFraction: config.localRefugiaFraction
-        })
-      });
+      for (const phase of config.phases) {
+        const global = runExperiment({
+          runs: config.runs,
+          steps: config.steps,
+          analyticsWindow: config.analyticsWindow,
+          seed: config.seed,
+          seedStep: config.seedStep,
+          stopWhenExtinct: config.stopWhenExtinct,
+          simulation: withDisturbanceConfig(config.simulation, {
+            disturbanceInterval: interval,
+            disturbancePhaseOffset: phase,
+            disturbanceEnergyLoss: amplitude,
+            disturbanceResourceLoss: amplitude,
+            disturbanceRadius: -1,
+            disturbanceRefugiaFraction: 0
+          })
+        });
+        const local = runExperiment({
+          runs: config.runs,
+          steps: config.steps,
+          analyticsWindow: config.analyticsWindow,
+          seed: config.seed,
+          seedStep: config.seedStep,
+          stopWhenExtinct: config.stopWhenExtinct,
+          simulation: withDisturbanceConfig(config.simulation, {
+            disturbanceInterval: interval,
+            disturbancePhaseOffset: phase,
+            disturbanceEnergyLoss: amplitude,
+            disturbanceResourceLoss: amplitude,
+            disturbanceRadius: config.localRadius,
+            disturbanceRefugiaFraction: config.localRefugiaFraction
+          })
+        });
 
-      const pairedDeltas = summarizeDisturbancePairedDeltas(global.runs, local.runs);
-      const timingDiagnostics = summarizeDisturbanceTimingDiagnostics(global.runs, local.runs);
-      cells.push({
-        interval,
-        amplitude,
-        global: global.aggregate,
-        local: local.aggregate,
-        pairedDeltas,
-        timingDiagnostics,
-        hypothesisSupport:
-          pairedDeltas.relapseEventReduction.mean > 0 && pairedDeltas.pathDependenceGain.mean > 0
-      });
+        const pairedDeltas = summarizeDisturbancePairedDeltas(global.runs, local.runs);
+        const timingDiagnostics = summarizeDisturbanceTimingDiagnostics(global.runs, local.runs);
+        cells.push({
+          interval,
+          amplitude,
+          phase,
+          global: global.aggregate,
+          local: local.aggregate,
+          pairedDeltas,
+          timingDiagnostics,
+          hypothesisSupport:
+            pairedDeltas.relapseEventReduction.mean > 0 && pairedDeltas.pathDependenceGain.mean > 0
+        });
+      }
     }
   }
 
@@ -159,6 +165,7 @@ export function runDisturbanceGridStudy(input: RunDisturbanceGridStudyInput): Di
       stopWhenExtinct: config.stopWhenExtinct,
       intervals: config.intervals,
       amplitudes: config.amplitudes,
+      phases: config.phases,
       localRadius: config.localRadius,
       localRefugiaFraction: config.localRefugiaFraction
     },
@@ -198,6 +205,7 @@ function normalizeDisturbanceGridStudyConfig(
     simulation: baseConfig.simulation,
     intervals: toPositiveIntList('intervals', input.intervals),
     amplitudes: toUnitIntervalList('amplitudes', input.amplitudes),
+    phases: toPhaseOffsetList('phases', input.phases ?? [0]),
     localRadius: toNonNegativeInt('localRadius', input.localRadius ?? 2),
     localRefugiaFraction: toUnitInterval('localRefugiaFraction', input.localRefugiaFraction ?? 0.35)
   };
@@ -250,11 +258,27 @@ function toUnitIntervalList(name: string, values: number[]): number[] {
   return values.map((value, index) => toUnitInterval(`${name}[${index}]`, value));
 }
 
+function toPhaseOffset(name: string, value: number): number {
+  if (!Number.isFinite(value)) {
+    throw new Error(`${name} must be finite`);
+  }
+  const wrapped = value % 1;
+  return wrapped < 0 ? wrapped + 1 : wrapped;
+}
+
+function toPhaseOffsetList(name: string, values: number[]): number[] {
+  if (values.length === 0) {
+    throw new Error(`${name} must not be empty`);
+  }
+  return values.map((value, index) => toPhaseOffset(`${name}[${index}]`, value));
+}
+
 function withDisturbanceConfig(
   simulation: Omit<LifeSimulationOptions, 'seed'>,
   overrides: Pick<
     SimulationConfig,
     | 'disturbanceInterval'
+    | 'disturbancePhaseOffset'
     | 'disturbanceEnergyLoss'
     | 'disturbanceResourceLoss'
     | 'disturbanceRadius'

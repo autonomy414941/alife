@@ -730,3 +730,36 @@ Observed:
 Thinking:
 - Timing diagnostics now expose a concrete mechanism candidate: acute recovery acceleration outpaces historical-memory improvement.
 - Next step should be an explicit phase-offset control for disturbance scheduling to directly test reproducible phase-dependent sign flips in `pathDependenceGain`.
+
+## 2026-03-02 (session 27)
+- Implemented explicit disturbance phase-offset control in `src/simulation.ts` and config/types:
+  - new `disturbancePhaseOffset` in `SimulationConfig` (wrapped to `[0,1)`).
+  - scheduler now triggers on `tick % interval === floor(phaseOffset * interval)`.
+  - disturbance analytics now expose `phaseOffset`.
+- Extended disturbance grid study in `src/experiment.ts` from `interval×amplitude` to `interval×amplitude×phase`:
+  - new optional input `phases` (default `[0]`), normalized and validated.
+  - per-cell output now includes `phase` and study config exports `phases`.
+- Wired schema changes through exports/CLI:
+  - per-tick metrics CSV now includes `disturbance_phase_offset`.
+  - disturbance grid CSV now includes `phase` column.
+  - CLI adds `--disturbance-phase` and reports disturbance offset in run summaries.
+- Expanded deterministic tests:
+  - `test/simulation.test.ts`: phase-offset scheduler behavior + analytics field checks.
+  - `test/experiment.test.ts`: phase-axis cell expansion + `phases` validation.
+  - `test/export.test.ts`: CSV/JSON mappings for new phase fields.
+- Verification: `npm test` (48 tests) and `npm run build` both pass.
+- Ran a phase-enabled paired sweep:
+  - seeds `20260302..20260305`, `runs=4`, `steps=260`, `window=26`
+  - intervals `{20,24}`, amplitude `{0.2}`, phases `{0,0.25,0.5,0.75}`
+  - global (`radius=-1`, `refugia=0`) vs local (`radius=2`, `refugia=0.35`).
+
+Observed:
+- `supportFraction=1/8` in the phase-enabled grid.
+- The only positive cell was `interval=24, phase=0` with `pathDependenceGain=+0.131`.
+- Other cells remained negative (`-0.308..-0.032`), including all `interval=20` phases.
+- Relapse reduction stayed positive in all sampled cells, while path gain sign remained phase-sensitive.
+
+Thinking:
+- The new control removes a key confound: cadence and phase can now be manipulated independently.
+- Current evidence suggests a narrow phase window may exist for positive path dependence, but reproducibility is unresolved.
+- Next session should prioritize replicated seed-block tests per interval×phase cell rather than expanding new mechanics.

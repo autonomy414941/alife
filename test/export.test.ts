@@ -99,6 +99,7 @@ describe('run export', () => {
     const forcingRegenIndex = METRICS_CSV_COLUMNS.indexOf('forcing_regen_multiplier');
     const forcingContrastIndex = METRICS_CSV_COLUMNS.indexOf('forcing_fertility_contrast_multiplier');
     const disturbanceEventsIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_events_window');
+    const disturbancePhaseOffsetIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_phase_offset');
     const disturbanceRadiusIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_radius');
     const disturbanceRefugiaIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_refugia_fraction');
     const disturbancePopulationShockIndex = METRICS_CSV_COLUMNS.indexOf('disturbance_last_population_shock');
@@ -159,6 +160,10 @@ describe('run export', () => {
       10
     );
     expect(Number(row1[disturbanceEventsIndex])).toBe(runData.analytics[0].disturbance.eventsInWindow);
+    expect(Number(row1[disturbancePhaseOffsetIndex])).toBeCloseTo(
+      runData.analytics[0].disturbance.phaseOffset,
+      10
+    );
     expect(Number(row1[disturbanceRadiusIndex])).toBe(runData.analytics[0].disturbance.radius);
     expect(Number(row1[disturbanceRefugiaIndex])).toBeCloseTo(
       runData.analytics[0].disturbance.refugiaFraction,
@@ -308,6 +313,7 @@ describe('run export', () => {
     const parsedJson = JSON.parse(disturbanceGridStudyToJson(study));
     expect(parsedJson.generatedAt).toBe('2026-02-28T00:00:00.000Z');
     expect(parsedJson.cells).toHaveLength(2);
+    expect(parsedJson.config.phases).toEqual([0]);
     expect(parsedJson.summary.cells).toBe(2);
 
     const csv = disturbanceGridStudyToCsv(study);
@@ -319,6 +325,10 @@ describe('run export', () => {
     expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('interval')])).toBe(study.cells[0].interval);
     expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('amplitude')])).toBeCloseTo(
       study.cells[0].amplitude,
+      10
+    );
+    expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('phase')])).toBeCloseTo(
+      study.cells[0].phase,
       10
     );
     expect(

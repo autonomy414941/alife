@@ -83,6 +83,7 @@ export const METRICS_CSV_COLUMNS = [
   'forcing_regen_multiplier',
   'forcing_fertility_contrast_multiplier',
   'disturbance_interval',
+  'disturbance_phase_offset',
   'disturbance_energy_loss',
   'disturbance_resource_loss',
   'disturbance_radius',
@@ -182,6 +183,7 @@ export const EXPERIMENT_AGGREGATE_CSV_COLUMNS = [
 export const DISTURBANCE_GRID_STUDY_CSV_COLUMNS = [
   'interval',
   'amplitude',
+  'phase',
   'global_resilience_stability_mean',
   'local_resilience_stability_mean',
   'global_memory_stability_mean',
@@ -322,6 +324,7 @@ export function metricsToCsv(summaries: StepSummary[], analytics: EvolutionAnaly
         point.forcing.regenMultiplier,
         point.forcing.fertilityContrastMultiplier,
         point.disturbance.interval,
+        point.disturbance.phaseOffset,
         point.disturbance.energyLoss,
         point.disturbance.resourceLoss,
         point.disturbance.radius,
@@ -435,6 +438,7 @@ export function disturbanceGridStudyToCsv(exportData: DisturbanceGridStudyExport
       toCsvRow([
         cell.interval,
         cell.amplitude,
+        cell.phase,
         cell.global.finalResilienceStabilityIndex.mean,
         cell.local.finalResilienceStabilityIndex.mean,
         cell.global.finalResilienceMemoryStabilityIndex.mean,

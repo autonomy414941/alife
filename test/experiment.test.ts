@@ -125,6 +125,7 @@ describe('runDisturbanceGridStudy', () => {
     expect(first).toEqual(second);
     expect(first.cells).toHaveLength(4);
     expect(first.summary.cells).toBe(4);
+    expect(first.config.phases).toEqual([0]);
     expect(first.summary.supportedCells).toBeGreaterThanOrEqual(0);
     expect(first.summary.supportedCells).toBeLessThanOrEqual(4);
     expect(first.summary.supportFraction).toBeGreaterThanOrEqual(0);
@@ -135,6 +136,7 @@ describe('runDisturbanceGridStudy', () => {
     expect(first.summary.localMemoryEventPhaseConcentration.mean).toBeLessThanOrEqual(1);
 
     for (const cell of first.cells) {
+      expect(cell.phase).toBeCloseTo(0, 10);
       const resilienceDelta = cell.pairedDeltas.resilienceStabilityDelta.mean;
       const memoryDelta = cell.pairedDeltas.memoryStabilityDelta.mean;
       expect(cell.pairedDeltas.pathDependenceGain.mean).toBeCloseTo(memoryDelta - resilienceDelta, 10);
@@ -157,6 +159,22 @@ describe('runDisturbanceGridStudy', () => {
       expect(cell.timingDiagnostics.localMemoryEventPhaseConcentrationMean).toBeGreaterThanOrEqual(0);
       expect(cell.timingDiagnostics.localMemoryEventPhaseConcentrationMean).toBeLessThanOrEqual(1);
     }
+  });
+
+  it('expands grid cells across explicit phase offsets', () => {
+    const study = runDisturbanceGridStudy({
+      runs: 1,
+      steps: 10,
+      analyticsWindow: 4,
+      seed: 12,
+      intervals: [5],
+      amplitudes: [0.2, 0.3],
+      phases: [0, 0.5]
+    });
+
+    expect(study.cells).toHaveLength(4);
+    expect(study.config.phases).toEqual([0, 0.5]);
+    expect(study.cells.map((cell) => cell.phase)).toEqual([0, 0.5, 0, 0.5]);
   });
 
   it('validates grid inputs', () => {
@@ -193,6 +211,30 @@ describe('runDisturbanceGridStudy', () => {
         localRadius: -1
       })
     ).toThrow('localRadius must be >= 0');
+
+    expect(() =>
+      runDisturbanceGridStudy({
+        runs: 1,
+        steps: 8,
+        analyticsWindow: 4,
+        seed: 3,
+        intervals: [6],
+        amplitudes: [0.2],
+        phases: []
+      })
+    ).toThrow('phases must not be empty');
+
+    expect(() =>
+      runDisturbanceGridStudy({
+        runs: 1,
+        steps: 8,
+        analyticsWindow: 4,
+        seed: 3,
+        intervals: [6],
+        amplitudes: [0.2],
+        phases: [Number.NaN]
+      })
+    ).toThrow('phases[0] must be finite');
   });
 });
 

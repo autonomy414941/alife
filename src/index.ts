@@ -21,6 +21,7 @@ interface CliOptions {
   seasonalRegenAmplitude: number;
   seasonalFertilityContrastAmplitude: number;
   disturbanceInterval: number;
+  disturbancePhaseOffset: number;
   disturbanceEnergyLoss: number;
   disturbanceResourceLoss: number;
   disturbanceRadius: number;
@@ -42,6 +43,7 @@ const DEFAULT_OPTIONS: CliOptions = {
   seasonalRegenAmplitude: 0,
   seasonalFertilityContrastAmplitude: 0,
   disturbanceInterval: 0,
+  disturbancePhaseOffset: 0,
   disturbanceEnergyLoss: 0,
   disturbanceResourceLoss: 0,
   disturbanceRadius: -1,
@@ -86,6 +88,7 @@ function runSingleMode(options: CliOptions): void {
       seasonalRegenAmplitude: options.seasonalRegenAmplitude,
       seasonalFertilityContrastAmplitude: options.seasonalFertilityContrastAmplitude,
       disturbanceInterval: options.disturbanceInterval,
+      disturbancePhaseOffset: options.disturbancePhaseOffset,
       disturbanceEnergyLoss: options.disturbanceEnergyLoss,
       disturbanceResourceLoss: options.disturbanceResourceLoss,
       disturbanceRadius: options.disturbanceRadius,
@@ -111,7 +114,7 @@ function runSingleMode(options: CliOptions): void {
           `weighted(h=${turnover.strategy.habitatPreference.weightedMean.toFixed(2)},` +
           `t=${turnover.strategy.trophicLevel.weightedMean.toFixed(2)},d=${turnover.strategy.defenseLevel.weightedMean.toFixed(2)})) ` +
           `forcing(regen=${turnover.forcing.regenMultiplier.toFixed(2)},contrast=${turnover.forcing.fertilityContrastMultiplier.toFixed(2)},phase=${turnover.forcing.phase.toFixed(2)}) ` +
-          `disturbance(last=${turnover.disturbance.lastEventTick},events=${turnover.disturbance.eventsInWindow},` +
+          `disturbance(offset=${turnover.disturbance.phaseOffset.toFixed(2)},last=${turnover.disturbance.lastEventTick},events=${turnover.disturbance.eventsInWindow},` +
           `scope=${turnover.disturbance.radius},affected=${turnover.disturbance.lastEventAffectedCellFraction.toFixed(2)},` +
           `recovery=${turnover.resilience.recoveryTicks},relapses=${turnover.resilience.recoveryRelapses},` +
           `stable=${turnover.resilience.sustainedRecoveryTicks},` +
@@ -149,7 +152,7 @@ function runSingleMode(options: CliOptions): void {
       `weighted(h=${turnover.strategy.habitatPreference.weightedMean.toFixed(2)},` +
       `t=${turnover.strategy.trophicLevel.weightedMean.toFixed(2)},d=${turnover.strategy.defenseLevel.weightedMean.toFixed(2)})) ` +
       `forcing(regen=${turnover.forcing.regenMultiplier.toFixed(2)},contrast=${turnover.forcing.fertilityContrastMultiplier.toFixed(2)},phase=${turnover.forcing.phase.toFixed(2)}) ` +
-      `disturbance(last=${turnover.disturbance.lastEventTick},events=${turnover.disturbance.eventsInWindow},` +
+      `disturbance(offset=${turnover.disturbance.phaseOffset.toFixed(2)},last=${turnover.disturbance.lastEventTick},events=${turnover.disturbance.eventsInWindow},` +
       `scope=${turnover.disturbance.radius},refugia=${turnover.disturbance.refugiaFraction.toFixed(2)},` +
       `popShock=${turnover.disturbance.lastEventPopulationShock.toFixed(2)},` +
       `resShock=${turnover.disturbance.lastEventResourceShock.toFixed(2)},` +
@@ -209,6 +212,7 @@ function runExperimentMode(options: CliOptions): void {
         seasonalRegenAmplitude: options.seasonalRegenAmplitude,
         seasonalFertilityContrastAmplitude: options.seasonalFertilityContrastAmplitude,
         disturbanceInterval: options.disturbanceInterval,
+        disturbancePhaseOffset: options.disturbancePhaseOffset,
         disturbanceEnergyLoss: options.disturbanceEnergyLoss,
         disturbanceResourceLoss: options.disturbanceResourceLoss,
         disturbanceRadius: options.disturbanceRadius,
@@ -417,6 +421,9 @@ function parseCli(args: string[]): CliOptions {
       case '--disturbance-interval':
         options.disturbanceInterval = parseNonNegativeInt(flag, args[++i]);
         break;
+      case '--disturbance-phase':
+        options.disturbancePhaseOffset = parsePhaseOffset(flag, args[++i]);
+        break;
       case '--disturbance-energy-loss':
         options.disturbanceEnergyLoss = parseUnitInterval(flag, args[++i]);
         break;
@@ -496,6 +503,12 @@ function parseUnitInterval(flag: string, raw: string | undefined): number {
   return value;
 }
 
+function parsePhaseOffset(flag: string, raw: string | undefined): number {
+  const value = parseNumber(flag, raw);
+  const wrapped = value % 1;
+  return wrapped < 0 ? wrapped + 1 : wrapped;
+}
+
 function parsePath(flag: string, raw: string | undefined): string {
   if (!raw) {
     throw new Error(`Missing value for ${flag}`);
@@ -542,6 +555,7 @@ function printHelp(): void {
       '  --season-regen-amp <n> Seasonal regeneration amplitude 0..1 (default: 0)',
       '  --season-contrast-amp <n> Seasonal fertility-contrast amplitude 0..1 (default: 0)',
       '  --disturbance-interval <n> Disturbance interval in ticks; 0 disables (default: 0)',
+      '  --disturbance-phase <n> Disturbance phase offset (wrapped to [0,1), default: 0)',
       '  --disturbance-energy-loss <n> Disturbance per-agent energy-loss fraction 0..1 (default: 0)',
       '  --disturbance-resource-loss <n> Disturbance per-cell resource-loss fraction 0..1 (default: 0)',
       '  --disturbance-radius <n> Disturbance Manhattan radius; -1 applies globally (default: -1)',
