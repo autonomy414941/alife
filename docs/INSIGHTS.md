@@ -32,10 +32,11 @@
 - First explicit phase sweep on 2026-03-02 (`intervals={20,24}`, `amplitude=0.2`, `phases={0,0.25,0.5,0.75}`, seeds `20260302..20260305`) produced `supportFraction=1/8`; only `interval=24, phase=0` was positive (`+0.131`).
 - Compact uncertainty sweep on 2026-03-06 (`runs=2`, `seedBlocks=3`, `intervals={20,24}`, `phases={0,0.25}`, short horizon) had no supported cells; `interval=24, phase=0.25` remained near-zero (`mean=-0.077`, `CI=[-0.210,+0.057]`).
 - Follow-up CI-ranked check on 2026-03-06 (`runs=2`, `seedBlocks=3`, same grid, `steps=180`) yielded pooled support `2/4`, but CI classification was `robustPositive=0`, `ambiguous=3`, `robustNegative=1`; strongest lower bound was still negative (`interval=20, phase=0.25`, `CI95 low=-0.082`).
+- High-rep 2026-03-06 phase-neighborhood sweep at `interval=24` (`runs=3`, `seedBlocks=6`, phases every `0.125`) still found no robust-positive cell (`0/8`); half the phases were robust negative and the best candidate remained CI-ambiguous (`phase=0.375`, `mean=+0.006`, `CI95=[-0.072,+0.085]`).
 - Latest recovery-lag reduction is often much larger than memory-lag reduction; local refugia seem to improve acute recovery more than long-run memory in current regimes.
 
 ## Open Questions
-- Can any `interval=24` phase cell reach `pathDependenceGain` CI lower bound above zero with larger seed blocks?
+- Which regime change (horizon length, disturbance amplitude, locality settings) can produce any cell with `pathDependenceGain CI95 low > 0`?
 - Which cadence×phase regions maximize memory-lag reduction without collapsing diversity?
 - Which strategy-axis states (habitat/trophic/defense) predict long memory-lag under repeated shocks?
 - Can locality/radius turnover features predict future relapse probability better than current scalar resilience metrics?

@@ -318,6 +318,11 @@ describe('run export', () => {
     expect(parsedJson.summary.pathDependenceGainCi95ClassificationCounts).toEqual(
       study.summary.pathDependenceGainCi95ClassificationCounts
     );
+    expect(parsedJson.summary.pathDependenceGainCi95RobustPositiveFraction).toBeCloseTo(
+      study.summary.pathDependenceGainCi95RobustPositiveFraction,
+      10
+    );
+    expect(parsedJson.summary.pathDependenceGainCi95Decision).toBe(study.summary.pathDependenceGainCi95Decision);
     expect(parsedJson.summary.pathDependenceGainCi95LowerBoundTopCells).toEqual(
       study.summary.pathDependenceGainCi95LowerBoundTopCells
     );

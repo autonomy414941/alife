@@ -1,58 +1,62 @@
 # Session Plan — 2026-03-06
 
 ## Compact Context
-- The simulator is deterministic and already supports seeded paired experiments with strong test coverage.
-- `runDisturbanceGridStudy` now spans `interval×amplitude×phase` and supports independent replication via `seedBlocks` and `blockSeedStride`.
-- Reproducibility now includes block-level uncertainty (`mean`, `SE`, `95% CI`) for key paired deltas.
-- Latest compact uncertainty sweep found three robustly negative path-dependence cells and one boundary cell at `interval=24, phase=0.25` with CI crossing zero.
-- Current support decisions still rely mostly on pooled mean-sign checks, not CI-aware ranking.
-- `npm test` and `npm run build` are green (49 tests).
+- The simulator and experiment layer are deterministic with stable seeded sweeps and green tests/build.
+- `runDisturbanceGridStudy` already supports `interval×amplitude×phase` plus `seedBlocks` replication.
+- Block-mean uncertainty (`mean`, `SE`, `CI95`) and CI-aware summary ranking/classification are implemented.
+- Latest fixed check (`seed=20260302`, `runs=2`, `seedBlocks=3`, phases `{0,0.25}`) had `robustPositive=0`, `ambiguous=3`, `robustNegative=1`.
+- `relapseEventReduction` is consistently positive, but `pathDependenceGain` is still mostly negative or boundary.
+- Current strongest candidate region remains near `interval=24`, low amplitude, phase-sensitive.
 
 ## Project State
-- Disturbance-memory instrumentation is mature: phase control, block replication, uncertainty fields, and synchronized JSON/CSV/test plumbing exist.
-- Recent sessions have consistently narrowed from broad disturbance effects toward reproducibility of path-dependent memory gain near `interval=24`.
-- The key gap is decision logic: there is no built-in CI-based cell ranking/classification to separate robust positives from boundary noise.
+- Core capability exists: disturbance phase control, paired global/local runs, block reproducibility, CI-aware ranking.
+- Recent sessions have converged on uncertainty reduction for path-dependent memory benefit, not adding new mechanics.
+- Underdeveloped area: empirical power near the `interval=24` boundary is still low, so ambiguity vs true null is unresolved.
 
 ## External Context
-- Adaptive Exploration in Lenia reports that intrinsic multi-objective ranking can sustain novelty search pressure, making robust ranking signals central to open-ended exploration loops: https://arxiv.org/abs/2506.02990
-- ASAL++ reports improved novelty/coherence from evolving targets in automated alife search, reinforcing the need for reliable acceptance criteria before promoting regimes: https://arxiv.org/abs/2509.22447
+- Adaptive Exploration in Lenia with Intrinsic Multi-Objective Ranking (arXiv:2506.02990, 2025-06-03) emphasizes robust ranking pressure for sustained novelty rather than weak mean effects: https://arxiv.org/abs/2506.02990
+- Flow-Lenia (arXiv:2506.08569, Artificial Life 31(2), 2025) highlights evaluating emergent dynamics with evolutionary-activity-style metrics across replicated dynamics, reinforcing replication-first evidence before claims of open-endedness: https://arxiv.org/abs/2506.08569
 
 ## Research Gaps
-- In the current disturbance grid, which cells remain supportive when the criterion is `pathDependenceGain CI95 lower bound > 0` instead of `mean > 0`?
-- Does CI-lower-bound ranking keep `interval=24` as top candidate, or does the current signal collapse under uncertainty-aware ordering?
+- With denser phase sampling around `interval=24` and higher `seedBlocks`, does any cell achieve `pathDependenceGain CI95 low > 0`?
+- Are currently ambiguous cells stable top-ranked candidates, or do they collapse when replication depth increases?
+
+## Current Anti-Evidence
+- No tested cell has yet reached robust-positive `pathDependenceGain` under CI criteria; current positives are mean-sign or boundary artifacts.
+- Evidence is from short-horizon forced disturbance regimes, not sustained endogenous innovation over long horizons.
 
 ## Candidate Bets
-- A: Add CI-aware support classification and ranking to disturbance-grid summary outputs (counts + top cells by `pathDependenceGain` CI lower bound).
-  Why now: Uncertainty metrics exist, but they are not yet converted into an actionable decision layer.
-  Est. low-context human time: 45m
-  Expected information gain: high
-  Main risk: Over-expanding summary schema beyond a minimal, testable slice.
-- B: Add a bounded phase-neighborhood sweep harness (`interval=24`, finer phases) that emits a CI-ranked table artifact for status updates.
-  Why now: The only plausible boundary behavior is phase-localized and needs denser sampling.
+- A: Run one bounded high-replication phase-neighborhood sweep at `interval=24`, `amplitude=0.2`, then make a CI-based accept/reject call.
+  Why now: This directly targets the only remaining boundary zone with existing instrumentation.
   Est. low-context human time: 35m
+  Expected information gain: high
+  Main risk: Runtime cost may rise without yielding robust-positive cells.
+- B: Add CI-width/power diagnostics to disturbance-grid summary (`pathDependenceGain` CI half-width and simple precision threshold flags).
+  Why now: It separates “not enough replication” from “likely null.”
+  Est. low-context human time: 50m
   Expected information gain: medium
-  Main risk: More data without CI-aware decision rules may still be ambiguous.
-- C: Replace normal-approximation CIs with bootstrap CIs for block means.
-  Why now: Small `seedBlocks` make normal approximations fragile.
+  Main risk: Precision heuristics may be arbitrary without immediate follow-up sweeps.
+- C: Add a minimal long-horizon activity probe (rolling net diversification + novelty persistence) for top disturbance cells.
+  Why now: Open-endedness claims need ongoing innovation signals, not only resilience deltas.
   Est. low-context human time: >60m
-  Expected information gain: medium
-  Main risk: Computational/runtime/test complexity exceeds one-session horizon.
+  Expected information gain: high
+  Main risk: Scope creep beyond one session.
 
 ## Selected Bet
-Implement A: add a minimal CI-aware decision layer to `runDisturbanceGridStudy` summary so each run reports robust-positive / ambiguous / robust-negative cell counts and a ranked shortlist by `pathDependenceGain` CI lower bound. Keep scope to types, experiment aggregation, export mapping, and deterministic tests.
+Execute A: run a single higher-replication phase-neighborhood study centered on `interval=24` using current CI-aware outputs, and decide whether any phase is robust-positive (`CI95 low > 0`) or whether the current hypothesis should be downgraded to “no support at tested depth.”
 
 ## Why This Fits The Horizon
-- Scope is constrained to existing disturbance-grid aggregation paths; no new simulation mechanics are required.
-- Success is autonomously verifiable with deterministic tests plus a fixed seeded study that yields stable ranking/classification outputs.
+- No code-path expansion is required; it uses existing deterministic experiment primitives and summary fields.
+- Success is autonomously verifiable by fixed-parameter reruns and direct CI classification/ranking outputs.
 
 ## Success Evidence
-- Disturbance-grid `summary` includes CI-based classification counts and ranked cell identifiers (interval, amplitude, phase, CI bounds).
-- Verification command or output: `npm test && npm run build`, plus a fixed seeded `runDisturbanceGridStudy(...)` check showing deterministic CI-ranked top cell(s).
+- Artifact: one fixed-parameter summary showing `pathDependenceGainCi95ClassificationCounts` and ranked phase cells for phases `{0,0.125,0.25,0.375,0.5,0.625,0.75,0.875}` at `interval=24`, `amplitude=0.2`.
+- Verification command or output: `npm run build && node -e "const {runDisturbanceGridStudy}=require('./dist/experiment.js'); const phases=[0,0.125,0.25,0.375,0.5,0.625,0.75,0.875]; const s=runDisturbanceGridStudy({runs:3,steps:220,analyticsWindow:24,seed:20260306,seedBlocks:6,blockSeedStride:60,intervals:[24],amplitudes:[0.2],phases}).summary; console.log(JSON.stringify({counts:s.pathDependenceGainCi95ClassificationCounts,top:s.pathDependenceGainCi95LowerBoundTopCells.slice(0,3)},null,2));"`
 
 ## Stop Conditions
-- Stop if CI-aware ranking requires redesigning unrelated analytics/reporting layers outside disturbance-grid summary/export.
-- If ranking design thrashes, shrink to classification counts + single best-cell record and lock with tests.
+- Stop if one full sweep finishes with `robustPositive=0`; record null-support outcome instead of expanding axes.
+- If runtime becomes a blocker, shrink only phase count to `{0,0.125,0.25,0.375}` and keep replication depth fixed.
 
 ## Assumptions / Unknowns
-- Assume block means are acceptable replication units for CI-based regime ranking in this phase.
-- Unknown whether the boundary near `interval=24` is phase-driven alone or masked by interval×amplitude interactions at current sample sizes.
+- Assumption: normal-approximate CI over block means is acceptable at `seedBlocks=6` for triage decisions.
+- Unknown: whether positive path dependence exists in this model region or was previously a low-sample artifact.

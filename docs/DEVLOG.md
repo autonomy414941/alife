@@ -846,3 +846,23 @@ Thinking:
 - Expected the CI-aware layer to reduce false positives from pooled mean signs; observed exactly that divergence.
 - Current evidence still does not support promoting any regime as robust-positive for path dependence at this replication depth.
 - Next session should increase block count and phase resolution near `interval=24` before making acceptance decisions.
+
+## 2026-03-06 (session 31)
+- Executed the planned high-rep phase-neighborhood sweep focused on `interval=24`:
+  - `runs=3`, `steps=220`, `window=24`, `seed=20260306`, `seedBlocks=6`, `blockSeedStride=60`
+  - `amplitude=0.2`, phases `{0,0.125,0.25,0.375,0.5,0.625,0.75,0.875}`
+- Added explicit CI decision outputs to disturbance-grid summaries:
+  - `pathDependenceGainCi95RobustPositiveFraction`
+  - `pathDependenceGainCi95Decision` (`supported` | `noSupport`)
+- Updated tests in `test/experiment.test.ts` and `test/export.test.ts` to lock the new fields against classification counts and JSON mapping.
+- Verification: `npm test` (49/49) and `npm run build` both pass.
+
+Observed:
+- CI classes for the 8-cell neighborhood were `robustPositive=0`, `ambiguous=4`, `robustNegative=4`.
+- Best lower-bound cell was `phase=0.375` with near-zero mean (`+0.006`) but CI crossing zero (`[-0.072,+0.085]`), so still ambiguous.
+- Session-level CI decision is now explicit and resolved to `noSupport` for this bounded sweep.
+
+Thinking:
+- Expected at least one robust-positive phase if the earlier boundary signal near `interval=24` was stable; did not observe that.
+- This updates the working belief: phase tuning alone is insufficient in the current short-horizon/low-amplitude regime.
+- Next bet should test a different axis (longer horizons or disturbance regime shifts) rather than only denser phase sampling.

@@ -13,6 +13,7 @@ import {
   NumericAggregate,
   PairedDeltaAggregate,
   PathDependenceGainCi95Classification,
+  PathDependenceGainCi95Decision,
   PathDependenceGainCi95ClassificationCounts,
   PathDependenceGainCi95RankedCell,
   ResilienceAnalytics,
@@ -557,6 +558,11 @@ function summarizeDisturbanceGridStudy(cells: DisturbanceGridCellSummary[]): Dis
   }
 
   pathDependenceGainCi95LowerBoundTopCells.sort(comparePathDependenceGainCi95RankedCells);
+  const robustPositiveCells = pathDependenceGainCi95ClassificationCounts.robustPositive;
+  const pathDependenceGainCi95RobustPositiveFraction =
+    cells.length === 0 ? 0 : robustPositiveCells / cells.length;
+  const pathDependenceGainCi95Decision: PathDependenceGainCi95Decision =
+    robustPositiveCells > 0 ? 'supported' : 'noSupport';
 
   return {
     cells: cells.length,
@@ -572,6 +578,8 @@ function summarizeDisturbanceGridStudy(cells: DisturbanceGridCellSummary[]): Dis
       cells.map((cell) => cell.reproducibility.relapseEventReductionPositiveBlockFraction)
     ),
     pathDependenceGainCi95ClassificationCounts,
+    pathDependenceGainCi95RobustPositiveFraction,
+    pathDependenceGainCi95Decision,
     pathDependenceGainCi95LowerBoundTopCells: pathDependenceGainCi95LowerBoundTopCells.slice(
       0,
       PATH_DEPENDENCE_GAIN_CI95_TOP_CELL_COUNT

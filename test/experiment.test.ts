@@ -149,6 +149,15 @@ describe('runDisturbanceGridStudy', () => {
         first.summary.pathDependenceGainCi95ClassificationCounts.ambiguous +
         first.summary.pathDependenceGainCi95ClassificationCounts.robustNegative
     ).toBe(first.summary.cells);
+    expect(first.summary.pathDependenceGainCi95RobustPositiveFraction).toBeCloseTo(
+      first.summary.pathDependenceGainCi95ClassificationCounts.robustPositive / first.summary.cells,
+      10
+    );
+    expect(first.summary.pathDependenceGainCi95Decision).toBe(
+      first.summary.pathDependenceGainCi95ClassificationCounts.robustPositive > 0
+        ? 'supported'
+        : 'noSupport'
+    );
     expect(first.summary.globalMemoryEventPhaseConcentration.mean).toBeGreaterThanOrEqual(0);
     expect(first.summary.globalMemoryEventPhaseConcentration.mean).toBeLessThanOrEqual(1);
     expect(first.summary.localMemoryEventPhaseConcentration.mean).toBeGreaterThanOrEqual(0);
@@ -250,6 +259,15 @@ describe('runDisturbanceGridStudy', () => {
     expect(study.config.blockSeedStride).toBe(20);
     expect(study.summary.pathDependenceGainCi95ClassificationCounts).toEqual(
       summarizePathDependenceGainCi95Classifications(study.cells)
+    );
+    expect(study.summary.pathDependenceGainCi95RobustPositiveFraction).toBeCloseTo(
+      study.summary.pathDependenceGainCi95ClassificationCounts.robustPositive / study.summary.cells,
+      10
+    );
+    expect(study.summary.pathDependenceGainCi95Decision).toBe(
+      study.summary.pathDependenceGainCi95ClassificationCounts.robustPositive > 0
+        ? 'supported'
+        : 'noSupport'
     );
     expect(study.summary.pathDependenceGainCi95LowerBoundTopCells).toEqual(
       buildExpectedPathDependenceGainCi95Ranking(study.cells)
