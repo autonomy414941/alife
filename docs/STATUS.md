@@ -1,29 +1,28 @@
 # Status - 2026-03-06
-Current phase: block-level uncertainty instrumentation for disturbance interval×phase reproducibility.
+Current phase: CI-aware decision logic for disturbance interval×phase reproducibility.
 
 What exists now:
-- Deterministic TypeScript+Vitest simulator with seasonality, localized disturbance/refugia, and resilience-memory analytics.
-- Disturbance grid studies support independent replication blocks via `seedBlocks` and `blockSeedStride`.
-- Reproducibility now includes block-mean uncertainty estimates (mean, SE, 95% CI) for:
-  - `pathDependenceGain`
-  - `memoryStabilityDelta`
-  - `relapseEventReduction`
-- Disturbance grid JSON/CSV schemas include the new uncertainty fields.
-- Deterministic tests cover single-block collapse behavior (`SE=0`, `CI=mean`), multi-block invariants, and CSV mapping.
+- Deterministic TypeScript+Vitest simulator with disturbance phase control and seed-block replication (`seedBlocks`, `blockSeedStride`).
+- Disturbance-grid reproducibility tracks block-mean uncertainty (`mean`, `SE`, `CI95`) for `pathDependenceGain`, `memoryStabilityDelta`, and `relapseEventReduction`.
+- Disturbance-grid summary now includes CI-aware decision outputs for `pathDependenceGain`:
+  - `pathDependenceGainCi95ClassificationCounts` (`robustPositive`, `ambiguous`, `robustNegative`)
+  - `pathDependenceGainCi95LowerBoundTopCells` (deterministic top-5 ranking by CI95 lower bound)
+- Deterministic tests now lock CI classification/ranking behavior and JSON export mapping.
 
-Latest uncertainty check:
-- Sweep: `seed=20260302`, `runs=2`, `seedBlocks=3`, `blockSeedStride=40`.
+Latest CI-ranked check:
+- Sweep: `seed=20260302`, `runs=2`, `seedBlocks=3`, `blockSeedStride=40`, `steps=180`, `window=24`.
 - Grid: intervals `{20,24}`, amplitude `{0.2}`, phases `{0,0.25}`.
-- Path-dependence block-mean CI was strictly negative in 3/4 cells.
-- `interval=24, phase=0.25` stayed ambiguous (`mean=-0.077`, `CI=[-0.210,+0.057]`).
+- CI classes: `robustPositive=0`, `ambiguous=3`, `robustNegative=1`.
+- Best CI-lower-bound cell was `interval=20, phase=0.25` (`CI95 low=-0.082`), still ambiguous.
+- Pooled mean support was `2/4`, but CI support (`CI95 low > 0`) was `0/4`.
 
 Interpretation:
-- Uncertainty fields now separate robust negatives from near-zero boundary cells.
-- Weak pooled effects should not be treated as support unless CI lower bounds clear zero.
+- Mean-sign support can overstate evidence at low block counts.
+- CI-lower-bound ranking gives a stable shortlist while separating robust negatives from boundary cells.
 
 Verification:
 - `npm test` passes (49 tests).
 - `npm run build` passes.
 
 Next focus:
-- Run a denser phase sweep near `interval=24` and rank cells by `pathDependenceGain` CI lower bound.
+- Increase `seedBlocks` and phase density near `interval=24` and check whether any cell reaches `pathDependenceGain CI95 low > 0`.

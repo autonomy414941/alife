@@ -138,6 +138,17 @@ describe('runDisturbanceGridStudy', () => {
     expect(first.summary.pathDependenceGainPositiveBlockFraction.mean).toBeLessThanOrEqual(1);
     expect(first.summary.relapseEventReductionPositiveBlockFraction.mean).toBeGreaterThanOrEqual(0);
     expect(first.summary.relapseEventReductionPositiveBlockFraction.mean).toBeLessThanOrEqual(1);
+    expect(first.summary.pathDependenceGainCi95ClassificationCounts).toEqual(
+      summarizePathDependenceGainCi95Classifications(first.cells)
+    );
+    expect(first.summary.pathDependenceGainCi95LowerBoundTopCells).toEqual(
+      buildExpectedPathDependenceGainCi95Ranking(first.cells)
+    );
+    expect(
+      first.summary.pathDependenceGainCi95ClassificationCounts.robustPositive +
+        first.summary.pathDependenceGainCi95ClassificationCounts.ambiguous +
+        first.summary.pathDependenceGainCi95ClassificationCounts.robustNegative
+    ).toBe(first.summary.cells);
     expect(first.summary.globalMemoryEventPhaseConcentration.mean).toBeGreaterThanOrEqual(0);
     expect(first.summary.globalMemoryEventPhaseConcentration.mean).toBeLessThanOrEqual(1);
     expect(first.summary.localMemoryEventPhaseConcentration.mean).toBeGreaterThanOrEqual(0);
@@ -237,6 +248,12 @@ describe('runDisturbanceGridStudy', () => {
     expect(study.cells).toHaveLength(2);
     expect(study.config.seedBlocks).toBe(3);
     expect(study.config.blockSeedStride).toBe(20);
+    expect(study.summary.pathDependenceGainCi95ClassificationCounts).toEqual(
+      summarizePathDependenceGainCi95Classifications(study.cells)
+    );
+    expect(study.summary.pathDependenceGainCi95LowerBoundTopCells).toEqual(
+      buildExpectedPathDependenceGainCi95Ranking(study.cells)
+    );
 
     for (const cell of study.cells) {
       expect(cell.global.runs).toBe(6);
@@ -426,6 +443,97 @@ function expectBlockMeanUncertainty(
   expect(value.standardError).toBeGreaterThanOrEqual(0);
   expect(value.ci95Low).toBeLessThanOrEqual(value.mean);
   expect(value.ci95High).toBeGreaterThanOrEqual(value.mean);
+}
+
+function summarizePathDependenceGainCi95Classifications(
+  cells: Array<{
+    reproducibility: {
+      pathDependenceGainBlockMeanUncertainty: {
+        ci95Low: number;
+        ci95High: number;
+      };
+    };
+  }>
+): { robustPositive: number; ambiguous: number; robustNegative: number } {
+  const counts = {
+    robustPositive: 0,
+    ambiguous: 0,
+    robustNegative: 0
+  };
+  for (const cell of cells) {
+    const uncertainty = cell.reproducibility.pathDependenceGainBlockMeanUncertainty;
+    const classification = classifyPathDependenceGainCi95(uncertainty.ci95Low, uncertainty.ci95High);
+    counts[classification] += 1;
+  }
+  return counts;
+}
+
+function buildExpectedPathDependenceGainCi95Ranking(
+  cells: Array<{
+    interval: number;
+    amplitude: number;
+    phase: number;
+    reproducibility: {
+      pathDependenceGainBlockMeanUncertainty: {
+        mean: number;
+        ci95Low: number;
+        ci95High: number;
+      };
+    };
+  }>
+): Array<{
+  interval: number;
+  amplitude: number;
+  phase: number;
+  mean: number;
+  ci95Low: number;
+  ci95High: number;
+  classification: 'robustPositive' | 'ambiguous' | 'robustNegative';
+}> {
+  const ranked = cells.map((cell) => {
+    const uncertainty = cell.reproducibility.pathDependenceGainBlockMeanUncertainty;
+    return {
+      interval: cell.interval,
+      amplitude: cell.amplitude,
+      phase: cell.phase,
+      mean: uncertainty.mean,
+      ci95Low: uncertainty.ci95Low,
+      ci95High: uncertainty.ci95High,
+      classification: classifyPathDependenceGainCi95(uncertainty.ci95Low, uncertainty.ci95High)
+    };
+  });
+  ranked.sort((left, right) => {
+    if (left.ci95Low !== right.ci95Low) {
+      return right.ci95Low - left.ci95Low;
+    }
+    if (left.ci95High !== right.ci95High) {
+      return right.ci95High - left.ci95High;
+    }
+    if (left.mean !== right.mean) {
+      return right.mean - left.mean;
+    }
+    if (left.interval !== right.interval) {
+      return left.interval - right.interval;
+    }
+    if (left.amplitude !== right.amplitude) {
+      return left.amplitude - right.amplitude;
+    }
+    return left.phase - right.phase;
+  });
+  return ranked.slice(0, 5);
+}
+
+function classifyPathDependenceGainCi95(
+  ci95Low: number,
+  ci95High: number
+): 'robustPositive' | 'ambiguous' | 'robustNegative' {
+  if (ci95Low > 0) {
+    return 'robustPositive';
+  }
+  if (ci95High < 0) {
+    return 'robustNegative';
+  }
+  return 'ambiguous';
 }
 
 function resilienceSnapshot(overrides: Partial<Parameters<typeof computeResilienceStabilityIndex>[0]>) {

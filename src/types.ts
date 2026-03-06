@@ -380,6 +380,24 @@ export interface DisturbanceGridCellSummary {
   hypothesisSupport: boolean;
 }
 
+export type PathDependenceGainCi95Classification = 'robustPositive' | 'ambiguous' | 'robustNegative';
+
+export interface PathDependenceGainCi95ClassificationCounts {
+  robustPositive: number;
+  ambiguous: number;
+  robustNegative: number;
+}
+
+export interface PathDependenceGainCi95RankedCell {
+  interval: number;
+  amplitude: number;
+  phase: number;
+  mean: number;
+  ci95Low: number;
+  ci95High: number;
+  classification: PathDependenceGainCi95Classification;
+}
+
 export interface DisturbanceGridStudySummary {
   cells: number;
   supportedCells: number;
@@ -387,6 +405,8 @@ export interface DisturbanceGridStudySummary {
   hypothesisSupportFractionAcrossBlocks: NumericAggregate;
   pathDependenceGainPositiveBlockFraction: NumericAggregate;
   relapseEventReductionPositiveBlockFraction: NumericAggregate;
+  pathDependenceGainCi95ClassificationCounts: PathDependenceGainCi95ClassificationCounts;
+  pathDependenceGainCi95LowerBoundTopCells: PathDependenceGainCi95RankedCell[];
   memoryStabilityDelta: NumericAggregate;
   relapseEventReduction: NumericAggregate;
   pathDependenceGain: NumericAggregate;

@@ -823,3 +823,26 @@ Thinking:
 - The new uncertainty layer improves triage: robust negatives are now easy to separate from near-zero cells.
 - Expected weak boundary signals to persist around `interval=24`; observed one ambiguous near-zero cell but no positive CI support.
 - Next iteration should increase blocks and phase resolution near `interval=24` and prioritize CI lower-bound ranking over pooled means.
+
+## 2026-03-06 (session 30)
+- Implemented a CI-aware decision layer for disturbance-grid summaries in `src/experiment.ts`.
+  - Added `pathDependenceGainCi95ClassificationCounts` with `robustPositive/ambiguous/robustNegative` buckets.
+  - Added deterministic top-cell ranking `pathDependenceGainCi95LowerBoundTopCells` (top 5 by `ci95Low`, deterministic tie-breakers).
+- Extended shared types in `src/types.ts` for the new summary structures.
+- Expanded tests:
+  - `test/experiment.test.ts` now verifies CI classification counts and deterministic ranking against cell uncertainty fields.
+  - `test/export.test.ts` now verifies disturbance-grid JSON includes the new summary fields.
+- Verification: `npm test` (49/49) and `npm run build` both pass.
+- Ran a fixed seeded CI-ranked check:
+  - `runs=2`, `steps=180`, `window=24`, `seed=20260302`, `seedBlocks=3`, `blockSeedStride=40`
+  - intervals `{20,24}`, amplitude `{0.2}`, phases `{0,0.25}`.
+
+Observed:
+- Pooled mean-based support was `2/4` cells, but CI-based robust-positive support was `0/4` (`robustPositive=0`, `ambiguous=3`, `robustNegative=1`).
+- Ranking by `pathDependenceGain` CI95 lower bound put `interval=20, phase=0.25` first, but its lower bound remained negative (`-0.082`).
+- `interval=20, phase=0` remained robust negative (`CI95 high < 0`).
+
+Thinking:
+- Expected the CI-aware layer to reduce false positives from pooled mean signs; observed exactly that divergence.
+- Current evidence still does not support promoting any regime as robust-positive for path dependence at this replication depth.
+- Next session should increase block count and phase resolution near `interval=24` before making acceptance decisions.

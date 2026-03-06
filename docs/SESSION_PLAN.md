@@ -1,58 +1,58 @@
 # Session Plan — 2026-03-06
 
 ## Compact Context
-- The simulator is deterministic (seeded) and already tracks disturbance, seasonality, locality/refugia, and resilience-memory analytics.
-- `runDisturbanceGridStudy` now evaluates `interval×amplitude×phase` with independent replication blocks via `seedBlocks` and `blockSeedStride`.
-- Latest replicated sweep (`seed=20260302`, `runs=4`, `seedBlocks=3`) kept pooled support at `1/8`; only `interval=24, phase=0` stayed weakly positive.
-- Relapse-event reduction is robustly positive across all sampled cells/blocks; path-dependent memory gain is narrow and seed-sensitive.
-- Reproducibility outputs currently include support/positive fractions but not uncertainty intervals over block means.
-- Baseline health is good: `npm test` and `npm run build` pass (49 tests).
+- The simulator is deterministic and already supports seeded paired experiments with strong test coverage.
+- `runDisturbanceGridStudy` now spans `interval×amplitude×phase` and supports independent replication via `seedBlocks` and `blockSeedStride`.
+- Reproducibility now includes block-level uncertainty (`mean`, `SE`, `95% CI`) for key paired deltas.
+- Latest compact uncertainty sweep found three robustly negative path-dependence cells and one boundary cell at `interval=24, phase=0.25` with CI crossing zero.
+- Current support decisions still rely mostly on pooled mean-sign checks, not CI-aware ranking.
+- `npm test` and `npm run build` are green (49 tests).
 
 ## Project State
-- The codebase has mature disturbance-grid experiment plumbing (types, aggregation, JSON/CSV export, deterministic tests).
-- Recent sessions focused on separating cadence vs phase effects, then adding seed-block reproducibility checks.
-- The key underdeveloped area is statistical confidence for block-level effects, especially around the `interval=24` boundary signal.
+- Disturbance-memory instrumentation is mature: phase control, block replication, uncertainty fields, and synchronized JSON/CSV/test plumbing exist.
+- Recent sessions have consistently narrowed from broad disturbance effects toward reproducibility of path-dependent memory gain near `interval=24`.
+- The key gap is decision logic: there is no built-in CI-based cell ranking/classification to separate robust positives from boundary noise.
 
 ## External Context
-- [Automating the Search for Artificial Life with Foundation Models (ASAL), arXiv:2412.17799](https://arxiv.org/abs/2412.17799) shows recent momentum toward automated alife search loops; this increases the value of reliable, uncertainty-aware scoring signals.
-- [The AI Scientist-v2, arXiv:2504.08066](https://arxiv.org/abs/2504.08066) emphasizes autonomous experiment iteration with replication/ablation gates; aligns with adding explicit confidence criteria before accepting weak effects.
+- Adaptive Exploration in Lenia reports that intrinsic multi-objective ranking can sustain novelty search pressure, making robust ranking signals central to open-ended exploration loops: https://arxiv.org/abs/2506.02990
+- ASAL++ reports improved novelty/coherence from evolving targets in automated alife search, reinforcing the need for reliable acceptance criteria before promoting regimes: https://arxiv.org/abs/2509.22447
 
 ## Research Gaps
-- For `interval=24, phase=0`, does a block-level uncertainty interval for `pathDependenceGain` stay above zero, or is the current positive mean indistinguishable from noise?
-- Around the phase boundary (`0` to `0.25`), does uncertainty-aware reporting change which cells are considered reproducibly supportive?
+- In the current disturbance grid, which cells remain supportive when the criterion is `pathDependenceGain CI95 lower bound > 0` instead of `mean > 0`?
+- Does CI-lower-bound ranking keep `interval=24` as top candidate, or does the current signal collapse under uncertainty-aware ordering?
 
 ## Candidate Bets
-- A: Add block-level uncertainty estimates (SE and 95% CI) for key paired deltas in disturbance-grid outputs, exports, and tests.
-  Why now: Reproducibility scaffolding exists; uncertainty is the missing piece called out in current status.
+- A: Add CI-aware support classification and ranking to disturbance-grid summary outputs (counts + top cells by `pathDependenceGain` CI lower bound).
+  Why now: Uncertainty metrics exist, but they are not yet converted into an actionable decision layer.
   Est. low-context human time: 45m
   Expected information gain: high
-  Main risk: Over-scoping metrics beyond a minimal, testable set.
-- B: Run a finer `interval=24` phase sweep (e.g., `0, 0.125, 0.25, 0.375`) using existing block replication and update status conclusions.
-  Why now: The only weak positive signal is phase-localized.
+  Main risk: Over-expanding summary schema beyond a minimal, testable slice.
+- B: Add a bounded phase-neighborhood sweep harness (`interval=24`, finer phases) that emits a CI-ranked table artifact for status updates.
+  Why now: The only plausible boundary behavior is phase-localized and needs denser sampling.
   Est. low-context human time: 35m
   Expected information gain: medium
-  Main risk: Interpretation remains ambiguous without confidence intervals.
-- C: Add an experiment-mode comparison for paired-seed vs unpaired-seed variance to quantify variance reduction assumptions.
-  Why now: Paired comparisons are central to current claims.
+  Main risk: More data without CI-aware decision rules may still be ambiguous.
+- C: Replace normal-approximation CIs with bootstrap CIs for block means.
+  Why now: Small `seedBlocks` make normal approximations fragile.
   Est. low-context human time: >60m
   Expected information gain: medium
-  Main risk: API/test surface expansion is too large for one session.
+  Main risk: Computational/runtime/test complexity exceeds one-session horizon.
 
 ## Selected Bet
-Implement A: add minimal uncertainty metrics over seed-block summaries for disturbance-grid paired deltas (at least `pathDependenceGain`, `memoryStabilityDelta`, `relapseEventReduction`), wire them through types and CSV/JSON export, and lock behavior with deterministic tests.
+Implement A: add a minimal CI-aware decision layer to `runDisturbanceGridStudy` summary so each run reports robust-positive / ambiguous / robust-negative cell counts and a ranked shortlist by `pathDependenceGain` CI lower bound. Keep scope to types, experiment aggregation, export mapping, and deterministic tests.
 
 ## Why This Fits The Horizon
-- It is bounded to one subsystem (`experiment.ts` + related types/export/tests) with no new runtime dependencies.
-- Success is autonomously verifiable through deterministic unit tests and build checks, without human judgment calls.
+- Scope is constrained to existing disturbance-grid aggregation paths; no new simulation mechanics are required.
+- Success is autonomously verifiable with deterministic tests plus a fixed seeded study that yields stable ranking/classification outputs.
 
 ## Success Evidence
-- Disturbance-grid outputs include new uncertainty fields for selected paired deltas (e.g., SE and CI bounds) at cell and/or summary level.
-- Verification command: `npm test && npm run build` (with updated `test/experiment.test.ts` assertions for uncertainty invariants).
+- Disturbance-grid `summary` includes CI-based classification counts and ranked cell identifiers (interval, amplitude, phase, CI bounds).
+- Verification command or output: `npm test && npm run build`, plus a fixed seeded `runDisturbanceGridStudy(...)` check showing deterministic CI-ranked top cell(s).
 
 ## Stop Conditions
-- Stop if adding uncertainty requires redesigning unrelated analytics schemas beyond disturbance-grid reproducibility fields.
-- If CI implementation becomes ambiguous, shrink scope to SE-only + clear TODO note in code/tests rather than thrashing.
+- Stop if CI-aware ranking requires redesigning unrelated analytics/reporting layers outside disturbance-grid summary/export.
+- If ranking design thrashes, shrink to classification counts + single best-cell record and lock with tests.
 
 ## Assumptions / Unknowns
-- Assume seed blocks are treated as independent replication units for uncertainty calculations.
-- Unknown whether normal-approximation CI is sufficient at current block counts (`seedBlocks` often small); this may require a later bootstrap-specific pass.
+- Assume block means are acceptable replication units for CI-based regime ranking in this phase.
+- Unknown whether the boundary near `interval=24` is phase-driven alone or masked by interval×amplitude interactions at current sample sizes.

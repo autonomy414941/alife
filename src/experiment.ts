@@ -12,6 +12,9 @@ import {
   ExperimentRunSummary,
   NumericAggregate,
   PairedDeltaAggregate,
+  PathDependenceGainCi95Classification,
+  PathDependenceGainCi95ClassificationCounts,
+  PathDependenceGainCi95RankedCell,
   ResilienceAnalytics,
   SimulationConfig,
   SimulationExperimentConfig,
@@ -59,6 +62,8 @@ interface DisturbanceGridCellBlockAnalytics {
   pairedDeltas: DisturbanceGridCellPairedDeltas;
   hypothesisSupport: boolean;
 }
+
+const PATH_DEPENDENCE_GAIN_CI95_TOP_CELL_COUNT = 5;
 
 export function runExperiment(input: RunExperimentInput): SimulationExperimentExport {
   const config = normalizeConfig(input);
@@ -529,6 +534,30 @@ function summarizePairedRuns(
 
 function summarizeDisturbanceGridStudy(cells: DisturbanceGridCellSummary[]): DisturbanceGridStudySummary {
   const supportedCells = cells.reduce((count, cell) => count + (cell.hypothesisSupport ? 1 : 0), 0);
+  const pathDependenceGainCi95ClassificationCounts: PathDependenceGainCi95ClassificationCounts = {
+    robustPositive: 0,
+    ambiguous: 0,
+    robustNegative: 0
+  };
+  const pathDependenceGainCi95LowerBoundTopCells: PathDependenceGainCi95RankedCell[] = [];
+
+  for (const cell of cells) {
+    const uncertainty = cell.reproducibility.pathDependenceGainBlockMeanUncertainty;
+    const classification = classifyPathDependenceGainCi95(uncertainty);
+    pathDependenceGainCi95ClassificationCounts[classification] += 1;
+    pathDependenceGainCi95LowerBoundTopCells.push({
+      interval: cell.interval,
+      amplitude: cell.amplitude,
+      phase: cell.phase,
+      mean: uncertainty.mean,
+      ci95Low: uncertainty.ci95Low,
+      ci95High: uncertainty.ci95High,
+      classification
+    });
+  }
+
+  pathDependenceGainCi95LowerBoundTopCells.sort(comparePathDependenceGainCi95RankedCells);
+
   return {
     cells: cells.length,
     supportedCells,
@@ -541,6 +570,11 @@ function summarizeDisturbanceGridStudy(cells: DisturbanceGridCellSummary[]): Dis
     ),
     relapseEventReductionPositiveBlockFraction: summarize(
       cells.map((cell) => cell.reproducibility.relapseEventReductionPositiveBlockFraction)
+    ),
+    pathDependenceGainCi95ClassificationCounts,
+    pathDependenceGainCi95LowerBoundTopCells: pathDependenceGainCi95LowerBoundTopCells.slice(
+      0,
+      PATH_DEPENDENCE_GAIN_CI95_TOP_CELL_COUNT
     ),
     memoryStabilityDelta: summarize(cells.map((cell) => cell.pairedDeltas.memoryStabilityDelta.mean)),
     relapseEventReduction: summarize(cells.map((cell) => cell.pairedDeltas.relapseEventReduction.mean)),
@@ -558,6 +592,40 @@ function summarizeDisturbanceGridStudy(cells: DisturbanceGridCellSummary[]): Dis
       cells.map((cell) => cell.timingDiagnostics.localMemoryEventPhaseConcentrationMean)
     )
   };
+}
+
+function classifyPathDependenceGainCi95(
+  uncertainty: BlockMeanUncertainty
+): PathDependenceGainCi95Classification {
+  if (uncertainty.ci95Low > 0) {
+    return 'robustPositive';
+  }
+  if (uncertainty.ci95High < 0) {
+    return 'robustNegative';
+  }
+  return 'ambiguous';
+}
+
+function comparePathDependenceGainCi95RankedCells(
+  left: PathDependenceGainCi95RankedCell,
+  right: PathDependenceGainCi95RankedCell
+): number {
+  if (left.ci95Low !== right.ci95Low) {
+    return right.ci95Low - left.ci95Low;
+  }
+  if (left.ci95High !== right.ci95High) {
+    return right.ci95High - left.ci95High;
+  }
+  if (left.mean !== right.mean) {
+    return right.mean - left.mean;
+  }
+  if (left.interval !== right.interval) {
+    return left.interval - right.interval;
+  }
+  if (left.amplitude !== right.amplitude) {
+    return left.amplitude - right.amplitude;
+  }
+  return left.phase - right.phase;
 }
 
 function ensurePairedRuns(globalRuns: ExperimentRunSummary[], localRuns: ExperimentRunSummary[]): void {

@@ -315,6 +315,12 @@ describe('run export', () => {
     expect(parsedJson.cells).toHaveLength(2);
     expect(parsedJson.config.phases).toEqual([0]);
     expect(parsedJson.summary.cells).toBe(2);
+    expect(parsedJson.summary.pathDependenceGainCi95ClassificationCounts).toEqual(
+      study.summary.pathDependenceGainCi95ClassificationCounts
+    );
+    expect(parsedJson.summary.pathDependenceGainCi95LowerBoundTopCells).toEqual(
+      study.summary.pathDependenceGainCi95LowerBoundTopCells
+    );
     expect(parsedJson.cells[0].reproducibility.pathDependenceGainBlockMeanUncertainty).toEqual(
       study.cells[0].reproducibility.pathDependenceGainBlockMeanUncertainty
     );
