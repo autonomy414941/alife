@@ -1,29 +1,29 @@
 # Status - 2026-03-06
-Current phase: seed-block reproducibility checks for disturbance interval×phase hypotheses.
+Current phase: block-level uncertainty instrumentation for disturbance interval×phase reproducibility.
 
 What exists now:
 - Deterministic TypeScript+Vitest simulator with seasonality, localized disturbance/refugia, and resilience-memory analytics.
-- Disturbance grid studies now support independent replication blocks via `seedBlocks` and `blockSeedStride`.
-- Each grid cell reports pooled paired deltas plus block reproducibility:
-  - hypothesis-support fraction across blocks
-  - positive-block fractions for path dependence and relapse reduction
-  - stability of run-level `positiveFraction` (mean/min/max across blocks) for key deltas.
-- Disturbance grid JSON/CSV schemas include reproducibility metrics and block config fields.
+- Disturbance grid studies support independent replication blocks via `seedBlocks` and `blockSeedStride`.
+- Reproducibility now includes block-mean uncertainty estimates (mean, SE, 95% CI) for:
+  - `pathDependenceGain`
+  - `memoryStabilityDelta`
+  - `relapseEventReduction`
+- Disturbance grid JSON/CSV schemas include the new uncertainty fields.
+- Deterministic tests cover single-block collapse behavior (`SE=0`, `CI=mean`), multi-block invariants, and CSV mapping.
 
-Latest replicated sweep:
-- Seeds: base `20260302`, `runs=4`, `seedBlocks=3`, `blockSeedStride=100`.
-- Grid: intervals `{20,24}`, amplitude `{0.2}`, phases `{0,0.25,0.5,0.75}`.
-- Pooled result: `supportFraction=1/8`; relapse-reduction remained positive in every cell.
-- Only `interval=24, phase=0` stayed weakly positive (`pathDependenceGain=+0.004`) with block support `2/3`.
-- `interval=24, phase=0.25` showed partial support (`1/3` blocks) but pooled gain stayed negative (`-0.029`).
+Latest uncertainty check:
+- Sweep: `seed=20260302`, `runs=2`, `seedBlocks=3`, `blockSeedStride=40`.
+- Grid: intervals `{20,24}`, amplitude `{0.2}`, phases `{0,0.25}`.
+- Path-dependence block-mean CI was strictly negative in 3/4 cells.
+- `interval=24, phase=0.25` stayed ambiguous (`mean=-0.077`, `CI=[-0.210,+0.057]`).
 
 Interpretation:
-- Local refugia reliably improve immediate resilience signals (especially relapse reduction).
-- Positive path-dependent memory gain is still narrow and seed-sensitive, not yet robust across blocks.
+- Uncertainty fields now separate robust negatives from near-zero boundary cells.
+- Weak pooled effects should not be treated as support unless CI lower bounds clear zero.
 
 Verification:
 - `npm test` passes (49 tests).
 - `npm run build` passes.
 
 Next focus:
-- Add uncertainty estimates over block means (e.g., bootstrap/SE) and refine interval×phase sampling near the `interval=24` boundary.
+- Run a denser phase sweep near `interval=24` and rank cells by `pathDependenceGain` CI lower bound.

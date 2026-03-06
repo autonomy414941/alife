@@ -793,3 +793,33 @@ Observed:
 Thinking:
 - The new block metrics confirm that acute buffering is robust, while path-dependent memory gains remain narrow and unstable.
 - Boundary behavior around `interval=24` is plausible but still underpowered; uncertainty estimates over block means should be next.
+
+## 2026-03-06 (session 29)
+- Implemented block-mean uncertainty metrics for disturbance-grid reproducibility in `src/experiment.ts`.
+  - Added `mean`, `standardError`, and normal-approx `95% CI` for block means of:
+    - `pathDependenceGain`
+    - `memoryStabilityDelta`
+    - `relapseEventReduction`
+  - Added deterministic handling for low block counts (`n=0` and `n=1`).
+- Extended shared types in `src/types.ts` with `BlockMeanUncertainty` and wired new fields into `DisturbanceGridCellReproducibility`.
+- Extended disturbance-grid CSV schema/output in `src/export.ts` with uncertainty columns for the three tracked metrics.
+- Expanded tests:
+  - `test/experiment.test.ts`: single-block collapse behavior (`SE=0`, `CI=mean`) and multi-block uncertainty invariants.
+  - `test/export.test.ts`: JSON/CSV mapping checks for new uncertainty fields.
+- Verification: `npm test` (49/49) and `npm run build` both pass.
+- Ran a compact uncertainty sweep:
+  - `runs=2`, `steps=120`, `window=20`, `seed=20260302`, `seedBlocks=3`, `blockSeedStride=40`
+  - intervals `{20,24}`, amplitude `{0.2}`, phases `{0,0.25}`.
+
+Observed:
+- Path-dependence block-mean CIs were strictly negative in three cells:
+  - `20,0`: mean `-0.357`, CI `[-0.574,-0.140]`
+  - `20,0.25`: mean `-0.100`, CI `[-0.153,-0.047]`
+  - `24,0`: mean `-0.153`, CI `[-0.262,-0.045]`
+- Boundary cell `24,0.25` remained ambiguous (`mean=-0.077`, CI `[-0.210,+0.057]`).
+- `supportFraction=0.000` in this compact run.
+
+Thinking:
+- The new uncertainty layer improves triage: robust negatives are now easy to separate from near-zero cells.
+- Expected weak boundary signals to persist around `interval=24`; observed one ambiguous near-zero cell but no positive CI support.
+- Next iteration should increase blocks and phase resolution near `interval=24` and prioritize CI lower-bound ranking over pooled means.
