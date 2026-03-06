@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   computeResilienceStabilityIndex,
   runDisturbanceGridStudy,
-  runExperiment
+  runExperiment,
+  runPathDependenceHorizonSweep
 } from '../src/experiment';
 
 describe('runExperiment', () => {
@@ -101,6 +102,79 @@ describe('runExperiment', () => {
     expect(clippedHigh).toBeCloseTo(1, 10);
     expect(clippedLow).toBeCloseTo(0, 10);
     expect(relapsePenalty).toBeCloseTo(0.5, 10);
+  });
+});
+
+describe('runPathDependenceHorizonSweep', () => {
+  it('is deterministic and classifies each horizon by path-dependence CI95', () => {
+    const input = {
+      runs: 2,
+      steps: [12, 16],
+      analyticsWindow: 5,
+      seed: 27,
+      seedStep: 1,
+      seedBlocks: 2,
+      blockSeedStride: 20,
+      intervals: [8],
+      amplitudes: [0.25],
+      phases: [-0.25],
+      localRadius: 2,
+      localRefugiaFraction: 0.35,
+      generatedAt: '2026-03-06T00:00:00.000Z'
+    };
+
+    const first = runPathDependenceHorizonSweep(input);
+    const second = runPathDependenceHorizonSweep(input);
+
+    expect(first).toEqual(second);
+    expect(first.config.steps).toEqual([12, 16]);
+    expect(first.config.interval).toBe(8);
+    expect(first.config.amplitude).toBeCloseTo(0.25, 10);
+    expect(first.config.phase).toBeCloseTo(0.75, 10);
+    expect(first.horizons).toHaveLength(2);
+    for (const horizon of first.horizons) {
+      expect(horizon.classification).toBe(
+        classifyPathDependenceGainCi95(horizon.ci95Low, horizon.ci95High)
+      );
+    }
+  });
+
+  it('requires a single interval, amplitude, and phase cell', () => {
+    expect(() =>
+      runPathDependenceHorizonSweep({
+        runs: 1,
+        steps: [10],
+        analyticsWindow: 4,
+        seed: 4,
+        intervals: [6, 8],
+        amplitudes: [0.2],
+        phases: [0]
+      })
+    ).toThrow('intervals must contain exactly one value for horizon sweep');
+
+    expect(() =>
+      runPathDependenceHorizonSweep({
+        runs: 1,
+        steps: [10],
+        analyticsWindow: 4,
+        seed: 4,
+        intervals: [6],
+        amplitudes: [0.2, 0.3],
+        phases: [0]
+      })
+    ).toThrow('amplitudes must contain exactly one value for horizon sweep');
+
+    expect(() =>
+      runPathDependenceHorizonSweep({
+        runs: 1,
+        steps: [10],
+        analyticsWindow: 4,
+        seed: 4,
+        intervals: [6],
+        amplitudes: [0.2],
+        phases: [0, 0.5]
+      })
+    ).toThrow('phases must contain exactly one value for horizon sweep');
   });
 });
 

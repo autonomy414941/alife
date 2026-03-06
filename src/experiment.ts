@@ -55,6 +55,39 @@ export interface RunDisturbanceGridStudyInput {
   generatedAt?: string;
 }
 
+export interface RunPathDependenceHorizonSweepInput extends Omit<RunDisturbanceGridStudyInput, 'steps'> {
+  steps: number[];
+}
+
+export interface PathDependenceHorizonSweepPoint {
+  steps: number;
+  mean: number;
+  standardError: number;
+  ci95Low: number;
+  ci95High: number;
+  classification: PathDependenceGainCi95Classification;
+}
+
+export interface PathDependenceHorizonSweepExport {
+  generatedAt: string;
+  config: {
+    runs: number;
+    steps: number[];
+    analyticsWindow: number;
+    seed: number;
+    seedStep: number;
+    seedBlocks: number;
+    blockSeedStride: number;
+    stopWhenExtinct: boolean;
+    interval: number;
+    amplitude: number;
+    phase: number;
+    localRadius: number;
+    localRefugiaFraction: number;
+  };
+  horizons: PathDependenceHorizonSweepPoint[];
+}
+
 interface NormalizedDisturbanceGridStudyConfig extends DisturbanceGridStudyConfig {
   simulation: Omit<LifeSimulationOptions, 'seed'>;
 }
@@ -211,6 +244,59 @@ export function runDisturbanceGridStudy(input: RunDisturbanceGridStudyInput): Di
   };
 }
 
+export function runPathDependenceHorizonSweep(
+  input: RunPathDependenceHorizonSweepInput
+): PathDependenceHorizonSweepExport {
+  const stepCounts = toPositiveIntList('steps', input.steps);
+  const normalized = normalizeDisturbanceGridStudyConfig({
+    ...input,
+    steps: stepCounts[0]
+  });
+  const interval = requireSingleValueForHorizonSweep('intervals', normalized.intervals);
+  const amplitude = requireSingleValueForHorizonSweep('amplitudes', normalized.amplitudes);
+  const phase = requireSingleValueForHorizonSweep('phases', normalized.phases);
+
+  const horizons = stepCounts.map((steps) => {
+    const study = runDisturbanceGridStudy({
+      ...normalized,
+      steps
+    });
+    const cell = study.cells[0];
+    if (!cell) {
+      throw new Error('Horizon sweep expected exactly one disturbance grid cell');
+    }
+    const uncertainty = cell.reproducibility.pathDependenceGainBlockMeanUncertainty;
+    return {
+      steps,
+      mean: uncertainty.mean,
+      standardError: uncertainty.standardError,
+      ci95Low: uncertainty.ci95Low,
+      ci95High: uncertainty.ci95High,
+      classification: classifyPathDependenceGainCi95(uncertainty)
+    };
+  });
+
+  return {
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    config: {
+      runs: normalized.runs,
+      steps: stepCounts,
+      analyticsWindow: normalized.analyticsWindow,
+      seed: normalized.seed,
+      seedStep: normalized.seedStep,
+      seedBlocks: normalized.seedBlocks,
+      blockSeedStride: normalized.blockSeedStride,
+      stopWhenExtinct: normalized.stopWhenExtinct,
+      interval,
+      amplitude,
+      phase,
+      localRadius: normalized.localRadius,
+      localRefugiaFraction: normalized.localRefugiaFraction
+    },
+    horizons
+  };
+}
+
 function normalizeConfig(input: RunExperimentInput): NormalizedExperimentConfig {
   const runs = toPositiveInt('runs', input.runs);
   const steps = toPositiveInt('steps', input.steps);
@@ -282,6 +368,13 @@ function toPositiveIntList(name: string, values: number[]): number[] {
     throw new Error(`${name} must not be empty`);
   }
   return values.map((value, index) => toPositiveInt(`${name}[${index}]`, value));
+}
+
+function requireSingleValueForHorizonSweep(name: string, values: number[]): number {
+  if (values.length !== 1) {
+    throw new Error(`${name} must contain exactly one value for horizon sweep`);
+  }
+  return values[0];
 }
 
 function toUnitInterval(name: string, value: number): number {

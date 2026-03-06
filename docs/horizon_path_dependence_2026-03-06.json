@@ -1,0 +1,26 @@
+[
+  {
+    "steps": 220,
+    "mean": 0.00632388240042886,
+    "standardError": 0.0400865693274482,
+    "ci95Low": -0.07224579348136961,
+    "ci95High": 0.08489355828222733,
+    "classification": "ambiguous"
+  },
+  {
+    "steps": 320,
+    "mean": -0.13137654743605967,
+    "standardError": 0.027897892850810138,
+    "ci95Low": -0.18605641742364754,
+    "ci95High": -0.0766966774484718,
+    "classification": "robustNegative"
+  },
+  {
+    "steps": 420,
+    "mean": -0.17511858238707975,
+    "standardError": 0.021619740432917766,
+    "ci95Low": -0.21749327363559856,
+    "ci95High": -0.13274389113856094,
+    "classification": "robustNegative"
+  }
+]

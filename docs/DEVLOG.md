@@ -866,3 +866,25 @@ Thinking:
 - Expected at least one robust-positive phase if the earlier boundary signal near `interval=24` was stable; did not observe that.
 - This updates the working belief: phase tuning alone is insufficient in the current short-horizon/low-amplitude regime.
 - Next bet should test a different axis (longer horizons or disturbance regime shifts) rather than only denser phase sampling.
+
+## 2026-03-06 (session 32)
+- Added a focused horizon helper in `src/experiment.ts`:
+  - `runPathDependenceHorizonSweep(...)` executes repeated fixed-cell disturbance studies over `steps[]`.
+  - It enforces a single `interval`, `amplitude`, and `phase` cell for interpretability and returns per-horizon CI95 classification for `pathDependenceGain`.
+- Added deterministic tests in `test/experiment.test.ts`:
+  - reproducibility + CI classification invariants for the new helper.
+  - validation that horizon sweep rejects multi-cell axis inputs.
+- Verified code health with `npm test` (51/51) and `npm run build`.
+- Ran the planned falsification sweep at the current best candidate cell and saved artifact:
+  - `docs/horizon_path_dependence_2026-03-06.json`
+  - config: `runs=3`, `seedBlocks=6`, `blockSeedStride=60`, `window=24`, `seed=20260306`, `interval=24`, `amplitude=0.2`, `phase=0.375`, `steps={220,320,420}`.
+
+Observed:
+- `steps=220` remained CI-ambiguous (`mean=+0.0063`, `CI95=[-0.0722,+0.0849]`).
+- `steps=320` became CI-robust-negative (`mean=-0.1314`, `CI95=[-0.1861,-0.0767]`).
+- `steps=420` stayed CI-robust-negative (`mean=-0.1751`, `CI95=[-0.2175,-0.1327]`).
+- Prediction/falsifier: if delayed-memory effects were rescuing this boundary cell, CI should move toward robust-positive as horizon increases; it moved the opposite direction.
+
+Thinking:
+- Horizon escalation falsified the remaining delayed-memory rescue hypothesis at this cell.
+- Continuing to refine phase/horizon around this boundary is now low-yield; next session should shift axis to locality regime (radius/refugia) or amplitude mechanisms and re-run CI-based acceptance checks.

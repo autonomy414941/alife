@@ -1,62 +1,61 @@
 # Session Plan — 2026-03-06
 
 ## Compact Context
-- The simulator and experiment layer are deterministic with stable seeded sweeps and green tests/build.
-- `runDisturbanceGridStudy` already supports `interval×amplitude×phase` plus `seedBlocks` replication.
-- Block-mean uncertainty (`mean`, `SE`, `CI95`) and CI-aware summary ranking/classification are implemented.
-- Latest fixed check (`seed=20260302`, `runs=2`, `seedBlocks=3`, phases `{0,0.25}`) had `robustPositive=0`, `ambiguous=3`, `robustNegative=1`.
-- `relapseEventReduction` is consistently positive, but `pathDependenceGain` is still mostly negative or boundary.
-- Current strongest candidate region remains near `interval=24`, low amplitude, phase-sensitive.
+- The simulator and experiment stack are deterministic; tests/build are currently green.
+- `runDisturbanceGridStudy` already supports `interval×amplitude×phase` with `seedBlocks` replication and CI95 over block means.
+- Latest high-rep neighborhood at `interval=24`, `amplitude=0.2`, phases every `0.125` found `robustPositive=0`, `ambiguous=4`, `robustNegative=4`.
+- `relapseEventReduction` is consistently positive, but `pathDependenceGain` has not shown CI-robust positivity.
+- Best recent candidate (`phase=0.375`) had near-zero mean and CI crossing zero, so it is unresolved, not supported.
 
 ## Project State
-- Core capability exists: disturbance phase control, paired global/local runs, block reproducibility, CI-aware ranking.
-- Recent sessions have converged on uncertainty reduction for path-dependent memory benefit, not adding new mechanics.
-- Underdeveloped area: empirical power near the `interval=24` boundary is still low, so ambiguity vs true null is unresolved.
+- Current capabilities are strong for paired global/local comparisons and CI-based accept/reject decisions.
+- Recent sessions have concentrated on phase tuning and uncertainty tightening around the same `interval=24` boundary.
+- Underdeveloped area: horizon sensitivity is still weakly tested, despite known delayed-disturbance dynamics in this codebase.
 
 ## External Context
-- Adaptive Exploration in Lenia with Intrinsic Multi-Objective Ranking (arXiv:2506.02990, 2025-06-03) emphasizes robust ranking pressure for sustained novelty rather than weak mean effects: https://arxiv.org/abs/2506.02990
-- Flow-Lenia (arXiv:2506.08569, Artificial Life 31(2), 2025) highlights evaluating emergent dynamics with evolutionary-activity-style metrics across replicated dynamics, reinforcing replication-first evidence before claims of open-endedness: https://arxiv.org/abs/2506.08569
+- Hamedanchi & Hintze, *Non-Spatial Hash Chemistry as a Minimalistic System for Open-Ended Evolution* (2024) reports novelty-growth evidence only under long-running dynamics, cautioning against short-horizon claims: https://arxiv.org/abs/2404.18027
+- Gravina et al., *Automating the Search for Artificial Life with Foundation Models* (2024) shows that structured search over parameter space finds regimes humans miss, supporting targeted axis expansion beyond phase-only tuning: https://arxiv.org/abs/2412.17799
 
 ## Research Gaps
-- With denser phase sampling around `interval=24` and higher `seedBlocks`, does any cell achieve `pathDependenceGain CI95 low > 0`?
-- Are currently ambiguous cells stable top-ranked candidates, or do they collapse when replication depth increases?
+- At the current best candidate cell (`interval=24`, `amplitude=0.2`, `phase=0.375`), does increasing horizon (`steps`) move `pathDependenceGain` from CI-ambiguous to CI-robust-positive, or does it converge to null/negative?
+- If horizon escalation fails, is the boundary signal likely a sampling artifact rather than a delayed-memory effect?
 
 ## Current Anti-Evidence
-- No tested cell has yet reached robust-positive `pathDependenceGain` under CI criteria; current positives are mean-sign or boundary artifacts.
-- Evidence is from short-horizon forced disturbance regimes, not sustained endogenous innovation over long horizons.
+- After denser phase sampling and deeper replication, there is still zero CI-robust-positive cell for `pathDependenceGain`.
+- The evidence basis is endpoint disturbance-response deltas, not sustained open-ended innovation trajectories.
 
 ## Candidate Bets
-- A: Run one bounded high-replication phase-neighborhood sweep at `interval=24`, `amplitude=0.2`, then make a CI-based accept/reject call.
-  Why now: This directly targets the only remaining boundary zone with existing instrumentation.
+- A: Run a fixed-parameter horizon-escalation falsification at the best candidate cell (`steps={220,320,420}`) and compare CI95 lower bounds.
+  Why now: It directly tests the strongest remaining alternative explanation (delayed-memory emergence).
   Est. low-context human time: 35m
   Expected information gain: high
-  Main risk: Runtime cost may rise without yielding robust-positive cells.
-- B: Add CI-width/power diagnostics to disturbance-grid summary (`pathDependenceGain` CI half-width and simple precision threshold flags).
-  Why now: It separates “not enough replication” from “likely null.”
-  Est. low-context human time: 50m
+  Main risk: Extra runtime with the same no-support conclusion.
+- B: Run a small amplitude-shift check at the same interval/phase (`amplitude={0.2,0.35,0.5}`) with fixed replication depth.
+  Why now: It tests whether stronger shocks are required for path-dependent gains.
+  Est. low-context human time: 45m
   Expected information gain: medium
-  Main risk: Precision heuristics may be arbitrary without immediate follow-up sweeps.
-- C: Add a minimal long-horizon activity probe (rolling net diversification + novelty persistence) for top disturbance cells.
-  Why now: Open-endedness claims need ongoing innovation signals, not only resilience deltas.
+  Main risk: Confounds amplitude with survivability collapse and reduces interpretability.
+- C: Add a minimal horizon-sweep helper in code to automate repeated runs and emit per-horizon CI summaries.
+  Why now: It compounds future sessions by removing manual experiment scripting.
   Est. low-context human time: >60m
-  Expected information gain: high
-  Main risk: Scope creep beyond one session.
+  Expected information gain: medium
+  Main risk: Tooling work may consume the session before generating new evidence.
 
 ## Selected Bet
-Execute A: run a single higher-replication phase-neighborhood study centered on `interval=24` using current CI-aware outputs, and decide whether any phase is robust-positive (`CI95 low > 0`) or whether the current hypothesis should be downgraded to “no support at tested depth.”
+Execute A: perform one bounded horizon-escalation sweep at the current best candidate cell and make a CI-based decision on whether delayed effects rescue the hypothesis. If no horizon produces `CI95 low > 0`, treat this axis as no-support and shift to another mechanism next session.
 
 ## Why This Fits The Horizon
-- No code-path expansion is required; it uses existing deterministic experiment primitives and summary fields.
-- Success is autonomously verifiable by fixed-parameter reruns and direct CI classification/ranking outputs.
+- It uses existing experiment code and CI outputs with no schema or API changes.
+- Success is fully autonomous: deterministic rerun, machine-checkable CI values, and a binary support/no-support decision.
 
 ## Success Evidence
-- Artifact: one fixed-parameter summary showing `pathDependenceGainCi95ClassificationCounts` and ranked phase cells for phases `{0,0.125,0.25,0.375,0.5,0.625,0.75,0.875}` at `interval=24`, `amplitude=0.2`.
-- Verification command or output: `npm run build && node -e "const {runDisturbanceGridStudy}=require('./dist/experiment.js'); const phases=[0,0.125,0.25,0.375,0.5,0.625,0.75,0.875]; const s=runDisturbanceGridStudy({runs:3,steps:220,analyticsWindow:24,seed:20260306,seedBlocks:6,blockSeedStride:60,intervals:[24],amplitudes:[0.2],phases}).summary; console.log(JSON.stringify({counts:s.pathDependenceGainCi95ClassificationCounts,top:s.pathDependenceGainCi95LowerBoundTopCells.slice(0,3)},null,2));"`
+- Artifact: one JSON summary keyed by `steps` with `mean`, `ci95Low`, `ci95High`, and CI classification for `pathDependenceGain`.
+- Verification command or output: `npm run build && node -e "const {runDisturbanceGridStudy}=require('./dist/experiment.js'); const steps=[220,320,420]; const out=steps.map(s=>{const r=runDisturbanceGridStudy({runs:3,steps:s,analyticsWindow:24,seed:20260306,seedBlocks:6,blockSeedStride:60,intervals:[24],amplitudes:[0.2],phases:[0.375]}); const u=r.cells[0].reproducibility.pathDependenceGainBlockMeanUncertainty; const c=u.ci95Low>0?'robustPositive':(u.ci95High<0?'robustNegative':'ambiguous'); return {steps:s,mean:u.mean,ci95Low:u.ci95Low,ci95High:u.ci95High,classification:c};}); console.log(JSON.stringify(out,null,2));"`
 
 ## Stop Conditions
-- Stop if one full sweep finishes with `robustPositive=0`; record null-support outcome instead of expanding axes.
-- If runtime becomes a blocker, shrink only phase count to `{0,0.125,0.25,0.375}` and keep replication depth fixed.
+- Stop after evaluating all three horizons once; do not add new axes in the same session.
+- If runtime is too high, shrink to `steps={220,360}` and preserve replication depth (`runs=3`, `seedBlocks=6`) for comparability.
 
 ## Assumptions / Unknowns
-- Assumption: normal-approximate CI over block means is acceptable at `seedBlocks=6` for triage decisions.
-- Unknown: whether positive path dependence exists in this model region or was previously a low-sample artifact.
+- Assumption: `phase=0.375` is still the most informative single-cell probe for delayed-memory emergence at `interval=24`.
+- Unknown: whether longer horizons expose genuine delayed path dependence or simply amplify extinction/turnover noise.
