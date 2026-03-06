@@ -344,6 +344,20 @@ export interface DisturbanceGridCellTimingDiagnostics {
   localMemoryEventPhaseConcentrationMean: number;
 }
 
+export interface DisturbanceGridCellReproducibility {
+  blocks: number;
+  hypothesisSupportFraction: number;
+  pathDependenceGainPositiveBlockFraction: number;
+  relapseEventReductionPositiveBlockFraction: number;
+  resilienceStabilityPositiveFraction: NumericAggregate;
+  memoryStabilityPositiveFraction: NumericAggregate;
+  relapseEventReductionPositiveFraction: NumericAggregate;
+  turnoverSpikeReductionPositiveFraction: NumericAggregate;
+  pathDependenceGainPositiveFraction: NumericAggregate;
+  latestRecoveryLagReductionPositiveFraction: NumericAggregate;
+  memoryRecoveryLagReductionPositiveFraction: NumericAggregate;
+}
+
 export interface DisturbanceGridCellSummary {
   interval: number;
   amplitude: number;
@@ -352,6 +366,7 @@ export interface DisturbanceGridCellSummary {
   local: ExperimentAggregateSummary;
   pairedDeltas: DisturbanceGridCellPairedDeltas;
   timingDiagnostics: DisturbanceGridCellTimingDiagnostics;
+  reproducibility: DisturbanceGridCellReproducibility;
   hypothesisSupport: boolean;
 }
 
@@ -359,6 +374,9 @@ export interface DisturbanceGridStudySummary {
   cells: number;
   supportedCells: number;
   supportFraction: number;
+  hypothesisSupportFractionAcrossBlocks: NumericAggregate;
+  pathDependenceGainPositiveBlockFraction: NumericAggregate;
+  relapseEventReductionPositiveBlockFraction: NumericAggregate;
   memoryStabilityDelta: NumericAggregate;
   relapseEventReduction: NumericAggregate;
   pathDependenceGain: NumericAggregate;
@@ -374,6 +392,8 @@ export interface DisturbanceGridStudyConfig {
   analyticsWindow: number;
   seed: number;
   seedStep: number;
+  seedBlocks: number;
+  blockSeedStride: number;
   stopWhenExtinct: boolean;
   intervals: number[];
   amplitudes: number[];

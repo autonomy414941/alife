@@ -1,27 +1,29 @@
-# Status - 2026-03-02
-Current phase: controlled disturbance phase-offset experiments and interval×phase mapping.
+# Status - 2026-03-06
+Current phase: seed-block reproducibility checks for disturbance interval×phase hypotheses.
 
 What exists now:
-- Deterministic TypeScript+Vitest simulator with eco-evolutionary dynamics, seasonality, and localized disturbance/refugia.
-- Disturbance scheduler now has explicit `disturbancePhaseOffset` control (wrapped to `[0,1)`), with analytics/export visibility.
-- Disturbance grid studies now sweep `interval × amplitude × phase` (`phases` axis) with paired seeded global-vs-local comparisons.
-- Grid JSON/CSV schemas include per-cell `phase`; run metrics CSV includes `disturbance_phase_offset`.
-- CLI supports `--disturbance-phase` and prints disturbance offset in summaries.
+- Deterministic TypeScript+Vitest simulator with seasonality, localized disturbance/refugia, and resilience-memory analytics.
+- Disturbance grid studies now support independent replication blocks via `seedBlocks` and `blockSeedStride`.
+- Each grid cell reports pooled paired deltas plus block reproducibility:
+  - hypothesis-support fraction across blocks
+  - positive-block fractions for path dependence and relapse reduction
+  - stability of run-level `positiveFraction` (mean/min/max across blocks) for key deltas.
+- Disturbance grid JSON/CSV schemas include reproducibility metrics and block config fields.
 
-Latest sweep (phase-enabled):
-- Seeds `20260302..20260305`, `runs=4`, `steps=260`, `window=26`.
+Latest replicated sweep:
+- Seeds: base `20260302`, `runs=4`, `seedBlocks=3`, `blockSeedStride=100`.
 - Grid: intervals `{20,24}`, amplitude `{0.2}`, phases `{0,0.25,0.5,0.75}`.
-- Result: `supportFraction=1/8`; only (`interval=24`, `phase=0`) was positive (`pathDependenceGain=+0.131`).
-- Remaining cells stayed negative (`pathDependenceGain=-0.308..-0.032`).
+- Pooled result: `supportFraction=1/8`; relapse-reduction remained positive in every cell.
+- Only `interval=24, phase=0` stayed weakly positive (`pathDependenceGain=+0.004`) with block support `2/3`.
+- `interval=24, phase=0.25` showed partial support (`1/3` blocks) but pooled gain stayed negative (`-0.029`).
 
 Interpretation:
-- Explicit phase control works and enables direct causal checks of cadence-vs-phase hypotheses.
-- Positive path-gain appears phase-selective and narrow in this seed block.
-- Local refugia still reduce relapse and lag broadly, but memory gain beyond immediate buffering remains inconsistent.
+- Local refugia reliably improve immediate resilience signals (especially relapse reduction).
+- Positive path-dependent memory gain is still narrow and seed-sensitive, not yet robust across blocks.
 
 Verification:
-- `npm test` passes (48 tests).
+- `npm test` passes (49 tests).
 - `npm run build` passes.
 
 Next focus:
-- Add interval×phase replication sweeps across multiple seed blocks and report per-cell reproducibility (`positiveFraction` stability across blocks).
+- Add uncertainty estimates over block means (e.g., bootstrap/SE) and refine interval×phase sampling near the `interval=24` boundary.

@@ -763,3 +763,33 @@ Thinking:
 - The new control removes a key confound: cadence and phase can now be manipulated independently.
 - Current evidence suggests a narrow phase window may exist for positive path dependence, but reproducibility is unresolved.
 - Next session should prioritize replicated seed-block tests per interval×phase cell rather than expanding new mechanics.
+
+## 2026-03-06 (session 28)
+- Added seed-block replication controls to disturbance grid experiments in `src/experiment.ts`:
+  - new inputs/config fields: `seedBlocks` and `blockSeedStride`.
+  - each `interval×amplitude×phase` cell now runs paired global/local experiments across independent seed blocks, then pools runs for aggregate deltas.
+- Added per-cell reproducibility analytics:
+  - `hypothesisSupportFraction` across blocks.
+  - positive-block fractions for `pathDependenceGain` and `relapseEventReduction`.
+  - block-stability summaries (`mean/min/max`) for paired-delta `positiveFraction` values.
+- Extended disturbance-grid study summary with block-level reproducibility aggregates across cells.
+- Updated shared types (`src/types.ts`) and disturbance-grid CSV export (`src/export.ts`) with new reproducibility and block fields.
+- Expanded tests:
+  - `test/experiment.test.ts` now checks backward compatibility at `seedBlocks=1`, multi-block invariants, and validation of new inputs.
+  - `test/export.test.ts` now checks CSV mapping for new reproducibility columns.
+- Verification: `npm test` (49/49) and `npm run build` both pass.
+- Ran a replicated interval×phase sweep:
+  - `runs=4`, `steps=260`, `window=26`, `seed=20260302`, `seedBlocks=3`, `blockSeedStride=100`
+  - intervals `{20,24}`, amplitude `{0.2}`, phases `{0,0.25,0.5,0.75}`.
+
+Observed:
+- Pooled support remained `1/8`; only `interval=24, phase=0` was positive (`pathDependenceGain=+0.004`).
+- Block support was heterogeneous:
+  - `interval=24, phase=0` had `blockSupport=0.667`.
+  - `interval=24, phase=0.25` had partial support (`0.333`) but pooled sign stayed negative.
+  - all `interval=20` phase cells had zero block support.
+- `relapseEventReduction` stayed positive in every block/cell (`positiveBlockFraction=1.0` across cells).
+
+Thinking:
+- The new block metrics confirm that acute buffering is robust, while path-dependent memory gains remain narrow and unstable.
+- Boundary behavior around `interval=24` is plausible but still underpowered; uncertainty estimates over block means should be next.

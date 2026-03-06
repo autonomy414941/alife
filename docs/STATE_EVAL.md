@@ -1,32 +1,34 @@
-# State Evaluation — 2026-03-02
+# State Evaluation — 2026-03-06
 
 ## Project State
-- The project is a deterministic TypeScript alife simulator with broad eco-evolutionary mechanics in `src/simulation.ts` (1,962 LOC): mutation/speciation, trophic/defense tradeoffs, habitat preference, toroidal spatial locality, seasonality, and localized disturbance with radius/refugia.
-- Observability is strong: per-tick analytics now include disturbance footprint, delayed trough/recovery behavior, relapse and sustained-recovery metrics, multi-event memory metrics, and seasonal-phase timing diagnostics.
-- Experiment surface is mature for paired studies: `runExperiment(...)` and `runDisturbanceGridStudy(...)` in `src/experiment.ts` produce paired seeded deltas including `pathDependenceGain`, lag reductions, and hypothesis-support fractions.
-- Export/CLI coverage is complete for current schema (`src/export.ts`, `src/index.ts`), including JSON/CSV for single runs, aggregate runs, and disturbance grids.
-- Verification is good at implementation level: `npm test && npm run build` passes today (46 tests across simulation/experiment/export), but test style is mostly deterministic invariants rather than statistical robustness.
+- The codebase is a deterministic TypeScript alife simulator with one core engine (`LifeSimulation`) and two analysis layers (`runExperiment`, `runDisturbanceGridStudy`), plus CSV/JSON export and CLI reporting.
+- Core mechanics are substantial: mutation/speciation, trophic and defense traits, habitat preference, toroidal spatial occupancy, seasonal forcing, disturbance scheduling with explicit phase offset, localized shocks (radius/refugia), and decomposition/resource feedback.
+- Observability is strong for disturbance research: latest-event and memory resilience metrics, relapse/sustained recovery, lag and phase diagnostics, locality/radius turnover, and paired seeded deltas (including `pathDependenceGain`).
+- Test coverage is broad at behavior level (48 Vitest tests across simulation/experiment/export). Coverage is mostly deterministic invariants and schema checks; statistical stability of findings is not directly tested.
+- Maturity is “research-instrumented prototype”: strong internal consistency and telemetry, but still centered on one simulation kernel and one dominant experiment family.
 
 ## Trajectory
-- Recent commits show a tight sequence around disturbance resilience: delayed impact -> durable recovery semantics -> relapse/stability indices -> multi-event memory -> interval/amplitude paired grid -> timing diagnostics.
-- Direction is productive and increasingly hypothesis-driven, but narrow: most sessions continue to deepen the same disturbance-resilience axis instead of expanding model breadth.
-- Current empirical signal is unstable: one weak positive `pathDependenceGain` cell appeared in one seed block and disappeared in follow-up seeds.
+- Recent sessions have a clear arc: delayed-impact detection -> recovery semantics hardening -> resilience stability and memory metrics -> interval/amplitude grid -> timing diagnostics -> explicit phase-offset control.
+- Direction is productive and cumulative. Each session has kept types/tests/exports synchronized, and recent work remains hypothesis-oriented rather than purely plumbing.
+- The trajectory is also concentrated: most progress is on disturbance-memory sign behavior (`pathDependenceGain`) in a narrow parameter regime, with limited expansion into other open-ended alife questions.
 
 ## Gaps
-- Model breadth remains limited relative to the stated alife ambition: single-resource ecology and fixed periodic disturbance scheduling constrain ecological realism.
-- Uncertainty handling is thin: outputs emphasize mean/min/max and positive fractions, with no interval estimates or significance diagnostics for sweep claims.
-- Disturbance timing is observed but not directly controlled (no explicit phase-offset parameter yet), which limits causal tests of phase-driven effects.
-- Core complexity remains concentrated in one large simulation file, increasing coupling risk as new mechanisms are added.
+- The project can measure many resilience signals but has limited inferential strength: outputs are mostly mean/min/max and positive fractions, without uncertainty estimates across independent seed blocks.
+- Ecological scope is still relatively narrow versus broader alife goals: single abiotic resource field, periodic exogenous disturbance family, and no endogenous environment engineering by lineages.
+- Open-endedness assessment is underdeveloped: turnover/diversification are tracked, but there is no explicit criterion for sustained novelty production versus transient churn.
+- Architecture risk remains: simulation logic and analytics are densely coupled in one large file, which can slow safe extension of mechanisms.
 
 ## Research Gaps
-- Under equal mean disturbance intensity, does a narrow seasonal phase window produce reproducible positive `pathDependenceGain`, and is that window predictable from `memoryEventPhaseConcentration`?
-- Do localized refugia create a measurable tradeoff frontier between resilience memory (`memoryStabilityIndexMean`, `memoryRecoveryLagTicksMean`) and ongoing diversification (`netDiversificationRate`, turnover), or can both improve together across regimes?
-- Compared with manual interval-amplitude grids, do adaptive search strategies (intrinsic multi-objective exploration or FM-guided target evolution) find robust positive-memory regimes with fewer simulation evaluations?
+- Does disturbance-season phase locking (`interval/cycle` ratio + `phaseOffset`) produce a reproducible band where local refugia improve memory stability more than immediate stability (`pathDependenceGain > 0`) across independent seed blocks?
+- Do localized refugia and patch scale (radius/refugia fraction) generate source-like neighborhood dynamics, where locality turnover recovers while extinction burst remains suppressed under repeated shocks?
+- Under repeated shocks, do shifts in strategy axes (habitat/trophic/defense weighted means) predict resilience-memory outcomes better than aggregate population recovery metrics?
 
 ## External Context
-- **Mesa 3 (JOSS 2025)** formalized a widely used ABM stack with emphasis on modernized APIs and reproducible stepping/tooling, relevant to this project’s experiment orchestration needs: https://joss.theoj.org/papers/10.21105/joss.07668 and migration guidance: https://mesa.readthedocs.io/latest/migration_guide.html
-- **Adaptive Exploration in Lenia** (Lorantos & Spector, 2025) reports intrinsic multi-objective ranking (distinctiveness/sparsity/homeostasis) as a practical path toward open-ended exploratory dynamics: https://arxiv.org/abs/2506.02990
-- **ASAL++** (Baid et al., 2025) extends FM-guided alife search with evolving targets (EST/ETT) and reports stronger novelty/coherence behavior in Lenia experiments: https://arxiv.org/abs/2509.22447
-- **Resource and Population Dynamics in an Agent-Environment Interaction Model** (Briozzo et al., 2025) reinforces current field focus on explicitly coupling agent behavior with resource landscape feedbacks: https://arxiv.org/abs/2506.15485
-- **Global Forest Disturbance Regime Dataset (1986-2020)** provides empirically grounded disturbance heterogeneity (frequency/severity/size) that could benchmark synthetic regime realism: https://essd.copernicus.org/preprints/essd-2024-91/
-- **Climate-disturbance interaction evidence** (Stenzel et al., *Biogeosciences*, 2025) highlights that disturbance and climate exposure jointly shape ecosystem functioning/resilience, relevant to this project’s seasonality-disturbance coupling questions: https://bg.copernicus.org/articles/22/1259/2025/
+- ALIFE 2025 highlighted open-endedness work directly relevant to this project’s direction (Best Paper: “Ramps and Ratchets: Evolving Spatial Viability Landscapes in Cellular Automata”) and published proceedings for comparison baselines: https://2025.alife.org/ and https://direct.mit.edu/isal/proceedings/ALIFE%202025
+- “Flow-Lenia: Agentic Cellular Automata with Mass Conservation and Momentum Dynamics” (Artificial Life, 2025) reports richer agent-like multicellular dynamics via conservative flow rules: https://arxiv.org/abs/2412.05695
+- “Adaptive Exploration of Open-Ended Space by Emergent Quality-Diversity in Co-Evolving Communities” (2025) frames intrinsic quality-diversity objectives as a route to open-ended exploration: https://arxiv.org/abs/2506.08569
+- “ASAL++” (accepted ALIFE 2025) extends foundation-model-guided alife search with evolving targets, reporting stronger novelty/coherence in Lenia search: https://arxiv.org/abs/2509.22447
+- “Non-Spatial Hash Chemistry” (2024) demonstrates open-ended evolutionary dynamics in a very compact chemistry-like system, useful as a minimal comparator for novelty persistence claims: https://arxiv.org/abs/2404.18027
+- Disturbance-resilience literature remains active and relevant to this simulator’s current axis:
+  - ecosystem disturbance/resilience review and meta-analysis (2024): https://www.sciencedirect.com/science/article/abs/pii/S0301479724009474
+  - patch attributes + disturbance timing driving source-population emergence in ABM ecology (2024): https://doi.org/10.1016/j.ecolmodel.2024.110839

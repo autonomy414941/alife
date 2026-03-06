@@ -352,6 +352,33 @@ describe('run export', () => {
     expect(
       Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('memory_recovery_lag_reduction_mean')])
     ).toBeCloseTo(study.cells[0].pairedDeltas.memoryRecoveryLagReduction.mean, 10);
+    expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('seed_blocks')])).toBe(
+      study.cells[0].reproducibility.blocks
+    );
+    expect(
+      Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('hypothesis_support_block_fraction')])
+    ).toBeCloseTo(study.cells[0].reproducibility.hypothesisSupportFraction, 10);
+    expect(
+      Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('path_dependence_positive_block_fraction')])
+    ).toBeCloseTo(study.cells[0].reproducibility.pathDependenceGainPositiveBlockFraction, 10);
+    expect(
+      Number(
+        firstRow[
+          DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf(
+            'resilience_delta_positive_fraction_block_mean'
+          )
+        ]
+      )
+    ).toBeCloseTo(study.cells[0].reproducibility.resilienceStabilityPositiveFraction.mean, 10);
+    expect(
+      Number(
+        firstRow[
+          DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf(
+            'path_dependence_gain_positive_fraction_block_max'
+          )
+        ]
+      )
+    ).toBeCloseTo(study.cells[0].reproducibility.pathDependenceGainPositiveFraction.max, 10);
     expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('hypothesis_support')])).toBe(
       study.cells[0].hypothesisSupport ? 1 : 0
     );

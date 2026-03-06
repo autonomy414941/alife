@@ -126,10 +126,18 @@ describe('runDisturbanceGridStudy', () => {
     expect(first.cells).toHaveLength(4);
     expect(first.summary.cells).toBe(4);
     expect(first.config.phases).toEqual([0]);
+    expect(first.config.seedBlocks).toBe(1);
+    expect(first.config.blockSeedStride).toBe(2);
     expect(first.summary.supportedCells).toBeGreaterThanOrEqual(0);
     expect(first.summary.supportedCells).toBeLessThanOrEqual(4);
     expect(first.summary.supportFraction).toBeGreaterThanOrEqual(0);
     expect(first.summary.supportFraction).toBeLessThanOrEqual(1);
+    expect(first.summary.hypothesisSupportFractionAcrossBlocks.mean).toBeGreaterThanOrEqual(0);
+    expect(first.summary.hypothesisSupportFractionAcrossBlocks.mean).toBeLessThanOrEqual(1);
+    expect(first.summary.pathDependenceGainPositiveBlockFraction.mean).toBeGreaterThanOrEqual(0);
+    expect(first.summary.pathDependenceGainPositiveBlockFraction.mean).toBeLessThanOrEqual(1);
+    expect(first.summary.relapseEventReductionPositiveBlockFraction.mean).toBeGreaterThanOrEqual(0);
+    expect(first.summary.relapseEventReductionPositiveBlockFraction.mean).toBeLessThanOrEqual(1);
     expect(first.summary.globalMemoryEventPhaseConcentration.mean).toBeGreaterThanOrEqual(0);
     expect(first.summary.globalMemoryEventPhaseConcentration.mean).toBeLessThanOrEqual(1);
     expect(first.summary.localMemoryEventPhaseConcentration.mean).toBeGreaterThanOrEqual(0);
@@ -158,6 +166,76 @@ describe('runDisturbanceGridStudy', () => {
       expect(cell.timingDiagnostics.globalMemoryEventPhaseConcentrationMean).toBeLessThanOrEqual(1);
       expect(cell.timingDiagnostics.localMemoryEventPhaseConcentrationMean).toBeGreaterThanOrEqual(0);
       expect(cell.timingDiagnostics.localMemoryEventPhaseConcentrationMean).toBeLessThanOrEqual(1);
+
+      expect(cell.reproducibility.blocks).toBe(1);
+      expect(cell.reproducibility.hypothesisSupportFraction).toBe(cell.hypothesisSupport ? 1 : 0);
+      expect(cell.reproducibility.pathDependenceGainPositiveBlockFraction).toBe(
+        cell.pairedDeltas.pathDependenceGain.mean > 0 ? 1 : 0
+      );
+      expect(cell.reproducibility.relapseEventReductionPositiveBlockFraction).toBe(
+        cell.pairedDeltas.relapseEventReduction.mean > 0 ? 1 : 0
+      );
+      expect(cell.reproducibility.resilienceStabilityPositiveFraction).toEqual(
+        constantAggregate(cell.pairedDeltas.resilienceStabilityDelta.positiveFraction)
+      );
+      expect(cell.reproducibility.memoryStabilityPositiveFraction).toEqual(
+        constantAggregate(cell.pairedDeltas.memoryStabilityDelta.positiveFraction)
+      );
+      expect(cell.reproducibility.relapseEventReductionPositiveFraction).toEqual(
+        constantAggregate(cell.pairedDeltas.relapseEventReduction.positiveFraction)
+      );
+      expect(cell.reproducibility.turnoverSpikeReductionPositiveFraction).toEqual(
+        constantAggregate(cell.pairedDeltas.turnoverSpikeReduction.positiveFraction)
+      );
+      expect(cell.reproducibility.pathDependenceGainPositiveFraction).toEqual(
+        constantAggregate(cell.pairedDeltas.pathDependenceGain.positiveFraction)
+      );
+      expect(cell.reproducibility.latestRecoveryLagReductionPositiveFraction).toEqual(
+        constantAggregate(cell.pairedDeltas.latestRecoveryLagReduction.positiveFraction)
+      );
+      expect(cell.reproducibility.memoryRecoveryLagReductionPositiveFraction).toEqual(
+        constantAggregate(cell.pairedDeltas.memoryRecoveryLagReduction.positiveFraction)
+      );
+    }
+  });
+
+  it('supports independent seed-block replication and aggregates block reproducibility', () => {
+    const study = runDisturbanceGridStudy({
+      runs: 2,
+      steps: 14,
+      analyticsWindow: 5,
+      seed: 17,
+      seedStep: 1,
+      seedBlocks: 3,
+      blockSeedStride: 20,
+      intervals: [7],
+      amplitudes: [0.25],
+      phases: [0, 0.5],
+      localRadius: 2,
+      localRefugiaFraction: 0.35
+    });
+
+    expect(study.cells).toHaveLength(2);
+    expect(study.config.seedBlocks).toBe(3);
+    expect(study.config.blockSeedStride).toBe(20);
+
+    for (const cell of study.cells) {
+      expect(cell.global.runs).toBe(6);
+      expect(cell.local.runs).toBe(6);
+      expect(cell.reproducibility.blocks).toBe(3);
+      expect(cell.reproducibility.hypothesisSupportFraction).toBeGreaterThanOrEqual(0);
+      expect(cell.reproducibility.hypothesisSupportFraction).toBeLessThanOrEqual(1);
+      expect(cell.reproducibility.pathDependenceGainPositiveBlockFraction).toBeGreaterThanOrEqual(0);
+      expect(cell.reproducibility.pathDependenceGainPositiveBlockFraction).toBeLessThanOrEqual(1);
+      expect(cell.reproducibility.relapseEventReductionPositiveBlockFraction).toBeGreaterThanOrEqual(0);
+      expect(cell.reproducibility.relapseEventReductionPositiveBlockFraction).toBeLessThanOrEqual(1);
+      expectNumericAggregate(cell.reproducibility.resilienceStabilityPositiveFraction);
+      expectNumericAggregate(cell.reproducibility.memoryStabilityPositiveFraction);
+      expectNumericAggregate(cell.reproducibility.relapseEventReductionPositiveFraction);
+      expectNumericAggregate(cell.reproducibility.turnoverSpikeReductionPositiveFraction);
+      expectNumericAggregate(cell.reproducibility.pathDependenceGainPositiveFraction);
+      expectNumericAggregate(cell.reproducibility.latestRecoveryLagReductionPositiveFraction);
+      expectNumericAggregate(cell.reproducibility.memoryRecoveryLagReductionPositiveFraction);
     }
   });
 
@@ -235,6 +313,30 @@ describe('runDisturbanceGridStudy', () => {
         phases: [Number.NaN]
       })
     ).toThrow('phases[0] must be finite');
+
+    expect(() =>
+      runDisturbanceGridStudy({
+        runs: 1,
+        steps: 8,
+        analyticsWindow: 4,
+        seed: 3,
+        intervals: [6],
+        amplitudes: [0.2],
+        seedBlocks: 0
+      })
+    ).toThrow('seedBlocks must be > 0');
+
+    expect(() =>
+      runDisturbanceGridStudy({
+        runs: 1,
+        steps: 8,
+        analyticsWindow: 4,
+        seed: 3,
+        intervals: [6],
+        amplitudes: [0.2],
+        blockSeedStride: 0
+      })
+    ).toThrow('blockSeedStride must be > 0');
   });
 });
 
@@ -267,6 +369,17 @@ function expectPairedAggregate(value: {
   expect(value.mean).toBeLessThanOrEqual(value.max);
   expect(value.positiveFraction).toBeGreaterThanOrEqual(0);
   expect(value.positiveFraction).toBeLessThanOrEqual(1);
+}
+
+function expectNumericAggregate(value: { mean: number; min: number; max: number }): void {
+  expect(value.mean).toBeGreaterThanOrEqual(value.min);
+  expect(value.mean).toBeLessThanOrEqual(value.max);
+  expect(value.min).toBeGreaterThanOrEqual(0);
+  expect(value.max).toBeLessThanOrEqual(1);
+}
+
+function constantAggregate(value: number): { mean: number; min: number; max: number } {
+  return { mean: value, min: value, max: value };
 }
 
 function resilienceSnapshot(overrides: Partial<Parameters<typeof computeResilienceStabilityIndex>[0]>) {
