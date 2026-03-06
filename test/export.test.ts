@@ -315,6 +315,9 @@ describe('run export', () => {
     expect(parsedJson.cells).toHaveLength(2);
     expect(parsedJson.config.phases).toEqual([0]);
     expect(parsedJson.summary.cells).toBe(2);
+    expect(parsedJson.cells[0].reproducibility.pathDependenceGainBlockMeanUncertainty).toEqual(
+      study.cells[0].reproducibility.pathDependenceGainBlockMeanUncertainty
+    );
 
     const csv = disturbanceGridStudyToCsv(study);
     const lines = csv.trimEnd().split('\n');
@@ -379,6 +382,18 @@ describe('run export', () => {
         ]
       )
     ).toBeCloseTo(study.cells[0].reproducibility.pathDependenceGainPositiveFraction.max, 10);
+    expect(
+      Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('path_dependence_gain_block_mean_se')])
+    ).toBeCloseTo(study.cells[0].reproducibility.pathDependenceGainBlockMeanUncertainty.standardError, 10);
+    expect(
+      Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('path_dependence_gain_block_mean_ci95_low')])
+    ).toBeCloseTo(study.cells[0].reproducibility.pathDependenceGainBlockMeanUncertainty.ci95Low, 10);
+    expect(
+      Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('memory_stability_delta_block_mean_ci95_high')])
+    ).toBeCloseTo(study.cells[0].reproducibility.memoryStabilityDeltaBlockMeanUncertainty.ci95High, 10);
+    expect(
+      Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('relapse_event_reduction_block_mean')])
+    ).toBeCloseTo(study.cells[0].reproducibility.relapseEventReductionBlockMeanUncertainty.mean, 10);
     expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('hypothesis_support')])).toBe(
       study.cells[0].hypothesisSupport ? 1 : 0
     );

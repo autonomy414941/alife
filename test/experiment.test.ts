@@ -196,6 +196,25 @@ describe('runDisturbanceGridStudy', () => {
       expect(cell.reproducibility.memoryRecoveryLagReductionPositiveFraction).toEqual(
         constantAggregate(cell.pairedDeltas.memoryRecoveryLagReduction.positiveFraction)
       );
+
+      expect(cell.reproducibility.pathDependenceGainBlockMeanUncertainty).toEqual({
+        mean: cell.pairedDeltas.pathDependenceGain.mean,
+        standardError: 0,
+        ci95Low: cell.pairedDeltas.pathDependenceGain.mean,
+        ci95High: cell.pairedDeltas.pathDependenceGain.mean
+      });
+      expect(cell.reproducibility.memoryStabilityDeltaBlockMeanUncertainty).toEqual({
+        mean: cell.pairedDeltas.memoryStabilityDelta.mean,
+        standardError: 0,
+        ci95Low: cell.pairedDeltas.memoryStabilityDelta.mean,
+        ci95High: cell.pairedDeltas.memoryStabilityDelta.mean
+      });
+      expect(cell.reproducibility.relapseEventReductionBlockMeanUncertainty).toEqual({
+        mean: cell.pairedDeltas.relapseEventReduction.mean,
+        standardError: 0,
+        ci95Low: cell.pairedDeltas.relapseEventReduction.mean,
+        ci95High: cell.pairedDeltas.relapseEventReduction.mean
+      });
     }
   });
 
@@ -236,6 +255,18 @@ describe('runDisturbanceGridStudy', () => {
       expectNumericAggregate(cell.reproducibility.pathDependenceGainPositiveFraction);
       expectNumericAggregate(cell.reproducibility.latestRecoveryLagReductionPositiveFraction);
       expectNumericAggregate(cell.reproducibility.memoryRecoveryLagReductionPositiveFraction);
+      expectBlockMeanUncertainty(
+        cell.reproducibility.pathDependenceGainBlockMeanUncertainty,
+        cell.pairedDeltas.pathDependenceGain.mean
+      );
+      expectBlockMeanUncertainty(
+        cell.reproducibility.memoryStabilityDeltaBlockMeanUncertainty,
+        cell.pairedDeltas.memoryStabilityDelta.mean
+      );
+      expectBlockMeanUncertainty(
+        cell.reproducibility.relapseEventReductionBlockMeanUncertainty,
+        cell.pairedDeltas.relapseEventReduction.mean
+      );
     }
   });
 
@@ -380,6 +411,21 @@ function expectNumericAggregate(value: { mean: number; min: number; max: number 
 
 function constantAggregate(value: number): { mean: number; min: number; max: number } {
   return { mean: value, min: value, max: value };
+}
+
+function expectBlockMeanUncertainty(
+  value: {
+    mean: number;
+    standardError: number;
+    ci95Low: number;
+    ci95High: number;
+  },
+  expectedMean: number
+): void {
+  expect(value.mean).toBeCloseTo(expectedMean, 10);
+  expect(value.standardError).toBeGreaterThanOrEqual(0);
+  expect(value.ci95Low).toBeLessThanOrEqual(value.mean);
+  expect(value.ci95High).toBeGreaterThanOrEqual(value.mean);
 }
 
 function resilienceSnapshot(overrides: Partial<Parameters<typeof computeResilienceStabilityIndex>[0]>) {

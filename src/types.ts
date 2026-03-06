@@ -327,6 +327,13 @@ export interface PairedDeltaAggregate extends NumericAggregate {
   positiveFraction: number;
 }
 
+export interface BlockMeanUncertainty {
+  mean: number;
+  standardError: number;
+  ci95Low: number;
+  ci95High: number;
+}
+
 export interface DisturbanceGridCellPairedDeltas {
   resilienceStabilityDelta: PairedDeltaAggregate;
   memoryStabilityDelta: PairedDeltaAggregate;
@@ -356,6 +363,9 @@ export interface DisturbanceGridCellReproducibility {
   pathDependenceGainPositiveFraction: NumericAggregate;
   latestRecoveryLagReductionPositiveFraction: NumericAggregate;
   memoryRecoveryLagReductionPositiveFraction: NumericAggregate;
+  pathDependenceGainBlockMeanUncertainty: BlockMeanUncertainty;
+  memoryStabilityDeltaBlockMeanUncertainty: BlockMeanUncertainty;
+  relapseEventReductionBlockMeanUncertainty: BlockMeanUncertainty;
 }
 
 export interface DisturbanceGridCellSummary {

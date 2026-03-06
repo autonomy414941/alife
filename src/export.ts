@@ -247,6 +247,18 @@ export const DISTURBANCE_GRID_STUDY_CSV_COLUMNS = [
   'memory_recovery_lag_reduction_positive_fraction_block_mean',
   'memory_recovery_lag_reduction_positive_fraction_block_min',
   'memory_recovery_lag_reduction_positive_fraction_block_max',
+  'path_dependence_gain_block_mean',
+  'path_dependence_gain_block_mean_se',
+  'path_dependence_gain_block_mean_ci95_low',
+  'path_dependence_gain_block_mean_ci95_high',
+  'memory_stability_delta_block_mean',
+  'memory_stability_delta_block_mean_se',
+  'memory_stability_delta_block_mean_ci95_low',
+  'memory_stability_delta_block_mean_ci95_high',
+  'relapse_event_reduction_block_mean',
+  'relapse_event_reduction_block_mean_se',
+  'relapse_event_reduction_block_mean_ci95_low',
+  'relapse_event_reduction_block_mean_ci95_high',
   'hypothesis_support'
 ] as const;
 
@@ -527,6 +539,18 @@ export function disturbanceGridStudyToCsv(exportData: DisturbanceGridStudyExport
         cell.reproducibility.memoryRecoveryLagReductionPositiveFraction.mean,
         cell.reproducibility.memoryRecoveryLagReductionPositiveFraction.min,
         cell.reproducibility.memoryRecoveryLagReductionPositiveFraction.max,
+        cell.reproducibility.pathDependenceGainBlockMeanUncertainty.mean,
+        cell.reproducibility.pathDependenceGainBlockMeanUncertainty.standardError,
+        cell.reproducibility.pathDependenceGainBlockMeanUncertainty.ci95Low,
+        cell.reproducibility.pathDependenceGainBlockMeanUncertainty.ci95High,
+        cell.reproducibility.memoryStabilityDeltaBlockMeanUncertainty.mean,
+        cell.reproducibility.memoryStabilityDeltaBlockMeanUncertainty.standardError,
+        cell.reproducibility.memoryStabilityDeltaBlockMeanUncertainty.ci95Low,
+        cell.reproducibility.memoryStabilityDeltaBlockMeanUncertainty.ci95High,
+        cell.reproducibility.relapseEventReductionBlockMeanUncertainty.mean,
+        cell.reproducibility.relapseEventReductionBlockMeanUncertainty.standardError,
+        cell.reproducibility.relapseEventReductionBlockMeanUncertainty.ci95Low,
+        cell.reproducibility.relapseEventReductionBlockMeanUncertainty.ci95High,
         cell.hypothesisSupport ? 1 : 0
       ])
     );

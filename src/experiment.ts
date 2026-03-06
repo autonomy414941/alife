@@ -1,5 +1,6 @@
 import { LifeSimulation, LifeSimulationOptions } from './simulation';
 import {
+  BlockMeanUncertainty,
   DisturbanceGridCellPairedDeltas,
   DisturbanceGridCellReproducibility,
   DisturbanceGridCellSummary,
@@ -413,7 +414,10 @@ function summarizeDisturbanceReproducibility(
       turnoverSpikeReductionPositiveFraction: summarize([]),
       pathDependenceGainPositiveFraction: summarize([]),
       latestRecoveryLagReductionPositiveFraction: summarize([]),
-      memoryRecoveryLagReductionPositiveFraction: summarize([])
+      memoryRecoveryLagReductionPositiveFraction: summarize([]),
+      pathDependenceGainBlockMeanUncertainty: summarizeBlockMeanUncertainty([]),
+      memoryStabilityDeltaBlockMeanUncertainty: summarizeBlockMeanUncertainty([]),
+      relapseEventReductionBlockMeanUncertainty: summarizeBlockMeanUncertainty([])
     };
   }
 
@@ -446,7 +450,53 @@ function summarizeDisturbanceReproducibility(
     ),
     memoryRecoveryLagReductionPositiveFraction: summarize(
       blocks.map((block) => block.pairedDeltas.memoryRecoveryLagReduction.positiveFraction)
+    ),
+    pathDependenceGainBlockMeanUncertainty: summarizeBlockMeanUncertainty(
+      blocks.map((block) => block.pairedDeltas.pathDependenceGain.mean)
+    ),
+    memoryStabilityDeltaBlockMeanUncertainty: summarizeBlockMeanUncertainty(
+      blocks.map((block) => block.pairedDeltas.memoryStabilityDelta.mean)
+    ),
+    relapseEventReductionBlockMeanUncertainty: summarizeBlockMeanUncertainty(
+      blocks.map((block) => block.pairedDeltas.relapseEventReduction.mean)
     )
+  };
+}
+
+function summarizeBlockMeanUncertainty(values: number[]): BlockMeanUncertainty {
+  if (values.length === 0) {
+    return {
+      mean: 0,
+      standardError: 0,
+      ci95Low: 0,
+      ci95High: 0
+    };
+  }
+
+  const mean = summarize(values).mean;
+  if (values.length === 1) {
+    return {
+      mean,
+      standardError: 0,
+      ci95Low: mean,
+      ci95High: mean
+    };
+  }
+
+  let squaredDeviationTotal = 0;
+  for (const value of values) {
+    const deviation = value - mean;
+    squaredDeviationTotal += deviation * deviation;
+  }
+
+  const sampleVariance = squaredDeviationTotal / (values.length - 1);
+  const standardError = Math.sqrt(sampleVariance / values.length);
+  const margin = 1.96 * standardError;
+  return {
+    mean,
+    standardError,
+    ci95Low: mean - margin,
+    ci95High: mean + margin
   };
 }
 
