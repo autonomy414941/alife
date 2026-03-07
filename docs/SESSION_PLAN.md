@@ -1,61 +1,62 @@
-# Session Plan — 2026-03-06
+# Session Plan — 2026-03-07
 
 ## Compact Context
-- The simulator and experiment stack are deterministic; tests/build are currently green.
-- `runDisturbanceGridStudy` already supports `interval×amplitude×phase` with `seedBlocks` replication and CI95 over block means.
-- Latest high-rep neighborhood at `interval=24`, `amplitude=0.2`, phases every `0.125` found `robustPositive=0`, `ambiguous=4`, `robustNegative=4`.
-- `relapseEventReduction` is consistently positive, but `pathDependenceGain` has not shown CI-robust positivity.
-- Best recent candidate (`phase=0.375`) had near-zero mean and CI crossing zero, so it is unresolved, not supported.
+- The simulator/experiment stack is deterministic and currently green (`npm test`, `npm run build`).
+- `runDisturbanceGridStudy` already supports paired global/local runs with seed blocks and CI95 over block means.
+- The acceptance rule is CI-based: `pathDependenceGain` is robust-positive only when `ci95Low > 0`.
+- The prior best boundary cell (`interval=24`, `amplitude=0.2`, `phase=0.375`) became robust-negative at longer horizons (`steps=320,420`).
+- `relapseEventReduction` is consistently positive, while robust-positive path dependence has not appeared.
+- Further phase/horizon retesting of the same cell is now low-yield.
 
 ## Project State
-- Current capabilities are strong for paired global/local comparisons and CI-based accept/reject decisions.
-- Recent sessions have concentrated on phase tuning and uncertainty tightening around the same `interval=24` boundary.
-- Underdeveloped area: horizon sensitivity is still weakly tested, despite known delayed-disturbance dynamics in this codebase.
+- The project has strong experiment instrumentation for falsification, uncertainty, and ranking.
+- Recent sessions have converged on rejecting phase-only and horizon-only rescue hypotheses.
+- The underdeveloped area is mechanism-axis exploration of spatial disturbance structure (`localRadius`, `localRefugiaFraction`) under CI criteria.
 
 ## External Context
-- Hamedanchi & Hintze, *Non-Spatial Hash Chemistry as a Minimalistic System for Open-Ended Evolution* (2024) reports novelty-growth evidence only under long-running dynamics, cautioning against short-horizon claims: https://arxiv.org/abs/2404.18027
-- Gravina et al., *Automating the Search for Artificial Life with Foundation Models* (2024) shows that structured search over parameter space finds regimes humans miss, supporting targeted axis expansion beyond phase-only tuning: https://arxiv.org/abs/2412.17799
+- Sayama, *Structural Cellular Hash Chemistry* (arXiv:2412.12790, 2024): reports that non-spatial variants showed complexity growth but lacked spatial ecological interactions, while improved spatial structure recovered both interaction and growth. Source: https://arxiv.org/abs/2412.12790
+- Aki et al., *LLM-POET* (arXiv:2406.04663, 2024): richer environment generation improved co-evolution performance by 34% vs. CPPN baselines, supporting mechanism shifts in environment structure. Source: https://arxiv.org/abs/2406.04663
 
 ## Research Gaps
-- At the current best candidate cell (`interval=24`, `amplitude=0.2`, `phase=0.375`), does increasing horizon (`steps`) move `pathDependenceGain` from CI-ambiguous to CI-robust-positive, or does it converge to null/negative?
-- If horizon escalation fails, is the boundary signal likely a sampling artifact rather than a delayed-memory effect?
+- At fixed disturbance schedule (`interval=24`, `amplitude=0.2`, `phase=0.375`, `steps=320`), can any locality regime (`radius`, `refugia`) produce `pathDependenceGain ci95Low > 0`?
+- If none does, which locality regime maximizes `ci95Low` while keeping `relapseEventReduction` positive?
 
 ## Current Anti-Evidence
-- After denser phase sampling and deeper replication, there is still zero CI-robust-positive cell for `pathDependenceGain`.
-- The evidence basis is endpoint disturbance-response deltas, not sustained open-ended innovation trajectories.
+- After denser phase sampling and horizon escalation, robust-positive support remains zero and the former boundary candidate turns robust-negative at longer horizons.
+- Current evidence still reflects bounded disturbance-response metrics, not sustained long-run innovation dynamics.
 
 ## Candidate Bets
-- A: Run a fixed-parameter horizon-escalation falsification at the best candidate cell (`steps={220,320,420}`) and compare CI95 lower bounds.
-  Why now: It directly tests the strongest remaining alternative explanation (delayed-memory emergence).
-  Est. low-context human time: 35m
+- A: Run a bounded locality-regime matrix sweep (`radius in {1,3}`, `refugia in {0.2,0.35,0.5}`) at the fixed disturbance cell and rank by `pathDependenceGain ci95Low`.
+  Why now: It tests the highest-leverage untried mechanism axis without adding new code paths.
+  Est. low-context human time: 40m
   Expected information gain: high
-  Main risk: Extra runtime with the same no-support conclusion.
-- B: Run a small amplitude-shift check at the same interval/phase (`amplitude={0.2,0.35,0.5}`) with fixed replication depth.
-  Why now: It tests whether stronger shocks are required for path-dependent gains.
-  Est. low-context human time: 45m
+  Main risk: No robust-positive cell appears, yielding only a best-negative ranking.
+- B: Run an amplitude-regime sweep at the same fixed interval/phase/locality to probe shock-strength dependence.
+  Why now: Amplitude is another plausible mechanism after phase/horizon falsification.
+  Est. low-context human time: 35m
   Expected information gain: medium
-  Main risk: Confounds amplitude with survivability collapse and reduces interpretability.
-- C: Add a minimal horizon-sweep helper in code to automate repeated runs and emit per-horizon CI summaries.
-  Why now: It compounds future sessions by removing manual experiment scripting.
+  Main risk: Stronger shocks may mostly increase collapse noise rather than memory benefits.
+- C: Implement a dedicated locality-axis sweep helper with typed export/tests before running experiments.
+  Why now: Improves repeatability for future sessions.
   Est. low-context human time: >60m
   Expected information gain: medium
-  Main risk: Tooling work may consume the session before generating new evidence.
+  Main risk: Session time consumed by tooling before producing new empirical evidence.
 
 ## Selected Bet
-Execute A: perform one bounded horizon-escalation sweep at the current best candidate cell and make a CI-based decision on whether delayed effects rescue the hypothesis. If no horizon produces `CI95 low > 0`, treat this axis as no-support and shift to another mechanism next session.
+Execute A: run one deterministic locality-regime sweep on the previously best disturbance cell, then make a CI-based go/no-go decision on whether spatial locality/refugia can rescue path dependence in this regime. Treat the output as either (1) first robust-positive evidence, or (2) ranked anti-evidence that justifies switching to amplitude or new mechanisms next.
 
 ## Why This Fits The Horizon
-- It uses existing experiment code and CI outputs with no schema or API changes.
-- Success is fully autonomous: deterministic rerun, machine-checkable CI values, and a binary support/no-support decision.
+- Uses existing APIs only; no schema or implementation changes are required.
+- Success is autonomously verifiable from deterministic JSON/console outputs with explicit CI classifications.
 
 ## Success Evidence
-- Artifact: one JSON summary keyed by `steps` with `mean`, `ci95Low`, `ci95High`, and CI classification for `pathDependenceGain`.
-- Verification command or output: `npm run build && node -e "const {runDisturbanceGridStudy}=require('./dist/experiment.js'); const steps=[220,320,420]; const out=steps.map(s=>{const r=runDisturbanceGridStudy({runs:3,steps:s,analyticsWindow:24,seed:20260306,seedBlocks:6,blockSeedStride:60,intervals:[24],amplitudes:[0.2],phases:[0.375]}); const u=r.cells[0].reproducibility.pathDependenceGainBlockMeanUncertainty; const c=u.ci95Low>0?'robustPositive':(u.ci95High<0?'robustNegative':'ambiguous'); return {steps:s,mean:u.mean,ci95Low:u.ci95Low,ci95High:u.ci95High,classification:c};}); console.log(JSON.stringify(out,null,2));"`
+- Artifact: a machine-readable sweep result (e.g., `docs/locality_regime_sweep_2026-03-07.json`) containing `radius`, `refugia`, `mean`, `ci95Low`, `ci95High`, `classification`.
+- Specific verification command or output: `npm run build && node -e "const fs=require('fs'); const {runDisturbanceGridStudy}=require('./dist/experiment.js'); const radii=[1,3]; const refugia=[0.2,0.35,0.5]; const out=[]; for (const r of radii) for (const f of refugia){ const s=runDisturbanceGridStudy({runs:2,steps:320,analyticsWindow:24,seed:20260307,seedBlocks:4,blockSeedStride:80,intervals:[24],amplitudes:[0.2],phases:[0.375],localRadius:r,localRefugiaFraction:f}); const u=s.cells[0].reproducibility.pathDependenceGainBlockMeanUncertainty; out.push({radius:r,refugia:f,mean:u.mean,ci95Low:u.ci95Low,ci95High:u.ci95High,classification:(u.ci95Low>0?'robustPositive':(u.ci95High<0?'robustNegative':'ambiguous')),relapseReduction:s.cells[0].pairedDeltas.relapseEventReduction.mean}); } out.sort((a,b)=>b.ci95Low-a.ci95Low); fs.writeFileSync('docs/locality_regime_sweep_2026-03-07.json', JSON.stringify(out,null,2)); console.log(JSON.stringify(out,null,2));"`
 
 ## Stop Conditions
-- Stop after evaluating all three horizons once; do not add new axes in the same session.
-- If runtime is too high, shrink to `steps={220,360}` and preserve replication depth (`runs=3`, `seedBlocks=6`) for comparability.
+- Stop after the 6 predefined locality cells; do not add amplitude/phase expansions in the same session.
+- If runtime is too high, keep the same 6 cells and reduce to `seedBlocks=3` before changing any other parameter.
 
 ## Assumptions / Unknowns
-- Assumption: `phase=0.375` is still the most informative single-cell probe for delayed-memory emergence at `interval=24`.
-- Unknown: whether longer horizons expose genuine delayed path dependence or simply amplify extinction/turnover noise.
+- Assumption: the fixed disturbance cell (`24,0.2,0.375`) is still the right probe point for testing locality-mediated rescue.
+- Unknown: whether locality gains, if found, generalize beyond this fixed cell or are narrowly regime-dependent.

@@ -1,0 +1,56 @@
+[
+  {
+    "radius": 1,
+    "refugia": 0.35,
+    "mean": 0.17392819897764997,
+    "ci95Low": 0.03193387293168595,
+    "ci95High": 0.31592252502361395,
+    "classification": "robustPositive",
+    "relapseReduction": 0.4807692307692307
+  },
+  {
+    "radius": 3,
+    "refugia": 0.2,
+    "mean": 0.09368133750674547,
+    "ci95Low": -0.008203441058042701,
+    "ci95High": 0.19556611607153362,
+    "classification": "ambiguous",
+    "relapseReduction": 0.41346153846153844
+  },
+  {
+    "radius": 3,
+    "refugia": 0.35,
+    "mean": 0.010968962668318698,
+    "ci95Low": -0.18235336974582073,
+    "ci95High": 0.20429129508245814,
+    "classification": "ambiguous",
+    "relapseReduction": 0.48076923076923084
+  },
+  {
+    "radius": 3,
+    "refugia": 0.5,
+    "mean": -0.034183430635033527,
+    "ci95Low": -0.20662436596148953,
+    "ci95High": 0.1382575046914225,
+    "classification": "ambiguous",
+    "relapseReduction": 0.41346153846153844
+  },
+  {
+    "radius": 1,
+    "refugia": 0.5,
+    "mean": -0.03031370994923012,
+    "ci95Low": -0.2291513862431248,
+    "ci95High": 0.1685239663446646,
+    "classification": "ambiguous",
+    "relapseReduction": 0.40384615384615385
+  },
+  {
+    "radius": 1,
+    "refugia": 0.2,
+    "mean": -0.09345998617242779,
+    "ci95Low": -0.2319249410653227,
+    "ci95High": 0.04500496872046711,
+    "classification": "ambiguous",
+    "relapseReduction": 0.4807692307692308
+  }
+]

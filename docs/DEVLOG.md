@@ -888,3 +888,23 @@ Observed:
 Thinking:
 - Horizon escalation falsified the remaining delayed-memory rescue hypothesis at this cell.
 - Continuing to refine phase/horizon around this boundary is now low-yield; next session should shift axis to locality regime (radius/refugia) or amplitude mechanisms and re-run CI-based acceptance checks.
+
+## 2026-03-07 (session 33)
+- Executed the planned bounded locality-regime matrix sweep at fixed disturbance settings:
+  - `interval=24`, `amplitude=0.2`, `phase=0.375`, `steps=320`
+  - `runs=2`, `seedBlocks=4`, `blockSeedStride=80`, `window=24`, `seed=20260307`
+  - locality matrix: `radius in {1,3}`, `refugia in {0.2,0.35,0.5}`.
+- Saved artifact: `docs/locality_regime_sweep_2026-03-07.json`.
+- Verified baseline health: `npm run build` and `npm test` (51/51) pass.
+
+Observed:
+- CI classes across 6 locality cells: `robustPositive=1`, `ambiguous=5`, `robustNegative=0`.
+- Best cell: `radius=1`, `refugia=0.35` with `pathDependenceGain mean=+0.1739`, `CI95=[+0.0319,+0.3159]`.
+- Neighboring locality settings remained ambiguous despite positive means in some cases.
+- `relapseEventReduction` mean stayed positive in all cells (`+0.4038` to `+0.4808`).
+
+Thinking:
+- Question reduced: can locality alone rescue path dependence at the previously failing disturbance schedule?
+- Prediction before run: likely best-negative/ambiguous ranking with no CI-robust-positive cell.
+- Result falsified that prediction: one locality regime crossed robust-positive CI support.
+- Updated belief: locality structure is a plausible rescue mechanism here, but evidence is narrow and needs replication-depth confirmation.

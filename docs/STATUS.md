@@ -1,25 +1,26 @@
-# Status - 2026-03-06
-Current phase: horizon-escalation falsification at `interval=24`, `amplitude=0.2`, `phase=0.375`.
+# Status - 2026-03-07
+Current phase: locality-axis confirmation at fixed disturbance schedule (`interval=24`, `amplitude=0.2`, `phase=0.375`, `steps=320`).
 
 What exists now:
 - Deterministic simulator + disturbance grid with phase control, seed-block replication, and CI95 decision summaries.
-- New helper `runPathDependenceHorizonSweep(...)` for fixed-cell horizon sweeps over `steps[]`.
-- Session artifact: `docs/horizon_path_dependence_2026-03-06.json`.
+- Fixed-cell horizon sweep helper (`runPathDependenceHorizonSweep`) and prior anti-evidence artifact (`docs/horizon_path_dependence_2026-03-06.json`).
+- New locality sweep artifact: `docs/locality_regime_sweep_2026-03-07.json`.
 
-Latest horizon-escalation result:
-- Sweep: `runs=3`, `seedBlocks=6`, `blockSeedStride=60`, `window=24`, `seed=20260306`.
-- `steps=220`: `mean=+0.0063`, `CI95=[-0.0722,+0.0849]`, `classification=ambiguous`.
-- `steps=320`: `mean=-0.1314`, `CI95=[-0.1861,-0.0767]`, `classification=robustNegative`.
-- `steps=420`: `mean=-0.1751`, `CI95=[-0.2175,-0.1327]`, `classification=robustNegative`.
+Latest locality-regime result:
+- Sweep config: `runs=2`, `seedBlocks=4`, `blockSeedStride=80`, `window=24`, `seed=20260307`.
+- Matrix: `radius in {1,3}`, `refugia in {0.2,0.35,0.5}` at fixed `interval=24`, `amplitude=0.2`, `phase=0.375`.
+- CI classes: `robustPositive=1/6`, `ambiguous=5/6`, `robustNegative=0/6`.
+- Best cell: `radius=1`, `refugia=0.35`, `mean=+0.1739`, `CI95=[+0.0319,+0.3159]`, `relapseEventReduction=+0.4808`.
+- All 6 cells kept positive `relapseEventReduction` means (`+0.4038` to `+0.4808`).
 
 Interpretation:
-- Longer horizons did not rescue the candidate cell; increasing horizon strengthened negative path-dependence evidence.
-- The delayed-memory rescue hypothesis for this boundary cell is falsified at tested depth.
+- Locality structure can rescue path dependence in this previously failing disturbance schedule.
+- The effect is narrow in the tested matrix; neighboring locality settings stayed CI-ambiguous.
 
 Verification:
-- `npm test` passes (51 tests).
 - `npm run build` passes.
+- `npm test` passes (51 tests).
 
 Next focus:
-- Stop phase/horizon retesting of this boundary cell.
-- Shift to a new mechanism axis (locality radius/refugia or amplitude regime) and seek any cell with `pathDependenceGain CI95 low > 0`.
+- Confirm robustness of `radius=1`, `refugia=0.35` with higher `seedBlocks` and nearby locality values.
+- Then test whether this locality-mediated gain survives amplitude changes.
