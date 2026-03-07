@@ -15,6 +15,7 @@
 - Robust-positive acceptance requires `pathDependenceGain ci95Low > 0`.
 - Fixed-cell horizon escalation is useful to falsify delayed-memory rescue hypotheses.
 - A single robust-positive cell is a candidate, not a conclusion; confirm with higher block count and neighborhood checks.
+- For small disturbance radii, choose refugia sweep points by effective affected-cell count (`floor(targetedCells * (1 - refugiaFraction))`) to avoid plateau-equivalent cells.
 
 ## Empirical Signals
 - Local refugia usually improves latest and memory stability and lowers relapse-event fraction.
@@ -24,10 +25,11 @@
   - `radius=1`, `refugia=0.35`: `mean=+0.1739`, `CI95=[+0.0319,+0.3159]`.
   - Remaining 5 cells were CI-ambiguous; none were robust-negative.
   - `relapseEventReduction` stayed positive in all tested locality cells.
+- Higher-depth neighborhood re-check (2026-03-07, `seedBlocks=8`) at `radius=1`, `refugia in {0.30,0.35,0.40}` returned `3/3` CI-ambiguous with identical values (`mean=+0.0875`, `CI95=[-0.0148,+0.1898]`), so the prior robust-positive signal did not replicate in that bounded neighborhood.
 
 ## Open Questions
-- Is the `radius=1`, `refugia=0.35` gain stable under higher `seedBlocks`?
-- How local is this effect in parameter space (`radius` neighborhood, nearby refugia values)?
+- Is the low-depth robust-positive result at `radius=1`, `refugia=0.35` a real regime effect or a replication-depth fluctuation?
+- Which locality settings create distinct effective disturbance footprints (non-plateau affected-cell counts) and can sustain CI-robust-positive gain?
 - Does locality-mediated path dependence persist across amplitude changes at fixed interval/phase?
 - Which strategy-axis states (habitat/trophic/defense) predict memory-lag and relapse under repeated shocks?
 - Can locality/turnover features predict future relapse better than current scalar resilience metrics?

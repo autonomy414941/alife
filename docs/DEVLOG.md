@@ -908,3 +908,26 @@ Thinking:
 - Prediction before run: likely best-negative/ambiguous ranking with no CI-robust-positive cell.
 - Result falsified that prediction: one locality regime crossed robust-positive CI support.
 - Updated belief: locality structure is a plausible rescue mechanism here, but evidence is narrow and needs replication-depth confirmation.
+
+## 2026-03-07 (session 34)
+- Executed the planned higher-depth candidate neighborhood check without changing axes:
+  - `interval=24`, `amplitude=0.2`, `phase=0.375`, `steps=320`
+  - `runs=2`, `seedBlocks=8`, `blockSeedStride=80`, `window=24`, `seed=20260307`
+  - locality cells: `radius=1`, `refugia in {0.30,0.35,0.40}`.
+- Saved artifact: `docs/locality_candidate_neighborhood_2026-03-07.json`.
+- Re-verified code health before experiment execution: `npm run build` and `npm test` (51/51) pass.
+
+Observed:
+- CI classes across the 3-cell neighborhood: `robustPositive=0`, `ambiguous=3`, `robustNegative=0`.
+- All three cells were exactly identical:
+  - `pathDependenceGain mean=+0.0875`, `CI95=[-0.0148,+0.1898]`
+  - `relapseEventReduction mean=+0.5144`.
+- This is explained by locality discretization at `radius=1`:
+  - targeted area uses Manhattan radius (`5` cells total),
+  - affected count is `floor(5 * (1 - refugiaFraction))`,
+  - for `{0.30,0.35,0.40}` that value is always `3`, so disturbance realizations are equivalent under identical seeds.
+
+Thinking:
+- Prediction/falsifier: if the prior robust-positive result was stable and neighborhood-smooth, `refugia=0.35` should remain robust-positive and nearby values should differ gradually.
+- Outcome falsified that expectation in two ways: no robust-positive support at higher replication and no differentiation within this specific neighborhood.
+- Next locality checks should use values that cross affected-cell thresholds (or larger radius) to avoid plateau artifacts before making mechanism claims.

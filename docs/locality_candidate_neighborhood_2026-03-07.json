@@ -1,0 +1,29 @@
+[
+  {
+    "radius": 1,
+    "refugia": 0.3,
+    "mean": 0.0875172340705021,
+    "ci95Low": -0.014789094594244268,
+    "ci95High": 0.18982356273524847,
+    "classification": "ambiguous",
+    "relapseEventReduction": 0.514423076923077
+  },
+  {
+    "radius": 1,
+    "refugia": 0.35,
+    "mean": 0.0875172340705021,
+    "ci95Low": -0.014789094594244268,
+    "ci95High": 0.18982356273524847,
+    "classification": "ambiguous",
+    "relapseEventReduction": 0.514423076923077
+  },
+  {
+    "radius": 1,
+    "refugia": 0.4,
+    "mean": 0.0875172340705021,
+    "ci95Low": -0.014789094594244268,
+    "ci95High": 0.18982356273524847,
+    "classification": "ambiguous",
+    "relapseEventReduction": 0.514423076923077
+  }
+]

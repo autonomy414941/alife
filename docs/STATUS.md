@@ -1,26 +1,28 @@
 # Status - 2026-03-07
-Current phase: locality-axis confirmation at fixed disturbance schedule (`interval=24`, `amplitude=0.2`, `phase=0.375`, `steps=320`).
+Current phase: replication-depth check of the locality candidate at fixed disturbance schedule (`interval=24`, `amplitude=0.2`, `phase=0.375`, `steps=320`).
 
 What exists now:
-- Deterministic simulator + disturbance grid with phase control, seed-block replication, and CI95 decision summaries.
-- Fixed-cell horizon sweep helper (`runPathDependenceHorizonSweep`) and prior anti-evidence artifact (`docs/horizon_path_dependence_2026-03-06.json`).
-- New locality sweep artifact: `docs/locality_regime_sweep_2026-03-07.json`.
+- Deterministic disturbance studies with seed-block CI95 reproducibility summaries and horizon sweep tooling.
+- Locality artifacts:
+  - coarse matrix: `docs/locality_regime_sweep_2026-03-07.json`
+  - candidate neighborhood replication: `docs/locality_candidate_neighborhood_2026-03-07.json`
 
-Latest locality-regime result:
-- Sweep config: `runs=2`, `seedBlocks=4`, `blockSeedStride=80`, `window=24`, `seed=20260307`.
-- Matrix: `radius in {1,3}`, `refugia in {0.2,0.35,0.5}` at fixed `interval=24`, `amplitude=0.2`, `phase=0.375`.
-- CI classes: `robustPositive=1/6`, `ambiguous=5/6`, `robustNegative=0/6`.
-- Best cell: `radius=1`, `refugia=0.35`, `mean=+0.1739`, `CI95=[+0.0319,+0.3159]`, `relapseEventReduction=+0.4808`.
-- All 6 cells kept positive `relapseEventReduction` means (`+0.4038` to `+0.4808`).
+Latest candidate-neighborhood result:
+- Sweep config: `runs=2`, `seedBlocks=8`, `blockSeedStride=80`, `window=24`, `seed=20260307`.
+- Cells: `radius=1`, `refugia in {0.30,0.35,0.40}`.
+- CI classes: `robustPositive=0/3`, `ambiguous=3/3`, `robustNegative=0/3`.
+- All three cells were numerically identical:
+  - `pathDependenceGain mean=+0.0875`, `CI95=[-0.0148,+0.1898]`
+  - `relapseEventReduction mean=+0.5144`
 
 Interpretation:
-- Locality structure can rescue path dependence in this previously failing disturbance schedule.
-- The effect is narrow in the tested matrix; neighboring locality settings stayed CI-ambiguous.
+- The prior robust-positive claim at `radius=1`, `refugia=0.35` (from lower replication depth) did not hold under this higher-depth check.
+- This neighborhood did not probe true continuity: with `radius=1`, targeted area is 5 cells and `floor(5*(1-refugia))=3` for all `{0.30,0.35,0.40}`, producing the same effective disturbance pattern.
 
 Verification:
 - `npm run build` passes.
 - `npm test` passes (51 tests).
 
 Next focus:
-- Confirm robustness of `radius=1`, `refugia=0.35` with higher `seedBlocks` and nearby locality values.
-- Then test whether this locality-mediated gain survives amplitude changes.
+- Add/evaluate locality neighborhoods that cross affected-cell thresholds (or use a larger disturbance radius) so refugia sweeps test distinct effective regimes.
+- Re-test for CI-robust-positive support before amplitude-transfer experiments.
