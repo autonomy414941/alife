@@ -1,5 +1,7 @@
 import { LifeSimulation, LifeSimulationOptions } from './simulation';
 import {
+  SpeciesActivityHorizonSweepExport,
+  SpeciesActivityHorizonSweepPoint,
   SpeciesActivityProbeDefinition,
   SpeciesActivityProbeExport,
   SpeciesActivityProbeSummary,
@@ -28,6 +30,10 @@ export interface RunSpeciesActivityProbeInput {
   stopWhenExtinct?: boolean;
   simulation?: Omit<LifeSimulationOptions, 'seed'>;
   generatedAt?: string;
+}
+
+export interface RunSpeciesActivityHorizonSweepInput extends Omit<RunSpeciesActivityProbeInput, 'steps'> {
+  steps: number[];
 }
 
 export const SPECIES_ACTIVITY_PROBE_DEFINITION: SpeciesActivityProbeDefinition = {
@@ -151,6 +157,45 @@ export function runSpeciesActivityProbe(input: RunSpeciesActivityProbeInput): Sp
   };
 }
 
+export function runSpeciesActivityHorizonSweep(
+  input: RunSpeciesActivityHorizonSweepInput
+): SpeciesActivityHorizonSweepExport {
+  const stepCounts = toPositiveIntList('steps', input.steps);
+  const windowSize = toPositiveInt('windowSize', input.windowSize);
+  const burnIn = toNonNegativeInt('burnIn', input.burnIn);
+  const seed = toInteger('seed', input.seed);
+  const stopWhenExtinct = input.stopWhenExtinct ?? true;
+
+  const horizons: SpeciesActivityHorizonSweepPoint[] = stepCounts.map((steps) => {
+    const probe = runSpeciesActivityProbe({
+      ...input,
+      steps,
+      windowSize,
+      burnIn,
+      seed,
+      stopWhenExtinct
+    });
+
+    return {
+      steps,
+      ...probe.summary
+    };
+  });
+
+  return {
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    definition: SPECIES_ACTIVITY_PROBE_DEFINITION,
+    config: {
+      steps: stepCounts,
+      windowSize,
+      burnIn,
+      seed,
+      stopWhenExtinct
+    },
+    horizons
+  };
+}
+
 function buildSpeciesActivitySummary(
   totalSpecies: number,
   stepsExecuted: number,
@@ -201,6 +246,19 @@ function toPositiveInt(name: string, value: number): number {
     throw new Error(`${name} must be a positive integer`);
   }
   return value;
+}
+
+function toPositiveIntList(name: string, values: number[]): number[] {
+  if (values.length === 0) {
+    throw new Error(`${name} must contain at least one value`);
+  }
+
+  return values.map((value) => {
+    if (!Number.isInteger(value) || value <= 0) {
+      throw new Error(`${name} must contain only positive integers`);
+    }
+    return value;
+  });
 }
 
 function toNonNegativeInt(name: string, value: number): number {

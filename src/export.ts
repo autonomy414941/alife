@@ -2,6 +2,7 @@ import {
   DisturbanceGridStudyExport,
   EvolutionAnalyticsSnapshot,
   EvolutionHistorySnapshot,
+  SpeciesActivityHorizonSweepExport,
   SpeciesActivityProbeExport,
   SimulationExperimentExport,
   SimulationRunExport,
@@ -287,6 +288,10 @@ export function disturbanceGridStudyToJson(exportData: DisturbanceGridStudyExpor
 }
 
 export function speciesActivityProbeToJson(exportData: SpeciesActivityProbeExport): string {
+  return `${JSON.stringify(exportData, null, 2)}\n`;
+}
+
+export function speciesActivityHorizonSweepToJson(exportData: SpeciesActivityHorizonSweepExport): string {
   return `${JSON.stringify(exportData, null, 2)}\n`;
 }
 

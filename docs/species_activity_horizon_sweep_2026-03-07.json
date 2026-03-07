@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-03-07T14:55:12.459Z",
+  "definition": {
+    "component": "species",
+    "activityUnit": "activeSpeciesTick",
+    "cumulativeActivity": "Sum of occupied species-ticks from simulation tick 1 through the end of each window.",
+    "normalizedCumulativeActivity": "Cumulative activity divided by elapsed simulation ticks at the end of each window.",
+    "newActivity": "Occupied species-ticks within a window contributed by species whose firstSeenTick falls inside that same window."
+  },
+  "config": {
+    "steps": [
+      1000,
+      1500,
+      2000
+    ],
+    "windowSize": 100,
+    "burnIn": 200,
+    "seed": 20260307,
+    "stopWhenExtinct": true
+  },
+  "horizons": [
+    {
+      "steps": 1000,
+      "stepsExecuted": 1000,
+      "totalSpecies": 2394,
+      "postBurnInWindows": 8,
+      "postBurnInWindowsWithNewActivity": 8,
+      "postBurnInNewSpecies": 1974,
+      "postBurnInNewActivityMean": 10682.375,
+      "postBurnInNewActivityMin": 9057,
+      "postBurnInNewActivityMax": 11762,
+      "finalCumulativeActivity": 193017,
+      "finalNormalizedCumulativeActivity": 193.017,
+      "finalNewActivity": 11762
+    },
+    {
+      "steps": 1500,
+      "stepsExecuted": 1500,
+      "totalSpecies": 3629,
+      "postBurnInWindows": 13,
+      "postBurnInWindowsWithNewActivity": 13,
+      "postBurnInNewSpecies": 3209,
+      "postBurnInNewActivityMean": 10608.692307692309,
+      "postBurnInNewActivityMin": 9057,
+      "postBurnInNewActivityMax": 11762,
+      "finalCumulativeActivity": 295960,
+      "finalNormalizedCumulativeActivity": 197.30666666666667,
+      "finalNewActivity": 9695
+    },
+    {
+      "steps": 2000,
+      "stepsExecuted": 2000,
+      "totalSpecies": 4863,
+      "postBurnInWindows": 18,
+      "postBurnInWindowsWithNewActivity": 18,
+      "postBurnInNewSpecies": 4443,
+      "postBurnInNewActivityMean": 10597.888888888889,
+      "postBurnInNewActivityMin": 9057,
+      "postBurnInNewActivityMax": 11762,
+      "finalCumulativeActivity": 396300,
+      "finalNormalizedCumulativeActivity": 198.15,
+      "finalNewActivity": 9864
+    }
+  ]
+}

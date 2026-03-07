@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { analyzeSpeciesActivity, runSpeciesActivityProbe } from '../src/activity';
+import { analyzeSpeciesActivity, runSpeciesActivityHorizonSweep, runSpeciesActivityProbe } from '../src/activity';
 import { TaxonHistory } from '../src/types';
 
 describe('analyzeSpeciesActivity', () => {
@@ -151,5 +151,65 @@ describe('runSpeciesActivityProbe', () => {
     expect(first.summary.stepsExecuted).toBe(4);
     expect(first.summary.totalSpecies).toBeGreaterThan(1);
     expect(first.windows[0].cumulativeActivity).toBeGreaterThan(0);
+  });
+});
+
+describe('runSpeciesActivityHorizonSweep', () => {
+  it('is deterministic and projects probe summaries across horizons', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 30,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: [4, 6],
+      windowSize: 2,
+      burnIn: 2,
+      seed: 77,
+      stopWhenExtinct: true,
+      simulation,
+      generatedAt: '2026-03-07T00:00:00.000Z'
+    };
+
+    const first = runSpeciesActivityHorizonSweep(input);
+    const second = runSpeciesActivityHorizonSweep(input);
+
+    expect(first).toEqual(second);
+    expect(first.definition.component).toBe('species');
+    expect(first.config.steps).toEqual([4, 6]);
+    expect(first.horizons).toEqual(
+      input.steps.map((steps) => ({
+        steps,
+        ...runSpeciesActivityProbe({
+          steps,
+          windowSize: input.windowSize,
+          burnIn: input.burnIn,
+          seed: input.seed,
+          stopWhenExtinct: input.stopWhenExtinct,
+          simulation,
+          generatedAt: input.generatedAt
+        }).summary
+      }))
+    );
   });
 });

@@ -551,3 +551,22 @@ export interface SpeciesActivityProbeExport {
   windows: SpeciesActivityWindow[];
   summary: SpeciesActivityProbeSummary;
 }
+
+export interface SpeciesActivityHorizonSweepConfig {
+  steps: number[];
+  windowSize: number;
+  burnIn: number;
+  seed: number;
+  stopWhenExtinct: boolean;
+}
+
+export interface SpeciesActivityHorizonSweepPoint extends SpeciesActivityProbeSummary {
+  steps: number;
+}
+
+export interface SpeciesActivityHorizonSweepExport {
+  generatedAt: string;
+  definition: SpeciesActivityProbeDefinition;
+  config: SpeciesActivityHorizonSweepConfig;
+  horizons: SpeciesActivityHorizonSweepPoint[];
+}

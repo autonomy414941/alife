@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runSpeciesActivityProbe } from '../src/activity';
+import { runSpeciesActivityHorizonSweep, runSpeciesActivityProbe } from '../src/activity';
 import {
   DISTURBANCE_GRID_STUDY_CSV_COLUMNS,
   EXPERIMENT_AGGREGATE_CSV_COLUMNS,
@@ -10,6 +10,7 @@ import {
   experimentAggregateToCsv,
   metricsToCsv,
   runExportToJson,
+  speciesActivityHorizonSweepToJson,
   speciesActivityProbeToJson
 } from '../src/export';
 import { runDisturbanceGridStudy, runExperiment } from '../src/experiment';
@@ -453,5 +454,49 @@ describe('run export', () => {
     expect(parsed.definition.component).toBe('species');
     expect(parsed.windows).toHaveLength(2);
     expect(parsed.summary.totalSpecies).toBeGreaterThan(1);
+  });
+
+  it('renders species-activity horizon sweeps to JSON', () => {
+    const sweep = runSpeciesActivityHorizonSweep({
+      steps: [3, 5],
+      windowSize: 2,
+      burnIn: 1,
+      seed: 88,
+      stopWhenExtinct: true,
+      simulation: {
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceThreshold: 10,
+          reproduceProbability: 1,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0.2,
+          speciationThreshold: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 30,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+          }
+        ]
+      },
+      generatedAt: '2026-03-07T00:00:00.000Z'
+    });
+
+    const parsed = JSON.parse(speciesActivityHorizonSweepToJson(sweep));
+
+    expect(parsed.generatedAt).toBe('2026-03-07T00:00:00.000Z');
+    expect(parsed.definition.component).toBe('species');
+    expect(parsed.config.steps).toEqual([3, 5]);
+    expect(parsed.horizons).toHaveLength(2);
+    expect(parsed.horizons[0].steps).toBe(3);
   });
 });
