@@ -1,62 +1,61 @@
 # Session Plan — 2026-03-07
 
 ## Compact Context
-- Disturbance evaluation is deterministic: paired seeded runs, seed-block CI95, and horizon/locality sweep tooling already exist.
-- The long-horizon falsifier made the old fixed-schedule candidate robust-negative at `steps>=320`.
-- A coarse locality sweep at the same schedule found one low-depth robust-positive cell: `radius=1`, `refugia=0.35`.
-- The higher-depth neighborhood re-check overturned that claim: `radius=1`, `refugia in {0.30,0.35,0.40}` was `3/3` ambiguous with identical values.
-- Disturbance footprints are discrete: affected cells are `floor(targetedCells * (1 - refugiaFraction))`; at `radius=1` there are only 5 targeted cells.
-- `npm run build` and `npm test` are currently green (`51` tests).
+- `LifeSimulation` already records per-species and per-clade timelines in `history()`.
+- Disturbance/locality studies are deterministic, seed-blocked, and the repo is currently green under `npm test` and `npm run build`.
+- The fixed-schedule disturbance candidate (`interval=24`, `amplitude=0.2`, `phase=0.375`) turned robust-negative by `steps>=320`.
+- The threshold-aware `radius=1` re-sweep returned `affectedCells=[4,3,2,1]` and `0/4` robust-positive cells.
+- Recent momentum has been strong on disturbance-memory falsifiers, not on direct novelty/open-endedness evaluation.
+- Existing history/export surfaces are sufficient for a bounded species-level activity probe without changing core dynamics first.
 
 ## Project State
-- The codebase already supports deterministic disturbance grids, CI95 classification, and JSON artifact export without new research plumbing.
-- Recent sessions have been moving from broad disturbance sweeps toward falsifying fragile positive claims with deeper replication.
-- The main underdeveloped area is locality experiment design: nominal refugia sweeps can collapse onto the same effective disturbance regime.
+- The codebase is a deterministic TypeScript alife simulator with mutation/speciation, spatial ecology, disturbance sweeps, and export/test infrastructure.
+- Recent sessions tightened disturbance claims from broad timing grids to locality falsification, and the latest artifact effectively retired the `radius=1` story.
+- The main underdeveloped area is explicit evidence for sustained novelty generation after burn-in.
 
 ## External Context
-- Staps et al., *Ecology, Spatial Structure, and Selection Pressure Induce Strong Signatures in Phylogenetic Structure* (2025). Source: https://arxiv.org/abs/2405.07245
-- 2024 Ecological Modelling study on patch attributes and disturbance timing driving source-population emergence in ABM ecology. Source: https://doi.org/10.1016/j.ecolmodel.2024.110839
+- de Pinho and Sinapayen, *A speciation simulation that partly passes open-endedness tests* (arXiv, March 2, 2026): cumulative activity alone was insufficient because new activity collapsed. Source: https://arxiv.org/abs/2603.01701
+- Plantec et al., *Flow-Lenia: Emergent evolutionary dynamics in mass conservative continuous cellular automata* (arXiv, June 10, 2025): evaluates open-ended-like dynamics with evolutionary activity signals rather than resilience-only metrics. Source: https://arxiv.org/abs/2506.08569
 
 ## Research Gaps
-- At fixed `interval=24`, `amplitude=0.2`, `phase=0.375`, `steps=320`, does `radius=1` show any CI-robust-positive path-dependence gain when refugia values are chosen to produce distinct affected-cell counts (`4,3,2,1`) rather than plateau-equivalent fractions?
-- If not, should `radius=1` be treated as effectively falsified so follow-up work shifts to larger local footprints?
+- If species are treated as provisional components, does this simulator show non-zero post-burn-in activity over a long deterministic run, or does novelty collapse after early transients?
 
 ## Current Anti-Evidence
-- No locality result survives both longer-horizon falsification and higher-depth replication yet; the only robust-positive cell so far disappeared when replication depth increased.
-- The project still measures disturbance recovery better than sustained novelty generation, so even a positive locality cell would remain weak evidence for open-endedness.
+- No current artifact tests sustained novelty generation directly; the project still argues from disturbance recovery and memory more than from ongoing innovation.
+- The only recent locality-positive candidate disappeared under deeper replication, so there is no surviving robust spatial result to lean on.
 
 ## Candidate Bets
-- A: Add effective-footprint metadata (`targetedCells`, `affectedCells`) to disturbance-study exports and tests.
-  Why now: Prevents more plateau-equivalent locality sweeps.
+- A: Add a species-level evolutionary-activity summary from `history().species` and export it for one long baseline run.
+  Why now: It addresses the main uncertainty blocking any open-endedness claim.
+  Est. low-context human time: 45m
+  Expected information gain: high
+  Main risk: Species-level activity may be noisy or definition-sensitive.
+- B: Run a threshold-aware `radius=3` locality sweep using distinct affected-cell buckets at the already-studied schedule.
+  Why now: `radius=1` is effectively falsified, so larger local footprints are the next plausible spatial mechanism.
   Est. low-context human time: 35m
   Expected information gain: medium
-  Main risk: Improves instrumentation but may not resolve the biological question this session.
-- B: Run a threshold-aware `radius=1` locality sweep at fixed schedule using one refugia value per affected-cell-count bucket.
-  Why now: Directly tests whether the remaining `radius=1` story is real once equivalent cells are removed.
-  Est. low-context human time: 40m
-  Expected information gain: high
-  Main risk: All cells may remain ambiguous, yielding only a narrowing result.
-- C: Move to `radius=3` and sweep distinct affected-cell counts around the best remaining ambiguous locality regime.
-  Why now: Larger footprints may express genuine spatial structure more clearly than a 5-cell diamond.
+  Main risk: Another negative sweep still leaves open-endedness weakly instrumented.
+- C: Add a compact phylogenetic persistence summary from existing taxon history exports.
+  Why now: Recent spatial/ecology work suggests phylogenetic structure may reveal mechanism before aggregate resilience does.
   Est. low-context human time: 55m
   Expected information gain: medium
-  Main risk: Changes two things at once and weakens comparability to the failed `radius=1` candidate.
+  Main risk: Good summary statistics may take longer to define than to implement well.
 
 ## Selected Bet
-Run B: a threshold-aware `radius=1` locality re-sweep at the already-studied disturbance schedule, using refugia midpoints that realize distinct effective footprints (`refugia={0.10,0.30,0.50,0.70}` -> affected cells `4,3,2,1`). Export a compact JSON artifact that records both nominal refugia and effective affected-cell count so the result can cleanly falsify or salvage the `radius=1` story.
+Add a minimal species-level activity probe and run it on one long deterministic baseline. Keep the operational definition provisional but explicit: report cumulative activity, normalized cumulative activity, and post-burn-in new activity so the result can falsify as well as support open-endedness claims.
 
 ## Why This Fits The Horizon
-- It uses existing experiment functions and only needs a bounded 4-cell sweep plus a small export script.
-- Success is autonomous: the actor can verify footprint counts and CI95 classifications directly from one JSON artifact.
+- The required inputs already exist in species history timelines, so the actor can add the metric without refactoring the simulator.
+- Success is autonomously verifiable with deterministic tests plus one JSON artifact from a fixed run.
 
 ## Success Evidence
-- Artifact: `docs/locality_threshold_sweep_2026-03-07.json` with four rows including `refugia`, `affectedCells`, `mean`, `ci95Low`, `ci95High`, and `classification`.
-- Verification output: `affectedCells` should be exactly `[4,3,2,1]`; any `classification === "robustPositive"` is a surviving `radius=1` candidate, while `0/4` robust-positive should retire `radius=1` from near-term follow-up.
+- Artifact: `docs/species_activity_probe_2026-03-07.json` with per-window `cumulativeActivity`, `normalizedCumulativeActivity`, and `newActivity`.
+- Verification command or output: `npm test && npm run build`, then inspect whether late-window `newActivity` stays above `0` after burn-in or collapses to `0`.
 
 ## Stop Conditions
-- Stop after the four predefined `radius=1` buckets; do not add amplitude, phase, or larger-radius sweeps in the same session.
-- If runtime becomes an issue, reduce `seedBlocks` from `8` to `6` before changing the cell set; if the export script becomes messy, write the minimal JSON from printed results and stop.
+- Stop if a full literature-faithful activity framework starts expanding; ship a clearly named species-level approximation instead.
+- If the long run is too slow or unstable, keep the metric implementation and verify it on a shorter fixed horizon rather than switching experiment families.
 
 ## Assumptions / Unknowns
-- Assumption: the fixed schedule (`24`, `0.2`, `0.375`, `320`) remains the right falsification target because it already produced both positive and negative claims.
-- Unknown: whether `radius=1` is simply too discrete a locality mechanism to support stable path-dependent gain even if larger radii later do.
+- Assumption: species are an acceptable provisional component definition for this session.
+- Unknown: whether existing history resolution is rich enough to make normalized and new activity interpretable without extra lineage bookkeeping.

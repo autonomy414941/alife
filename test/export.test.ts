@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { runSpeciesActivityProbe } from '../src/activity';
 import {
   DISTURBANCE_GRID_STUDY_CSV_COLUMNS,
   EXPERIMENT_AGGREGATE_CSV_COLUMNS,
@@ -8,7 +9,8 @@ import {
   disturbanceGridStudyToJson,
   experimentAggregateToCsv,
   metricsToCsv,
-  runExportToJson
+  runExportToJson,
+  speciesActivityProbeToJson
 } from '../src/export';
 import { runDisturbanceGridStudy, runExperiment } from '../src/experiment';
 import { LifeSimulation } from '../src/simulation';
@@ -408,5 +410,48 @@ describe('run export', () => {
     expect(Number(firstRow[DISTURBANCE_GRID_STUDY_CSV_COLUMNS.indexOf('hypothesis_support')])).toBe(
       study.cells[0].hypothesisSupport ? 1 : 0
     );
+  });
+
+  it('renders species-activity probe exports to JSON', () => {
+    const probe = runSpeciesActivityProbe({
+      steps: 3,
+      windowSize: 2,
+      burnIn: 1,
+      seed: 88,
+      stopWhenExtinct: true,
+      simulation: {
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceThreshold: 10,
+          reproduceProbability: 1,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0.2,
+          speciationThreshold: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 30,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+          }
+        ]
+      },
+      generatedAt: '2026-03-07T00:00:00.000Z'
+    });
+
+    const parsed = JSON.parse(speciesActivityProbeToJson(probe));
+
+    expect(parsed.generatedAt).toBe('2026-03-07T00:00:00.000Z');
+    expect(parsed.definition.component).toBe('species');
+    expect(parsed.windows).toHaveLength(2);
+    expect(parsed.summary.totalSpecies).toBeGreaterThan(1);
   });
 });

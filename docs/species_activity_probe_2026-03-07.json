@@ -1,0 +1,166 @@
+{
+  "generatedAt": "2026-03-07T07:26:51.254Z",
+  "definition": {
+    "component": "species",
+    "activityUnit": "activeSpeciesTick",
+    "cumulativeActivity": "Sum of occupied species-ticks from simulation tick 1 through the end of each window.",
+    "normalizedCumulativeActivity": "Cumulative activity divided by elapsed simulation ticks at the end of each window.",
+    "newActivity": "Occupied species-ticks within a window contributed by species whose firstSeenTick falls inside that same window."
+  },
+  "config": {
+    "steps": 1000,
+    "windowSize": 100,
+    "burnIn": 200,
+    "seed": 20260307,
+    "stopWhenExtinct": true
+  },
+  "finalSummary": {
+    "tick": 1000,
+    "population": 2146,
+    "births": 23,
+    "deaths": 23,
+    "meanEnergy": 5.996842692613103,
+    "meanGenome": {
+      "metabolism": 0.3761964148908921,
+      "harvest": 2.190581649830909,
+      "aggression": 0.9731223662251257
+    },
+    "activeClades": 4,
+    "activeSpecies": 217,
+    "dominantSpeciesShare": 0.5671015843429636,
+    "selectionDifferential": {
+      "metabolism": 0.00041378966858857114,
+      "harvest": 0.015985908370459434,
+      "aggression": 0.00971851070943719
+    },
+    "cladeExtinctions": 0,
+    "speciesExtinctions": 7,
+    "cumulativeExtinctClades": 20,
+    "cumulativeExtinctSpecies": 2177
+  },
+  "windows": [
+    {
+      "windowIndex": 0,
+      "startTick": 1,
+      "endTick": 100,
+      "size": 100,
+      "postBurnIn": false,
+      "newSpecies": 227,
+      "cumulativeActivity": 13662,
+      "normalizedCumulativeActivity": 136.62,
+      "newActivity": 11410
+    },
+    {
+      "windowIndex": 1,
+      "startTick": 101,
+      "endTick": 200,
+      "size": 100,
+      "postBurnIn": false,
+      "newSpecies": 169,
+      "cumulativeActivity": 31777,
+      "normalizedCumulativeActivity": 158.885,
+      "newActivity": 6913
+    },
+    {
+      "windowIndex": 2,
+      "startTick": 201,
+      "endTick": 300,
+      "size": 100,
+      "postBurnIn": true,
+      "newSpecies": 224,
+      "cumulativeActivity": 49617,
+      "normalizedCumulativeActivity": 165.39,
+      "newActivity": 9057
+    },
+    {
+      "windowIndex": 3,
+      "startTick": 301,
+      "endTick": 400,
+      "size": 100,
+      "postBurnIn": true,
+      "newSpecies": 248,
+      "cumulativeActivity": 69698,
+      "normalizedCumulativeActivity": 174.245,
+      "newActivity": 11103
+    },
+    {
+      "windowIndex": 4,
+      "startTick": 401,
+      "endTick": 500,
+      "size": 100,
+      "postBurnIn": true,
+      "newSpecies": 248,
+      "cumulativeActivity": 89379,
+      "normalizedCumulativeActivity": 178.758,
+      "newActivity": 10384
+    },
+    {
+      "windowIndex": 5,
+      "startTick": 501,
+      "endTick": 600,
+      "size": 100,
+      "postBurnIn": true,
+      "newSpecies": 259,
+      "cumulativeActivity": 110938,
+      "normalizedCumulativeActivity": 184.89666666666668,
+      "newActivity": 11640
+    },
+    {
+      "windowIndex": 6,
+      "startTick": 601,
+      "endTick": 700,
+      "size": 100,
+      "postBurnIn": true,
+      "newSpecies": 225,
+      "cumulativeActivity": 131310,
+      "normalizedCumulativeActivity": 187.5857142857143,
+      "newActivity": 10050
+    },
+    {
+      "windowIndex": 7,
+      "startTick": 701,
+      "endTick": 800,
+      "size": 100,
+      "postBurnIn": true,
+      "newSpecies": 252,
+      "cumulativeActivity": 152092,
+      "normalizedCumulativeActivity": 190.115,
+      "newActivity": 11613
+    },
+    {
+      "windowIndex": 8,
+      "startTick": 801,
+      "endTick": 900,
+      "size": 100,
+      "postBurnIn": true,
+      "newSpecies": 244,
+      "cumulativeActivity": 171337,
+      "normalizedCumulativeActivity": 190.37444444444444,
+      "newActivity": 9850
+    },
+    {
+      "windowIndex": 9,
+      "startTick": 901,
+      "endTick": 1000,
+      "size": 100,
+      "postBurnIn": true,
+      "newSpecies": 274,
+      "cumulativeActivity": 193017,
+      "normalizedCumulativeActivity": 193.017,
+      "newActivity": 11762
+    }
+  ],
+  "summary": {
+    "stepsExecuted": 1000,
+    "totalSpecies": 2394,
+    "postBurnInWindows": 8,
+    "postBurnInWindowsWithNewActivity": 8,
+    "postBurnInNewSpecies": 1974,
+    "postBurnInNewActivityMean": 10682.375,
+    "postBurnInNewActivityMin": 9057,
+    "postBurnInNewActivityMax": 11762,
+    "finalCumulativeActivity": 193017,
+    "finalNormalizedCumulativeActivity": 193.017,
+    "finalNewActivity": 11762
+  }
+}

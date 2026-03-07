@@ -500,3 +500,54 @@ export interface SimulationRunExport {
   analytics: EvolutionAnalyticsSnapshot[];
   history: EvolutionHistorySnapshot;
 }
+
+export interface SpeciesActivityWindow {
+  windowIndex: number;
+  startTick: number;
+  endTick: number;
+  size: number;
+  postBurnIn: boolean;
+  newSpecies: number;
+  cumulativeActivity: number;
+  normalizedCumulativeActivity: number;
+  newActivity: number;
+}
+
+export interface SpeciesActivityProbeDefinition {
+  component: 'species';
+  activityUnit: 'activeSpeciesTick';
+  cumulativeActivity: string;
+  normalizedCumulativeActivity: string;
+  newActivity: string;
+}
+
+export interface SpeciesActivityProbeConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seed: number;
+  stopWhenExtinct: boolean;
+}
+
+export interface SpeciesActivityProbeSummary {
+  stepsExecuted: number;
+  totalSpecies: number;
+  postBurnInWindows: number;
+  postBurnInWindowsWithNewActivity: number;
+  postBurnInNewSpecies: number;
+  postBurnInNewActivityMean: number;
+  postBurnInNewActivityMin: number;
+  postBurnInNewActivityMax: number;
+  finalCumulativeActivity: number;
+  finalNormalizedCumulativeActivity: number;
+  finalNewActivity: number;
+}
+
+export interface SpeciesActivityProbeExport {
+  generatedAt: string;
+  definition: SpeciesActivityProbeDefinition;
+  config: SpeciesActivityProbeConfig;
+  finalSummary: StepSummary;
+  windows: SpeciesActivityWindow[];
+  summary: SpeciesActivityProbeSummary;
+}
