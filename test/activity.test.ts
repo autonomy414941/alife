@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { analyzeSpeciesActivity, runSpeciesActivityHorizonSweep, runSpeciesActivityProbe } from '../src/activity';
+import {
+  analyzePersistentSpeciesActivity,
+  analyzeSpeciesActivity,
+  runSpeciesActivityHorizonSweep,
+  runSpeciesActivityPersistenceSweep,
+  runSpeciesActivityProbe
+} from '../src/activity';
 import { TaxonHistory } from '../src/types';
 
 describe('analyzeSpeciesActivity', () => {
@@ -154,6 +160,125 @@ describe('runSpeciesActivityProbe', () => {
   });
 });
 
+describe('analyzePersistentSpeciesActivity', () => {
+  it('filters persistent novelty and censors late windows near the horizon', () => {
+    const species: TaxonHistory[] = [
+      {
+        id: 1,
+        firstSeenTick: 2,
+        extinctTick: 5,
+        totalBirths: 1,
+        totalDeaths: 1,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 2, population: 1, births: 1, deaths: 0 },
+          { tick: 3, population: 1, births: 0, deaths: 0 },
+          { tick: 4, population: 1, births: 0, deaths: 0 },
+          { tick: 5, population: 0, births: 0, deaths: 1 }
+        ]
+      },
+      {
+        id: 2,
+        firstSeenTick: 3,
+        extinctTick: 5,
+        totalBirths: 1,
+        totalDeaths: 1,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 3, population: 1, births: 1, deaths: 0 },
+          { tick: 4, population: 1, births: 0, deaths: 0 },
+          { tick: 5, population: 0, births: 0, deaths: 1 }
+        ]
+      },
+      {
+        id: 3,
+        firstSeenTick: 4,
+        extinctTick: null,
+        totalBirths: 1,
+        totalDeaths: 0,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 4, population: 1, births: 1, deaths: 0 },
+          { tick: 5, population: 1, births: 0, deaths: 0 },
+          { tick: 6, population: 1, births: 0, deaths: 0 }
+        ]
+      },
+      {
+        id: 4,
+        firstSeenTick: 5,
+        extinctTick: null,
+        totalBirths: 1,
+        totalDeaths: 0,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 5, population: 1, births: 1, deaths: 0 },
+          { tick: 6, population: 1, births: 0, deaths: 0 }
+        ]
+      }
+    ];
+
+    const analysis = analyzePersistentSpeciesActivity({
+      species,
+      windowSize: 2,
+      burnIn: 2,
+      maxTick: 6,
+      minSurvivalTicks: 2
+    });
+
+    expect(analysis.windows).toEqual([
+      {
+        windowIndex: 0,
+        startTick: 1,
+        endTick: 2,
+        size: 2,
+        postBurnIn: false,
+        censored: false,
+        newSpecies: 1,
+        rawNewActivity: 1,
+        persistentNewSpecies: 1,
+        persistentNewActivity: 1
+      },
+      {
+        windowIndex: 1,
+        startTick: 3,
+        endTick: 4,
+        size: 2,
+        postBurnIn: true,
+        censored: false,
+        newSpecies: 2,
+        rawNewActivity: 3,
+        persistentNewSpecies: 2,
+        persistentNewActivity: 3
+      },
+      {
+        windowIndex: 2,
+        startTick: 5,
+        endTick: 6,
+        size: 2,
+        postBurnIn: true,
+        censored: true,
+        newSpecies: 1,
+        rawNewActivity: 2,
+        persistentNewSpecies: null,
+        persistentNewActivity: null
+      }
+    ]);
+    expect(analysis.summary).toEqual({
+      minSurvivalTicks: 2,
+      postBurnInWindows: 2,
+      censoredPostBurnInWindows: 1,
+      evaluablePostBurnInWindows: 1,
+      postBurnInWindowsWithPersistentNewActivity: 1,
+      postBurnInPersistentNewSpecies: 2,
+      postBurnInPersistentNewActivityMean: 3,
+      postBurnInPersistentNewActivityMin: 3,
+      postBurnInPersistentNewActivityMax: 3,
+      finalPersistentNewActivity: null,
+      finalWindowCensored: true
+    });
+  });
+});
+
 describe('runSpeciesActivityHorizonSweep', () => {
   it('is deterministic and projects probe summaries across horizons', () => {
     const simulation = {
@@ -211,5 +336,65 @@ describe('runSpeciesActivityHorizonSweep', () => {
         }).summary
       }))
     );
+  });
+});
+
+describe('runSpeciesActivityPersistenceSweep', () => {
+  it('is deterministic and preserves the raw probe summary for the same seeded run', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 30,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: 4,
+      windowSize: 2,
+      burnIn: 2,
+      seed: 77,
+      minSurvivalTicks: [1, 2],
+      stopWhenExtinct: true,
+      simulation,
+      generatedAt: '2026-03-07T00:00:00.000Z'
+    };
+
+    const first = runSpeciesActivityPersistenceSweep(input);
+    const second = runSpeciesActivityPersistenceSweep(input);
+    const rawProbe = runSpeciesActivityProbe({
+      steps: input.steps,
+      windowSize: input.windowSize,
+      burnIn: input.burnIn,
+      seed: input.seed,
+      stopWhenExtinct: input.stopWhenExtinct,
+      simulation,
+      generatedAt: input.generatedAt
+    });
+
+    expect(first).toEqual(second);
+    expect(first.definition.raw.component).toBe('species');
+    expect(first.config.minSurvivalTicks).toEqual([1, 2]);
+    expect(first.rawSummary).toEqual(rawProbe.summary);
+    expect(first.thresholds).toHaveLength(2);
+    expect(first.thresholds.map((threshold) => threshold.minSurvivalTicks)).toEqual([1, 2]);
+    expect(first.thresholds[1].summary.finalWindowCensored).toBe(true);
   });
 });

@@ -521,6 +521,13 @@ export interface SpeciesActivityProbeDefinition {
   newActivity: string;
 }
 
+export interface SpeciesActivityPersistenceSweepDefinition {
+  raw: SpeciesActivityProbeDefinition;
+  observedLifetime: string;
+  persistentNewActivity: string;
+  censoredWindow: string;
+}
+
 export interface SpeciesActivityProbeConfig {
   steps: number;
   windowSize: number;
@@ -550,6 +557,52 @@ export interface SpeciesActivityProbeExport {
   finalSummary: StepSummary;
   windows: SpeciesActivityWindow[];
   summary: SpeciesActivityProbeSummary;
+}
+
+export interface SpeciesActivityPersistenceSweepConfig extends SpeciesActivityProbeConfig {
+  minSurvivalTicks: number[];
+}
+
+export interface SpeciesActivityPersistenceWindow {
+  windowIndex: number;
+  startTick: number;
+  endTick: number;
+  size: number;
+  postBurnIn: boolean;
+  censored: boolean;
+  newSpecies: number;
+  rawNewActivity: number;
+  persistentNewSpecies: number | null;
+  persistentNewActivity: number | null;
+}
+
+export interface SpeciesActivityPersistenceSummary {
+  minSurvivalTicks: number;
+  postBurnInWindows: number;
+  censoredPostBurnInWindows: number;
+  evaluablePostBurnInWindows: number;
+  postBurnInWindowsWithPersistentNewActivity: number;
+  postBurnInPersistentNewSpecies: number;
+  postBurnInPersistentNewActivityMean: number;
+  postBurnInPersistentNewActivityMin: number;
+  postBurnInPersistentNewActivityMax: number;
+  finalPersistentNewActivity: number | null;
+  finalWindowCensored: boolean;
+}
+
+export interface SpeciesActivityPersistenceThresholdResult {
+  minSurvivalTicks: number;
+  windows: SpeciesActivityPersistenceWindow[];
+  summary: SpeciesActivityPersistenceSummary;
+}
+
+export interface SpeciesActivityPersistenceSweepExport {
+  generatedAt: string;
+  definition: SpeciesActivityPersistenceSweepDefinition;
+  config: SpeciesActivityPersistenceSweepConfig;
+  finalSummary: StepSummary;
+  rawSummary: SpeciesActivityProbeSummary;
+  thresholds: SpeciesActivityPersistenceThresholdResult[];
 }
 
 export interface SpeciesActivityHorizonSweepConfig {

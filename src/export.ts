@@ -3,6 +3,7 @@ import {
   EvolutionAnalyticsSnapshot,
   EvolutionHistorySnapshot,
   SpeciesActivityHorizonSweepExport,
+  SpeciesActivityPersistenceSweepExport,
   SpeciesActivityProbeExport,
   SimulationExperimentExport,
   SimulationRunExport,
@@ -292,6 +293,10 @@ export function speciesActivityProbeToJson(exportData: SpeciesActivityProbeExpor
 }
 
 export function speciesActivityHorizonSweepToJson(exportData: SpeciesActivityHorizonSweepExport): string {
+  return `${JSON.stringify(exportData, null, 2)}\n`;
+}
+
+export function speciesActivityPersistenceSweepToJson(exportData: SpeciesActivityPersistenceSweepExport): string {
   return `${JSON.stringify(exportData, null, 2)}\n`;
 }
 

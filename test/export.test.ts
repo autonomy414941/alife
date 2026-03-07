@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { runSpeciesActivityHorizonSweep, runSpeciesActivityProbe } from '../src/activity';
+import {
+  runSpeciesActivityHorizonSweep,
+  runSpeciesActivityPersistenceSweep,
+  runSpeciesActivityProbe
+} from '../src/activity';
 import {
   DISTURBANCE_GRID_STUDY_CSV_COLUMNS,
   EXPERIMENT_AGGREGATE_CSV_COLUMNS,
@@ -11,6 +15,7 @@ import {
   metricsToCsv,
   runExportToJson,
   speciesActivityHorizonSweepToJson,
+  speciesActivityPersistenceSweepToJson,
   speciesActivityProbeToJson
 } from '../src/export';
 import { runDisturbanceGridStudy, runExperiment } from '../src/experiment';
@@ -498,5 +503,51 @@ describe('run export', () => {
     expect(parsed.config.steps).toEqual([3, 5]);
     expect(parsed.horizons).toHaveLength(2);
     expect(parsed.horizons[0].steps).toBe(3);
+  });
+
+  it('renders species-activity persistence sweeps to JSON', () => {
+    const sweep = runSpeciesActivityPersistenceSweep({
+      steps: 5,
+      windowSize: 2,
+      burnIn: 1,
+      seed: 88,
+      minSurvivalTicks: [1, 2],
+      stopWhenExtinct: true,
+      simulation: {
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceThreshold: 10,
+          reproduceProbability: 1,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0.2,
+          speciationThreshold: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 30,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+          }
+        ]
+      },
+      generatedAt: '2026-03-07T00:00:00.000Z'
+    });
+
+    const parsed = JSON.parse(speciesActivityPersistenceSweepToJson(sweep));
+
+    expect(parsed.generatedAt).toBe('2026-03-07T00:00:00.000Z');
+    expect(parsed.definition.raw.component).toBe('species');
+    expect(parsed.config.minSurvivalTicks).toEqual([1, 2]);
+    expect(parsed.rawSummary.totalSpecies).toBeGreaterThan(1);
+    expect(parsed.thresholds).toHaveLength(2);
+    expect(parsed.thresholds[0].summary.minSurvivalTicks).toBe(1);
   });
 });
