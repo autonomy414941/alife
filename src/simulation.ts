@@ -1,3 +1,7 @@
+import {
+  calculateDisturbanceAffectedCellCount,
+  collectWrappedCellIndicesWithinRadius
+} from './disturbance';
 import { Rng } from './rng';
 import {
   Agent,
@@ -68,6 +72,10 @@ const DEFAULT_CONFIG: SimulationConfig = {
   speciationThreshold: 0.25,
   maxAge: 120
 };
+
+export function resolveSimulationConfig(config: Partial<SimulationConfig> = {}): SimulationConfig {
+  return { ...DEFAULT_CONFIG, ...config };
+}
 
 const MIN_GENOME: Genome = {
   metabolism: 0.3,
@@ -163,7 +171,7 @@ export class LifeSimulation {
   private extinctSpecies = 0;
 
   constructor(options: LifeSimulationOptions = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...(options.config ?? {}) };
+    this.config = resolveSimulationConfig(options.config);
     this.rng = new Rng(options.seed ?? 1);
     this.biomeFertility = this.buildBiomeFertility();
     this.resources = this.buildInitialResources();
@@ -882,25 +890,6 @@ export class LifeSimulation {
     }
 
     return counts;
-  }
-
-  private collectCellIndicesWithinRadius(centerX: number, centerY: number, radius: number): number[] {
-    const visited = new Set<number>();
-    const width = this.config.width;
-    const normalizedRadius = Math.max(0, radius);
-
-    for (let dy = -normalizedRadius; dy <= normalizedRadius; dy += 1) {
-      for (let dx = -normalizedRadius; dx <= normalizedRadius; dx += 1) {
-        if (Math.abs(dx) + Math.abs(dy) > normalizedRadius) {
-          continue;
-        }
-        const x = this.wrapX(centerX + dx);
-        const y = this.wrapY(centerY + dy);
-        visited.add(y * width + x);
-      }
-    }
-
-    return [...visited];
   }
 
   private buildSpeciesTurnover(window: TurnoverWindow): SpeciesTurnoverAnalytics {
@@ -1673,7 +1662,9 @@ export class LifeSimulation {
     const targetedCellIndices =
       radius < 0
         ? Array.from({ length: totalCells }, (_, index) => index)
-        : this.collectCellIndicesWithinRadius(
+        : collectWrappedCellIndicesWithinRadius(
+            this.config.width,
+            this.config.height,
             this.rng.int(this.config.width),
             this.rng.int(this.config.height),
             radius
@@ -1687,7 +1678,10 @@ export class LifeSimulation {
       return { targetedCellIndices, affectedCellIndices: new Set<number>(targetedCellIndices) };
     }
 
-    const affectedCount = Math.max(0, Math.floor(targetedCellIndices.length * (1 - refugiaFraction)));
+    const affectedCount = calculateDisturbanceAffectedCellCount(
+      targetedCellIndices.length,
+      refugiaFraction
+    );
     if (affectedCount <= 0) {
       return { targetedCellIndices, affectedCellIndices: new Set<number>() };
     }

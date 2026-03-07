@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeResilienceStabilityIndex,
   runDisturbanceGridStudy,
+  runDisturbanceLocalitySweep,
   runExperiment,
   runPathDependenceHorizonSweep
 } from '../src/experiment';
@@ -480,6 +481,92 @@ describe('runDisturbanceGridStudy', () => {
   });
 });
 
+describe('runDisturbanceLocalitySweep', () => {
+  it('is deterministic and records effective local footprints per cell', () => {
+    const input = {
+      runs: 2,
+      steps: 12,
+      analyticsWindow: 4,
+      seed: 29,
+      seedStep: 1,
+      seedBlocks: 2,
+      blockSeedStride: 12,
+      interval: 6,
+      amplitude: 0.2,
+      phase: -0.5,
+      localRadii: [1],
+      localRefugiaFractions: [0.1, 0.3, 0.5, 0.7],
+      generatedAt: '2026-03-07T00:00:00.000Z'
+    };
+
+    const first = runDisturbanceLocalitySweep(input);
+    const second = runDisturbanceLocalitySweep(input);
+
+    expect(first).toEqual(second);
+    expect(first.config.phase).toBeCloseTo(0.5, 10);
+    expect(first.cells).toHaveLength(4);
+    expect(first.summary.cells).toBe(4);
+    expect(first.summary.pathDependenceGainCi95ClassificationCounts).toEqual(
+      summarizeLocalitySweepCi95Classifications(first.cells)
+    );
+    expect(first.summary.pathDependenceGainCi95RobustPositiveFraction).toBeCloseTo(
+      first.summary.pathDependenceGainCi95ClassificationCounts.robustPositive / first.summary.cells,
+      10
+    );
+    expect(first.summary.pathDependenceGainCi95Decision).toBe(
+      first.summary.pathDependenceGainCi95ClassificationCounts.robustPositive > 0
+        ? 'supported'
+        : 'noSupport'
+    );
+    expect(first.cells.map((cell) => cell.footprint.targetedCells)).toEqual([5, 5, 5, 5]);
+    expect(first.cells.map((cell) => cell.footprint.affectedCells)).toEqual([4, 3, 2, 1]);
+    expect(first.cells.map((cell) => cell.refugiaFraction)).toEqual([0.1, 0.3, 0.5, 0.7]);
+
+    for (const cell of first.cells) {
+      expect(cell.classification).toBe(
+        classifyPathDependenceGainCi95(
+          cell.reproducibility.pathDependenceGainBlockMeanUncertainty.ci95Low,
+          cell.reproducibility.pathDependenceGainBlockMeanUncertainty.ci95High
+        )
+      );
+      expect(cell.global.runs).toBe(4);
+      expect(cell.local.runs).toBe(4);
+      expect(cell.reproducibility.blocks).toBe(2);
+      expect(cell.hypothesisSupport).toBe(
+        cell.pairedDeltas.relapseEventReduction.mean > 0 && cell.pairedDeltas.pathDependenceGain.mean > 0
+      );
+    }
+  });
+
+  it('validates locality sweep inputs', () => {
+    expect(() =>
+      runDisturbanceLocalitySweep({
+        runs: 1,
+        steps: 10,
+        analyticsWindow: 4,
+        seed: 5,
+        interval: 6,
+        amplitude: 0.2,
+        localRadii: [],
+        localRefugiaFractions: [0.3]
+      })
+    ).toThrow('localRadii must not be empty');
+
+    expect(() =>
+      runDisturbanceLocalitySweep({
+        runs: 1,
+        steps: 10,
+        analyticsWindow: 4,
+        seed: 5,
+        interval: 6,
+        amplitude: 0.2,
+        localRadii: [1],
+        localRefugiaFractions: []
+      })
+    ).toThrow('localRefugiaFractions must not be empty');
+  });
+});
+
 function summarize(values: number[]): { mean: number; min: number; max: number } {
   if (values.length === 0) {
     return { mean: 0, min: 0, max: 0 };
@@ -556,6 +643,22 @@ function summarizePathDependenceGainCi95Classifications(
     const uncertainty = cell.reproducibility.pathDependenceGainBlockMeanUncertainty;
     const classification = classifyPathDependenceGainCi95(uncertainty.ci95Low, uncertainty.ci95High);
     counts[classification] += 1;
+  }
+  return counts;
+}
+
+function summarizeLocalitySweepCi95Classifications(
+  cells: Array<{
+    classification: 'robustPositive' | 'ambiguous' | 'robustNegative';
+  }>
+): { robustPositive: number; ambiguous: number; robustNegative: number } {
+  const counts = {
+    robustPositive: 0,
+    ambiguous: 0,
+    robustNegative: 0
+  };
+  for (const cell of cells) {
+    counts[cell.classification] += 1;
   }
   return counts;
 }

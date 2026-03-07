@@ -1,0 +1,79 @@
+{
+  "generatedAt": "2026-03-07T06:53:17.640Z",
+  "config": {
+    "runs": 2,
+    "steps": 320,
+    "analyticsWindow": 24,
+    "seed": 20260307,
+    "seedStep": 1,
+    "seedBlocks": 6,
+    "plannedSeedBlocks": 8,
+    "blockSeedStride": 80,
+    "interval": 24,
+    "amplitude": 0.2,
+    "phase": 0.375,
+    "radius": 1,
+    "refugiaValues": [
+      0.1,
+      0.3,
+      0.5,
+      0.7
+    ]
+  },
+  "rows": [
+    {
+      "radius": 1,
+      "refugia": 0.1,
+      "targetedCells": 5,
+      "affectedCells": 4,
+      "mean": -0.08162615850747348,
+      "ci95Low": -0.17131286515282557,
+      "ci95High": 0.008060548137878584,
+      "classification": "ambiguous"
+    },
+    {
+      "radius": 1,
+      "refugia": 0.3,
+      "targetedCells": 5,
+      "affectedCells": 3,
+      "mean": 0.08955627709485404,
+      "ci95Low": -0.04890271777657092,
+      "ci95High": 0.22801527196627902,
+      "classification": "ambiguous"
+    },
+    {
+      "radius": 1,
+      "refugia": 0.5,
+      "targetedCells": 5,
+      "affectedCells": 2,
+      "mean": -0.03893544871050203,
+      "ci95Low": -0.16565754704852972,
+      "ci95High": 0.08778664962752566,
+      "classification": "ambiguous"
+    },
+    {
+      "radius": 1,
+      "refugia": 0.7,
+      "targetedCells": 5,
+      "affectedCells": 1,
+      "mean": 0.023387543038334953,
+      "ci95Low": -0.037422476444117586,
+      "ci95High": 0.08419756252078749,
+      "classification": "ambiguous"
+    }
+  ],
+  "summary": {
+    "affectedCells": [
+      4,
+      3,
+      2,
+      1
+    ],
+    "pathDependenceGainCi95ClassificationCounts": {
+      "robustPositive": 0,
+      "ambiguous": 4,
+      "robustNegative": 0
+    },
+    "pathDependenceGainCi95Decision": "noSupport"
+  }
+}

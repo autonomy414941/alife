@@ -368,6 +368,12 @@ export interface DisturbanceGridCellReproducibility {
   relapseEventReductionBlockMeanUncertainty: BlockMeanUncertainty;
 }
 
+export interface DisturbanceFootprintMetadata {
+  totalCells: number;
+  targetedCells: number;
+  affectedCells: number;
+}
+
 export interface DisturbanceGridCellSummary {
   interval: number;
   amplitude: number;
@@ -440,6 +446,51 @@ export interface DisturbanceGridStudyExport {
   config: DisturbanceGridStudyConfig;
   cells: DisturbanceGridCellSummary[];
   summary: DisturbanceGridStudySummary;
+}
+
+export interface DisturbanceLocalitySweepCell {
+  radius: number;
+  refugiaFraction: number;
+  footprint: DisturbanceFootprintMetadata;
+  global: ExperimentAggregateSummary;
+  local: ExperimentAggregateSummary;
+  pairedDeltas: DisturbanceGridCellPairedDeltas;
+  timingDiagnostics: DisturbanceGridCellTimingDiagnostics;
+  reproducibility: DisturbanceGridCellReproducibility;
+  hypothesisSupport: boolean;
+  classification: PathDependenceGainCi95Classification;
+}
+
+export interface DisturbanceLocalitySweepSummary {
+  cells: number;
+  supportedCells: number;
+  supportFraction: number;
+  pathDependenceGainCi95ClassificationCounts: PathDependenceGainCi95ClassificationCounts;
+  pathDependenceGainCi95RobustPositiveFraction: number;
+  pathDependenceGainCi95Decision: PathDependenceGainCi95Decision;
+}
+
+export interface DisturbanceLocalitySweepConfig {
+  runs: number;
+  steps: number;
+  analyticsWindow: number;
+  seed: number;
+  seedStep: number;
+  seedBlocks: number;
+  blockSeedStride: number;
+  stopWhenExtinct: boolean;
+  interval: number;
+  amplitude: number;
+  phase: number;
+  localRadii: number[];
+  localRefugiaFractions: number[];
+}
+
+export interface DisturbanceLocalitySweepExport {
+  generatedAt: string;
+  config: DisturbanceLocalitySweepConfig;
+  cells: DisturbanceLocalitySweepCell[];
+  summary: DisturbanceLocalitySweepSummary;
 }
 
 export interface SimulationRunExport {

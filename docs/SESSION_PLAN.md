@@ -1,61 +1,62 @@
 # Session Plan — 2026-03-07
 
 ## Compact Context
-- Disturbance studies are deterministic and CI-driven (`pathDependenceGain` robust-positive only if `ci95Low > 0`).
-- Horizon falsification showed the old boundary candidate turns robust-negative at longer runs (`steps>=320`).
-- A new locality sweep at the same disturbance schedule found one robust-positive cell: `radius=1`, `refugia=0.35`.
-- That positive result is narrow (`1/6` robust-positive, `5/6` ambiguous), so fragility is still plausible.
-- Build/tests are currently green and the needed sweep tooling already exists.
+- Disturbance evaluation is deterministic: paired seeded runs, seed-block CI95, and horizon/locality sweep tooling already exist.
+- The long-horizon falsifier made the old fixed-schedule candidate robust-negative at `steps>=320`.
+- A coarse locality sweep at the same schedule found one low-depth robust-positive cell: `radius=1`, `refugia=0.35`.
+- The higher-depth neighborhood re-check overturned that claim: `radius=1`, `refugia in {0.30,0.35,0.40}` was `3/3` ambiguous with identical values.
+- Disturbance footprints are discrete: affected cells are `floor(targetedCells * (1 - refugiaFraction))`; at `radius=1` there are only 5 targeted cells.
+- `npm run build` and `npm test` are currently green (`51` tests).
 
 ## Project State
-- The codebase now supports seed-block replication, CI95 uncertainty, and deterministic ranking for disturbance cells.
-- Recent momentum shifted from phase/horizon tuning to mechanism-axis locality structure.
-- The main gap is replication depth and neighborhood continuity around the single robust-positive locality cell.
+- The codebase already supports deterministic disturbance grids, CI95 classification, and JSON artifact export without new research plumbing.
+- Recent sessions have been moving from broad disturbance sweeps toward falsifying fragile positive claims with deeper replication.
+- The main underdeveloped area is locality experiment design: nominal refugia sweeps can collapse onto the same effective disturbance regime.
 
 ## External Context
-- Staps et al., *Ecology, Spatial Structure, and Selection Pressure Induce Strong Signatures in Phylogenetic Structure* (2025): spatial structure materially changes evolutionary signatures, implying locality effects can be real but regime-dependent. Source: https://arxiv.org/abs/2405.07245
-- Huizinga et al., *JaxLife: A Framework for Scalable Evolutionary Simulations of Open-Endedness in Complex Lifeforms* (2024): emphasizes scalable, repeated experimental comparisons to evaluate open-ended dynamics. Source: https://arxiv.org/abs/2409.00853
+- Staps et al., *Ecology, Spatial Structure, and Selection Pressure Induce Strong Signatures in Phylogenetic Structure* (2025). Source: https://arxiv.org/abs/2405.07245
+- 2024 Ecological Modelling study on patch attributes and disturbance timing driving source-population emergence in ABM ecology. Source: https://doi.org/10.1016/j.ecolmodel.2024.110839
 
 ## Research Gaps
-- At fixed `interval=24`, `amplitude=0.2`, `phase=0.375`, `steps=320`, does `radius=1`, `refugia=0.35` stay robust-positive when replication depth increases?
-- Is the signal locally stable in refugia space (`0.30`, `0.35`, `0.40`) or an isolated spike?
+- At fixed `interval=24`, `amplitude=0.2`, `phase=0.375`, `steps=320`, does `radius=1` show any CI-robust-positive path-dependence gain when refugia values are chosen to produce distinct affected-cell counts (`4,3,2,1`) rather than plateau-equivalent fractions?
+- If not, should `radius=1` be treated as effectively falsified so follow-up work shifts to larger local footprints?
 
 ## Current Anti-Evidence
-- Evidence for positive path dependence currently depends on one cell from a low-depth sweep; adjacent cells are still CI-ambiguous.
-- The project still lacks long-run evidence of sustained novelty/diversification beyond disturbance-recovery proxies.
+- No locality result survives both longer-horizon falsification and higher-depth replication yet; the only robust-positive cell so far disappeared when replication depth increased.
+- The project still measures disturbance recovery better than sustained novelty generation, so even a positive locality cell would remain weak evidence for open-endedness.
 
 ## Candidate Bets
-- A: Re-run only `radius=1`, `refugia=0.35` with higher `seedBlocks` to test false-positive risk.
-  Why now: Fastest falsification of the newest positive claim.
-  Est. low-context human time: 30m
-  Expected information gain: high
-  Main risk: Confirms/rejects one point but leaves neighborhood stability unresolved.
-- B: Run a 3-cell refugia neighborhood check at `radius=1` (`refugia in {0.30,0.35,0.40}`) with higher `seedBlocks`.
-  Why now: Tests both replication robustness and local parameter continuity in one bounded sweep.
-  Est. low-context human time: 50m
-  Expected information gain: high
-  Main risk: Runtime may be tight if block count is too high.
-- C: Sweep amplitudes at fixed locality candidate to test transfer across shock strength.
-  Why now: Would probe mechanism generalization beyond one disturbance strength.
-  Est. low-context human time: 45m
+- A: Add effective-footprint metadata (`targetedCells`, `affectedCells`) to disturbance-study exports and tests.
+  Why now: Prevents more plateau-equivalent locality sweeps.
+  Est. low-context human time: 35m
   Expected information gain: medium
-  Main risk: Premature before verifying the candidate is reproducible at baseline amplitude.
+  Main risk: Improves instrumentation but may not resolve the biological question this session.
+- B: Run a threshold-aware `radius=1` locality sweep at fixed schedule using one refugia value per affected-cell-count bucket.
+  Why now: Directly tests whether the remaining `radius=1` story is real once equivalent cells are removed.
+  Est. low-context human time: 40m
+  Expected information gain: high
+  Main risk: All cells may remain ambiguous, yielding only a narrowing result.
+- C: Move to `radius=3` and sweep distinct affected-cell counts around the best remaining ambiguous locality regime.
+  Why now: Larger footprints may express genuine spatial structure more clearly than a 5-cell diamond.
+  Est. low-context human time: 55m
+  Expected information gain: medium
+  Main risk: Changes two things at once and weakens comparability to the failed `radius=1` candidate.
 
 ## Selected Bet
-Execute B: run a bounded, higher-depth neighborhood sweep around the current best locality candidate (`radius=1`, `refugia={0.30,0.35,0.40}`) at fixed disturbance schedule. Use CI95 classifications to decide whether the positive claim is locally robust or likely a narrow/fragile artifact.
+Run B: a threshold-aware `radius=1` locality re-sweep at the already-studied disturbance schedule, using refugia midpoints that realize distinct effective footprints (`refugia={0.10,0.30,0.50,0.70}` -> affected cells `4,3,2,1`). Export a compact JSON artifact that records both nominal refugia and effective affected-cell count so the result can cleanly falsify or salvage the `radius=1` story.
 
 ## Why This Fits The Horizon
-- It uses existing experiment functions and export patterns; no code changes are required.
-- Success is fully verifiable from deterministic JSON outputs (`mean`, `ci95Low`, `ci95High`, `classification`) for exactly three predefined cells.
+- It uses existing experiment functions and only needs a bounded 4-cell sweep plus a small export script.
+- Success is autonomous: the actor can verify footprint counts and CI95 classifications directly from one JSON artifact.
 
 ## Success Evidence
-- Artifact: `docs/locality_candidate_neighborhood_2026-03-07.json` containing the three cells with CI95 stats and classification.
-- Specific verification command or output: `npm run build && node -e "const fs=require('fs'); const {runDisturbanceGridStudy}=require('./dist/experiment.js'); const refugia=[0.30,0.35,0.40]; const out=[]; for (const f of refugia){ const s=runDisturbanceGridStudy({runs:2,steps:320,analyticsWindow:24,seed:20260307,seedBlocks:8,blockSeedStride:80,intervals:[24],amplitudes:[0.2],phases:[0.375],localRadius:1,localRefugiaFraction:f}); const c=s.cells[0]; const u=c.reproducibility.pathDependenceGainBlockMeanUncertainty; out.push({radius:1,refugia:f,mean:u.mean,ci95Low:u.ci95Low,ci95High:u.ci95High,classification:(u.ci95Low>0?'robustPositive':(u.ci95High<0?'robustNegative':'ambiguous')),relapseEventReduction:c.pairedDeltas.relapseEventReduction.mean}); } fs.writeFileSync('docs/locality_candidate_neighborhood_2026-03-07.json', JSON.stringify(out,null,2)); console.log(JSON.stringify(out,null,2));"`
+- Artifact: `docs/locality_threshold_sweep_2026-03-07.json` with four rows including `refugia`, `affectedCells`, `mean`, `ci95Low`, `ci95High`, and `classification`.
+- Verification output: `affectedCells` should be exactly `[4,3,2,1]`; any `classification === "robustPositive"` is a surviving `radius=1` candidate, while `0/4` robust-positive should retire `radius=1` from near-term follow-up.
 
 ## Stop Conditions
-- Stop after evaluating the three predefined refugia values; do not add amplitude/phase/radius expansions in this session.
-- If runtime is too high, keep the same three cells and reduce `seedBlocks` from `8` to `6` rather than changing axes.
+- Stop after the four predefined `radius=1` buckets; do not add amplitude, phase, or larger-radius sweeps in the same session.
+- If runtime becomes an issue, reduce `seedBlocks` from `8` to `6` before changing the cell set; if the export script becomes messy, write the minimal JSON from printed results and stop.
 
 ## Assumptions / Unknowns
-- Assumption: `steps=320` is sufficient to expose delayed-memory degradation for this fixed disturbance regime.
-- Unknown: whether CI95 behavior depends materially on the chosen `blockSeedStride` and warrants a later sensitivity check.
+- Assumption: the fixed schedule (`24`, `0.2`, `0.375`, `320`) remains the right falsification target because it already produced both positive and negative claims.
+- Unknown: whether `radius=1` is simply too discrete a locality mechanism to support stable path-dependent gain even if larger radii later do.

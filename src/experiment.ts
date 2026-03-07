@@ -1,4 +1,5 @@
-import { LifeSimulation, LifeSimulationOptions } from './simulation';
+import { describeDisturbanceFootprint } from './disturbance';
+import { LifeSimulation, LifeSimulationOptions, resolveSimulationConfig } from './simulation';
 import {
   BlockMeanUncertainty,
   DisturbanceGridCellPairedDeltas,
@@ -7,6 +8,10 @@ import {
   DisturbanceGridCellTimingDiagnostics,
   DisturbanceGridStudyConfig,
   DisturbanceGridStudyExport,
+  DisturbanceLocalitySweepCell,
+  DisturbanceLocalitySweepConfig,
+  DisturbanceLocalitySweepExport,
+  DisturbanceLocalitySweepSummary,
   DisturbanceGridStudySummary,
   ExperimentAggregateSummary,
   ExperimentRunSummary,
@@ -59,6 +64,18 @@ export interface RunPathDependenceHorizonSweepInput extends Omit<RunDisturbanceG
   steps: number[];
 }
 
+export interface RunDisturbanceLocalitySweepInput
+  extends Omit<
+    RunDisturbanceGridStudyInput,
+    'intervals' | 'amplitudes' | 'phases' | 'localRadius' | 'localRefugiaFraction'
+  > {
+  interval: number;
+  amplitude: number;
+  phase?: number;
+  localRadii: number[];
+  localRefugiaFractions: number[];
+}
+
 export interface PathDependenceHorizonSweepPoint {
   steps: number;
   mean: number;
@@ -92,8 +109,41 @@ interface NormalizedDisturbanceGridStudyConfig extends DisturbanceGridStudyConfi
   simulation: Omit<LifeSimulationOptions, 'seed'>;
 }
 
+interface NormalizedDisturbanceLocalitySweepConfig extends DisturbanceLocalitySweepConfig {
+  simulation: Omit<LifeSimulationOptions, 'seed'>;
+}
+
+interface NormalizedDisturbanceStudyBaseConfig {
+  runs: number;
+  steps: number;
+  analyticsWindow: number;
+  seed: number;
+  seedStep: number;
+  seedBlocks: number;
+  blockSeedStride: number;
+  stopWhenExtinct: boolean;
+  simulation: Omit<LifeSimulationOptions, 'seed'>;
+}
+
 interface DisturbanceGridCellBlockAnalytics {
   pairedDeltas: DisturbanceGridCellPairedDeltas;
+  hypothesisSupport: boolean;
+}
+
+interface DisturbanceComparisonCellInput {
+  interval: number;
+  amplitude: number;
+  phase: number;
+  localRadius: number;
+  localRefugiaFraction: number;
+}
+
+interface DisturbanceComparisonCellSummary {
+  global: ExperimentAggregateSummary;
+  local: ExperimentAggregateSummary;
+  pairedDeltas: DisturbanceGridCellPairedDeltas;
+  timingDiagnostics: DisturbanceGridCellTimingDiagnostics;
+  reproducibility: DisturbanceGridCellReproducibility;
   hypothesisSupport: boolean;
 }
 
@@ -152,71 +202,23 @@ export function runDisturbanceGridStudy(input: RunDisturbanceGridStudyInput): Di
   for (const interval of config.intervals) {
     for (const amplitude of config.amplitudes) {
       for (const phase of config.phases) {
-        const globalRuns: ExperimentRunSummary[] = [];
-        const localRuns: ExperimentRunSummary[] = [];
-        const blockAnalytics: DisturbanceGridCellBlockAnalytics[] = [];
-
-        for (let block = 0; block < config.seedBlocks; block += 1) {
-          const blockSeed = config.seed + block * config.blockSeedStride;
-          const global = runExperiment({
-            runs: config.runs,
-            steps: config.steps,
-            analyticsWindow: config.analyticsWindow,
-            seed: blockSeed,
-            seedStep: config.seedStep,
-            stopWhenExtinct: config.stopWhenExtinct,
-            simulation: withDisturbanceConfig(config.simulation, {
-              disturbanceInterval: interval,
-              disturbancePhaseOffset: phase,
-              disturbanceEnergyLoss: amplitude,
-              disturbanceResourceLoss: amplitude,
-              disturbanceRadius: -1,
-              disturbanceRefugiaFraction: 0
-            })
-          });
-          const local = runExperiment({
-            runs: config.runs,
-            steps: config.steps,
-            analyticsWindow: config.analyticsWindow,
-            seed: blockSeed,
-            seedStep: config.seedStep,
-            stopWhenExtinct: config.stopWhenExtinct,
-            simulation: withDisturbanceConfig(config.simulation, {
-              disturbanceInterval: interval,
-              disturbancePhaseOffset: phase,
-              disturbanceEnergyLoss: amplitude,
-              disturbanceResourceLoss: amplitude,
-              disturbanceRadius: config.localRadius,
-              disturbanceRefugiaFraction: config.localRefugiaFraction
-            })
-          });
-
-          globalRuns.push(...global.runs);
-          localRuns.push(...local.runs);
-
-          const blockPairedDeltas = summarizeDisturbancePairedDeltas(global.runs, local.runs);
-          blockAnalytics.push({
-            pairedDeltas: blockPairedDeltas,
-            hypothesisSupport:
-              blockPairedDeltas.relapseEventReduction.mean > 0 &&
-              blockPairedDeltas.pathDependenceGain.mean > 0
-          });
-        }
-
-        const pairedDeltas = summarizeDisturbancePairedDeltas(globalRuns, localRuns);
-        const timingDiagnostics = summarizeDisturbanceTimingDiagnostics(globalRuns, localRuns);
-        const reproducibility = summarizeDisturbanceReproducibility(blockAnalytics);
+        const cell = runDisturbanceComparisonCell(config, {
+          interval,
+          amplitude,
+          phase,
+          localRadius: config.localRadius,
+          localRefugiaFraction: config.localRefugiaFraction
+        });
         cells.push({
           interval,
           amplitude,
           phase,
-          global: aggregateRuns(globalRuns),
-          local: aggregateRuns(localRuns),
-          pairedDeltas,
-          timingDiagnostics,
-          reproducibility,
-          hypothesisSupport:
-            pairedDeltas.relapseEventReduction.mean > 0 && pairedDeltas.pathDependenceGain.mean > 0
+          global: cell.global,
+          local: cell.local,
+          pairedDeltas: cell.pairedDeltas,
+          timingDiagnostics: cell.timingDiagnostics,
+          reproducibility: cell.reproducibility,
+          hypothesisSupport: cell.hypothesisSupport
         });
       }
     }
@@ -241,6 +243,67 @@ export function runDisturbanceGridStudy(input: RunDisturbanceGridStudyInput): Di
     },
     cells,
     summary: summarizeDisturbanceGridStudy(cells)
+  };
+}
+
+export function runDisturbanceLocalitySweep(
+  input: RunDisturbanceLocalitySweepInput
+): DisturbanceLocalitySweepExport {
+  const config = normalizeDisturbanceLocalitySweepConfig(input);
+  const footprintConfig = resolveSimulationConfig(config.simulation.config ?? {});
+  const cells: DisturbanceLocalitySweepCell[] = [];
+
+  for (const radius of config.localRadii) {
+    for (const refugiaFraction of config.localRefugiaFractions) {
+      const cell = runDisturbanceComparisonCell(config, {
+        interval: config.interval,
+        amplitude: config.amplitude,
+        phase: config.phase,
+        localRadius: radius,
+        localRefugiaFraction: refugiaFraction
+      });
+      const footprint = describeDisturbanceFootprint({
+        width: footprintConfig.width,
+        height: footprintConfig.height,
+        disturbanceRadius: radius,
+        disturbanceRefugiaFraction: refugiaFraction
+      });
+      cells.push({
+        radius,
+        refugiaFraction,
+        footprint,
+        global: cell.global,
+        local: cell.local,
+        pairedDeltas: cell.pairedDeltas,
+        timingDiagnostics: cell.timingDiagnostics,
+        reproducibility: cell.reproducibility,
+        hypothesisSupport: cell.hypothesisSupport,
+        classification: classifyPathDependenceGainCi95(
+          cell.reproducibility.pathDependenceGainBlockMeanUncertainty
+        )
+      });
+    }
+  }
+
+  return {
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    config: {
+      runs: config.runs,
+      steps: config.steps,
+      analyticsWindow: config.analyticsWindow,
+      seed: config.seed,
+      seedStep: config.seedStep,
+      seedBlocks: config.seedBlocks,
+      blockSeedStride: config.blockSeedStride,
+      stopWhenExtinct: config.stopWhenExtinct,
+      interval: config.interval,
+      amplitude: config.amplitude,
+      phase: config.phase,
+      localRadii: config.localRadii,
+      localRefugiaFractions: config.localRefugiaFractions
+    },
+    cells,
+    summary: summarizeDisturbanceLocalitySweep(cells)
   };
 }
 
@@ -314,9 +377,20 @@ function normalizeConfig(input: RunExperimentInput): NormalizedExperimentConfig 
   };
 }
 
-function normalizeDisturbanceGridStudyConfig(
-  input: RunDisturbanceGridStudyInput
-): NormalizedDisturbanceGridStudyConfig {
+function normalizeDisturbanceStudyBaseConfig(
+  input: Pick<
+    RunDisturbanceGridStudyInput,
+    | 'runs'
+    | 'steps'
+    | 'analyticsWindow'
+    | 'seed'
+    | 'seedStep'
+    | 'seedBlocks'
+    | 'blockSeedStride'
+    | 'stopWhenExtinct'
+    | 'simulation'
+  >
+): NormalizedDisturbanceStudyBaseConfig {
   const baseConfig = normalizeConfig(input);
   const seedBlocks = toPositiveInt('seedBlocks', input.seedBlocks ?? 1);
   return {
@@ -331,12 +405,51 @@ function normalizeDisturbanceGridStudyConfig(
       input.blockSeedStride ?? baseConfig.runs * baseConfig.seedStep
     ),
     stopWhenExtinct: baseConfig.stopWhenExtinct,
+    simulation: baseConfig.simulation
+  };
+}
+
+function normalizeDisturbanceGridStudyConfig(
+  input: RunDisturbanceGridStudyInput
+): NormalizedDisturbanceGridStudyConfig {
+  const baseConfig = normalizeDisturbanceStudyBaseConfig(input);
+  return {
+    runs: baseConfig.runs,
+    steps: baseConfig.steps,
+    analyticsWindow: baseConfig.analyticsWindow,
+    seed: baseConfig.seed,
+    seedStep: baseConfig.seedStep,
+    seedBlocks: baseConfig.seedBlocks,
+    blockSeedStride: baseConfig.blockSeedStride,
+    stopWhenExtinct: baseConfig.stopWhenExtinct,
     simulation: baseConfig.simulation,
     intervals: toPositiveIntList('intervals', input.intervals),
     amplitudes: toUnitIntervalList('amplitudes', input.amplitudes),
     phases: toPhaseOffsetList('phases', input.phases ?? [0]),
     localRadius: toNonNegativeInt('localRadius', input.localRadius ?? 2),
     localRefugiaFraction: toUnitInterval('localRefugiaFraction', input.localRefugiaFraction ?? 0.35)
+  };
+}
+
+function normalizeDisturbanceLocalitySweepConfig(
+  input: RunDisturbanceLocalitySweepInput
+): NormalizedDisturbanceLocalitySweepConfig {
+  const baseConfig = normalizeDisturbanceStudyBaseConfig(input);
+  return {
+    runs: baseConfig.runs,
+    steps: baseConfig.steps,
+    analyticsWindow: baseConfig.analyticsWindow,
+    seed: baseConfig.seed,
+    seedStep: baseConfig.seedStep,
+    seedBlocks: baseConfig.seedBlocks,
+    blockSeedStride: baseConfig.blockSeedStride,
+    stopWhenExtinct: baseConfig.stopWhenExtinct,
+    simulation: baseConfig.simulation,
+    interval: toPositiveInt('interval', input.interval),
+    amplitude: toUnitInterval('amplitude', input.amplitude),
+    phase: toPhaseOffset('phase', input.phase ?? 0),
+    localRadii: toNonNegativeIntList('localRadii', input.localRadii),
+    localRefugiaFractions: toUnitIntervalList('localRefugiaFractions', input.localRefugiaFractions)
   };
 }
 
@@ -361,6 +474,13 @@ function toNonNegativeInt(name: string, value: number): number {
     throw new Error(`${name} must be >= 0`);
   }
   return normalized;
+}
+
+function toNonNegativeIntList(name: string, values: number[]): number[] {
+  if (values.length === 0) {
+    throw new Error(`${name} must not be empty`);
+  }
+  return values.map((value, index) => toNonNegativeInt(`${name}[${index}]`, value));
 }
 
 function toPositiveIntList(name: string, values: number[]): number[] {
@@ -427,6 +547,73 @@ function withDisturbanceConfig(
       ...(simulation.config ?? {}),
       ...overrides
     }
+  };
+}
+
+function runDisturbanceComparisonCell(
+  config: NormalizedDisturbanceStudyBaseConfig,
+  cell: DisturbanceComparisonCellInput
+): DisturbanceComparisonCellSummary {
+  const globalRuns: ExperimentRunSummary[] = [];
+  const localRuns: ExperimentRunSummary[] = [];
+  const blockAnalytics: DisturbanceGridCellBlockAnalytics[] = [];
+
+  for (let block = 0; block < config.seedBlocks; block += 1) {
+    const blockSeed = config.seed + block * config.blockSeedStride;
+    const global = runExperiment({
+      runs: config.runs,
+      steps: config.steps,
+      analyticsWindow: config.analyticsWindow,
+      seed: blockSeed,
+      seedStep: config.seedStep,
+      stopWhenExtinct: config.stopWhenExtinct,
+      simulation: withDisturbanceConfig(config.simulation, {
+        disturbanceInterval: cell.interval,
+        disturbancePhaseOffset: cell.phase,
+        disturbanceEnergyLoss: cell.amplitude,
+        disturbanceResourceLoss: cell.amplitude,
+        disturbanceRadius: -1,
+        disturbanceRefugiaFraction: 0
+      })
+    });
+    const local = runExperiment({
+      runs: config.runs,
+      steps: config.steps,
+      analyticsWindow: config.analyticsWindow,
+      seed: blockSeed,
+      seedStep: config.seedStep,
+      stopWhenExtinct: config.stopWhenExtinct,
+      simulation: withDisturbanceConfig(config.simulation, {
+        disturbanceInterval: cell.interval,
+        disturbancePhaseOffset: cell.phase,
+        disturbanceEnergyLoss: cell.amplitude,
+        disturbanceResourceLoss: cell.amplitude,
+        disturbanceRadius: cell.localRadius,
+        disturbanceRefugiaFraction: cell.localRefugiaFraction
+      })
+    });
+
+    globalRuns.push(...global.runs);
+    localRuns.push(...local.runs);
+
+    const blockPairedDeltas = summarizeDisturbancePairedDeltas(global.runs, local.runs);
+    blockAnalytics.push({
+      pairedDeltas: blockPairedDeltas,
+      hypothesisSupport:
+        blockPairedDeltas.relapseEventReduction.mean > 0 &&
+        blockPairedDeltas.pathDependenceGain.mean > 0
+    });
+  }
+
+  const pairedDeltas = summarizeDisturbancePairedDeltas(globalRuns, localRuns);
+  return {
+    global: aggregateRuns(globalRuns),
+    local: aggregateRuns(localRuns),
+    pairedDeltas,
+    timingDiagnostics: summarizeDisturbanceTimingDiagnostics(globalRuns, localRuns),
+    reproducibility: summarizeDisturbanceReproducibility(blockAnalytics),
+    hypothesisSupport:
+      pairedDeltas.relapseEventReduction.mean > 0 && pairedDeltas.pathDependenceGain.mean > 0
   };
 }
 
@@ -692,6 +879,32 @@ function summarizeDisturbanceGridStudy(cells: DisturbanceGridCellSummary[]): Dis
     localMemoryEventPhaseConcentration: summarize(
       cells.map((cell) => cell.timingDiagnostics.localMemoryEventPhaseConcentrationMean)
     )
+  };
+}
+
+function summarizeDisturbanceLocalitySweep(
+  cells: DisturbanceLocalitySweepCell[]
+): DisturbanceLocalitySweepSummary {
+  const supportedCells = cells.reduce((count, cell) => count + (cell.hypothesisSupport ? 1 : 0), 0);
+  const pathDependenceGainCi95ClassificationCounts: PathDependenceGainCi95ClassificationCounts = {
+    robustPositive: 0,
+    ambiguous: 0,
+    robustNegative: 0
+  };
+
+  for (const cell of cells) {
+    pathDependenceGainCi95ClassificationCounts[cell.classification] += 1;
+  }
+
+  const robustPositiveCells = pathDependenceGainCi95ClassificationCounts.robustPositive;
+  return {
+    cells: cells.length,
+    supportedCells,
+    supportFraction: cells.length === 0 ? 0 : supportedCells / cells.length,
+    pathDependenceGainCi95ClassificationCounts,
+    pathDependenceGainCi95RobustPositiveFraction:
+      cells.length === 0 ? 0 : robustPositiveCells / cells.length,
+    pathDependenceGainCi95Decision: robustPositiveCells > 0 ? 'supported' : 'noSupport'
   };
 }
 
