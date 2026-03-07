@@ -5,6 +5,7 @@ import {
   SpeciesActivityHorizonSweepExport,
   SpeciesActivityPersistenceSweepExport,
   SpeciesActivityProbeExport,
+  SpeciesActivitySeedPanelExport,
   SimulationExperimentExport,
   SimulationRunExport,
   StepSummary
@@ -297,6 +298,10 @@ export function speciesActivityHorizonSweepToJson(exportData: SpeciesActivityHor
 }
 
 export function speciesActivityPersistenceSweepToJson(exportData: SpeciesActivityPersistenceSweepExport): string {
+  return `${JSON.stringify(exportData, null, 2)}\n`;
+}
+
+export function speciesActivitySeedPanelToJson(exportData: SpeciesActivitySeedPanelExport): string {
   return `${JSON.stringify(exportData, null, 2)}\n`;
 }
 

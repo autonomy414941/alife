@@ -4,6 +4,7 @@ import {
   analyzeSpeciesActivity,
   runSpeciesActivityHorizonSweep,
   runSpeciesActivityPersistenceSweep,
+  runSpeciesActivitySeedPanel,
   runSpeciesActivityProbe
 } from '../src/activity';
 import { TaxonHistory } from '../src/types';
@@ -396,5 +397,95 @@ describe('runSpeciesActivityPersistenceSweep', () => {
     expect(first.thresholds).toHaveLength(2);
     expect(first.thresholds.map((threshold) => threshold.minSurvivalTicks)).toEqual([1, 2]);
     expect(first.thresholds[1].summary.finalWindowCensored).toBe(true);
+  });
+});
+
+describe('runSpeciesActivitySeedPanel', () => {
+  it('aggregates persistence summaries across a fixed seed panel', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 30,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: 6,
+      windowSize: 2,
+      burnIn: 2,
+      seeds: [77, 78],
+      minSurvivalTicks: [1, 2],
+      stopWhenExtinct: true,
+      simulation,
+      generatedAt: '2026-03-07T00:00:00.000Z'
+    };
+
+    const first = runSpeciesActivitySeedPanel(input);
+    const second = runSpeciesActivitySeedPanel(input);
+
+    expect(first).toEqual(second);
+    expect(first.definition.raw.component).toBe('species');
+    expect(first.config.seeds).toEqual([77, 78]);
+    expect(first.seedResults.map((result) => result.seed)).toEqual([77, 78]);
+
+    for (const aggregate of first.aggregates) {
+      const thresholdResults = first.seedResults.map((seedResult) => {
+        const threshold = seedResult.thresholds.find((result) => result.minSurvivalTicks === aggregate.minSurvivalTicks);
+        expect(threshold).toBeDefined();
+        return threshold!;
+      });
+      const persistentWindowFractions = thresholdResults.map((threshold) => threshold.persistentWindowFraction);
+      const persistentActivityMeans = thresholdResults.map(
+        (threshold) => threshold.summary.postBurnInPersistentNewActivityMean
+      );
+      const meanPersistentWindowFraction =
+        persistentWindowFractions.reduce((total, value) => total + value, 0) / persistentWindowFractions.length;
+      const meanPersistentActivityMean =
+        persistentActivityMeans.reduce((total, value) => total + value, 0) / persistentActivityMeans.length;
+
+      expect(aggregate.seeds).toBe(2);
+      expect(aggregate.seedsWithEvaluableWindows).toBe(
+        thresholdResults.filter((threshold) => threshold.summary.evaluablePostBurnInWindows > 0).length
+      );
+      expect(aggregate.seedsWithAllEvaluableWindowsPositive).toBe(
+        thresholdResults.filter((threshold) => threshold.allEvaluableWindowsPositive).length
+      );
+      expect(aggregate.minPersistentWindowFraction).toBeCloseTo(Math.min(...persistentWindowFractions), 10);
+      expect(aggregate.meanPersistentWindowFraction).toBeCloseTo(meanPersistentWindowFraction, 10);
+      expect(aggregate.maxPersistentWindowFraction).toBeCloseTo(Math.max(...persistentWindowFractions), 10);
+      expect(aggregate.minPersistentActivityMean).toBeCloseTo(Math.min(...persistentActivityMeans), 10);
+      expect(aggregate.meanPersistentActivityMean).toBeCloseTo(meanPersistentActivityMean, 10);
+      expect(aggregate.maxPersistentActivityMean).toBeCloseTo(Math.max(...persistentActivityMeans), 10);
+    }
+  });
+
+  it('rejects duplicate seed entries', () => {
+    expect(() =>
+      runSpeciesActivitySeedPanel({
+        steps: 10,
+        windowSize: 2,
+        burnIn: 2,
+        seeds: [5, 5],
+        minSurvivalTicks: [1]
+      })
+    ).toThrow('seeds must not contain duplicates');
   });
 });

@@ -605,6 +605,59 @@ export interface SpeciesActivityPersistenceSweepExport {
   thresholds: SpeciesActivityPersistenceThresholdResult[];
 }
 
+export interface SpeciesActivitySeedPanelDefinition {
+  raw: SpeciesActivityProbeDefinition;
+  observedLifetime: string;
+  persistentNewActivity: string;
+  censoredWindow: string;
+  persistentWindowFraction: string;
+  allEvaluableWindowsPositive: string;
+}
+
+export interface SpeciesActivitySeedPanelConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number[];
+}
+
+export interface SpeciesActivitySeedPanelThresholdSeedResult {
+  minSurvivalTicks: number;
+  summary: SpeciesActivityPersistenceSummary;
+  persistentWindowFraction: number;
+  allEvaluableWindowsPositive: boolean;
+}
+
+export interface SpeciesActivitySeedPanelSeedResult {
+  seed: number;
+  finalSummary: StepSummary;
+  rawSummary: SpeciesActivityProbeSummary;
+  thresholds: SpeciesActivitySeedPanelThresholdSeedResult[];
+}
+
+export interface SpeciesActivitySeedPanelThresholdAggregate {
+  minSurvivalTicks: number;
+  seeds: number;
+  seedsWithEvaluableWindows: number;
+  seedsWithAllEvaluableWindowsPositive: number;
+  minPersistentWindowFraction: number;
+  meanPersistentWindowFraction: number;
+  maxPersistentWindowFraction: number;
+  minPersistentActivityMean: number;
+  meanPersistentActivityMean: number;
+  maxPersistentActivityMean: number;
+}
+
+export interface SpeciesActivitySeedPanelExport {
+  generatedAt: string;
+  definition: SpeciesActivitySeedPanelDefinition;
+  config: SpeciesActivitySeedPanelConfig;
+  seedResults: SpeciesActivitySeedPanelSeedResult[];
+  aggregates: SpeciesActivitySeedPanelThresholdAggregate[];
+}
+
 export interface SpeciesActivityHorizonSweepConfig {
   steps: number[];
   windowSize: number;

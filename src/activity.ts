@@ -6,6 +6,11 @@ import {
   SpeciesActivityPersistenceSweepDefinition,
   SpeciesActivityPersistenceSweepExport,
   SpeciesActivityPersistenceThresholdResult,
+  SpeciesActivitySeedPanelDefinition,
+  SpeciesActivitySeedPanelExport,
+  SpeciesActivitySeedPanelSeedResult,
+  SpeciesActivitySeedPanelThresholdAggregate,
+  SpeciesActivitySeedPanelThresholdSeedResult,
   SpeciesActivityPersistenceWindow,
   SpeciesActivityProbeDefinition,
   SpeciesActivityProbeExport,
@@ -54,6 +59,11 @@ export interface RunSpeciesActivityPersistenceSweepInput extends RunSpeciesActiv
   minSurvivalTicks: number[];
 }
 
+export interface RunSpeciesActivitySeedPanelInput extends Omit<RunSpeciesActivityProbeInput, 'seed'> {
+  seeds: number[];
+  minSurvivalTicks: number[];
+}
+
 export const SPECIES_ACTIVITY_PROBE_DEFINITION: SpeciesActivityProbeDefinition = {
   component: 'species',
   activityUnit: 'activeSpeciesTick',
@@ -71,6 +81,14 @@ export const SPECIES_ACTIVITY_PERSISTENCE_SWEEP_DEFINITION: SpeciesActivityPersi
     'Occupied species-ticks within an origin window contributed by species whose observed lifetime reaches the survival threshold.',
   censoredWindow:
     'A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin species in that window cannot yet be fully evaluated.'
+};
+
+export const SPECIES_ACTIVITY_SEED_PANEL_DEFINITION: SpeciesActivitySeedPanelDefinition = {
+  ...SPECIES_ACTIVITY_PERSISTENCE_SWEEP_DEFINITION,
+  persistentWindowFraction:
+    'For one seed and threshold, the fraction of evaluable post-burn-in windows whose persistentNewActivity is greater than zero.',
+  allEvaluableWindowsPositive:
+    'For one seed and threshold, true when every evaluable post-burn-in window has persistentNewActivity greater than zero.'
 };
 
 interface SpeciesWindowContribution {
@@ -292,6 +310,49 @@ export function runSpeciesActivityPersistenceSweep(
   };
 }
 
+export function runSpeciesActivitySeedPanel(input: RunSpeciesActivitySeedPanelInput): SpeciesActivitySeedPanelExport {
+  const steps = toPositiveInt('steps', input.steps);
+  const windowSize = toPositiveInt('windowSize', input.windowSize);
+  const burnIn = toNonNegativeInt('burnIn', input.burnIn);
+  const seeds = toUniqueIntegerList('seeds', input.seeds);
+  const minSurvivalTicks = toNonNegativeIntList('minSurvivalTicks', input.minSurvivalTicks);
+  const stopWhenExtinct = input.stopWhenExtinct ?? true;
+
+  const seedResults: SpeciesActivitySeedPanelSeedResult[] = seeds.map((seed) => {
+    const sweep = runSpeciesActivityPersistenceSweep({
+      steps,
+      windowSize,
+      burnIn,
+      seed,
+      stopWhenExtinct,
+      simulation: input.simulation,
+      minSurvivalTicks
+    });
+
+    return {
+      seed,
+      finalSummary: sweep.finalSummary,
+      rawSummary: sweep.rawSummary,
+      thresholds: sweep.thresholds.map((threshold) => buildSpeciesActivitySeedPanelThresholdSeedResult(threshold))
+    };
+  });
+
+  return {
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    definition: SPECIES_ACTIVITY_SEED_PANEL_DEFINITION,
+    config: {
+      steps,
+      windowSize,
+      burnIn,
+      seeds,
+      stopWhenExtinct,
+      minSurvivalTicks
+    },
+    seedResults,
+    aggregates: minSurvivalTicks.map((threshold) => buildSpeciesActivitySeedPanelThresholdAggregate(threshold, seedResults))
+  };
+}
+
 export function runSpeciesActivityHorizonSweep(
   input: RunSpeciesActivityHorizonSweepInput
 ): SpeciesActivityHorizonSweepExport {
@@ -383,6 +444,54 @@ function buildSpeciesActivityPersistenceSummary(
     postBurnInPersistentNewActivityMax: max(postBurnInPersistentNewActivity),
     finalPersistentNewActivity: finalWindow?.censored ? null : finalWindow?.persistentNewActivity ?? 0,
     finalWindowCensored: finalWindow?.censored ?? false
+  };
+}
+
+function buildSpeciesActivitySeedPanelThresholdSeedResult(
+  threshold: SpeciesActivityPersistenceThresholdResult
+): SpeciesActivitySeedPanelThresholdSeedResult {
+  const evaluableWindows = threshold.summary.evaluablePostBurnInWindows;
+
+  return {
+    minSurvivalTicks: threshold.minSurvivalTicks,
+    summary: threshold.summary,
+    persistentWindowFraction:
+      evaluableWindows === 0 ? 0 : threshold.summary.postBurnInWindowsWithPersistentNewActivity / evaluableWindows,
+    allEvaluableWindowsPositive:
+      evaluableWindows > 0 &&
+      threshold.summary.postBurnInWindowsWithPersistentNewActivity === threshold.summary.evaluablePostBurnInWindows
+  };
+}
+
+function buildSpeciesActivitySeedPanelThresholdAggregate(
+  minSurvivalTicks: number,
+  seedResults: SpeciesActivitySeedPanelSeedResult[]
+): SpeciesActivitySeedPanelThresholdAggregate {
+  const thresholdResults = seedResults.map((seedResult) => {
+    const threshold = seedResult.thresholds.find((result) => result.minSurvivalTicks === minSurvivalTicks);
+    if (!threshold) {
+      throw new Error(`Missing threshold ${minSurvivalTicks} for seed ${seedResult.seed}`);
+    }
+    return threshold;
+  });
+  const persistentWindowFractions = thresholdResults.map((threshold) => threshold.persistentWindowFraction);
+  const persistentActivityMeans = thresholdResults.map(
+    (threshold) => threshold.summary.postBurnInPersistentNewActivityMean
+  );
+
+  return {
+    minSurvivalTicks,
+    seeds: thresholdResults.length,
+    seedsWithEvaluableWindows: thresholdResults.filter((threshold) => threshold.summary.evaluablePostBurnInWindows > 0)
+      .length,
+    seedsWithAllEvaluableWindowsPositive: thresholdResults.filter((threshold) => threshold.allEvaluableWindowsPositive)
+      .length,
+    minPersistentWindowFraction: min(persistentWindowFractions),
+    meanPersistentWindowFraction: mean(persistentWindowFractions),
+    maxPersistentWindowFraction: max(persistentWindowFractions),
+    minPersistentActivityMean: min(persistentActivityMeans),
+    meanPersistentActivityMean: mean(persistentActivityMeans),
+    maxPersistentActivityMean: max(persistentActivityMeans)
   };
 }
 
@@ -496,6 +605,25 @@ function toNonNegativeIntList(name: string, values: number[]): number[] {
     }
     return value;
   });
+}
+
+function toUniqueIntegerList(name: string, values: number[]): number[] {
+  if (values.length === 0) {
+    throw new Error(`${name} must contain at least one value`);
+  }
+
+  const normalized = values.map((value) => {
+    if (!Number.isInteger(value)) {
+      throw new Error(`${name} must contain only integers`);
+    }
+    return value;
+  });
+
+  if (new Set(normalized).size !== normalized.length) {
+    throw new Error(`${name} must not contain duplicates`);
+  }
+
+  return normalized;
 }
 
 function toNonNegativeInt(name: string, value: number): number {

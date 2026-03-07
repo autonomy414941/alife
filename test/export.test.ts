@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   runSpeciesActivityHorizonSweep,
   runSpeciesActivityPersistenceSweep,
+  runSpeciesActivitySeedPanel,
   runSpeciesActivityProbe
 } from '../src/activity';
 import {
@@ -16,7 +17,8 @@ import {
   runExportToJson,
   speciesActivityHorizonSweepToJson,
   speciesActivityPersistenceSweepToJson,
-  speciesActivityProbeToJson
+  speciesActivityProbeToJson,
+  speciesActivitySeedPanelToJson
 } from '../src/export';
 import { runDisturbanceGridStudy, runExperiment } from '../src/experiment';
 import { LifeSimulation } from '../src/simulation';
@@ -549,5 +551,51 @@ describe('run export', () => {
     expect(parsed.rawSummary.totalSpecies).toBeGreaterThan(1);
     expect(parsed.thresholds).toHaveLength(2);
     expect(parsed.thresholds[0].summary.minSurvivalTicks).toBe(1);
+  });
+
+  it('renders species-activity seed panels to JSON', () => {
+    const panel = runSpeciesActivitySeedPanel({
+      steps: 6,
+      windowSize: 2,
+      burnIn: 2,
+      seeds: [88, 89],
+      minSurvivalTicks: [1, 2],
+      stopWhenExtinct: true,
+      simulation: {
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceThreshold: 10,
+          reproduceProbability: 1,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0.2,
+          speciationThreshold: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 30,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+          }
+        ]
+      },
+      generatedAt: '2026-03-07T00:00:00.000Z'
+    });
+
+    const parsed = JSON.parse(speciesActivitySeedPanelToJson(panel));
+
+    expect(parsed.generatedAt).toBe('2026-03-07T00:00:00.000Z');
+    expect(parsed.definition.raw.component).toBe('species');
+    expect(parsed.config.seeds).toEqual([88, 89]);
+    expect(parsed.seedResults).toHaveLength(2);
+    expect(parsed.aggregates).toHaveLength(2);
+    expect(parsed.aggregates[0].minSurvivalTicks).toBe(1);
   });
 });
