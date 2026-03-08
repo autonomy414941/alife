@@ -64,6 +64,58 @@ describe('LifeSimulation', () => {
     expect(delta).toBeGreaterThan(0);
   });
 
+  it('can found a new clade from a speciation event when cladogenesis is enabled', () => {
+    const sim = new LifeSimulation({
+      seed: 7,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.3,
+        speciationThreshold: 0,
+        cladogenesisThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 30,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    });
+
+    const summary = sim.step();
+    const agents = sim.snapshot().agents;
+    const child = agents.find((agent) => agent.age === 0);
+    const parent = agents.find((agent) => agent.age === 1);
+    const clades = sim.history().clades;
+
+    expect(summary.births).toBe(1);
+    expect(child).toBeDefined();
+    expect(parent).toBeDefined();
+    expect(child!.species).not.toBe(parent!.species);
+    expect(child!.lineage).not.toBe(parent!.lineage);
+    expect(summary.activeSpecies).toBe(2);
+    expect(summary.activeClades).toBe(2);
+    expect(clades).toHaveLength(2);
+    expect(clades[1]).toMatchObject({
+      id: child!.lineage,
+      firstSeenTick: 1,
+      totalBirths: 1,
+      totalDeaths: 0,
+      peakPopulation: 1
+    });
+  });
+
   it('lets aggressive agents steal energy in shared cells', () => {
     const sim = new LifeSimulation({
       seed: 11,

@@ -568,6 +568,77 @@ describe('runSpeciesActivityHorizonSweep', () => {
 });
 
 describe('runCladeActivityPersistenceSweep', () => {
+  it('reports post-burn-in clade novelty in a fixed cladogenesis-enabled micro-regime', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        cladogenesisThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 100,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const result = runCladeActivityPersistenceSweep({
+      steps: 6,
+      windowSize: 1,
+      burnIn: 2,
+      seed: 77,
+      minSurvivalTicks: [1, 2],
+      stopWhenExtinct: true,
+      simulation,
+      generatedAt: '2026-03-08T00:00:00.000Z'
+    });
+
+    expect(result.rawSummary).toMatchObject({
+      stepsExecuted: 6,
+      totalClades: 18,
+      postBurnInWindows: 4,
+      postBurnInWindowsWithNewActivity: 4,
+      postBurnInNewClades: 14,
+      postBurnInNewActivityMean: 3.5,
+      postBurnInNewActivityMin: 1,
+      postBurnInNewActivityMax: 8,
+      finalCumulativeActivity: 65,
+      finalNormalizedCumulativeActivity: 10.833333333333334,
+      finalNewActivity: 1
+    });
+    expect(result.finalSummary.activeClades).toBe(18);
+    expect(result.thresholds).toHaveLength(2);
+    expect(result.thresholds[0].summary).toMatchObject({
+      minSurvivalTicks: 1,
+      postBurnInWindowsWithPersistentNewActivity: 3,
+      postBurnInPersistentNewClades: 13,
+      postBurnInPersistentNewActivityMean: 4.333333333333333,
+      finalPersistentNewActivity: null,
+      finalWindowCensored: true
+    });
+    expect(result.thresholds[1].summary).toMatchObject({
+      minSurvivalTicks: 2,
+      postBurnInWindowsWithPersistentNewActivity: 2,
+      postBurnInPersistentNewClades: 12,
+      postBurnInPersistentNewActivityMean: 6,
+      finalPersistentNewActivity: null,
+      finalWindowCensored: true
+    });
+  });
+
   it('is deterministic and reports zero post-burn-in clade novelty for the baseline dynamics', () => {
     const simulation = {
       config: {

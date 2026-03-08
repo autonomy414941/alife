@@ -70,6 +70,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   offspringEnergyFraction: 0.45,
   mutationAmount: 0.2,
   speciationThreshold: 0.25,
+  cladogenesisThreshold: -1,
   maxAge: 120
 };
 
@@ -152,9 +153,13 @@ export class LifeSimulation {
 
   private nextSpeciesId = 1;
 
+  private nextLineageId = 1;
+
   private readonly cladeHistory = new Map<number, TaxonHistoryState>();
 
   private readonly speciesHistory = new Map<number, TaxonHistoryState>();
+
+  private readonly cladeFounderGenome = new Map<number, Genome>();
 
   private readonly speciesHabitatPreference = new Map<number, number>();
 
@@ -181,7 +186,9 @@ export class LifeSimulation {
     if (this.agents.length > 0) {
       this.nextAgentId = Math.max(...this.agents.map((agent) => agent.id)) + 1;
       this.nextSpeciesId = Math.max(...this.agents.map((agent) => agent.species)) + 1;
+      this.nextLineageId = Math.max(...this.agents.map((agent) => agent.lineage)) + 1;
     }
+    this.initializeCladeFounderGenomes();
     this.initializeSpeciesHabitatPreferences();
     this.initializeSpeciesTrophicLevels();
     this.initializeSpeciesDefenseLevels();
@@ -1053,6 +1060,15 @@ export class LifeSimulation {
     this.seedTaxonHistory(this.speciesHistory, this.countBy(this.agents, (agent) => agent.species));
   }
 
+  private initializeCladeFounderGenomes(): void {
+    for (const agent of this.agents) {
+      if (this.cladeFounderGenome.has(agent.lineage)) {
+        continue;
+      }
+      this.cladeFounderGenome.set(agent.lineage, copyGenome(agent.genome));
+    }
+  }
+
   private initializeSpeciesHabitatPreferences(): void {
     const sums = new Map<number, { total: number; count: number }>();
     for (const agent of this.agents) {
@@ -1425,8 +1441,7 @@ export class LifeSimulation {
     const childEnergy = parent.energy * this.config.offspringEnergyFraction;
     parent.energy -= childEnergy;
     const childGenome = this.mutateGenome(parent.genome);
-    const diverged =
-      genomeDistance(parent.genome, childGenome) >= this.config.speciationThreshold;
+    const diverged = genomeDistance(parent.genome, childGenome) >= this.config.speciationThreshold;
     const childSpecies = diverged ? this.nextSpeciesId++ : parent.species;
     if (diverged) {
       const parentPreference = this.getSpeciesHabitatPreference(parent.species);
@@ -1439,6 +1454,9 @@ export class LifeSimulation {
       const defenseDelta = this.defenseDeltaFromMutation(parent.genome, childGenome);
       this.speciesDefenseLevel.set(childSpecies, clamp(parentDefense + defenseDelta, 0, 1));
     }
+    const childLineage = this.shouldFoundNewClade(parent.lineage, diverged, childGenome)
+      ? this.foundClade(childGenome)
+      : parent.lineage;
 
     const neighbors = [
       { x: parent.x, y: parent.y },
@@ -1451,7 +1469,7 @@ export class LifeSimulation {
 
     return {
       id: this.nextAgentId++,
-      lineage: parent.lineage,
+      lineage: childLineage,
       species: childSpecies,
       x: childPos.x,
       y: childPos.y,
@@ -1459,6 +1477,38 @@ export class LifeSimulation {
       age: 0,
       genome: childGenome
     };
+  }
+
+  private shouldFoundNewClade(parentLineage: number, diverged: boolean, childGenome: Genome): boolean {
+    if (!diverged) {
+      return false;
+    }
+
+    const threshold = this.config.cladogenesisThreshold;
+    if (!Number.isFinite(threshold) || threshold < 0) {
+      return false;
+    }
+
+    const founderGenome = this.getCladeFounderGenome(parentLineage);
+    return genomeDistance(founderGenome, childGenome) >= threshold;
+  }
+
+  private foundClade(founderGenome: Genome): number {
+    const lineage = this.nextLineageId++;
+    this.cladeFounderGenome.set(lineage, copyGenome(founderGenome));
+    return lineage;
+  }
+
+  private getCladeFounderGenome(lineage: number): Genome {
+    const existing = this.cladeFounderGenome.get(lineage);
+    if (existing !== undefined) {
+      return existing;
+    }
+
+    const founder = this.agents.find((agent) => agent.lineage === lineage)?.genome ?? MIN_GENOME;
+    const genome = copyGenome(founder);
+    this.cladeFounderGenome.set(lineage, genome);
+    return genome;
   }
 
   private mutateGenome(genome: Genome): Genome {
@@ -1973,4 +2023,12 @@ function genomeDistance(a: Genome, b: Genome): number {
     Math.abs(a.harvest - b.harvest) +
     Math.abs(a.aggression - b.aggression)
   );
+}
+
+function copyGenome(genome: Genome): Genome {
+  return {
+    metabolism: genome.metabolism,
+    harvest: genome.harvest,
+    aggression: genome.aggression
+  };
 }

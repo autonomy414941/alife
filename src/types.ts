@@ -234,6 +234,7 @@ export interface SimulationConfig {
   offspringEnergyFraction: number;
   mutationAmount: number;
   speciationThreshold: number;
+  cladogenesisThreshold: number;
   maxAge: number;
 }
 

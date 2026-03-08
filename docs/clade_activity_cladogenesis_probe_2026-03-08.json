@@ -1,0 +1,281 @@
+{
+  "generatedAt": "2026-03-08T01:59:37.013Z",
+  "question": "Can opt-in cladogenesis produce post-burn-in clade novelty in a deterministic micro-regime?",
+  "prediction": "With cladogenesisThreshold=0 and speciationThreshold=0, totalClades exceeds initialAgents and post-burn-in clade novelty becomes positive.",
+  "simulation": {
+    "config": {
+      "width": 1,
+      "height": 1,
+      "maxResource": 0,
+      "resourceRegen": 0,
+      "metabolismCostBase": 0,
+      "moveCost": 0,
+      "harvestCap": 0,
+      "reproduceThreshold": 10,
+      "reproduceProbability": 1,
+      "offspringEnergyFraction": 0.5,
+      "mutationAmount": 0.2,
+      "speciationThreshold": 0,
+      "cladogenesisThreshold": 0,
+      "maxAge": 100
+    },
+    "initialAgents": [
+      {
+        "x": 0,
+        "y": 0,
+        "energy": 100,
+        "genome": {
+          "metabolism": 1,
+          "harvest": 1,
+          "aggression": 0.5
+        }
+      }
+    ]
+  },
+  "initialAgents": 1,
+  "probe": {
+    "generatedAt": "2026-03-08T01:59:37.013Z",
+    "definition": {
+      "raw": {
+        "component": "clades",
+        "activityUnit": "activeCladeTick",
+        "cumulativeActivity": "Sum of occupied clade-ticks from simulation tick 1 through the end of each window.",
+        "normalizedCumulativeActivity": "Cumulative activity divided by elapsed simulation ticks at the end of each window.",
+        "newActivity": "Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window."
+      },
+      "observedLifetime": "Observed lifetime is extinctTick - firstSeenTick for extinct clades and maxTick - firstSeenTick for extant clades.",
+      "persistentNewActivity": "Occupied clade-ticks within an origin window contributed by clades whose observed lifetime reaches the survival threshold.",
+      "censoredWindow": "A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin clades in that window cannot yet be fully evaluated."
+    },
+    "config": {
+      "steps": 6,
+      "windowSize": 1,
+      "burnIn": 2,
+      "seed": 77,
+      "stopWhenExtinct": true,
+      "minSurvivalTicks": [
+        1,
+        2
+      ]
+    },
+    "finalSummary": {
+      "tick": 6,
+      "population": 18,
+      "births": 1,
+      "deaths": 0,
+      "meanEnergy": 5.552814946647358,
+      "meanGenome": {
+        "metabolism": 1.0292282501132126,
+        "harvest": 0.9088691527386094,
+        "aggression": 0.5632301768650196
+      },
+      "activeClades": 18,
+      "activeSpecies": 18,
+      "dominantSpeciesShare": 0.05555555555555555,
+      "selectionDifferential": {
+        "metabolism": 0.0028405069821964,
+        "harvest": -0.020561569813762004,
+        "aggression": 0.01844275808382978
+      },
+      "cladeExtinctions": 0,
+      "speciesExtinctions": 0,
+      "cumulativeExtinctClades": 0,
+      "cumulativeExtinctSpecies": 0
+    },
+    "rawSummary": {
+      "stepsExecuted": 6,
+      "totalClades": 18,
+      "postBurnInWindows": 4,
+      "postBurnInWindowsWithNewActivity": 4,
+      "postBurnInNewClades": 14,
+      "postBurnInNewActivityMean": 3.5,
+      "postBurnInNewActivityMin": 1,
+      "postBurnInNewActivityMax": 8,
+      "finalCumulativeActivity": 65,
+      "finalNormalizedCumulativeActivity": 10.833333333333334,
+      "finalNewActivity": 1
+    },
+    "thresholds": [
+      {
+        "minSurvivalTicks": 1,
+        "windows": [
+          {
+            "windowIndex": 0,
+            "startTick": 1,
+            "endTick": 1,
+            "size": 1,
+            "postBurnIn": false,
+            "censored": false,
+            "newClades": 1,
+            "rawNewActivity": 1,
+            "persistentNewClades": 1,
+            "persistentNewActivity": 1
+          },
+          {
+            "windowIndex": 1,
+            "startTick": 2,
+            "endTick": 2,
+            "size": 1,
+            "postBurnIn": false,
+            "censored": false,
+            "newClades": 2,
+            "rawNewActivity": 2,
+            "persistentNewClades": 2,
+            "persistentNewActivity": 2
+          },
+          {
+            "windowIndex": 2,
+            "startTick": 3,
+            "endTick": 3,
+            "size": 1,
+            "postBurnIn": true,
+            "censored": false,
+            "newClades": 4,
+            "rawNewActivity": 4,
+            "persistentNewClades": 4,
+            "persistentNewActivity": 4
+          },
+          {
+            "windowIndex": 3,
+            "startTick": 4,
+            "endTick": 4,
+            "size": 1,
+            "postBurnIn": true,
+            "censored": false,
+            "newClades": 8,
+            "rawNewActivity": 8,
+            "persistentNewClades": 8,
+            "persistentNewActivity": 8
+          },
+          {
+            "windowIndex": 4,
+            "startTick": 5,
+            "endTick": 5,
+            "size": 1,
+            "postBurnIn": true,
+            "censored": false,
+            "newClades": 1,
+            "rawNewActivity": 1,
+            "persistentNewClades": 1,
+            "persistentNewActivity": 1
+          },
+          {
+            "windowIndex": 5,
+            "startTick": 6,
+            "endTick": 6,
+            "size": 1,
+            "postBurnIn": true,
+            "censored": true,
+            "newClades": 1,
+            "rawNewActivity": 1,
+            "persistentNewClades": null,
+            "persistentNewActivity": null
+          }
+        ],
+        "summary": {
+          "minSurvivalTicks": 1,
+          "postBurnInWindows": 4,
+          "censoredPostBurnInWindows": 1,
+          "evaluablePostBurnInWindows": 3,
+          "postBurnInWindowsWithPersistentNewActivity": 3,
+          "postBurnInPersistentNewClades": 13,
+          "postBurnInPersistentNewActivityMean": 4.333333333333333,
+          "postBurnInPersistentNewActivityMin": 1,
+          "postBurnInPersistentNewActivityMax": 8,
+          "finalPersistentNewActivity": null,
+          "finalWindowCensored": true
+        }
+      },
+      {
+        "minSurvivalTicks": 2,
+        "windows": [
+          {
+            "windowIndex": 0,
+            "startTick": 1,
+            "endTick": 1,
+            "size": 1,
+            "postBurnIn": false,
+            "censored": false,
+            "newClades": 1,
+            "rawNewActivity": 1,
+            "persistentNewClades": 1,
+            "persistentNewActivity": 1
+          },
+          {
+            "windowIndex": 1,
+            "startTick": 2,
+            "endTick": 2,
+            "size": 1,
+            "postBurnIn": false,
+            "censored": false,
+            "newClades": 2,
+            "rawNewActivity": 2,
+            "persistentNewClades": 2,
+            "persistentNewActivity": 2
+          },
+          {
+            "windowIndex": 2,
+            "startTick": 3,
+            "endTick": 3,
+            "size": 1,
+            "postBurnIn": true,
+            "censored": false,
+            "newClades": 4,
+            "rawNewActivity": 4,
+            "persistentNewClades": 4,
+            "persistentNewActivity": 4
+          },
+          {
+            "windowIndex": 3,
+            "startTick": 4,
+            "endTick": 4,
+            "size": 1,
+            "postBurnIn": true,
+            "censored": false,
+            "newClades": 8,
+            "rawNewActivity": 8,
+            "persistentNewClades": 8,
+            "persistentNewActivity": 8
+          },
+          {
+            "windowIndex": 4,
+            "startTick": 5,
+            "endTick": 5,
+            "size": 1,
+            "postBurnIn": true,
+            "censored": true,
+            "newClades": 1,
+            "rawNewActivity": 1,
+            "persistentNewClades": null,
+            "persistentNewActivity": null
+          },
+          {
+            "windowIndex": 5,
+            "startTick": 6,
+            "endTick": 6,
+            "size": 1,
+            "postBurnIn": true,
+            "censored": true,
+            "newClades": 1,
+            "rawNewActivity": 1,
+            "persistentNewClades": null,
+            "persistentNewActivity": null
+          }
+        ],
+        "summary": {
+          "minSurvivalTicks": 2,
+          "postBurnInWindows": 4,
+          "censoredPostBurnInWindows": 2,
+          "evaluablePostBurnInWindows": 2,
+          "postBurnInWindowsWithPersistentNewActivity": 2,
+          "postBurnInPersistentNewClades": 12,
+          "postBurnInPersistentNewActivityMean": 6,
+          "postBurnInPersistentNewActivityMin": 4,
+          "postBurnInPersistentNewActivityMax": 8,
+          "finalPersistentNewActivity": null,
+          "finalWindowCensored": true
+        }
+      }
+    ]
+  }
+}
