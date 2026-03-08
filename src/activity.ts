@@ -1,5 +1,9 @@
 import { LifeSimulation, LifeSimulationOptions } from './simulation';
 import {
+  CladeActivityCladogenesisSweepDefinition,
+  CladeActivityCladogenesisSweepExport,
+  CladeActivityCladogenesisSweepSeedResult,
+  CladeActivityCladogenesisSweepThresholdResult,
   CladeActivityPersistenceSummary,
   CladeActivityPersistenceSweepDefinition,
   CladeActivityPersistenceSweepExport,
@@ -12,7 +16,10 @@ import {
   CladeActivitySeedPanelSeedResult,
   CladeActivitySeedPanelThresholdAggregate,
   CladeActivitySeedPanelThresholdSeedResult,
+  CladeSpeciesCountAggregate,
+  CladeSpeciesCountSummary,
   CladeActivityWindow,
+  NumericAggregate,
   SpeciesActivityHorizonSweepExport,
   SpeciesActivityHorizonSweepPoint,
   SpeciesActivityPersistenceSummary,
@@ -105,6 +112,12 @@ export interface RunCladeActivityPersistenceSweepInput extends RunSpeciesActivit
 export interface RunCladeActivitySeedPanelInput extends Omit<RunSpeciesActivityProbeInput, 'seed'> {
   seeds: number[];
   minSurvivalTicks: number[];
+}
+
+export interface RunCladeActivityCladogenesisSweepInput extends Omit<RunSpeciesActivityProbeInput, 'seed'> {
+  seeds: number[];
+  minSurvivalTicks: number[];
+  cladogenesisThresholds: number[];
 }
 
 interface AnalyzeTaxonActivityInput {
@@ -277,6 +290,16 @@ export const CLADE_ACTIVITY_SEED_PANEL_DEFINITION: CladeActivitySeedPanelDefinit
     'For one seed and threshold, the fraction of evaluable post-burn-in windows whose persistentNewActivity is greater than zero.',
   allEvaluableWindowsPositive:
     'For one seed and threshold, true when every evaluable post-burn-in window has persistentNewActivity greater than zero.'
+};
+
+export const CLADE_ACTIVITY_CLADOGENESIS_SWEEP_DEFINITION: CladeActivityCladogenesisSweepDefinition = {
+  seedPanel: CLADE_ACTIVITY_SEED_PANEL_DEFINITION,
+  activeClades: 'Active clade count in the final simulation summary for one seed.',
+  activeSpecies: 'Active species count in the final simulation summary for one seed.',
+  totalClades: 'Total clades observed across the full simulation history for one seed.',
+  totalSpecies: 'Total species observed across the full simulation history for one seed.',
+  activeCladeToSpeciesRatio: 'Final activeClades divided by final activeSpecies for one seed.',
+  totalCladeToSpeciesRatio: 'Total clades divided by total species observed over the full simulation history for one seed.'
 };
 
 export function analyzeSpeciesActivity(input: AnalyzeSpeciesActivityInput): AnalyzeSpeciesActivityResult {
@@ -562,6 +585,82 @@ export function runCladeActivitySeedPanel(input: RunCladeActivitySeedPanelInput)
     },
     seedResults,
     aggregates: minSurvivalTicks.map((threshold) => buildActivitySeedPanelThresholdAggregate(threshold, seedResults))
+  };
+}
+
+export function runCladeActivityCladogenesisSweep(
+  input: RunCladeActivityCladogenesisSweepInput
+): CladeActivityCladogenesisSweepExport {
+  const steps = toPositiveInt('steps', input.steps);
+  const windowSize = toPositiveInt('windowSize', input.windowSize);
+  const burnIn = toNonNegativeInt('burnIn', input.burnIn);
+  const seeds = toUniqueIntegerList('seeds', input.seeds);
+  const minSurvivalTicks = toNonNegativeIntList('minSurvivalTicks', input.minSurvivalTicks);
+  const cladogenesisThresholds = toUniqueFiniteNumberList('cladogenesisThresholds', input.cladogenesisThresholds);
+  const stopWhenExtinct = input.stopWhenExtinct ?? true;
+
+  const thresholdResults: CladeActivityCladogenesisSweepThresholdResult[] = cladogenesisThresholds.map(
+    (cladogenesisThreshold) => {
+      const seedResults: CladeActivityCladogenesisSweepSeedResult[] = seeds.map((seed) => {
+        const { simulation, finalSummary } = executeActivitySimulation({
+          steps,
+          seed,
+          stopWhenExtinct,
+          simulation: withCladogenesisThreshold(input.simulation, cladogenesisThreshold),
+          emptyRunError: 'Clade activity cladogenesis sweep produced no step data'
+        });
+        const history = simulation.history();
+        const rawSummary = analyzeCladeActivity({
+          clades: history.clades,
+          windowSize,
+          burnIn,
+          maxTick: finalSummary.tick
+        }).summary;
+
+        return {
+          seed,
+          finalSummary,
+          rawSummary,
+          thresholds: minSurvivalTicks.map((threshold) =>
+            buildActivitySeedPanelThresholdSeedResult({
+              minSurvivalTicks: threshold,
+              summary: analyzePersistentCladeActivity({
+                clades: history.clades,
+                windowSize,
+                burnIn,
+                maxTick: finalSummary.tick,
+                minSurvivalTicks: threshold
+              }).summary
+            })
+          ),
+          counts: buildCladeSpeciesCountSummary(finalSummary, history.clades.length, history.species.length)
+        };
+      });
+
+      return {
+        cladogenesisThreshold,
+        seedResults,
+        activityAggregates: minSurvivalTicks.map((threshold) =>
+          buildActivitySeedPanelThresholdAggregate(threshold, seedResults)
+        ),
+        countAggregates: buildCladeSpeciesCountAggregate(seedResults)
+      };
+    }
+  );
+
+  return {
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    definition: CLADE_ACTIVITY_CLADOGENESIS_SWEEP_DEFINITION,
+    config: {
+      steps,
+      windowSize,
+      burnIn,
+      seeds,
+      stopWhenExtinct,
+      minSurvivalTicks,
+      cladogenesisThresholds
+    },
+    thresholdResults
   };
 }
 
@@ -974,6 +1073,59 @@ function buildActivitySeedPanelThresholdAggregate<
   };
 }
 
+function withCladogenesisThreshold(
+  simulation: Omit<LifeSimulationOptions, 'seed'> | undefined,
+  cladogenesisThreshold: number
+): Omit<LifeSimulationOptions, 'seed'> {
+  return {
+    ...simulation,
+    config: {
+      ...simulation?.config,
+      cladogenesisThreshold
+    }
+  };
+}
+
+function buildCladeSpeciesCountSummary(
+  finalSummary: StepSummary,
+  totalClades: number,
+  totalSpecies: number
+): CladeSpeciesCountSummary {
+  return {
+    activeClades: finalSummary.activeClades,
+    activeSpecies: finalSummary.activeSpecies,
+    totalClades,
+    totalSpecies,
+    activeCladeToSpeciesRatio: divideOrZero(finalSummary.activeClades, finalSummary.activeSpecies),
+    totalCladeToSpeciesRatio: divideOrZero(totalClades, totalSpecies)
+  };
+}
+
+function buildCladeSpeciesCountAggregate(
+  seedResults: CladeActivityCladogenesisSweepSeedResult[]
+): CladeSpeciesCountAggregate {
+  return {
+    activeClades: buildNumericAggregate(seedResults.map((seedResult) => seedResult.counts.activeClades)),
+    activeSpecies: buildNumericAggregate(seedResults.map((seedResult) => seedResult.counts.activeSpecies)),
+    totalClades: buildNumericAggregate(seedResults.map((seedResult) => seedResult.counts.totalClades)),
+    totalSpecies: buildNumericAggregate(seedResults.map((seedResult) => seedResult.counts.totalSpecies)),
+    activeCladeToSpeciesRatio: buildNumericAggregate(
+      seedResults.map((seedResult) => seedResult.counts.activeCladeToSpeciesRatio)
+    ),
+    totalCladeToSpeciesRatio: buildNumericAggregate(
+      seedResults.map((seedResult) => seedResult.counts.totalCladeToSpeciesRatio)
+    )
+  };
+}
+
+function buildNumericAggregate(values: number[]): NumericAggregate {
+  return {
+    mean: mean(values),
+    min: min(values),
+    max: max(values)
+  };
+}
+
 function collectTaxonActivityContext(taxa: TaxonHistory[], windowSize: number, maxTick: number): TaxonActivityContext {
   const activeTaxaByTick = Array.from({ length: maxTick + 1 }, () => 0);
   const contributions: TaxonWindowContribution[] = [];
@@ -1049,6 +1201,13 @@ function max(values: number[]): number {
   return values.reduce((highest, value) => Math.max(highest, value), values[0]);
 }
 
+function divideOrZero(numerator: number, denominator: number): number {
+  if (denominator === 0) {
+    return 0;
+  }
+  return numerator / denominator;
+}
+
 function toPositiveInt(name: string, value: number): number {
   if (!Number.isInteger(value) || value <= 0) {
     throw new Error(`${name} must be a positive integer`);
@@ -1090,6 +1249,25 @@ function toUniqueIntegerList(name: string, values: number[]): number[] {
   const normalized = values.map((value) => {
     if (!Number.isInteger(value)) {
       throw new Error(`${name} must contain only integers`);
+    }
+    return value;
+  });
+
+  if (new Set(normalized).size !== normalized.length) {
+    throw new Error(`${name} must not contain duplicates`);
+  }
+
+  return normalized;
+}
+
+function toUniqueFiniteNumberList(name: string, values: number[]): number[] {
+  if (values.length === 0) {
+    throw new Error(`${name} must contain at least one value`);
+  }
+
+  const normalized = values.map((value) => {
+    if (!Number.isFinite(value)) {
+      throw new Error(`${name} must contain only finite numbers`);
     }
     return value;
   });

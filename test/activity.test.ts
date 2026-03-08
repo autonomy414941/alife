@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   analyzeCladeActivity,
   analyzePersistentCladeActivity,
+  runCladeActivityCladogenesisSweep,
   runCladeActivityPersistenceSweep,
   runCladeActivitySeedPanel,
   analyzePersistentSpeciesActivity,
@@ -824,6 +825,155 @@ describe('runCladeActivitySeedPanel', () => {
       expect(aggregate.meanPersistentActivityMean).toBeCloseTo(meanPersistentActivityMean, 10);
       expect(aggregate.maxPersistentActivityMean).toBeCloseTo(Math.max(...persistentActivityMeans), 10);
     }
+  });
+});
+
+describe('runCladeActivityCladogenesisSweep', () => {
+  it('is deterministic and summarizes clade/species count ratios for each cladogenesis threshold', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 100,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: 6,
+      windowSize: 1,
+      burnIn: 2,
+      seeds: [77, 78],
+      minSurvivalTicks: [1, 2],
+      cladogenesisThresholds: [-1, 0],
+      stopWhenExtinct: true,
+      simulation,
+      generatedAt: '2026-03-08T00:00:00.000Z'
+    };
+
+    const first = runCladeActivityCladogenesisSweep(input);
+    const second = runCladeActivityCladogenesisSweep(input);
+
+    expect(first).toEqual(second);
+    expect(first.definition.seedPanel.raw.component).toBe('clades');
+    expect(first.config.cladogenesisThresholds).toEqual([-1, 0]);
+    expect(first.thresholdResults).toHaveLength(2);
+
+    for (const thresholdResult of first.thresholdResults) {
+      expect(thresholdResult.seedResults).toHaveLength(2);
+
+      const activeClades = thresholdResult.seedResults.map((seedResult) => seedResult.counts.activeClades);
+      const activeSpecies = thresholdResult.seedResults.map((seedResult) => seedResult.counts.activeSpecies);
+      const totalClades = thresholdResult.seedResults.map((seedResult) => seedResult.counts.totalClades);
+      const totalSpecies = thresholdResult.seedResults.map((seedResult) => seedResult.counts.totalSpecies);
+      const activeRatios = thresholdResult.seedResults.map(
+        (seedResult) => seedResult.counts.activeCladeToSpeciesRatio
+      );
+      const totalRatios = thresholdResult.seedResults.map((seedResult) => seedResult.counts.totalCladeToSpeciesRatio);
+
+      expect(thresholdResult.countAggregates.activeClades).toEqual({
+        mean: activeClades.reduce((total, value) => total + value, 0) / activeClades.length,
+        min: Math.min(...activeClades),
+        max: Math.max(...activeClades)
+      });
+      expect(thresholdResult.countAggregates.activeSpecies).toEqual({
+        mean: activeSpecies.reduce((total, value) => total + value, 0) / activeSpecies.length,
+        min: Math.min(...activeSpecies),
+        max: Math.max(...activeSpecies)
+      });
+      expect(thresholdResult.countAggregates.totalClades).toEqual({
+        mean: totalClades.reduce((total, value) => total + value, 0) / totalClades.length,
+        min: Math.min(...totalClades),
+        max: Math.max(...totalClades)
+      });
+      expect(thresholdResult.countAggregates.totalSpecies).toEqual({
+        mean: totalSpecies.reduce((total, value) => total + value, 0) / totalSpecies.length,
+        min: Math.min(...totalSpecies),
+        max: Math.max(...totalSpecies)
+      });
+      expect(thresholdResult.countAggregates.activeCladeToSpeciesRatio).toEqual({
+        mean: activeRatios.reduce((total, value) => total + value, 0) / activeRatios.length,
+        min: Math.min(...activeRatios),
+        max: Math.max(...activeRatios)
+      });
+      expect(thresholdResult.countAggregates.totalCladeToSpeciesRatio).toEqual({
+        mean: totalRatios.reduce((total, value) => total + value, 0) / totalRatios.length,
+        min: Math.min(...totalRatios),
+        max: Math.max(...totalRatios)
+      });
+
+      for (const aggregate of thresholdResult.activityAggregates) {
+        const thresholdSeedResults = thresholdResult.seedResults.map((seedResult) => {
+          const threshold = seedResult.thresholds.find((result) => result.minSurvivalTicks === aggregate.minSurvivalTicks);
+          expect(threshold).toBeDefined();
+          return threshold!;
+        });
+        const persistentWindowFractions = thresholdSeedResults.map((threshold) => threshold.persistentWindowFraction);
+        const persistentActivityMeans = thresholdSeedResults.map(
+          (threshold) => threshold.summary.postBurnInPersistentNewActivityMean
+        );
+
+        expect(aggregate.seeds).toBe(2);
+        expect(aggregate.minPersistentWindowFraction).toBeCloseTo(Math.min(...persistentWindowFractions), 10);
+        expect(aggregate.meanPersistentWindowFraction).toBeCloseTo(
+          persistentWindowFractions.reduce((total, value) => total + value, 0) / persistentWindowFractions.length,
+          10
+        );
+        expect(aggregate.maxPersistentWindowFraction).toBeCloseTo(Math.max(...persistentWindowFractions), 10);
+        expect(aggregate.minPersistentActivityMean).toBeCloseTo(Math.min(...persistentActivityMeans), 10);
+        expect(aggregate.meanPersistentActivityMean).toBeCloseTo(
+          persistentActivityMeans.reduce((total, value) => total + value, 0) / persistentActivityMeans.length,
+          10
+        );
+        expect(aggregate.maxPersistentActivityMean).toBeCloseTo(Math.max(...persistentActivityMeans), 10);
+      }
+    }
+
+    const disabled = first.thresholdResults[0];
+    const enabled = first.thresholdResults[1];
+    expect(disabled.cladogenesisThreshold).toBe(-1);
+    expect(disabled.seedResults.every((seedResult) => seedResult.counts.activeClades === 1)).toBe(true);
+    expect(disabled.seedResults.every((seedResult) => seedResult.counts.totalClades === 1)).toBe(true);
+    expect(enabled.cladogenesisThreshold).toBe(0);
+    expect(
+      enabled.seedResults.every((seedResult) => seedResult.counts.activeClades === seedResult.counts.activeSpecies)
+    ).toBe(true);
+    expect(
+      enabled.seedResults.every((seedResult) => seedResult.counts.totalClades === seedResult.counts.totalSpecies)
+    ).toBe(true);
+    expect(enabled.countAggregates.activeCladeToSpeciesRatio.mean).toBeGreaterThan(
+      disabled.countAggregates.activeCladeToSpeciesRatio.mean
+    );
+    expect(enabled.activityAggregates[0].meanPersistentActivityMean).toBeGreaterThan(0);
+  });
+
+  it('rejects duplicate cladogenesis thresholds', () => {
+    expect(() =>
+      runCladeActivityCladogenesisSweep({
+        steps: 10,
+        windowSize: 2,
+        burnIn: 2,
+        seeds: [5],
+        minSurvivalTicks: [1],
+        cladogenesisThresholds: [0.25, 0.25]
+      })
+    ).toThrow('cladogenesisThresholds must not contain duplicates');
   });
 });
 

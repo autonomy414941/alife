@@ -807,6 +807,66 @@ export interface CladeActivitySeedPanelExport {
   aggregates: CladeActivitySeedPanelThresholdAggregate[];
 }
 
+export interface CladeSpeciesCountSummary {
+  activeClades: number;
+  activeSpecies: number;
+  totalClades: number;
+  totalSpecies: number;
+  activeCladeToSpeciesRatio: number;
+  totalCladeToSpeciesRatio: number;
+}
+
+export interface CladeSpeciesCountAggregate {
+  activeClades: NumericAggregate;
+  activeSpecies: NumericAggregate;
+  totalClades: NumericAggregate;
+  totalSpecies: NumericAggregate;
+  activeCladeToSpeciesRatio: NumericAggregate;
+  totalCladeToSpeciesRatio: NumericAggregate;
+}
+
+export interface CladeActivityCladogenesisSweepDefinition {
+  seedPanel: CladeActivitySeedPanelDefinition;
+  activeClades: string;
+  activeSpecies: string;
+  totalClades: string;
+  totalSpecies: string;
+  activeCladeToSpeciesRatio: string;
+  totalCladeToSpeciesRatio: string;
+}
+
+export interface CladeActivityCladogenesisSweepConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number[];
+  cladogenesisThresholds: number[];
+}
+
+export interface CladeActivityCladogenesisSweepSeedResult {
+  seed: number;
+  finalSummary: StepSummary;
+  rawSummary: CladeActivityProbeSummary;
+  thresholds: CladeActivitySeedPanelThresholdSeedResult[];
+  counts: CladeSpeciesCountSummary;
+}
+
+export interface CladeActivityCladogenesisSweepThresholdResult {
+  cladogenesisThreshold: number;
+  seedResults: CladeActivityCladogenesisSweepSeedResult[];
+  activityAggregates: CladeActivitySeedPanelThresholdAggregate[];
+  countAggregates: CladeSpeciesCountAggregate;
+}
+
+export interface CladeActivityCladogenesisSweepExport {
+  generatedAt: string;
+  definition: CladeActivityCladogenesisSweepDefinition;
+  config: CladeActivityCladogenesisSweepConfig;
+  thresholdResults: CladeActivityCladogenesisSweepThresholdResult[];
+}
+
 export interface SpeciesActivityHorizonSweepConfig {
   steps: number[];
   windowSize: number;

@@ -1,61 +1,62 @@
 # Session Plan — 2026-03-08
 
 ## Compact Context
-- `npm` is the package manager; the core verification loop is `npm test && npm run build`.
-- `src/activity.ts` and `src/export.ts` already support species and clade activity/persistence exports with deterministic tests.
-- `src/simulation.ts` lets mutation found new species via `speciationThreshold`, but `reproduce()` keeps `child.lineage = parent.lineage`.
-- `docs/species_activity_seed_panel_2026-03-07.json` is strong species-side evidence: 4/4 seeds keep persistent post-burn-in novelty positive at thresholds `50` and `100`.
-- `docs/clade_activity_seed_panel_2026-03-08.json` is strong anti-evidence at the higher level: all 4 seeds stay at `totalClades = 24` with `postBurnInNewClades = 0`.
-- `docs/horizon_path_dependence_2026-03-06.json` is still robust-negative at `320` and `420` steps.
+- `npm` is the package manager; the verification baseline is `npm test && npm run build`, and the current test suite is green.
+- `src/activity.ts` already has deterministic species/clade persistence panels, and `src/simulation.ts` already supports opt-in `cladogenesisThreshold`.
+- `docs/species_activity_seed_panel_2026-03-07.json` is strong species-side evidence: 4/4 seeds keep positive persistent post-burn-in novelty at thresholds `50` and `100`.
+- `docs/clade_activity_seed_panel_2026-03-08.json` is still baseline-negative: 4/4 seeds show zero persistent post-burn-in clade novelty at the same thresholds.
+- `docs/clade_activity_cladogenesis_probe_2026-03-08.json` proves the new mechanism only in a tiny micro-regime, not the default ecology.
+- `lineage` is currently a history label, not a behavioral driver; clade IDs do not feed back into ecology or selection.
 
 ## Project State
-- The repo now has deterministic simulation, taxon-history export, disturbance/locality studies, and landed species/clade novelty instrumentation.
-- Recent sessions moved from disturbance/path-dependence falsifiers toward direct novelty measurement, then to cross-component comparison.
-- The underdeveloped area is no longer just measurement sensitivity: higher-level novelty is structurally capped because clades never branch after initialization.
+- The repo now has deterministic spatial dynamics, taxon-history export, disturbance/locality studies, species/clade activity probes, and landed opt-in cladogenesis.
+- Recent sessions moved from disturbance/path-dependence falsifiers toward direct novelty measurement and then to enabling clade birth in code.
+- The underdeveloped area is baseline-scale calibration: there is no machine-readable evidence for which cladogenesis settings produce persistent clade novelty without making clades behave like near-species aliases.
 
 ## External Context
-- de Pinho and Sinapayen, *A speciation simulation that partly passes open-endedness tests* (arXiv, March 2, 2026): their open-endedness conclusion depends on the chosen activity component, which makes component-degenerate metrics especially dangerous here. Source: https://arxiv.org/abs/2603.01701
-- Bonetti Franceschi, Dolson, and Volz, *Extending a Phylogeny-based Method for Detecting Signatures of Multi-level Selection for Applications in Artificial Life* (arXiv, August 20, 2025): clade-level inference matters for major evolutionary transitions, which requires nontrivial descendant clade structure rather than frozen initial lineages. Source: https://arxiv.org/abs/2508.14232
+- de Pinho and Sinapayen, *A speciation simulation that partly passes open-endedness tests* (arXiv, 2026-03-02): open-endedness conclusions changed with the chosen activity component, so component-specific positives need cross-component calibration. Source: https://arxiv.org/abs/2603.01701
+- Bonetti Franceschi, Dolson, and Volz, *Extending a Phylogeny-based Method for Detecting Signatures of Multi-level Selection for Applications in Artificial Life* (arXiv, 2025-08-20): higher-level evolutionary claims depend on phylogenetic grouping structure and normalization, not just raw descendant counts. Source: https://arxiv.org/abs/2508.14232
 
 ## Research Gaps
-- If the simulation allows bounded, explicit cladogenesis, does clade activity become nonzero in a deterministic probe without collapsing existing species-level behavior?
+- In the baseline ecology, is there any small `cladogenesisThreshold` range that yields persistent post-burn-in clade novelty while keeping clades materially coarser than species on the same seeds?
+- Does the best clade threshold leave the existing species-side novelty signal and end-state ecology roughly intact?
 
 ## Current Anti-Evidence
-- The current system cannot support open-ended clade-level evolution because `lineage` never changes after initialization; the clade panel's hard zero is structural, not just empirical.
-- Independent anti-evidence remains: path-dependence gains are robust-negative by `320` and `420` steps.
+- No documented baseline regime currently shows persistent clade novelty, and any future positive clade counts are still suspect because `lineage` has no causal role in the dynamics.
+- Independent anti-evidence remains: `docs/horizon_path_dependence_2026-03-06.json` is robust-negative at `320` and `420` steps.
 
 ## Candidate Bets
-- A: Add opt-in cladogenesis so a sufficiently diverged speciation event can found a new clade, then prove it with a deterministic clade-activity probe artifact.
-  Why now: The strongest blocker is a hard ceiling on higher-level novelty, and removing that ceiling directly increases open-endedness capacity.
-  Est. low-context human time: 55m
-  Expected information gain: high
-  Main risk: Threshold semantics could sprawl into a larger taxonomy redesign if not kept narrow.
-- B: Compare the lone robust-positive locality regime (`radius=1`, `refugia=0.35`) against baseline with the existing species persistence seed panel.
-  Why now: It tests whether the only supported spatial intervention also improves the strongest current novelty metric.
-  Est. low-context human time: 40m
-  Expected information gain: medium
-  Main risk: It still leaves clade-level novelty impossible by construction.
-- C: Extend species persistence horizon evidence beyond `2000` steps on multiple seeds.
-  Why now: The positive species result is still horizon-limited and sits beside negative path-dependence evidence.
+- A: Add a fixed `cladogenesisThreshold` sweep (`-1`, `0.25`, `0.4`, `0.6`) that exports clade persistence alongside clade/species count ratios on the existing seed panel.
+  Why now: The mechanism exists, but the project still lacks evidence about whether it creates meaningful higher-level novelty or mostly relabels species turnover.
   Est. low-context human time: 45m
+  Expected information gain: high
+  Main risk: The export schema could sprawl if the comparison is not kept to a few fixed summary fields.
+- B: Run the lone robust-positive locality regime (`radius=1`, `refugia=0.35`) with cladogenesis enabled and compare clade persistence against baseline.
+  Why now: It tests whether the only supported spatial intervention also supports higher-level novelty.
+  Est. low-context human time: 50m
   Expected information gain: medium
-  Main risk: Runtime may rise without resolving the structural ceiling on higher-level novelty.
+  Main risk: Two interacting knobs make attribution murky in one session.
+- C: Add one minimal lineage-level ecological feedback and prove it in a micro-regime.
+  Why now: Clades currently have no causal role in agent behavior.
+  Est. low-context human time: >60m
+  Expected information gain: medium
+  Main risk: It changes core dynamics without enough time for calibration.
 
 ## Selected Bet
-Add a narrow, opt-in cladogenesis rule in `src/simulation.ts`: when a new species is founded, compare its genome to the current clade founder and start a new clade only if a separate divergence threshold is crossed. Keep default behavior backward-compatible, add deterministic tests for split vs no-split behavior, and generate one small machine-readable clade-activity artifact from a controlled fixed-seed regime that shows post-burn-in clade novelty can become positive.
+Build a deterministic cladogenesis-threshold sweep on top of the existing seed-panel machinery. Reuse the current multi-seed persistence workflow, evaluate a short fixed threshold grid, and export for each threshold clade persistent activity, active/total clade counts, active/total species counts, and simple clade-to-species ratios. The point is to learn whether baseline clade novelty can become positive without collapsing into a near-species relabeling.
 
 ## Why This Fits The Horizon
-- The change is bounded to one new simulation parameter, lineage-founder bookkeeping, deterministic tests, and one small probe artifact; it does not require a full taxonomy redesign or broad sweep.
-- Success is autonomously verifiable because the actor can check both regression safety and the new capability with deterministic assertions and one fixed-seed export.
+- It reuses existing simulation and activity-panel code, adding one bounded comparison dimension instead of a new evolutionary mechanism.
+- Success is autonomously verifiable with deterministic tests and one JSON artifact from fixed seeds and thresholds.
 
 ## Success Evidence
-- Artifact: a new JSON probe or persistence export under `docs/` showing `totalClades > initialAgents` and `postBurnInWindowsWithNewActivity > 0` in a fixed cladogenesis-enabled run.
-- Verification command or output: `npm test && npm run build`, with tests that prove clades stay frozen when the new threshold is disabled and branch when it is enabled.
+- Artifact: a new JSON export under `docs/` listing thresholds `-1`, `0.25`, `0.4`, and `0.6` with per-threshold clade persistent activity plus clade/species count ratios.
+- Verification command or output: `npm test && npm run build`, plus a deterministic test that the sweep reproduces the same export for the same seeds and threshold grid.
 
 ## Stop Conditions
-- Stop if the work starts expanding into multi-level taxonomies, CLI redesign, or broad baseline retuning; keep scope to one opt-in cladogenesis mechanism plus proof artifact.
-- If baseline tuning thrashes, shrink to a deterministic micro-regime that only proves the new mechanism can create post-burn-in clade novelty without breaking existing tests.
+- Stop if the work starts drifting into threshold auto-tuning, new ecology, or a generalized analytics framework.
+- If runtime or schema complexity grows, shrink to fewer thresholds or one ratio metric and record the comparison cleanly rather than expanding scope.
 
 ## Assumptions / Unknowns
-- Assumption: a clade-founder genome anchor is a sufficient first-pass rule for bounded cladogenesis without redefining every existing history/export type.
-- Unknown: what divergence threshold yields meaningful new clades in the baseline regime; the session should not depend on solving that broader tuning problem.
+- Assumption: clade-to-species ratios are a sufficient first-pass proxy for distinguishing higher-level structure from relabeled species turnover.
+- Unknown: whether any coarse threshold produces positive clade persistence in the default regime without overly tracking species counts.
