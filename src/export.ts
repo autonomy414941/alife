@@ -1,4 +1,6 @@
 import {
+  CladeActivityPersistenceSweepExport,
+  CladeActivitySeedPanelExport,
   DisturbanceGridStudyExport,
   EvolutionAnalyticsSnapshot,
   EvolutionHistorySnapshot,
@@ -302,6 +304,14 @@ export function speciesActivityPersistenceSweepToJson(exportData: SpeciesActivit
 }
 
 export function speciesActivitySeedPanelToJson(exportData: SpeciesActivitySeedPanelExport): string {
+  return `${JSON.stringify(exportData, null, 2)}\n`;
+}
+
+export function cladeActivityPersistenceSweepToJson(exportData: CladeActivityPersistenceSweepExport): string {
+  return `${JSON.stringify(exportData, null, 2)}\n`;
+}
+
+export function cladeActivitySeedPanelToJson(exportData: CladeActivitySeedPanelExport): string {
   return `${JSON.stringify(exportData, null, 2)}\n`;
 }
 

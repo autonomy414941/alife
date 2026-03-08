@@ -1,61 +1,61 @@
-# Session Plan — 2026-03-07
+# Session Plan — 2026-03-08
 
 ## Compact Context
-- `src/activity.ts` already has deterministic species activity probe, horizon sweep, and persistence-filtered sweep support with tests.
-- `docs/species_activity_horizon_sweep_2026-03-07.json` stays positive through `2000` steps for seed `20260307`: every post-burn-in window has non-zero species `newActivity`.
-- `docs/species_activity_persistence_sweep_2026-03-07.json` shows that thresholds `50` and `100` still keep persistent novelty in all `17` evaluable post-burn-in windows; only the final window is censored.
-- `src/simulation.ts` exports both species and clade histories, including `firstSeenTick`, `extinctTick`, and full timelines.
-- Disturbance/locality evidence is still mixed: `docs/locality_regime_sweep_2026-03-07.json` has one robust-positive cell, `docs/locality_threshold_sweep_2026-03-07.json` has no supported cell, and `docs/horizon_path_dependence_2026-03-06.json` is robust-negative by `320` and `420` steps.
-- The disturbance study path already has seed-block and CI95 machinery in `src/experiment.ts`; the species-activity path does not.
+- `src/activity.ts` already ships species-level probe, persistence sweep, horizon sweep, and fixed seed-panel analytics with deterministic tests.
+- `src/simulation.ts` exports both `species` and `clades` as `TaxonHistory[]` with `firstSeenTick`, `extinctTick`, and full timelines.
+- `docs/species_activity_seed_panel_2026-03-07.json` shows 4/4 baseline seeds keep persistent post-burn-in species novelty positive across all evaluable windows for thresholds `50` and `100` at `2000` steps.
+- `docs/species_activity_horizon_sweep_2026-03-07.json` stays positive through `1000`, `1500`, and `2000` steps, but only for one seed.
+- `docs/horizon_path_dependence_2026-03-06.json` is robust-negative by `320` and `420` steps.
+- `docs/locality_regime_sweep_2026-03-07.json` has one robust-positive locality cell and otherwise ambiguous support.
 
 ## Project State
-- The repo now contains deterministic simulation, turnover/history analytics, disturbance/locality studies, and landed species-level novelty probes with persistence filtering.
-- Recent sessions have shifted from disturbance/path-dependence falsifiers toward direct novelty measurement, and the durability-filtered species signal did not collapse.
-- The important gap is robustness: the strongest positive novelty evidence still comes from one baseline seed and one baseline configuration.
+- The repo now has deterministic simulation, taxon-history export, disturbance/locality studies, and species-level novelty instrumentation with landed multi-seed robustness.
+- Recent sessions moved from disturbance/path-dependence falsifiers toward direct novelty measurement, and the species persistence signal did not collapse under a 4-seed panel.
+- The important gap is component sensitivity: novelty evidence is still species-only even though clade histories are already available.
 
 ## External Context
-- de Pinho and Sinapayen, *A speciation simulation that partly passes open-endedness tests* (arXiv, March 2, 2026): open-endedness conclusions changed when the measured activity component changed, which raises the bar for claiming success from a narrow slice of evidence. Source: https://arxiv.org/abs/2603.01701
-- Kimpton et al., *Uncertainty quantification for agent-based models: a tutorial* (arXiv, February 9, 2024): stochastic ABM claims should be supported by explicit uncertainty summaries rather than single trajectories. Source: https://arxiv.org/abs/2402.04580
+- de Pinho and Sinapayen, *A speciation simulation that partly passes open-endedness tests* (arXiv, submitted March 2, 2026): their conclusion changed with the chosen activity component and they explicitly note follow-up work should repeat the test with different units such as species. Source: https://arxiv.org/abs/2603.01701
+- Moreno, Rodriguez-Papa, and Dolson, *Ecology, Spatial Structure, and Selection Pressure Induce Strong Signatures in Phylogenetic Structure* (arXiv v2, November 21, 2024): phylogenetic signatures can generalize across equivalent unit definitions, but interpretation depends on metric choice and high-resolution histories. Source: https://arxiv.org/abs/2405.07245
 
 ## Research Gaps
-- Does the current persistence-filtered species novelty signal remain positive across a fixed multi-seed panel, or is the `20260307` baseline an unusually favorable trajectory?
+- If the current persistence filter is applied to clade histories on the same baseline seed panel, does post-burn-in new activity remain positive or collapse at the coarser taxonomic level?
 
 ## Current Anti-Evidence
-- The best current pro-open-endedness result is still a single-seed species-level trajectory, which is too fragile for a stochastic system.
-- Independent criteria are not yet convergent: longer-horizon path-dependence evidence is robust-negative while locality support is isolated to one cell.
+- The evidence is not convergent: species persistence looks strong, but longer-horizon path-dependence evidence is robust-negative and locality support is isolated to one regime.
+- The best novelty result still depends on one component choice (`species`), so measurement sensitivity remains unresolved.
 
 ## Candidate Bets
-- A: Add a bounded multi-seed species-activity persistence sweep for the existing `2000`-step baseline and thresholds `50`/`100`.
-  Why now: Persistence filtering already survived on one seed, so the next strongest falsifier is whether that signal generalizes beyond that trajectory.
+- A: Add a clade-level activity persistence seed panel for the current `2000`-step baseline and thresholds `50`/`100`, mirroring the landed species artifact.
+  Why now: Species seed robustness already landed, and clade histories are already exported in the same timeline format.
   Est. low-context human time: 45m
   Expected information gain: high
-  Main risk: The output schema can sprawl if the session tries to reproduce the full disturbance-study statistics stack.
-- B: Add clade-level activity and persistence probes using the already-exported clade histories.
-  Why now: Component sensitivity remains unresolved, and clade histories already exist in the simulation state.
+  Main risk: A taxon-generic refactor could sprawl if it tries to redesign every existing activity interface.
+- B: Add a multi-seed species persistence horizon sweep beyond `2000` steps for the existing baseline thresholds.
+  Why now: The current positive novelty result is still horizon-limited even after the seed-panel win.
   Est. low-context human time: 55m
-  Expected information gain: high
-  Main risk: Generalizing species activity code into a taxon-agnostic layer may exceed the session horizon.
-- C: Compare species-activity persistence on the lone robust-positive locality regime (`radius=1`, `refugia=0.35`) against the baseline regime.
-  Why now: It tests whether the only currently supported spatial intervention also strengthens novelty.
-  Est. low-context human time: 50m
   Expected information gain: medium
-  Main risk: It mixes regime comparison into a result that is not yet robust across seeds even in the baseline.
+  Main risk: Runtime and artifact size may consume the session without resolving component sensitivity.
+- C: Compare the lone robust-positive locality regime (`radius=1`, `refugia=0.35`) against the baseline using the existing species persistence seed panel.
+  Why now: It tests whether the only supported spatial intervention also strengthens novelty.
+  Est. low-context human time: 40m
+  Expected information gain: medium
+  Main risk: It mixes regime comparison into a measurement stack that still has unresolved component dependence.
 
 ## Selected Bet
-Add a fixed-seed-panel species-activity persistence sweep for the current `2000`-step baseline, reusing the landed raw and persistence summaries instead of inventing new novelty definitions. Keep it narrow: one baseline configuration, thresholds `50` and `100`, per-seed outputs plus a small aggregate that answers whether persistent post-burn-in novelty survives beyond the `20260307` run.
+Add a clade-level persistence seed panel for the existing `2000`-step baseline, reusing the same windowing and survival-threshold logic already used for species. Keep it narrow: one taxonomic change (`species` to `clades`), the existing 4-seed panel, thresholds `50` and `100`, and one machine-readable artifact that answers whether the current novelty claim survives at a higher phylogenetic level.
 
 ## Why This Fits The Horizon
-- The work is local to activity/export/tests and one JSON artifact, and it can borrow lightweight uncertainty patterns from `src/experiment.ts` without touching simulation dynamics.
-- Success is autonomously checkable with deterministic tests/build and a machine-readable artifact that either shows broad seed robustness or clearly falsifies it.
+- The work is local to activity/types/tests plus one JSON artifact, and it can reuse `TaxonHistory`-based logic without touching simulation dynamics.
+- Success is autonomously verifiable with deterministic tests/build and an artifact that either preserves positive clade persistence or cleanly falsifies it.
 
 ## Success Evidence
-- Artifact: `docs/species_activity_seed_panel_2026-03-07.json` containing the exact seed list, per-seed raw summaries, and per-threshold aggregates such as `minPersistentWindowFraction`, `meanPersistentWindowFraction`, and `seedsWithAllEvaluableWindowsPositive`.
-- Verification command or output: `npm test && npm run build`, then inspect whether thresholds `50` and `100` keep `minPersistentWindowFraction > 0` or reveal seed-level collapses.
+- Artifact: `docs/clade_activity_seed_panel_2026-03-08.json` with the exact seed list, per-seed clade raw summaries, per-threshold persistence summaries, and aggregates such as `minPersistentWindowFraction`.
+- Verification command or output: `npm test && npm run build`, then inspect whether thresholds `50` and `100` keep clade `postBurnInWindowsWithPersistentNewActivity > 0` across evaluable windows or reveal collapse.
 
 ## Stop Conditions
-- Stop if the implementation starts expanding into new dynamics, locality comparisons, or clade metrics; keep the session on baseline seed robustness only.
-- If CI/block-style aggregation becomes too large, shrink to a deterministic per-seed panel plus min/mean aggregates and document the missing uncertainty layer instead of thrashing.
+- Stop if the session starts expanding into CLI redesign, locality comparisons, or new open-endedness metrics; keep scope on clade measurement for the baseline regime only.
+- If a taxon-generic abstraction starts touching disturbance/export paths, shrink to a clade-only mirror of the existing species functions and document the missing generalization.
 
 ## Assumptions / Unknowns
-- Assumption: now that persistence filtering stayed positive, seed robustness is the highest-leverage next uncertainty to reduce.
-- Unknown: whether a small fixed seed panel is enough to materially update the open-endedness judgment, or whether configuration sensitivity will dominate next.
+- Assumption: clade histories are semantically comparable enough to species histories for the same persistence-window analysis because both are exported as timeline-based `TaxonHistory`.
+- Unknown: whether clade originations are frequent enough by `2000` steps for a meaningful persistence signal, or whether a null result will mostly reflect coarse aggregation.

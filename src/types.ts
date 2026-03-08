@@ -658,6 +658,154 @@ export interface SpeciesActivitySeedPanelExport {
   aggregates: SpeciesActivitySeedPanelThresholdAggregate[];
 }
 
+export interface CladeActivityWindow {
+  windowIndex: number;
+  startTick: number;
+  endTick: number;
+  size: number;
+  postBurnIn: boolean;
+  newClades: number;
+  cumulativeActivity: number;
+  normalizedCumulativeActivity: number;
+  newActivity: number;
+}
+
+export interface CladeActivityProbeDefinition {
+  component: 'clades';
+  activityUnit: 'activeCladeTick';
+  cumulativeActivity: string;
+  normalizedCumulativeActivity: string;
+  newActivity: string;
+}
+
+export interface CladeActivityPersistenceSweepDefinition {
+  raw: CladeActivityProbeDefinition;
+  observedLifetime: string;
+  persistentNewActivity: string;
+  censoredWindow: string;
+}
+
+export interface CladeActivityProbeConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seed: number;
+  stopWhenExtinct: boolean;
+}
+
+export interface CladeActivityProbeSummary {
+  stepsExecuted: number;
+  totalClades: number;
+  postBurnInWindows: number;
+  postBurnInWindowsWithNewActivity: number;
+  postBurnInNewClades: number;
+  postBurnInNewActivityMean: number;
+  postBurnInNewActivityMin: number;
+  postBurnInNewActivityMax: number;
+  finalCumulativeActivity: number;
+  finalNormalizedCumulativeActivity: number;
+  finalNewActivity: number;
+}
+
+export interface CladeActivityPersistenceSweepConfig extends CladeActivityProbeConfig {
+  minSurvivalTicks: number[];
+}
+
+export interface CladeActivityPersistenceWindow {
+  windowIndex: number;
+  startTick: number;
+  endTick: number;
+  size: number;
+  postBurnIn: boolean;
+  censored: boolean;
+  newClades: number;
+  rawNewActivity: number;
+  persistentNewClades: number | null;
+  persistentNewActivity: number | null;
+}
+
+export interface CladeActivityPersistenceSummary {
+  minSurvivalTicks: number;
+  postBurnInWindows: number;
+  censoredPostBurnInWindows: number;
+  evaluablePostBurnInWindows: number;
+  postBurnInWindowsWithPersistentNewActivity: number;
+  postBurnInPersistentNewClades: number;
+  postBurnInPersistentNewActivityMean: number;
+  postBurnInPersistentNewActivityMin: number;
+  postBurnInPersistentNewActivityMax: number;
+  finalPersistentNewActivity: number | null;
+  finalWindowCensored: boolean;
+}
+
+export interface CladeActivityPersistenceThresholdResult {
+  minSurvivalTicks: number;
+  windows: CladeActivityPersistenceWindow[];
+  summary: CladeActivityPersistenceSummary;
+}
+
+export interface CladeActivityPersistenceSweepExport {
+  generatedAt: string;
+  definition: CladeActivityPersistenceSweepDefinition;
+  config: CladeActivityPersistenceSweepConfig;
+  finalSummary: StepSummary;
+  rawSummary: CladeActivityProbeSummary;
+  thresholds: CladeActivityPersistenceThresholdResult[];
+}
+
+export interface CladeActivitySeedPanelDefinition {
+  raw: CladeActivityProbeDefinition;
+  observedLifetime: string;
+  persistentNewActivity: string;
+  censoredWindow: string;
+  persistentWindowFraction: string;
+  allEvaluableWindowsPositive: string;
+}
+
+export interface CladeActivitySeedPanelConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number[];
+}
+
+export interface CladeActivitySeedPanelThresholdSeedResult {
+  minSurvivalTicks: number;
+  summary: CladeActivityPersistenceSummary;
+  persistentWindowFraction: number;
+  allEvaluableWindowsPositive: boolean;
+}
+
+export interface CladeActivitySeedPanelSeedResult {
+  seed: number;
+  finalSummary: StepSummary;
+  rawSummary: CladeActivityProbeSummary;
+  thresholds: CladeActivitySeedPanelThresholdSeedResult[];
+}
+
+export interface CladeActivitySeedPanelThresholdAggregate {
+  minSurvivalTicks: number;
+  seeds: number;
+  seedsWithEvaluableWindows: number;
+  seedsWithAllEvaluableWindowsPositive: number;
+  minPersistentWindowFraction: number;
+  meanPersistentWindowFraction: number;
+  maxPersistentWindowFraction: number;
+  minPersistentActivityMean: number;
+  meanPersistentActivityMean: number;
+  maxPersistentActivityMean: number;
+}
+
+export interface CladeActivitySeedPanelExport {
+  generatedAt: string;
+  definition: CladeActivitySeedPanelDefinition;
+  config: CladeActivitySeedPanelConfig;
+  seedResults: CladeActivitySeedPanelSeedResult[];
+  aggregates: CladeActivitySeedPanelThresholdAggregate[];
+}
+
 export interface SpeciesActivityHorizonSweepConfig {
   steps: number[];
   windowSize: number;

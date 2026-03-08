@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  runCladeActivityPersistenceSweep,
+  runCladeActivitySeedPanel,
   runSpeciesActivityHorizonSweep,
   runSpeciesActivityPersistenceSweep,
   runSpeciesActivitySeedPanel,
@@ -10,6 +12,8 @@ import {
   EXPERIMENT_AGGREGATE_CSV_COLUMNS,
   METRICS_CSV_COLUMNS,
   buildRunExport,
+  cladeActivityPersistenceSweepToJson,
+  cladeActivitySeedPanelToJson,
   disturbanceGridStudyToCsv,
   disturbanceGridStudyToJson,
   experimentAggregateToCsv,
@@ -593,6 +597,98 @@ describe('run export', () => {
 
     expect(parsed.generatedAt).toBe('2026-03-07T00:00:00.000Z');
     expect(parsed.definition.raw.component).toBe('species');
+    expect(parsed.config.seeds).toEqual([88, 89]);
+    expect(parsed.seedResults).toHaveLength(2);
+    expect(parsed.aggregates).toHaveLength(2);
+    expect(parsed.aggregates[0].minSurvivalTicks).toBe(1);
+  });
+
+  it('renders clade-activity persistence sweeps to JSON', () => {
+    const sweep = runCladeActivityPersistenceSweep({
+      steps: 5,
+      windowSize: 2,
+      burnIn: 1,
+      seed: 88,
+      minSurvivalTicks: [1, 2],
+      stopWhenExtinct: true,
+      simulation: {
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceThreshold: 10,
+          reproduceProbability: 1,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0.2,
+          speciationThreshold: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 30,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+          }
+        ]
+      },
+      generatedAt: '2026-03-08T00:00:00.000Z'
+    });
+
+    const parsed = JSON.parse(cladeActivityPersistenceSweepToJson(sweep));
+
+    expect(parsed.generatedAt).toBe('2026-03-08T00:00:00.000Z');
+    expect(parsed.definition.raw.component).toBe('clades');
+    expect(parsed.config.minSurvivalTicks).toEqual([1, 2]);
+    expect(parsed.rawSummary.totalClades).toBe(1);
+    expect(parsed.thresholds).toHaveLength(2);
+    expect(parsed.thresholds[0].summary.minSurvivalTicks).toBe(1);
+  });
+
+  it('renders clade-activity seed panels to JSON', () => {
+    const panel = runCladeActivitySeedPanel({
+      steps: 6,
+      windowSize: 2,
+      burnIn: 2,
+      seeds: [88, 89],
+      minSurvivalTicks: [1, 2],
+      stopWhenExtinct: true,
+      simulation: {
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceThreshold: 10,
+          reproduceProbability: 1,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0.2,
+          speciationThreshold: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 30,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+          }
+        ]
+      },
+      generatedAt: '2026-03-08T00:00:00.000Z'
+    });
+
+    const parsed = JSON.parse(cladeActivitySeedPanelToJson(panel));
+
+    expect(parsed.generatedAt).toBe('2026-03-08T00:00:00.000Z');
+    expect(parsed.definition.raw.component).toBe('clades');
     expect(parsed.config.seeds).toEqual([88, 89]);
     expect(parsed.seedResults).toHaveLength(2);
     expect(parsed.aggregates).toHaveLength(2);

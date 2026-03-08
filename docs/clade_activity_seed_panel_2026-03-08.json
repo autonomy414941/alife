@@ -1,0 +1,373 @@
+{
+  "generatedAt": "2026-03-08T00:26:18.706Z",
+  "definition": {
+    "raw": {
+      "component": "clades",
+      "activityUnit": "activeCladeTick",
+      "cumulativeActivity": "Sum of occupied clade-ticks from simulation tick 1 through the end of each window.",
+      "normalizedCumulativeActivity": "Cumulative activity divided by elapsed simulation ticks at the end of each window.",
+      "newActivity": "Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window."
+    },
+    "observedLifetime": "Observed lifetime is extinctTick - firstSeenTick for extinct clades and maxTick - firstSeenTick for extant clades.",
+    "persistentNewActivity": "Occupied clade-ticks within an origin window contributed by clades whose observed lifetime reaches the survival threshold.",
+    "censoredWindow": "A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin clades in that window cannot yet be fully evaluated.",
+    "persistentWindowFraction": "For one seed and threshold, the fraction of evaluable post-burn-in windows whose persistentNewActivity is greater than zero.",
+    "allEvaluableWindowsPositive": "For one seed and threshold, true when every evaluable post-burn-in window has persistentNewActivity greater than zero."
+  },
+  "config": {
+    "steps": 2000,
+    "windowSize": 100,
+    "burnIn": 200,
+    "seeds": [
+      20260307,
+      20260308,
+      20260309,
+      20260310
+    ],
+    "stopWhenExtinct": true,
+    "minSurvivalTicks": [
+      50,
+      100
+    ]
+  },
+  "seedResults": [
+    {
+      "seed": 20260307,
+      "finalSummary": {
+        "tick": 2000,
+        "population": 2181,
+        "births": 25,
+        "deaths": 23,
+        "meanEnergy": 5.9322798073803655,
+        "meanGenome": {
+          "metabolism": 0.3755763040923176,
+          "harvest": 2.2226969782908155,
+          "aggression": 0.9743720689421431
+        },
+        "activeClades": 4,
+        "activeSpecies": 200,
+        "dominantSpeciesShare": 0.4594222833562586,
+        "selectionDifferential": {
+          "metabolism": -0.0013982144007761987,
+          "harvest": 0.006277227372938565,
+          "aggression": 0.009255868284997582
+        },
+        "cladeExtinctions": 0,
+        "speciesExtinctions": 0,
+        "cumulativeExtinctClades": 20,
+        "cumulativeExtinctSpecies": 4663
+      },
+      "rawSummary": {
+        "stepsExecuted": 2000,
+        "totalClades": 24,
+        "postBurnInWindows": 18,
+        "postBurnInWindowsWithNewActivity": 0,
+        "postBurnInNewClades": 0,
+        "postBurnInNewActivityMean": 0,
+        "postBurnInNewActivityMin": 0,
+        "postBurnInNewActivityMax": 0,
+        "finalCumulativeActivity": 11362,
+        "finalNormalizedCumulativeActivity": 5.681,
+        "finalNewActivity": 0
+      },
+      "thresholds": [
+        {
+          "minSurvivalTicks": 50,
+          "summary": {
+            "minSurvivalTicks": 50,
+            "postBurnInWindows": 18,
+            "censoredPostBurnInWindows": 1,
+            "evaluablePostBurnInWindows": 17,
+            "postBurnInWindowsWithPersistentNewActivity": 0,
+            "postBurnInPersistentNewClades": 0,
+            "postBurnInPersistentNewActivityMean": 0,
+            "postBurnInPersistentNewActivityMin": 0,
+            "postBurnInPersistentNewActivityMax": 0,
+            "finalPersistentNewActivity": null,
+            "finalWindowCensored": true
+          },
+          "persistentWindowFraction": 0,
+          "allEvaluableWindowsPositive": false
+        },
+        {
+          "minSurvivalTicks": 100,
+          "summary": {
+            "minSurvivalTicks": 100,
+            "postBurnInWindows": 18,
+            "censoredPostBurnInWindows": 1,
+            "evaluablePostBurnInWindows": 17,
+            "postBurnInWindowsWithPersistentNewActivity": 0,
+            "postBurnInPersistentNewClades": 0,
+            "postBurnInPersistentNewActivityMean": 0,
+            "postBurnInPersistentNewActivityMin": 0,
+            "postBurnInPersistentNewActivityMax": 0,
+            "finalPersistentNewActivity": null,
+            "finalWindowCensored": true
+          },
+          "persistentWindowFraction": 0,
+          "allEvaluableWindowsPositive": false
+        }
+      ]
+    },
+    {
+      "seed": 20260308,
+      "finalSummary": {
+        "tick": 2000,
+        "population": 2102,
+        "births": 19,
+        "deaths": 24,
+        "meanEnergy": 5.9170555410490335,
+        "meanGenome": {
+          "metabolism": 0.38205563804875653,
+          "harvest": 1.9413655475520564,
+          "aggression": 0.9749860995920332
+        },
+        "activeClades": 3,
+        "activeSpecies": 213,
+        "dominantSpeciesShare": 0.21741198858230257,
+        "selectionDifferential": {
+          "metabolism": -0.002131716082226509,
+          "harvest": -0.002056822672240388,
+          "aggression": 0.008380890306911581
+        },
+        "cladeExtinctions": 0,
+        "speciesExtinctions": 6,
+        "cumulativeExtinctClades": 21,
+        "cumulativeExtinctSpecies": 4926
+      },
+      "rawSummary": {
+        "stepsExecuted": 2000,
+        "totalClades": 24,
+        "postBurnInWindows": 18,
+        "postBurnInWindowsWithNewActivity": 0,
+        "postBurnInNewClades": 0,
+        "postBurnInNewActivityMean": 0,
+        "postBurnInNewActivityMin": 0,
+        "postBurnInNewActivityMax": 0,
+        "finalCumulativeActivity": 10701,
+        "finalNormalizedCumulativeActivity": 5.3505,
+        "finalNewActivity": 0
+      },
+      "thresholds": [
+        {
+          "minSurvivalTicks": 50,
+          "summary": {
+            "minSurvivalTicks": 50,
+            "postBurnInWindows": 18,
+            "censoredPostBurnInWindows": 1,
+            "evaluablePostBurnInWindows": 17,
+            "postBurnInWindowsWithPersistentNewActivity": 0,
+            "postBurnInPersistentNewClades": 0,
+            "postBurnInPersistentNewActivityMean": 0,
+            "postBurnInPersistentNewActivityMin": 0,
+            "postBurnInPersistentNewActivityMax": 0,
+            "finalPersistentNewActivity": null,
+            "finalWindowCensored": true
+          },
+          "persistentWindowFraction": 0,
+          "allEvaluableWindowsPositive": false
+        },
+        {
+          "minSurvivalTicks": 100,
+          "summary": {
+            "minSurvivalTicks": 100,
+            "postBurnInWindows": 18,
+            "censoredPostBurnInWindows": 1,
+            "evaluablePostBurnInWindows": 17,
+            "postBurnInWindowsWithPersistentNewActivity": 0,
+            "postBurnInPersistentNewClades": 0,
+            "postBurnInPersistentNewActivityMean": 0,
+            "postBurnInPersistentNewActivityMin": 0,
+            "postBurnInPersistentNewActivityMax": 0,
+            "finalPersistentNewActivity": null,
+            "finalWindowCensored": true
+          },
+          "persistentWindowFraction": 0,
+          "allEvaluableWindowsPositive": false
+        }
+      ]
+    },
+    {
+      "seed": 20260309,
+      "finalSummary": {
+        "tick": 2000,
+        "population": 2119,
+        "births": 17,
+        "deaths": 22,
+        "meanEnergy": 5.993078499200632,
+        "meanGenome": {
+          "metabolism": 0.37626410644077435,
+          "harvest": 2.4420098756448447,
+          "aggression": 0.9742907846711744
+        },
+        "activeClades": 2,
+        "activeSpecies": 176,
+        "dominantSpeciesShare": 0.4119867862199151,
+        "selectionDifferential": {
+          "metabolism": -0.00020535234670315816,
+          "harvest": 0.0010931629308652546,
+          "aggression": 0.009434190991739588
+        },
+        "cladeExtinctions": 0,
+        "speciesExtinctions": 2,
+        "cumulativeExtinctClades": 22,
+        "cumulativeExtinctSpecies": 4575
+      },
+      "rawSummary": {
+        "stepsExecuted": 2000,
+        "totalClades": 24,
+        "postBurnInWindows": 18,
+        "postBurnInWindowsWithNewActivity": 0,
+        "postBurnInNewClades": 0,
+        "postBurnInNewActivityMean": 0,
+        "postBurnInNewActivityMin": 0,
+        "postBurnInNewActivityMax": 0,
+        "finalCumulativeActivity": 8278,
+        "finalNormalizedCumulativeActivity": 4.139,
+        "finalNewActivity": 0
+      },
+      "thresholds": [
+        {
+          "minSurvivalTicks": 50,
+          "summary": {
+            "minSurvivalTicks": 50,
+            "postBurnInWindows": 18,
+            "censoredPostBurnInWindows": 1,
+            "evaluablePostBurnInWindows": 17,
+            "postBurnInWindowsWithPersistentNewActivity": 0,
+            "postBurnInPersistentNewClades": 0,
+            "postBurnInPersistentNewActivityMean": 0,
+            "postBurnInPersistentNewActivityMin": 0,
+            "postBurnInPersistentNewActivityMax": 0,
+            "finalPersistentNewActivity": null,
+            "finalWindowCensored": true
+          },
+          "persistentWindowFraction": 0,
+          "allEvaluableWindowsPositive": false
+        },
+        {
+          "minSurvivalTicks": 100,
+          "summary": {
+            "minSurvivalTicks": 100,
+            "postBurnInWindows": 18,
+            "censoredPostBurnInWindows": 1,
+            "evaluablePostBurnInWindows": 17,
+            "postBurnInWindowsWithPersistentNewActivity": 0,
+            "postBurnInPersistentNewClades": 0,
+            "postBurnInPersistentNewActivityMean": 0,
+            "postBurnInPersistentNewActivityMin": 0,
+            "postBurnInPersistentNewActivityMax": 0,
+            "finalPersistentNewActivity": null,
+            "finalWindowCensored": true
+          },
+          "persistentWindowFraction": 0,
+          "allEvaluableWindowsPositive": false
+        }
+      ]
+    },
+    {
+      "seed": 20260310,
+      "finalSummary": {
+        "tick": 2000,
+        "population": 2151,
+        "births": 24,
+        "deaths": 25,
+        "meanEnergy": 5.94199399795619,
+        "meanGenome": {
+          "metabolism": 0.37234041100936527,
+          "harvest": 2.140354079917971,
+          "aggression": 0.976476790395235
+        },
+        "activeClades": 3,
+        "activeSpecies": 186,
+        "dominantSpeciesShare": 0.22826592282659228,
+        "selectionDifferential": {
+          "metabolism": -0.00125467706408261,
+          "harvest": 0.01837224487795064,
+          "aggression": 0.007604603561397805
+        },
+        "cladeExtinctions": 0,
+        "speciesExtinctions": 2,
+        "cumulativeExtinctClades": 21,
+        "cumulativeExtinctSpecies": 5020
+      },
+      "rawSummary": {
+        "stepsExecuted": 2000,
+        "totalClades": 24,
+        "postBurnInWindows": 18,
+        "postBurnInWindowsWithNewActivity": 0,
+        "postBurnInNewClades": 0,
+        "postBurnInNewActivityMean": 0,
+        "postBurnInNewActivityMin": 0,
+        "postBurnInNewActivityMax": 0,
+        "finalCumulativeActivity": 11865,
+        "finalNormalizedCumulativeActivity": 5.9325,
+        "finalNewActivity": 0
+      },
+      "thresholds": [
+        {
+          "minSurvivalTicks": 50,
+          "summary": {
+            "minSurvivalTicks": 50,
+            "postBurnInWindows": 18,
+            "censoredPostBurnInWindows": 1,
+            "evaluablePostBurnInWindows": 17,
+            "postBurnInWindowsWithPersistentNewActivity": 0,
+            "postBurnInPersistentNewClades": 0,
+            "postBurnInPersistentNewActivityMean": 0,
+            "postBurnInPersistentNewActivityMin": 0,
+            "postBurnInPersistentNewActivityMax": 0,
+            "finalPersistentNewActivity": null,
+            "finalWindowCensored": true
+          },
+          "persistentWindowFraction": 0,
+          "allEvaluableWindowsPositive": false
+        },
+        {
+          "minSurvivalTicks": 100,
+          "summary": {
+            "minSurvivalTicks": 100,
+            "postBurnInWindows": 18,
+            "censoredPostBurnInWindows": 1,
+            "evaluablePostBurnInWindows": 17,
+            "postBurnInWindowsWithPersistentNewActivity": 0,
+            "postBurnInPersistentNewClades": 0,
+            "postBurnInPersistentNewActivityMean": 0,
+            "postBurnInPersistentNewActivityMin": 0,
+            "postBurnInPersistentNewActivityMax": 0,
+            "finalPersistentNewActivity": null,
+            "finalWindowCensored": true
+          },
+          "persistentWindowFraction": 0,
+          "allEvaluableWindowsPositive": false
+        }
+      ]
+    }
+  ],
+  "aggregates": [
+    {
+      "minSurvivalTicks": 50,
+      "seeds": 4,
+      "seedsWithEvaluableWindows": 4,
+      "seedsWithAllEvaluableWindowsPositive": 0,
+      "minPersistentWindowFraction": 0,
+      "meanPersistentWindowFraction": 0,
+      "maxPersistentWindowFraction": 0,
+      "minPersistentActivityMean": 0,
+      "meanPersistentActivityMean": 0,
+      "maxPersistentActivityMean": 0
+    },
+    {
+      "minSurvivalTicks": 100,
+      "seeds": 4,
+      "seedsWithEvaluableWindows": 4,
+      "seedsWithAllEvaluableWindowsPositive": 0,
+      "minPersistentWindowFraction": 0,
+      "meanPersistentWindowFraction": 0,
+      "maxPersistentWindowFraction": 0,
+      "minPersistentActivityMean": 0,
+      "meanPersistentActivityMean": 0,
+      "maxPersistentActivityMean": 0
+    }
+  ]
+}

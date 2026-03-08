@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  analyzeCladeActivity,
+  analyzePersistentCladeActivity,
+  runCladeActivityPersistenceSweep,
+  runCladeActivitySeedPanel,
   analyzePersistentSpeciesActivity,
   analyzeSpeciesActivity,
   runSpeciesActivityHorizonSweep,
@@ -103,6 +107,110 @@ describe('analyzeSpeciesActivity', () => {
       postBurnInWindows: 2,
       postBurnInWindowsWithNewActivity: 1,
       postBurnInNewSpecies: 1,
+      postBurnInNewActivityMean: 0.5,
+      postBurnInNewActivityMin: 0,
+      postBurnInNewActivityMax: 1,
+      finalCumulativeActivity: 8,
+      finalNormalizedCumulativeActivity: 1.6,
+      finalNewActivity: 0
+    });
+  });
+});
+
+describe('analyzeCladeActivity', () => {
+  it('builds cumulative and new activity windows from clade histories', () => {
+    const clades: TaxonHistory[] = [
+      {
+        id: 1,
+        firstSeenTick: 0,
+        extinctTick: 4,
+        totalBirths: 1,
+        totalDeaths: 1,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 0, population: 1, births: 1, deaths: 0 },
+          { tick: 1, population: 1, births: 0, deaths: 0 },
+          { tick: 2, population: 1, births: 0, deaths: 0 },
+          { tick: 3, population: 1, births: 0, deaths: 0 },
+          { tick: 4, population: 0, births: 0, deaths: 1 }
+        ]
+      },
+      {
+        id: 2,
+        firstSeenTick: 2,
+        extinctTick: 5,
+        totalBirths: 1,
+        totalDeaths: 1,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 2, population: 1, births: 1, deaths: 0 },
+          { tick: 3, population: 1, births: 0, deaths: 0 },
+          { tick: 4, population: 1, births: 0, deaths: 0 },
+          { tick: 5, population: 0, births: 0, deaths: 1 }
+        ]
+      },
+      {
+        id: 3,
+        firstSeenTick: 4,
+        extinctTick: null,
+        totalBirths: 1,
+        totalDeaths: 0,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 4, population: 1, births: 1, deaths: 0 },
+          { tick: 5, population: 1, births: 0, deaths: 0 }
+        ]
+      }
+    ];
+
+    const analysis = analyzeCladeActivity({
+      clades,
+      windowSize: 2,
+      burnIn: 2,
+      maxTick: 5
+    });
+
+    expect(analysis.windows).toEqual([
+      {
+        windowIndex: 0,
+        startTick: 1,
+        endTick: 2,
+        size: 2,
+        postBurnIn: false,
+        newClades: 1,
+        cumulativeActivity: 3,
+        normalizedCumulativeActivity: 1.5,
+        newActivity: 1
+      },
+      {
+        windowIndex: 1,
+        startTick: 3,
+        endTick: 4,
+        size: 2,
+        postBurnIn: true,
+        newClades: 1,
+        cumulativeActivity: 7,
+        normalizedCumulativeActivity: 1.75,
+        newActivity: 1
+      },
+      {
+        windowIndex: 2,
+        startTick: 5,
+        endTick: 5,
+        size: 1,
+        postBurnIn: true,
+        newClades: 0,
+        cumulativeActivity: 8,
+        normalizedCumulativeActivity: 1.6,
+        newActivity: 0
+      }
+    ]);
+    expect(analysis.summary).toEqual({
+      stepsExecuted: 5,
+      totalClades: 3,
+      postBurnInWindows: 2,
+      postBurnInWindowsWithNewActivity: 1,
+      postBurnInNewClades: 1,
       postBurnInNewActivityMean: 0.5,
       postBurnInNewActivityMin: 0,
       postBurnInNewActivityMax: 1,
@@ -280,6 +388,125 @@ describe('analyzePersistentSpeciesActivity', () => {
   });
 });
 
+describe('analyzePersistentCladeActivity', () => {
+  it('filters persistent clade novelty and censors late windows near the horizon', () => {
+    const clades: TaxonHistory[] = [
+      {
+        id: 1,
+        firstSeenTick: 2,
+        extinctTick: 5,
+        totalBirths: 1,
+        totalDeaths: 1,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 2, population: 1, births: 1, deaths: 0 },
+          { tick: 3, population: 1, births: 0, deaths: 0 },
+          { tick: 4, population: 1, births: 0, deaths: 0 },
+          { tick: 5, population: 0, births: 0, deaths: 1 }
+        ]
+      },
+      {
+        id: 2,
+        firstSeenTick: 3,
+        extinctTick: 5,
+        totalBirths: 1,
+        totalDeaths: 1,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 3, population: 1, births: 1, deaths: 0 },
+          { tick: 4, population: 1, births: 0, deaths: 0 },
+          { tick: 5, population: 0, births: 0, deaths: 1 }
+        ]
+      },
+      {
+        id: 3,
+        firstSeenTick: 4,
+        extinctTick: null,
+        totalBirths: 1,
+        totalDeaths: 0,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 4, population: 1, births: 1, deaths: 0 },
+          { tick: 5, population: 1, births: 0, deaths: 0 },
+          { tick: 6, population: 1, births: 0, deaths: 0 }
+        ]
+      },
+      {
+        id: 4,
+        firstSeenTick: 5,
+        extinctTick: null,
+        totalBirths: 1,
+        totalDeaths: 0,
+        peakPopulation: 1,
+        timeline: [
+          { tick: 5, population: 1, births: 1, deaths: 0 },
+          { tick: 6, population: 1, births: 0, deaths: 0 }
+        ]
+      }
+    ];
+
+    const analysis = analyzePersistentCladeActivity({
+      clades,
+      windowSize: 2,
+      burnIn: 2,
+      maxTick: 6,
+      minSurvivalTicks: 2
+    });
+
+    expect(analysis.windows).toEqual([
+      {
+        windowIndex: 0,
+        startTick: 1,
+        endTick: 2,
+        size: 2,
+        postBurnIn: false,
+        censored: false,
+        newClades: 1,
+        rawNewActivity: 1,
+        persistentNewClades: 1,
+        persistentNewActivity: 1
+      },
+      {
+        windowIndex: 1,
+        startTick: 3,
+        endTick: 4,
+        size: 2,
+        postBurnIn: true,
+        censored: false,
+        newClades: 2,
+        rawNewActivity: 3,
+        persistentNewClades: 2,
+        persistentNewActivity: 3
+      },
+      {
+        windowIndex: 2,
+        startTick: 5,
+        endTick: 6,
+        size: 2,
+        postBurnIn: true,
+        censored: true,
+        newClades: 1,
+        rawNewActivity: 2,
+        persistentNewClades: null,
+        persistentNewActivity: null
+      }
+    ]);
+    expect(analysis.summary).toEqual({
+      minSurvivalTicks: 2,
+      postBurnInWindows: 2,
+      censoredPostBurnInWindows: 1,
+      evaluablePostBurnInWindows: 1,
+      postBurnInWindowsWithPersistentNewActivity: 1,
+      postBurnInPersistentNewClades: 2,
+      postBurnInPersistentNewActivityMean: 3,
+      postBurnInPersistentNewActivityMin: 3,
+      postBurnInPersistentNewActivityMax: 3,
+      finalPersistentNewActivity: null,
+      finalWindowCensored: true
+    });
+  });
+});
+
 describe('runSpeciesActivityHorizonSweep', () => {
   it('is deterministic and projects probe summaries across horizons', () => {
     const simulation = {
@@ -340,6 +567,57 @@ describe('runSpeciesActivityHorizonSweep', () => {
   });
 });
 
+describe('runCladeActivityPersistenceSweep', () => {
+  it('is deterministic and reports zero post-burn-in clade novelty for the baseline dynamics', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 30,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: 4,
+      windowSize: 2,
+      burnIn: 2,
+      seed: 77,
+      minSurvivalTicks: [1, 2],
+      stopWhenExtinct: true,
+      simulation,
+      generatedAt: '2026-03-08T00:00:00.000Z'
+    };
+
+    const first = runCladeActivityPersistenceSweep(input);
+    const second = runCladeActivityPersistenceSweep(input);
+
+    expect(first).toEqual(second);
+    expect(first.definition.raw.component).toBe('clades');
+    expect(first.rawSummary.totalClades).toBe(1);
+    expect(first.rawSummary.postBurnInWindowsWithNewActivity).toBe(0);
+    expect(first.thresholds).toHaveLength(2);
+    expect(first.thresholds[0].summary.postBurnInWindowsWithPersistentNewActivity).toBe(0);
+    expect(first.thresholds[1].summary.finalWindowCensored).toBe(true);
+  });
+});
+
 describe('runSpeciesActivityPersistenceSweep', () => {
   it('is deterministic and preserves the raw probe summary for the same seeded run', () => {
     const simulation = {
@@ -397,6 +675,84 @@ describe('runSpeciesActivityPersistenceSweep', () => {
     expect(first.thresholds).toHaveLength(2);
     expect(first.thresholds.map((threshold) => threshold.minSurvivalTicks)).toEqual([1, 2]);
     expect(first.thresholds[1].summary.finalWindowCensored).toBe(true);
+  });
+});
+
+describe('runCladeActivitySeedPanel', () => {
+  it('aggregates persistence summaries across a fixed seed panel', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 30,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: 6,
+      windowSize: 2,
+      burnIn: 2,
+      seeds: [77, 78],
+      minSurvivalTicks: [1, 2],
+      stopWhenExtinct: true,
+      simulation,
+      generatedAt: '2026-03-08T00:00:00.000Z'
+    };
+
+    const first = runCladeActivitySeedPanel(input);
+    const second = runCladeActivitySeedPanel(input);
+
+    expect(first).toEqual(second);
+    expect(first.definition.raw.component).toBe('clades');
+    expect(first.config.seeds).toEqual([77, 78]);
+    expect(first.seedResults.map((result) => result.seed)).toEqual([77, 78]);
+
+    for (const aggregate of first.aggregates) {
+      const thresholdResults = first.seedResults.map((seedResult) => {
+        const threshold = seedResult.thresholds.find((result) => result.minSurvivalTicks === aggregate.minSurvivalTicks);
+        expect(threshold).toBeDefined();
+        return threshold!;
+      });
+      const persistentWindowFractions = thresholdResults.map((threshold) => threshold.persistentWindowFraction);
+      const persistentActivityMeans = thresholdResults.map(
+        (threshold) => threshold.summary.postBurnInPersistentNewActivityMean
+      );
+      const meanPersistentWindowFraction =
+        persistentWindowFractions.reduce((total, value) => total + value, 0) / persistentWindowFractions.length;
+      const meanPersistentActivityMean =
+        persistentActivityMeans.reduce((total, value) => total + value, 0) / persistentActivityMeans.length;
+
+      expect(aggregate.seeds).toBe(2);
+      expect(aggregate.seedsWithEvaluableWindows).toBe(
+        thresholdResults.filter((threshold) => threshold.summary.evaluablePostBurnInWindows > 0).length
+      );
+      expect(aggregate.seedsWithAllEvaluableWindowsPositive).toBe(
+        thresholdResults.filter((threshold) => threshold.allEvaluableWindowsPositive).length
+      );
+      expect(aggregate.minPersistentWindowFraction).toBeCloseTo(Math.min(...persistentWindowFractions), 10);
+      expect(aggregate.meanPersistentWindowFraction).toBeCloseTo(meanPersistentWindowFraction, 10);
+      expect(aggregate.maxPersistentWindowFraction).toBeCloseTo(Math.max(...persistentWindowFractions), 10);
+      expect(aggregate.minPersistentActivityMean).toBeCloseTo(Math.min(...persistentActivityMeans), 10);
+      expect(aggregate.meanPersistentActivityMean).toBeCloseTo(meanPersistentActivityMean, 10);
+      expect(aggregate.maxPersistentActivityMean).toBeCloseTo(Math.max(...persistentActivityMeans), 10);
+    }
   });
 });
 
