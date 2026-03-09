@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   analyzeCladeActivity,
   analyzePersistentCladeActivity,
+  DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY,
   runCladeActivityCladogenesisSweep,
+  runCladeActivityCoarseThresholdBoundaryStudy,
   runCladeActivityPersistenceSweep,
   runCladeActivitySeedPanel,
   analyzePersistentSpeciesActivity,
@@ -974,6 +976,86 @@ describe('runCladeActivityCladogenesisSweep', () => {
         cladogenesisThresholds: [0.25, 0.25]
       })
     ).toThrow('cladogenesisThresholds must not contain duplicates');
+  });
+});
+
+describe('runCladeActivityCoarseThresholdBoundaryStudy', () => {
+  it('is deterministic for the canonical March 9 coarse-threshold grid', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 100,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: 6,
+      windowSize: 1,
+      burnIn: 2,
+      seeds: [77, 78],
+      minSurvivalTicks: [1, 2],
+      simulation,
+      generatedAt: '2026-03-09T00:00:00.000Z'
+    };
+    const first = runCladeActivityCoarseThresholdBoundaryStudy({
+      ...input
+    });
+    const second = runCladeActivityCoarseThresholdBoundaryStudy({
+      ...input
+    });
+
+    expect(first).toEqual(second);
+    expect(DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.minSurvivalTicks).toEqual([50, 100]);
+    expect(DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.cladogenesisThresholds).toEqual([
+      -1,
+      0.6,
+      0.8,
+      1,
+      1.2
+    ]);
+    expect(first.config.steps).toBe(input.steps);
+    expect(first.config.windowSize).toBe(input.windowSize);
+    expect(first.config.burnIn).toBe(input.burnIn);
+    expect(first.config.seeds).toEqual(input.seeds);
+    expect(first.config.stopWhenExtinct).toBe(
+      DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.stopWhenExtinct
+    );
+    expect(first.config.minSurvivalTicks).toEqual(input.minSurvivalTicks);
+    expect(first.config.cladogenesisThresholds).toEqual(
+      DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.cladogenesisThresholds
+    );
+    expect(first.thresholdResults).toHaveLength(
+      DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.cladogenesisThresholds.length
+    );
+    expect(first.thresholdResults.map((result) => result.cladogenesisThreshold)).toEqual(
+      DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.cladogenesisThresholds
+    );
+    expect(first.thresholdResults.every((result) => result.seedResults.length === first.config.seeds.length)).toBe(
+      true
+    );
+    expect(
+      first.thresholdResults.every(
+        (result) => result.activityAggregates.length === first.config.minSurvivalTicks.length
+      )
+    ).toBe(true);
   });
 });
 

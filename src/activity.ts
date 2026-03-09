@@ -120,6 +120,33 @@ export interface RunCladeActivityCladogenesisSweepInput extends Omit<RunSpeciesA
   cladogenesisThresholds: number[];
 }
 
+export interface CladeActivityCoarseThresholdBoundaryStudyConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number[];
+  cladogenesisThresholds: number[];
+}
+
+export interface RunCladeActivityCoarseThresholdBoundaryStudyInput
+  extends Partial<CladeActivityCoarseThresholdBoundaryStudyConfig> {
+  simulation?: Omit<LifeSimulationOptions, 'seed'>;
+  generatedAt?: string;
+}
+
+export const DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY: CladeActivityCoarseThresholdBoundaryStudyConfig =
+  {
+    steps: 2000,
+    windowSize: 100,
+    burnIn: 200,
+    seeds: [20260307, 20260308, 20260309, 20260310],
+    stopWhenExtinct: true,
+    minSurvivalTicks: [50, 100],
+    cladogenesisThresholds: [-1, 0.6, 0.8, 1, 1.2]
+  };
+
 interface AnalyzeTaxonActivityInput {
   taxa: TaxonHistory[];
   windowSize: number;
@@ -662,6 +689,28 @@ export function runCladeActivityCladogenesisSweep(
     },
     thresholdResults
   };
+}
+
+export function runCladeActivityCoarseThresholdBoundaryStudy(
+  input: RunCladeActivityCoarseThresholdBoundaryStudyInput = {}
+): CladeActivityCladogenesisSweepExport {
+  return runCladeActivityCladogenesisSweep({
+    steps: input.steps ?? DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.steps,
+    windowSize: input.windowSize ?? DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.windowSize,
+    burnIn: input.burnIn ?? DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.burnIn,
+    seeds: [...(input.seeds ?? DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.seeds)],
+    stopWhenExtinct:
+      input.stopWhenExtinct ?? DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.stopWhenExtinct,
+    minSurvivalTicks: [
+      ...(input.minSurvivalTicks ?? DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.minSurvivalTicks)
+    ],
+    cladogenesisThresholds: [
+      ...(input.cladogenesisThresholds ??
+        DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY.cladogenesisThresholds)
+    ],
+    simulation: input.simulation,
+    generatedAt: input.generatedAt
+  });
 }
 
 export function runSpeciesActivityHorizonSweep(
