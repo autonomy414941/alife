@@ -1,61 +1,61 @@
 # Session Plan — 2026-03-09
 
 ## Compact Context
-- `npm` is the package manager; the standard verification baseline is `npm test && npm run build`.
-- `src/simulation.ts` now supports opt-in cladogenesis: `cladogenesisThreshold=-1` disables new clades, and non-negative thresholds found a new clade when a new species is far enough from its lineage founder genome.
-- `docs/species_activity_seed_panel_2026-03-07.json` is strong species-side evidence: all 4 fixed seeds keep positive persistent post-burn-in species novelty at survival thresholds `50` and `100`.
-- `docs/clade_activity_seed_panel_2026-03-08.json` is still baseline-negative: with default cladogenesis disabled, all 4 fixed seeds have zero persistent post-burn-in clade novelty.
-- `docs/clade_activity_cladogenesis_sweep_2026-03-08.json` makes clade novelty positive at thresholds `0.25`, `0.4`, and `0.6`, but mean active/total clade-to-species ratios rise to about `0.56-0.87` and `0.39-0.87`.
-- `lineage` is still bookkeeping, not ecology: clade IDs change taxon history and founder-genome comparisons, but they do not directly affect interaction, selection, or survival.
+- `npm` is the package manager; the baseline verification path is `npm test && npm run build`.
+- `src/activity.ts` now has deterministic clade threshold and horizon studies, including `runCladeActivityCladogenesisHorizonStudy()` with defaults `steps=[2000,3000,4000]` and `cladogenesisThresholds=[-1,1,1.2]`.
+- `docs/clade_activity_cladogenesis_horizon_2026-03-09.json` shows mean persistent clade novelty stays positive through `4000` steps for thresholds `1.0` and `1.2`, while baseline `-1` remains zero.
+- The same March 9 horizon artifact still shows heavy compression relative to species counts at `4000` steps: mean active clade/species ratios are about `0.22` at `1.0` and `0.17` at `1.2`.
+- In `src/simulation.ts`, `lineage` still affects grouping and founder-genome comparison only; clade identity does not directly change movement, resource uptake, encounter outcomes, or survival.
+- `docs/horizon_path_dependence_2026-03-06.json` remains robust-negative at `320` and `420` steps, so the project still lacks a clean long-horizon open-endedness claim.
 
 ## Project State
-- The repo already has deterministic simulation runs, disturbance/locality studies, species/clade activity probes, opt-in cladogenesis, and tested JSON export for the current clade-threshold sweep.
-- Recent sessions moved from path-dependence/locality falsifiers into direct novelty measurement, then into enabling and calibrating clade birth.
-- The underdeveloped area is the coarse-scale boundary: the current threshold grid stops at `0.6`, so there is still no evidence whether clade persistence survives once clades become materially coarser than the current `0.56` active-ratio / `0.39` total-ratio regime.
+- The repo now has species/clade activity probes, persistence panels, cladogenesis threshold sweeps, a coarse boundary study, and a completed March 9 clade horizon durability artifact.
+- Recent sessions moved from species-side novelty measurement into clade birth calibration and then into checking whether the first coarse clade-positive regimes survive longer horizons.
+- The underdeveloped area is cross-scale interpretation: current exports do not pair species and clade persistence on the same runs, so the new clade signal could still be only thresholded species turnover.
 
 ## External Context
-- de Pinho and Sinapayen, *A speciation simulation that partly passes open-endedness tests*: activity-based open-endedness conclusions changed with the chosen component, so a positive result that only appears under one grouping scale is weak evidence. Source: https://arxiv.org/abs/2603.01701
-- Moreno, Hasanzadeh Fard, Zaman, and Dolson, *Extending a Phylogeny-based Method for Detecting Signatures of Multi-level Selection for Applications in Artificial Life*: higher-level evolutionary claims are sensitive to phylogenetic grouping and normalization, so grouping-scale sensitivity is itself informative. Source: https://arxiv.org/abs/2508.14232
+- de Pinho and Sinapayen, *A speciation simulation that partly passes open-endedness tests* (2026): their verdict changed with the component being measured, so component-level novelty needs explicit separation instead of a single headline score. Source: https://arxiv.org/abs/2603.01701
+- Sayama, *Non-Spatial Hash Chemistry as a Minimalistic Open-Ended Evolutionary System* (2024): the positive claim relied on sustained higher-order entity growth, which is stronger than relabeling lower-level turnover. Source: https://arxiv.org/abs/2404.18027
 
 ## Research Gaps
-- If `cladogenesisThreshold` is pushed above `0.6`, does persistent clade novelty remain positive at any clearly coarser grouping scale, or does the signal collapse as soon as clades stop tracking species so closely?
+- On the same `4000`-step seed panel that now shows durable clade activity at thresholds `1.0` and `1.2`, how much persistent species novelty survives after compression to clades, and is that compressed signal materially nontrivial across seeds?
 
 ## Current Anti-Evidence
-- `docs/horizon_path_dependence_2026-03-06.json` is still robust-negative at `320` and `420` steps, so the project still lacks a durable long-horizon positive open-endedness signal.
-- Current clade-side positives are compatible with relabeled species turnover: they appear only when clades remain a large fraction of species counts, and `lineage` still has no causal ecological role.
+- The current clade signal is still bookkeeping-derived: every new clade is born through a new species event, and clade identity has no direct ecological or selective consequences in the simulation.
+- Path dependence remains robust-negative at longer tested horizons, so even durable clade novelty does not yet rescue the broader open-endedness claim.
 
 ## Candidate Bets
-- A: Extend the baseline cladogenesis sweep upward to a coarse threshold grid and measure where persistent clade activity collapses relative to clade/species compression.
-  Why now: The current sweep ends before the grouping-scale boundary is known, and that boundary is the cleanest next falsifier for the new clade signal.
-  Est. low-context human time: 35m
+- A: Add a paired species-vs-clade persistence study at `steps=4000` for `cladogenesisThresholds={-1,1.0,1.2}` that exports per-seed ratios and deltas from the same simulation runs.
+  Why now: horizon durability is already established, and this is the shortest path to testing whether the clade-positive result is meaningful multiscale structure or just a filtered species trace.
+  Est. low-context human time: 45m
   Expected information gain: high
-  Main risk: The added coarse thresholds may all go to zero quickly, yielding a short negative result.
-- B: Re-run the existing cladogenesis sweep inside the lone robust-positive locality regime and compare compression-versus-persistence against baseline.
-  Why now: If ecology can rescue higher-level novelty, the only supported locality cell is the least ambiguous place to check.
-  Est. low-context human time: 50m
+  Main risk: the first paired metric may still be interpretively weak if it is too close to a trivial subset ratio.
+- B: Expand the March 9 `4000`-step clade horizon check from `4` seeds to a larger fixed seed panel for thresholds `1.0` and `1.2`.
+  Why now: current positive means still rest on a small panel and may be seed-fragile.
+  Est. low-context human time: 35m
   Expected information gain: medium
-  Main risk: Two moving knobs make attribution murkier than a baseline-only boundary test.
-- C: Add one minimal lineage-mediated ecological feedback and test whether clade persistence changes on the existing seed panel.
-  Why now: `lineage` is still non-causal, which limits the meaning of any clade-level positive.
+  Main risk: runtime could grow while leaving the bookkeeping critique unresolved.
+- C: Add one narrow lineage-causal ecological hook so clade identity affects fitness or interaction, then verify that the effect appears in deterministic tests.
+  Why now: it directly attacks the strongest anti-evidence by turning clades into more than labels.
   Est. low-context human time: >60m
   Expected information gain: medium
-  Main risk: Mechanism design and calibration are too open-ended for one bounded session.
+  Main risk: mechanism choice and parameter tuning could consume the session before producing interpretable evidence.
 
 ## Selected Bet
-Extend the existing `runCladeActivityCladogenesisSweep` into a small coarse-threshold boundary study anchored at the current positive edge. Use the same fixed seeds and persistence windows, keep `-1` and `0.6` as anchors, add a few thresholds above `0.6`, and export the same activity and clade/species count aggregates. The session should answer one narrow question: does any threshold above `0.6` keep clade persistence positive while materially reducing clade-to-species ratios, or does the signal disappear once grouping becomes genuinely coarser?
+Execute A. Keep the simulation mechanics fixed and add a paired species/clade persistence export on the already-validated March 9 horizon. The goal is not another durability pass; it is to quantify whether thresholds `1.0` and `1.2` preserve a substantial higher-level signal after direct comparison with the species novelty generated by the same runs.
 
 ## Why This Fits The Horizon
-- It reuses existing sweep logic, export schema, and test patterns instead of introducing new ecology or a new measurement family.
-- Success is autonomously verifiable with one deterministic test plus one fixed JSON artifact from a short threshold list and the current seed panel.
+- It reuses existing activity-analysis code and the current four-seed March 9 study surface; the actor can add one paired export path instead of inventing a new mechanism family.
+- Success is autonomously verifiable with deterministic tests plus one fixed-`generatedAt` JSON artifact containing explicit ratio/delta fields.
 
 ## Success Evidence
-- A new JSON export under `docs/` for a fixed threshold grid such as `-1`, `0.6`, `0.8`, `1.0`, and `1.2`, including `activityAggregates` and `countAggregates` for each threshold.
-- `npm test && npm run build`, plus a deterministic test showing repeated runs of the same coarse-threshold grid produce identical sweep output.
+- A new machine-readable artifact such as `docs/clade_species_activity_coupling_2026-03-09.json` containing, for each threshold and seed, both species and clade persistence summaries plus aggregate ratio/delta fields at survival thresholds `50` and `100`.
+- `npm test && npm run build`, plus a fixed-`generatedAt` study command whose output includes aggregate fields like `threshold=1 minSurvivalTicks=100 cladeToSpeciesPersistentWindowFraction=...`.
 
 ## Stop Conditions
-- Stop if the work starts drifting into threshold auto-tuning, new lineage feedback, or locality/disturbance combinations.
-- If runtime or artifact size grows too much, shrink to three thresholds above `0.6` and finish the boundary comparison cleanly instead of expanding scope.
+- Stop after one paired `4000`-step study on the existing seed panel and thresholds `-1`, `1.0`, and `1.2`; do not add new horizons, locality sweeps, or ecological mechanics in the same session.
+- If the metric design starts to sprawl, keep only paired persistent-window-fraction and persistent-activity ratios/deltas and document any deferred ideas in the artifact schema rather than expanding scope.
 
 ## Assumptions / Unknowns
-- Assumption: clade-to-species count ratios are a sufficient first-pass proxy for whether clades are meaningfully coarser than species.
-- Unknown: whether thresholds above `0.6` preserve any evaluable persistent clade novelty before clade counts collapse back toward the baseline-zero regime.
+- Assumption: the `4000`-step horizon is now long enough that the next uncertainty is interpretation, not survival of the clade-positive signal itself.
+- Unknown: whether a simple paired compression metric will sharply distinguish meaningful multiscale novelty from trivial thresholding, or only narrow the uncertainty.

@@ -2,11 +2,16 @@ import { describe, expect, it } from 'vitest';
 import {
   analyzeCladeActivity,
   analyzePersistentCladeActivity,
+  DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY,
   DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY,
+  DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY,
+  runCladeActivityCladogenesisHorizonStudy,
+  runCladeActivityCladogenesisHorizonSweep,
   runCladeActivityCladogenesisSweep,
   runCladeActivityCoarseThresholdBoundaryStudy,
   runCladeActivityPersistenceSweep,
   runCladeActivitySeedPanel,
+  runCladeSpeciesActivityCouplingStudy,
   analyzePersistentSpeciesActivity,
   analyzeSpeciesActivity,
   runSpeciesActivityHorizonSweep,
@@ -976,6 +981,373 @@ describe('runCladeActivityCladogenesisSweep', () => {
         cladogenesisThresholds: [0.25, 0.25]
       })
     ).toThrow('cladogenesisThresholds must not contain duplicates');
+  });
+});
+
+describe('runCladeActivityCladogenesisHorizonSweep', () => {
+  it('is deterministic and reuses the per-threshold cladogenesis sweep at each horizon', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 100,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: [4, 6],
+      windowSize: 1,
+      burnIn: 2,
+      seeds: [77, 78],
+      minSurvivalTicks: [1, 2],
+      cladogenesisThresholds: [-1, 0],
+      stopWhenExtinct: true,
+      simulation,
+      generatedAt: '2026-03-09T12:00:00.000Z'
+    };
+
+    const first = runCladeActivityCladogenesisHorizonSweep(input);
+    const second = runCladeActivityCladogenesisHorizonSweep(input);
+
+    expect(first).toEqual(second);
+    expect(first.definition.seedPanel.raw.component).toBe('clades');
+    expect(first.config.steps).toEqual([4, 6]);
+    expect(first.horizons).toHaveLength(2);
+
+    for (const horizon of first.horizons) {
+      const directSweep = runCladeActivityCladogenesisSweep({
+        steps: horizon.steps,
+        windowSize: input.windowSize,
+        burnIn: input.burnIn,
+        seeds: input.seeds,
+        minSurvivalTicks: input.minSurvivalTicks,
+        cladogenesisThresholds: input.cladogenesisThresholds,
+        stopWhenExtinct: input.stopWhenExtinct,
+        simulation
+      });
+
+      expect(horizon.thresholdResults).toEqual(directSweep.thresholdResults);
+    }
+  });
+});
+
+describe('runCladeActivityCladogenesisHorizonStudy', () => {
+  it('is deterministic for the canonical March 9 horizon ladder', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 100,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: [4, 6],
+      windowSize: 1,
+      burnIn: 2,
+      seeds: [77, 78],
+      simulation,
+      generatedAt: '2026-03-09T00:00:00.000Z'
+    };
+
+    const first = runCladeActivityCladogenesisHorizonStudy({
+      ...input
+    });
+    const second = runCladeActivityCladogenesisHorizonStudy({
+      ...input
+    });
+
+    expect(first).toEqual(second);
+    expect(DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.steps).toEqual([2000, 3000, 4000]);
+    expect(DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.minSurvivalTicks).toEqual([50, 100]);
+    expect(DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.cladogenesisThresholds).toEqual([-1, 1, 1.2]);
+    expect(first.config.steps).toEqual(input.steps);
+    expect(first.config.windowSize).toBe(input.windowSize);
+    expect(first.config.burnIn).toBe(input.burnIn);
+    expect(first.config.seeds).toEqual(input.seeds);
+    expect(first.config.stopWhenExtinct).toBe(DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.stopWhenExtinct);
+    expect(first.config.minSurvivalTicks).toEqual(
+      DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.minSurvivalTicks
+    );
+    expect(first.config.cladogenesisThresholds).toEqual(
+      DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.cladogenesisThresholds
+    );
+    expect(first.horizons).toHaveLength(2);
+    expect(first.horizons.every((horizon) => horizon.thresholdResults.length === 3)).toBe(true);
+  });
+});
+
+describe('runCladeSpeciesActivityCouplingStudy', () => {
+  it('is deterministic and matches the paired species/clade persistence summaries for each threshold', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 100,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: 6,
+      windowSize: 1,
+      burnIn: 2,
+      seeds: [77, 78],
+      minSurvivalTicks: [1, 2],
+      cladogenesisThresholds: [-1, 0],
+      stopWhenExtinct: true,
+      simulation,
+      generatedAt: '2026-03-09T12:00:00.000Z'
+    };
+
+    const first = runCladeSpeciesActivityCouplingStudy(input);
+    const second = runCladeSpeciesActivityCouplingStudy(input);
+
+    expect(first).toEqual(second);
+    expect(first.definition.species.raw.component).toBe('species');
+    expect(first.definition.clade.raw.component).toBe('clades');
+    expect(first.thresholdResults).toHaveLength(2);
+
+    for (const thresholdResult of first.thresholdResults) {
+      for (const seedResult of thresholdResult.seedResults) {
+        const thresholdSimulation = {
+          ...simulation,
+          config: {
+            ...simulation.config,
+            cladogenesisThreshold: thresholdResult.cladogenesisThreshold
+          }
+        };
+        const speciesSweep = runSpeciesActivityPersistenceSweep({
+          steps: input.steps,
+          windowSize: input.windowSize,
+          burnIn: input.burnIn,
+          seed: seedResult.seed,
+          stopWhenExtinct: input.stopWhenExtinct,
+          simulation: thresholdSimulation,
+          minSurvivalTicks: input.minSurvivalTicks
+        });
+        const cladeSweep = runCladeActivityPersistenceSweep({
+          steps: input.steps,
+          windowSize: input.windowSize,
+          burnIn: input.burnIn,
+          seed: seedResult.seed,
+          stopWhenExtinct: input.stopWhenExtinct,
+          simulation: thresholdSimulation,
+          minSurvivalTicks: input.minSurvivalTicks
+        });
+
+        expect(seedResult.speciesRawSummary).toEqual(speciesSweep.rawSummary);
+        expect(seedResult.cladeRawSummary).toEqual(cladeSweep.rawSummary);
+
+        for (const threshold of seedResult.thresholds) {
+          const speciesThreshold = speciesSweep.thresholds.find(
+            (result) => result.minSurvivalTicks === threshold.minSurvivalTicks
+          );
+          const cladeThreshold = cladeSweep.thresholds.find(
+            (result) => result.minSurvivalTicks === threshold.minSurvivalTicks
+          );
+
+          expect(speciesThreshold).toBeDefined();
+          expect(cladeThreshold).toBeDefined();
+
+          const speciesSummary = speciesThreshold!.summary;
+          const cladeSummary = cladeThreshold!.summary;
+          const speciesFraction =
+            speciesSummary.evaluablePostBurnInWindows === 0
+              ? 0
+              : speciesSummary.postBurnInWindowsWithPersistentNewActivity / speciesSummary.evaluablePostBurnInWindows;
+          const cladeFraction =
+            cladeSummary.evaluablePostBurnInWindows === 0
+              ? 0
+              : cladeSummary.postBurnInWindowsWithPersistentNewActivity / cladeSummary.evaluablePostBurnInWindows;
+
+          expect(threshold.species.summary).toEqual(speciesSummary);
+          expect(threshold.clade.summary).toEqual(cladeSummary);
+          expect(threshold.species.persistentWindowFraction).toBeCloseTo(speciesFraction, 10);
+          expect(threshold.clade.persistentWindowFraction).toBeCloseTo(cladeFraction, 10);
+          expect(threshold.species.allEvaluableWindowsPositive).toBe(
+            speciesSummary.evaluablePostBurnInWindows > 0 &&
+              speciesSummary.postBurnInWindowsWithPersistentNewActivity === speciesSummary.evaluablePostBurnInWindows
+          );
+          expect(threshold.clade.allEvaluableWindowsPositive).toBe(
+            cladeSummary.evaluablePostBurnInWindows > 0 &&
+              cladeSummary.postBurnInWindowsWithPersistentNewActivity === cladeSummary.evaluablePostBurnInWindows
+          );
+          expect(threshold.cladeToSpeciesPersistentWindowFraction).toBe(
+            speciesFraction === 0 ? null : cladeFraction / speciesFraction
+          );
+          expect(threshold.persistentWindowFractionDelta).toBeCloseTo(cladeFraction - speciesFraction, 10);
+          expect(threshold.cladeToSpeciesPersistentActivityMeanRatio).toBe(
+            speciesSummary.postBurnInPersistentNewActivityMean === 0
+              ? null
+              : cladeSummary.postBurnInPersistentNewActivityMean /
+                  speciesSummary.postBurnInPersistentNewActivityMean
+          );
+          expect(threshold.persistentActivityMeanDelta).toBeCloseTo(
+            cladeSummary.postBurnInPersistentNewActivityMean - speciesSummary.postBurnInPersistentNewActivityMean,
+            10
+          );
+        }
+      }
+
+      for (const aggregate of thresholdResult.aggregates) {
+        const thresholds = thresholdResult.seedResults.map((seedResult) =>
+          seedResult.thresholds.find((result) => result.minSurvivalTicks === aggregate.minSurvivalTicks)
+        );
+
+        expect(thresholds.every((threshold) => threshold !== undefined)).toBe(true);
+
+        const definedThresholds = thresholds.filter((threshold) => threshold !== undefined);
+        const persistentWindowRatios = definedThresholds.flatMap((threshold) =>
+          threshold.cladeToSpeciesPersistentWindowFraction === null
+            ? []
+            : [threshold.cladeToSpeciesPersistentWindowFraction]
+        );
+        const persistentWindowDeltas = definedThresholds.map((threshold) => threshold.persistentWindowFractionDelta);
+        const persistentActivityRatios = definedThresholds.flatMap((threshold) =>
+          threshold.cladeToSpeciesPersistentActivityMeanRatio === null
+            ? []
+            : [threshold.cladeToSpeciesPersistentActivityMeanRatio]
+        );
+        const persistentActivityDeltas = definedThresholds.map((threshold) => threshold.persistentActivityMeanDelta);
+
+        expect(aggregate.cladeToSpeciesPersistentWindowFraction.definedSeeds).toBe(persistentWindowRatios.length);
+        expect(aggregate.cladeToSpeciesPersistentWindowFraction.mean).toBe(
+          persistentWindowRatios.length === 0
+            ? null
+            : persistentWindowRatios.reduce((total, value) => total + value, 0) / persistentWindowRatios.length
+        );
+        expect(aggregate.cladeToSpeciesPersistentWindowFraction.min).toBe(
+          persistentWindowRatios.length === 0 ? null : Math.min(...persistentWindowRatios)
+        );
+        expect(aggregate.cladeToSpeciesPersistentWindowFraction.max).toBe(
+          persistentWindowRatios.length === 0 ? null : Math.max(...persistentWindowRatios)
+        );
+        expect(aggregate.persistentWindowFractionDelta.mean).toBeCloseTo(
+          persistentWindowDeltas.reduce((total, value) => total + value, 0) / persistentWindowDeltas.length,
+          10
+        );
+        expect(aggregate.persistentWindowFractionDelta.min).toBeCloseTo(Math.min(...persistentWindowDeltas), 10);
+        expect(aggregate.persistentWindowFractionDelta.max).toBeCloseTo(Math.max(...persistentWindowDeltas), 10);
+        expect(aggregate.cladeToSpeciesPersistentActivityMeanRatio.definedSeeds).toBe(
+          persistentActivityRatios.length
+        );
+        expect(aggregate.cladeToSpeciesPersistentActivityMeanRatio.mean).toBe(
+          persistentActivityRatios.length === 0
+            ? null
+            : persistentActivityRatios.reduce((total, value) => total + value, 0) / persistentActivityRatios.length
+        );
+        expect(aggregate.cladeToSpeciesPersistentActivityMeanRatio.min).toBe(
+          persistentActivityRatios.length === 0 ? null : Math.min(...persistentActivityRatios)
+        );
+        expect(aggregate.cladeToSpeciesPersistentActivityMeanRatio.max).toBe(
+          persistentActivityRatios.length === 0 ? null : Math.max(...persistentActivityRatios)
+        );
+        expect(aggregate.persistentActivityMeanDelta.mean).toBeCloseTo(
+          persistentActivityDeltas.reduce((total, value) => total + value, 0) / persistentActivityDeltas.length,
+          10
+        );
+        expect(aggregate.persistentActivityMeanDelta.min).toBeCloseTo(Math.min(...persistentActivityDeltas), 10);
+        expect(aggregate.persistentActivityMeanDelta.max).toBeCloseTo(Math.max(...persistentActivityDeltas), 10);
+      }
+    }
+  });
+
+  it('preserves the canonical March 9 defaults for the bounded 4000-step study', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 100,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+
+    const result = runCladeSpeciesActivityCouplingStudy({
+      steps: 6,
+      windowSize: 1,
+      burnIn: 2,
+      seeds: [77],
+      simulation,
+      generatedAt: '2026-03-09T00:00:00.000Z'
+    });
+
+    expect(DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.steps).toBe(4000);
+    expect(DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.minSurvivalTicks).toEqual([50, 100]);
+    expect(DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.cladogenesisThresholds).toEqual([-1, 1, 1.2]);
+    expect(result.config.stopWhenExtinct).toBe(DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.stopWhenExtinct);
+    expect(result.config.minSurvivalTicks).toEqual(DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.minSurvivalTicks);
+    expect(result.config.cladogenesisThresholds).toEqual(
+      DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.cladogenesisThresholds
+    );
+    expect(result.thresholdResults).toHaveLength(3);
   });
 });
 

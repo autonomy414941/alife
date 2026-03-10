@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  runCladeActivityCladogenesisHorizonSweep,
   runCladeActivityCladogenesisSweep,
   runCladeActivityPersistenceSweep,
   runCladeActivitySeedPanel,
+  runCladeSpeciesActivityCouplingStudy,
   runSpeciesActivityHorizonSweep,
   runSpeciesActivityPersistenceSweep,
   runSpeciesActivitySeedPanel,
@@ -13,9 +15,11 @@ import {
   EXPERIMENT_AGGREGATE_CSV_COLUMNS,
   METRICS_CSV_COLUMNS,
   buildRunExport,
+  cladeActivityCladogenesisHorizonSweepToJson,
   cladeActivityCladogenesisSweepToJson,
   cladeActivityPersistenceSweepToJson,
   cladeActivitySeedPanelToJson,
+  cladeSpeciesActivityCouplingToJson,
   disturbanceGridStudyToCsv,
   disturbanceGridStudyToJson,
   experimentAggregateToCsv,
@@ -742,5 +746,101 @@ describe('run export', () => {
     expect(parsed.thresholdResults).toHaveLength(2);
     expect(parsed.thresholdResults[0].cladogenesisThreshold).toBe(-1);
     expect(parsed.thresholdResults[0].seedResults[0].counts.totalSpecies).toBeGreaterThan(0);
+  });
+
+  it('renders cladogenesis horizon sweeps to JSON', () => {
+    const sweep = runCladeActivityCladogenesisHorizonSweep({
+      steps: [4, 6],
+      windowSize: 1,
+      burnIn: 2,
+      seeds: [88, 89],
+      minSurvivalTicks: [1, 2],
+      cladogenesisThresholds: [-1, 0],
+      stopWhenExtinct: true,
+      simulation: {
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceThreshold: 10,
+          reproduceProbability: 1,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0.2,
+          speciationThreshold: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 100,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+          }
+        ]
+      },
+      generatedAt: '2026-03-09T00:00:00.000Z'
+    });
+
+    const parsed = JSON.parse(cladeActivityCladogenesisHorizonSweepToJson(sweep));
+
+    expect(parsed.generatedAt).toBe('2026-03-09T00:00:00.000Z');
+    expect(parsed.definition.seedPanel.raw.component).toBe('clades');
+    expect(parsed.config.steps).toEqual([4, 6]);
+    expect(parsed.horizons).toHaveLength(2);
+    expect(parsed.horizons[0].steps).toBe(4);
+    expect(parsed.horizons[0].thresholdResults[0].cladogenesisThreshold).toBe(-1);
+    expect(parsed.horizons[1].thresholdResults[1].seedResults[0].counts.totalSpecies).toBeGreaterThan(0);
+  });
+
+  it('renders clade/species activity coupling studies to JSON', () => {
+    const study = runCladeSpeciesActivityCouplingStudy({
+      steps: 6,
+      windowSize: 1,
+      burnIn: 2,
+      seeds: [88, 89],
+      minSurvivalTicks: [1, 2],
+      cladogenesisThresholds: [-1, 0],
+      stopWhenExtinct: true,
+      simulation: {
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceThreshold: 10,
+          reproduceProbability: 1,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0.2,
+          speciationThreshold: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 100,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+          }
+        ]
+      },
+      generatedAt: '2026-03-09T00:00:00.000Z'
+    });
+
+    const parsed = JSON.parse(cladeSpeciesActivityCouplingToJson(study));
+
+    expect(parsed.generatedAt).toBe('2026-03-09T00:00:00.000Z');
+    expect(parsed.definition.species.raw.component).toBe('species');
+    expect(parsed.definition.clade.raw.component).toBe('clades');
+    expect(parsed.config.steps).toBe(6);
+    expect(parsed.thresholdResults).toHaveLength(2);
+    expect(parsed.thresholdResults[0].seedResults[0].thresholds[0].species.summary.minSurvivalTicks).toBe(1);
+    expect(parsed.thresholdResults[1].aggregates[1].cladeToSpeciesPersistentWindowFraction.definedSeeds).toBe(2);
   });
 });

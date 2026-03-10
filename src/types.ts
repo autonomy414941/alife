@@ -867,6 +867,95 @@ export interface CladeActivityCladogenesisSweepExport {
   thresholdResults: CladeActivityCladogenesisSweepThresholdResult[];
 }
 
+export interface CladeActivityCladogenesisHorizonSweepConfig {
+  steps: number[];
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number[];
+  cladogenesisThresholds: number[];
+}
+
+export interface CladeActivityCladogenesisHorizonSweepPoint {
+  steps: number;
+  thresholdResults: CladeActivityCladogenesisSweepThresholdResult[];
+}
+
+export interface CladeActivityCladogenesisHorizonSweepExport {
+  generatedAt: string;
+  definition: CladeActivityCladogenesisSweepDefinition;
+  config: CladeActivityCladogenesisHorizonSweepConfig;
+  horizons: CladeActivityCladogenesisHorizonSweepPoint[];
+}
+
+export interface CladeSpeciesActivityCouplingDefinition {
+  species: SpeciesActivitySeedPanelDefinition;
+  clade: CladeActivitySeedPanelDefinition;
+  cladeToSpeciesPersistentWindowFraction: string;
+  persistentWindowFractionDelta: string;
+  cladeToSpeciesPersistentActivityMeanRatio: string;
+  persistentActivityMeanDelta: string;
+}
+
+export interface CladeSpeciesActivityCouplingConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number[];
+  cladogenesisThresholds: number[];
+}
+
+export interface CladeSpeciesActivityCouplingThresholdSeedResult {
+  minSurvivalTicks: number;
+  species: SpeciesActivitySeedPanelThresholdSeedResult;
+  clade: CladeActivitySeedPanelThresholdSeedResult;
+  cladeToSpeciesPersistentWindowFraction: number | null;
+  persistentWindowFractionDelta: number;
+  cladeToSpeciesPersistentActivityMeanRatio: number | null;
+  persistentActivityMeanDelta: number;
+}
+
+export interface CladeSpeciesActivityCouplingSeedResult {
+  seed: number;
+  finalSummary: StepSummary;
+  speciesRawSummary: SpeciesActivityProbeSummary;
+  cladeRawSummary: CladeActivityProbeSummary;
+  thresholds: CladeSpeciesActivityCouplingThresholdSeedResult[];
+}
+
+export interface CladeSpeciesActivityCouplingRatioAggregate {
+  definedSeeds: number;
+  mean: number | null;
+  min: number | null;
+  max: number | null;
+}
+
+export interface CladeSpeciesActivityCouplingThresholdAggregate {
+  minSurvivalTicks: number;
+  species: SpeciesActivitySeedPanelThresholdAggregate;
+  clade: CladeActivitySeedPanelThresholdAggregate;
+  cladeToSpeciesPersistentWindowFraction: CladeSpeciesActivityCouplingRatioAggregate;
+  persistentWindowFractionDelta: NumericAggregate;
+  cladeToSpeciesPersistentActivityMeanRatio: CladeSpeciesActivityCouplingRatioAggregate;
+  persistentActivityMeanDelta: NumericAggregate;
+}
+
+export interface CladeSpeciesActivityCouplingThresholdResult {
+  cladogenesisThreshold: number;
+  seedResults: CladeSpeciesActivityCouplingSeedResult[];
+  aggregates: CladeSpeciesActivityCouplingThresholdAggregate[];
+}
+
+export interface CladeSpeciesActivityCouplingExport {
+  generatedAt: string;
+  definition: CladeSpeciesActivityCouplingDefinition;
+  config: CladeSpeciesActivityCouplingConfig;
+  thresholdResults: CladeSpeciesActivityCouplingThresholdResult[];
+}
+
 export interface SpeciesActivityHorizonSweepConfig {
   steps: number[];
   windowSize: number;

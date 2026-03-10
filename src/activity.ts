@@ -1,5 +1,7 @@
 import { LifeSimulation, LifeSimulationOptions } from './simulation';
 import {
+  CladeActivityCladogenesisHorizonSweepExport,
+  CladeActivityCladogenesisHorizonSweepPoint,
   CladeActivityCladogenesisSweepDefinition,
   CladeActivityCladogenesisSweepExport,
   CladeActivityCladogenesisSweepSeedResult,
@@ -18,7 +20,15 @@ import {
   CladeActivitySeedPanelThresholdSeedResult,
   CladeSpeciesCountAggregate,
   CladeSpeciesCountSummary,
+  CladeSpeciesActivityCouplingDefinition,
+  CladeSpeciesActivityCouplingExport,
+  CladeSpeciesActivityCouplingRatioAggregate,
+  CladeSpeciesActivityCouplingSeedResult,
+  CladeSpeciesActivityCouplingThresholdAggregate,
+  CladeSpeciesActivityCouplingThresholdSeedResult,
+  CladeSpeciesActivityCouplingThresholdResult,
   CladeActivityWindow,
+  EvolutionHistorySnapshot,
   NumericAggregate,
   SpeciesActivityHorizonSweepExport,
   SpeciesActivityHorizonSweepPoint,
@@ -120,6 +130,11 @@ export interface RunCladeActivityCladogenesisSweepInput extends Omit<RunSpeciesA
   cladogenesisThresholds: number[];
 }
 
+export interface RunCladeActivityCladogenesisHorizonSweepInput
+  extends Omit<RunCladeActivityCladogenesisSweepInput, 'steps'> {
+  steps: number[];
+}
+
 export interface CladeActivityCoarseThresholdBoundaryStudyConfig {
   steps: number;
   windowSize: number;
@@ -136,6 +151,37 @@ export interface RunCladeActivityCoarseThresholdBoundaryStudyInput
   generatedAt?: string;
 }
 
+export interface CladeActivityCladogenesisHorizonStudyConfig {
+  steps: number[];
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number[];
+  cladogenesisThresholds: number[];
+}
+
+export interface RunCladeActivityCladogenesisHorizonStudyInput
+  extends Partial<CladeActivityCladogenesisHorizonStudyConfig> {
+  simulation?: Omit<LifeSimulationOptions, 'seed'>;
+  generatedAt?: string;
+}
+
+export interface CladeSpeciesActivityCouplingStudyConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number[];
+  cladogenesisThresholds: number[];
+}
+
+export interface RunCladeSpeciesActivityCouplingStudyInput extends Partial<CladeSpeciesActivityCouplingStudyConfig> {
+  simulation?: Omit<LifeSimulationOptions, 'seed'>;
+  generatedAt?: string;
+}
+
 export const DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY: CladeActivityCoarseThresholdBoundaryStudyConfig =
   {
     steps: 2000,
@@ -146,6 +192,26 @@ export const DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY: CladeActivi
     minSurvivalTicks: [50, 100],
     cladogenesisThresholds: [-1, 0.6, 0.8, 1, 1.2]
   };
+
+export const DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY: CladeActivityCladogenesisHorizonStudyConfig = {
+  steps: [2000, 3000, 4000],
+  windowSize: 100,
+  burnIn: 200,
+  seeds: [20260307, 20260308, 20260309, 20260310],
+  stopWhenExtinct: true,
+  minSurvivalTicks: [50, 100],
+  cladogenesisThresholds: [-1, 1, 1.2]
+};
+
+export const DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY: CladeSpeciesActivityCouplingStudyConfig = {
+  steps: 4000,
+  windowSize: 100,
+  burnIn: 200,
+  seeds: [20260307, 20260308, 20260309, 20260310],
+  stopWhenExtinct: true,
+  minSurvivalTicks: [50, 100],
+  cladogenesisThresholds: [-1, 1, 1.2]
+};
 
 interface AnalyzeTaxonActivityInput {
   taxa: TaxonHistory[];
@@ -327,6 +393,19 @@ export const CLADE_ACTIVITY_CLADOGENESIS_SWEEP_DEFINITION: CladeActivityCladogen
   totalSpecies: 'Total species observed across the full simulation history for one seed.',
   activeCladeToSpeciesRatio: 'Final activeClades divided by final activeSpecies for one seed.',
   totalCladeToSpeciesRatio: 'Total clades divided by total species observed over the full simulation history for one seed.'
+};
+
+export const CLADE_SPECIES_ACTIVITY_COUPLING_DEFINITION: CladeSpeciesActivityCouplingDefinition = {
+  species: SPECIES_ACTIVITY_SEED_PANEL_DEFINITION,
+  clade: CLADE_ACTIVITY_SEED_PANEL_DEFINITION,
+  cladeToSpeciesPersistentWindowFraction:
+    'For one seed and survival threshold, clade persistentWindowFraction divided by species persistentWindowFraction. Null when the species fraction is zero.',
+  persistentWindowFractionDelta:
+    'For one seed and survival threshold, clade persistentWindowFraction minus species persistentWindowFraction.',
+  cladeToSpeciesPersistentActivityMeanRatio:
+    'For one seed and survival threshold, clade postBurnInPersistentNewActivityMean divided by species postBurnInPersistentNewActivityMean. Null when the species mean is zero.',
+  persistentActivityMeanDelta:
+    'For one seed and survival threshold, clade postBurnInPersistentNewActivityMean minus species postBurnInPersistentNewActivityMean.'
 };
 
 export function analyzeSpeciesActivity(input: AnalyzeSpeciesActivityInput): AnalyzeSpeciesActivityResult {
@@ -538,22 +617,22 @@ export function runSpeciesActivitySeedPanel(input: RunSpeciesActivitySeedPanelIn
   const stopWhenExtinct = input.stopWhenExtinct ?? true;
 
   const seedResults: SpeciesActivitySeedPanelSeedResult[] = seeds.map((seed) => {
-    const sweep = runSpeciesActivityPersistenceSweep({
+    const { simulation, finalSummary } = executeActivitySimulation({
       steps,
-      windowSize,
-      burnIn,
       seed,
       stopWhenExtinct,
       simulation: input.simulation,
-      minSurvivalTicks
+      emptyRunError: 'Species activity seed panel produced no step data'
     });
 
-    return {
+    return buildSpeciesActivitySeedPanelSeedResult({
       seed,
-      finalSummary: sweep.finalSummary,
-      rawSummary: sweep.rawSummary,
-      thresholds: sweep.thresholds.map((threshold) => buildActivitySeedPanelThresholdSeedResult(threshold))
-    };
+      finalSummary,
+      history: simulation.history(),
+      windowSize,
+      burnIn,
+      minSurvivalTicks
+    });
   });
 
   return {
@@ -581,22 +660,22 @@ export function runCladeActivitySeedPanel(input: RunCladeActivitySeedPanelInput)
   const stopWhenExtinct = input.stopWhenExtinct ?? true;
 
   const seedResults: CladeActivitySeedPanelSeedResult[] = seeds.map((seed) => {
-    const sweep = runCladeActivityPersistenceSweep({
+    const { simulation, finalSummary } = executeActivitySimulation({
       steps,
-      windowSize,
-      burnIn,
       seed,
       stopWhenExtinct,
       simulation: input.simulation,
-      minSurvivalTicks
+      emptyRunError: 'Clade activity seed panel produced no step data'
     });
 
-    return {
+    return buildCladeActivitySeedPanelSeedResult({
       seed,
-      finalSummary: sweep.finalSummary,
-      rawSummary: sweep.rawSummary,
-      thresholds: sweep.thresholds.map((threshold) => buildActivitySeedPanelThresholdSeedResult(threshold))
-    };
+      finalSummary,
+      history: simulation.history(),
+      windowSize,
+      burnIn,
+      minSurvivalTicks
+    });
   });
 
   return {
@@ -636,32 +715,14 @@ export function runCladeActivityCladogenesisSweep(
           simulation: withCladogenesisThreshold(input.simulation, cladogenesisThreshold),
           emptyRunError: 'Clade activity cladogenesis sweep produced no step data'
         });
-        const history = simulation.history();
-        const rawSummary = analyzeCladeActivity({
-          clades: history.clades,
-          windowSize,
-          burnIn,
-          maxTick: finalSummary.tick
-        }).summary;
-
-        return {
+        return buildCladeActivityCladogenesisSeedResult({
           seed,
           finalSummary,
-          rawSummary,
-          thresholds: minSurvivalTicks.map((threshold) =>
-            buildActivitySeedPanelThresholdSeedResult({
-              minSurvivalTicks: threshold,
-              summary: analyzePersistentCladeActivity({
-                clades: history.clades,
-                windowSize,
-                burnIn,
-                maxTick: finalSummary.tick,
-                minSurvivalTicks: threshold
-              }).summary
-            })
-          ),
-          counts: buildCladeSpeciesCountSummary(finalSummary, history.clades.length, history.species.length)
-        };
+          history: simulation.history(),
+          windowSize,
+          burnIn,
+          minSurvivalTicks
+        });
       });
 
       return {
@@ -691,6 +752,84 @@ export function runCladeActivityCladogenesisSweep(
   };
 }
 
+export function runCladeActivityCladogenesisHorizonSweep(
+  input: RunCladeActivityCladogenesisHorizonSweepInput
+): CladeActivityCladogenesisHorizonSweepExport {
+  const stepCounts = toPositiveIntList('steps', input.steps);
+  const windowSize = toPositiveInt('windowSize', input.windowSize);
+  const burnIn = toNonNegativeInt('burnIn', input.burnIn);
+  const seeds = toUniqueIntegerList('seeds', input.seeds);
+  const minSurvivalTicks = toNonNegativeIntList('minSurvivalTicks', input.minSurvivalTicks);
+  const cladogenesisThresholds = toUniqueFiniteNumberList('cladogenesisThresholds', input.cladogenesisThresholds);
+  const stopWhenExtinct = input.stopWhenExtinct ?? true;
+  const maxSteps = max(stepCounts);
+  const thresholdRuns = cladogenesisThresholds.map((cladogenesisThreshold) => ({
+    cladogenesisThreshold,
+    seedRuns: seeds.map((seed) => {
+      const { simulation, summaries } = executeActivitySimulation({
+        steps: maxSteps,
+        seed,
+        stopWhenExtinct,
+        simulation: withCladogenesisThreshold(input.simulation, cladogenesisThreshold),
+        emptyRunError: 'Clade activity cladogenesis horizon sweep produced no step data'
+      });
+
+      return {
+        seed,
+        summaries,
+        history: simulation.history()
+      };
+    })
+  }));
+
+  const horizons: CladeActivityCladogenesisHorizonSweepPoint[] = stepCounts.map((steps) => ({
+    steps,
+    thresholdResults: thresholdRuns.map(({ cladogenesisThreshold, seedRuns }) => {
+      const seedResults = seedRuns.map((seedRun) => {
+        const finalSummary =
+          seedRun.summaries[Math.min(steps, seedRun.summaries.length) - 1] ??
+          seedRun.summaries[seedRun.summaries.length - 1];
+        if (!finalSummary) {
+          throw new Error('Clade activity cladogenesis horizon sweep produced no step data');
+        }
+
+        return buildCladeActivityCladogenesisSeedResult({
+          seed: seedRun.seed,
+          finalSummary,
+          history: truncateEvolutionHistory(seedRun.history, finalSummary.tick),
+          windowSize,
+          burnIn,
+          minSurvivalTicks
+        });
+      });
+
+      return {
+        cladogenesisThreshold,
+        seedResults,
+        activityAggregates: minSurvivalTicks.map((threshold) =>
+          buildActivitySeedPanelThresholdAggregate(threshold, seedResults)
+        ),
+        countAggregates: buildCladeSpeciesCountAggregate(seedResults)
+      };
+    })
+  }));
+
+  return {
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    definition: CLADE_ACTIVITY_CLADOGENESIS_SWEEP_DEFINITION,
+    config: {
+      steps: stepCounts,
+      windowSize,
+      burnIn,
+      seeds,
+      stopWhenExtinct,
+      minSurvivalTicks,
+      cladogenesisThresholds
+    },
+    horizons
+  };
+}
+
 export function runCladeActivityCoarseThresholdBoundaryStudy(
   input: RunCladeActivityCoarseThresholdBoundaryStudyInput = {}
 ): CladeActivityCladogenesisSweepExport {
@@ -711,6 +850,93 @@ export function runCladeActivityCoarseThresholdBoundaryStudy(
     simulation: input.simulation,
     generatedAt: input.generatedAt
   });
+}
+
+export function runCladeActivityCladogenesisHorizonStudy(
+  input: RunCladeActivityCladogenesisHorizonStudyInput = {}
+): CladeActivityCladogenesisHorizonSweepExport {
+  return runCladeActivityCladogenesisHorizonSweep({
+    steps: [...(input.steps ?? DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.steps)],
+    windowSize: input.windowSize ?? DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.windowSize,
+    burnIn: input.burnIn ?? DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.burnIn,
+    seeds: [...(input.seeds ?? DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.seeds)],
+    stopWhenExtinct: input.stopWhenExtinct ?? DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.stopWhenExtinct,
+    minSurvivalTicks: [
+      ...(input.minSurvivalTicks ?? DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.minSurvivalTicks)
+    ],
+    cladogenesisThresholds: [
+      ...(input.cladogenesisThresholds ?? DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY.cladogenesisThresholds)
+    ],
+    simulation: input.simulation,
+    generatedAt: input.generatedAt
+  });
+}
+
+export function runCladeSpeciesActivityCouplingStudy(
+  input: RunCladeSpeciesActivityCouplingStudyInput = {}
+): CladeSpeciesActivityCouplingExport {
+  const steps = toPositiveInt('steps', input.steps ?? DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.steps);
+  const windowSize = toPositiveInt(
+    'windowSize',
+    input.windowSize ?? DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.windowSize
+  );
+  const burnIn = toNonNegativeInt('burnIn', input.burnIn ?? DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.burnIn);
+  const seeds = toUniqueIntegerList('seeds', input.seeds ?? DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.seeds);
+  const minSurvivalTicks = toNonNegativeIntList(
+    'minSurvivalTicks',
+    input.minSurvivalTicks ?? DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.minSurvivalTicks
+  );
+  const cladogenesisThresholds = toUniqueFiniteNumberList(
+    'cladogenesisThresholds',
+    input.cladogenesisThresholds ?? DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.cladogenesisThresholds
+  );
+  const stopWhenExtinct = input.stopWhenExtinct ?? DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY.stopWhenExtinct;
+
+  const thresholdResults: CladeSpeciesActivityCouplingThresholdResult[] = cladogenesisThresholds.map(
+    (cladogenesisThreshold) => {
+      const seedResults = seeds.map((seed) => {
+        const { simulation, finalSummary } = executeActivitySimulation({
+          steps,
+          seed,
+          stopWhenExtinct,
+          simulation: withCladogenesisThreshold(input.simulation, cladogenesisThreshold),
+          emptyRunError: 'Clade/species activity coupling study produced no step data'
+        });
+
+        return buildCladeSpeciesActivityCouplingSeedResult({
+          seed,
+          finalSummary,
+          history: simulation.history(),
+          windowSize,
+          burnIn,
+          minSurvivalTicks
+        });
+      });
+
+      return {
+        cladogenesisThreshold,
+        seedResults,
+        aggregates: minSurvivalTicks.map((threshold) =>
+          buildCladeSpeciesActivityCouplingThresholdAggregate(threshold, seedResults)
+        )
+      };
+    }
+  );
+
+  return {
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    definition: CLADE_SPECIES_ACTIVITY_COUPLING_DEFINITION,
+    config: {
+      steps,
+      windowSize,
+      burnIn,
+      seeds,
+      stopWhenExtinct,
+      minSurvivalTicks,
+      cladogenesisThresholds
+    },
+    thresholdResults
+  };
 }
 
 export function runSpeciesActivityHorizonSweep(
@@ -850,6 +1076,7 @@ function analyzePersistentTaxonActivity(
 
 function executeActivitySimulation(input: RunActivitySimulationInput): {
   simulation: LifeSimulation;
+  summaries: StepSummary[];
   finalSummary: StepSummary;
 } {
   const simulation = new LifeSimulation({
@@ -873,8 +1100,221 @@ function executeActivitySimulation(input: RunActivitySimulationInput): {
 
   return {
     simulation,
+    summaries,
     finalSummary
   };
+}
+
+function buildSpeciesActivitySeedPanelSeedResult(input: {
+  seed: number;
+  finalSummary: StepSummary;
+  history: EvolutionHistorySnapshot;
+  windowSize: number;
+  burnIn: number;
+  minSurvivalTicks: number[];
+}): SpeciesActivitySeedPanelSeedResult {
+  const rawSummary = analyzeSpeciesActivity({
+    species: input.history.species,
+    windowSize: input.windowSize,
+    burnIn: input.burnIn,
+    maxTick: input.finalSummary.tick
+  }).summary;
+
+  return {
+    seed: input.seed,
+    finalSummary: input.finalSummary,
+    rawSummary,
+    thresholds: input.minSurvivalTicks.map((threshold) =>
+      buildActivitySeedPanelThresholdSeedResult({
+        minSurvivalTicks: threshold,
+        summary: analyzePersistentSpeciesActivity({
+          species: input.history.species,
+          windowSize: input.windowSize,
+          burnIn: input.burnIn,
+          maxTick: input.finalSummary.tick,
+          minSurvivalTicks: threshold
+        }).summary
+      })
+    )
+  };
+}
+
+function buildCladeActivitySeedPanelSeedResult(input: {
+  seed: number;
+  finalSummary: StepSummary;
+  history: EvolutionHistorySnapshot;
+  windowSize: number;
+  burnIn: number;
+  minSurvivalTicks: number[];
+}): CladeActivitySeedPanelSeedResult {
+  const rawSummary = analyzeCladeActivity({
+    clades: input.history.clades,
+    windowSize: input.windowSize,
+    burnIn: input.burnIn,
+    maxTick: input.finalSummary.tick
+  }).summary;
+
+  return {
+    seed: input.seed,
+    finalSummary: input.finalSummary,
+    rawSummary,
+    thresholds: input.minSurvivalTicks.map((threshold) =>
+      buildActivitySeedPanelThresholdSeedResult({
+        minSurvivalTicks: threshold,
+        summary: analyzePersistentCladeActivity({
+          clades: input.history.clades,
+          windowSize: input.windowSize,
+          burnIn: input.burnIn,
+          maxTick: input.finalSummary.tick,
+          minSurvivalTicks: threshold
+        }).summary
+      })
+    ),
+  };
+}
+
+function buildCladeActivityCladogenesisSeedResult(input: {
+  seed: number;
+  finalSummary: StepSummary;
+  history: EvolutionHistorySnapshot;
+  windowSize: number;
+  burnIn: number;
+  minSurvivalTicks: number[];
+}): CladeActivityCladogenesisSweepSeedResult {
+  const activity = buildCladeActivitySeedPanelSeedResult(input);
+
+  return {
+    ...activity,
+    counts: buildCladeSpeciesCountSummary(input.finalSummary, input.history.clades.length, input.history.species.length)
+  };
+}
+
+function buildCladeSpeciesActivityCouplingSeedResult(input: {
+  seed: number;
+  finalSummary: StepSummary;
+  history: EvolutionHistorySnapshot;
+  windowSize: number;
+  burnIn: number;
+  minSurvivalTicks: number[];
+}): CladeSpeciesActivityCouplingSeedResult {
+  const species = buildSpeciesActivitySeedPanelSeedResult(input);
+  const clade = buildCladeActivitySeedPanelSeedResult(input);
+
+  return {
+    seed: input.seed,
+    finalSummary: input.finalSummary,
+    speciesRawSummary: species.rawSummary,
+    cladeRawSummary: clade.rawSummary,
+    thresholds: input.minSurvivalTicks.map((minSurvivalTicks) =>
+      buildCladeSpeciesActivityCouplingThresholdSeedResult({
+        minSurvivalTicks,
+        species: findThresholdResult(species.seed, minSurvivalTicks, species.thresholds),
+        clade: findThresholdResult(clade.seed, minSurvivalTicks, clade.thresholds)
+      })
+    )
+  };
+}
+
+function buildCladeSpeciesActivityCouplingThresholdSeedResult(input: {
+  minSurvivalTicks: number;
+  species: SpeciesActivitySeedPanelThresholdSeedResult;
+  clade: CladeActivitySeedPanelThresholdSeedResult;
+}): CladeSpeciesActivityCouplingThresholdSeedResult {
+  return {
+    minSurvivalTicks: input.minSurvivalTicks,
+    species: input.species,
+    clade: input.clade,
+    cladeToSpeciesPersistentWindowFraction: divideOrNull(
+      input.clade.persistentWindowFraction,
+      input.species.persistentWindowFraction
+    ),
+    persistentWindowFractionDelta: input.clade.persistentWindowFraction - input.species.persistentWindowFraction,
+    cladeToSpeciesPersistentActivityMeanRatio: divideOrNull(
+      input.clade.summary.postBurnInPersistentNewActivityMean,
+      input.species.summary.postBurnInPersistentNewActivityMean
+    ),
+    persistentActivityMeanDelta:
+      input.clade.summary.postBurnInPersistentNewActivityMean -
+      input.species.summary.postBurnInPersistentNewActivityMean
+  };
+}
+
+function buildCladeSpeciesActivityCouplingThresholdAggregate(
+  minSurvivalTicks: number,
+  seedResults: CladeSpeciesActivityCouplingSeedResult[]
+): CladeSpeciesActivityCouplingThresholdAggregate {
+  const thresholdResults = seedResults.map((seedResult) =>
+    findThresholdResult(seedResult.seed, minSurvivalTicks, seedResult.thresholds)
+  );
+  const speciesSeedResults = seedResults.map((seedResult) => ({
+    seed: seedResult.seed,
+    thresholds: seedResult.thresholds.map((threshold) => threshold.species)
+  }));
+  const cladeSeedResults = seedResults.map((seedResult) => ({
+    seed: seedResult.seed,
+    thresholds: seedResult.thresholds.map((threshold) => threshold.clade)
+  }));
+
+  return {
+    minSurvivalTicks,
+    species: buildActivitySeedPanelThresholdAggregate(minSurvivalTicks, speciesSeedResults),
+    clade: buildActivitySeedPanelThresholdAggregate(minSurvivalTicks, cladeSeedResults),
+    cladeToSpeciesPersistentWindowFraction: buildNullableNumericAggregate(
+      thresholdResults.flatMap((threshold) =>
+        threshold.cladeToSpeciesPersistentWindowFraction === null
+          ? []
+          : [threshold.cladeToSpeciesPersistentWindowFraction]
+      )
+    ),
+    persistentWindowFractionDelta: buildNumericAggregate(
+      thresholdResults.map((threshold) => threshold.persistentWindowFractionDelta)
+    ),
+    cladeToSpeciesPersistentActivityMeanRatio: buildNullableNumericAggregate(
+      thresholdResults.flatMap((threshold) =>
+        threshold.cladeToSpeciesPersistentActivityMeanRatio === null
+          ? []
+          : [threshold.cladeToSpeciesPersistentActivityMeanRatio]
+      )
+    ),
+    persistentActivityMeanDelta: buildNumericAggregate(
+      thresholdResults.map((threshold) => threshold.persistentActivityMeanDelta)
+    )
+  };
+}
+
+function truncateEvolutionHistory(history: EvolutionHistorySnapshot, maxTick: number): EvolutionHistorySnapshot {
+  return {
+    clades: truncateTaxonHistory(history.clades, maxTick),
+    species: truncateTaxonHistory(history.species, maxTick),
+    extinctClades: history.clades.filter((clade) => clade.extinctTick !== null && clade.extinctTick <= maxTick).length,
+    extinctSpecies: history.species.filter((species) => species.extinctTick !== null && species.extinctTick <= maxTick)
+      .length
+  };
+}
+
+function truncateTaxonHistory(taxa: TaxonHistory[], maxTick: number): TaxonHistory[] {
+  return taxa.flatMap((taxon) => {
+    if (taxon.firstSeenTick > maxTick) {
+      return [];
+    }
+
+    const timeline = taxon.timeline.filter((point) => point.tick <= maxTick);
+    if (timeline.length === 0) {
+      return [];
+    }
+
+    return [
+      {
+        id: taxon.id,
+        firstSeenTick: taxon.firstSeenTick,
+        extinctTick: taxon.extinctTick !== null && taxon.extinctTick <= maxTick ? taxon.extinctTick : null,
+        totalBirths: timeline.reduce((total, point) => total + point.births, 0),
+        totalDeaths: timeline.reduce((total, point) => total + point.deaths, 0),
+        peakPopulation: max(timeline.map((point) => point.population)),
+        timeline
+      }
+    ];
+  });
 }
 
 function buildTaxonActivitySummary(
@@ -1122,6 +1562,18 @@ function buildActivitySeedPanelThresholdAggregate<
   };
 }
 
+function findThresholdResult<TThreshold extends { minSurvivalTicks: number }>(
+  seed: number,
+  minSurvivalTicks: number,
+  thresholds: TThreshold[]
+): TThreshold {
+  const threshold = thresholds.find((result) => result.minSurvivalTicks === minSurvivalTicks);
+  if (!threshold) {
+    throw new Error(`Missing threshold ${minSurvivalTicks} for seed ${seed}`);
+  }
+  return threshold;
+}
+
 function withCladogenesisThreshold(
   simulation: Omit<LifeSimulationOptions, 'seed'> | undefined,
   cladogenesisThreshold: number
@@ -1169,6 +1621,24 @@ function buildCladeSpeciesCountAggregate(
 
 function buildNumericAggregate(values: number[]): NumericAggregate {
   return {
+    mean: mean(values),
+    min: min(values),
+    max: max(values)
+  };
+}
+
+function buildNullableNumericAggregate(values: number[]): CladeSpeciesActivityCouplingRatioAggregate {
+  if (values.length === 0) {
+    return {
+      definedSeeds: 0,
+      mean: null,
+      min: null,
+      max: null
+    };
+  }
+
+  return {
+    definedSeeds: values.length,
     mean: mean(values),
     min: min(values),
     max: max(values)
@@ -1253,6 +1723,13 @@ function max(values: number[]): number {
 function divideOrZero(numerator: number, denominator: number): number {
   if (denominator === 0) {
     return 0;
+  }
+  return numerator / denominator;
+}
+
+function divideOrNull(numerator: number, denominator: number): number | null {
+  if (denominator === 0) {
+    return null;
   }
   return numerator / denominator;
 }

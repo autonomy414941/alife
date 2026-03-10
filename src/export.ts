@@ -1,7 +1,9 @@
 import {
+  CladeActivityCladogenesisHorizonSweepExport,
   CladeActivityCladogenesisSweepExport,
   CladeActivityPersistenceSweepExport,
   CladeActivitySeedPanelExport,
+  CladeSpeciesActivityCouplingExport,
   DisturbanceGridStudyExport,
   EvolutionAnalyticsSnapshot,
   EvolutionHistorySnapshot,
@@ -317,6 +319,16 @@ export function cladeActivitySeedPanelToJson(exportData: CladeActivitySeedPanelE
 }
 
 export function cladeActivityCladogenesisSweepToJson(exportData: CladeActivityCladogenesisSweepExport): string {
+  return `${JSON.stringify(exportData, null, 2)}\n`;
+}
+
+export function cladeActivityCladogenesisHorizonSweepToJson(
+  exportData: CladeActivityCladogenesisHorizonSweepExport
+): string {
+  return `${JSON.stringify(exportData, null, 2)}\n`;
+}
+
+export function cladeSpeciesActivityCouplingToJson(exportData: CladeSpeciesActivityCouplingExport): string {
   return `${JSON.stringify(exportData, null, 2)}\n`;
 }
 
