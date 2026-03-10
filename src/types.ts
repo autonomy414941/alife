@@ -221,6 +221,7 @@ export interface SimulationConfig {
   localityRadius: number;
   habitatPreferenceStrength: number;
   habitatPreferenceMutation: number;
+  cladeHabitatCoupling: number;
   specializationMetabolicCost: number;
   predationPressure: number;
   trophicForagingPenalty: number;

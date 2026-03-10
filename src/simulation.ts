@@ -57,6 +57,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   localityRadius: 2,
   habitatPreferenceStrength: 1.4,
   habitatPreferenceMutation: 0.2,
+  cladeHabitatCoupling: 0,
   specializationMetabolicCost: 0.08,
   predationPressure: 0.35,
   trophicForagingPenalty: 0.35,
@@ -161,6 +162,8 @@ export class LifeSimulation {
 
   private readonly cladeFounderGenome = new Map<number, Genome>();
 
+  private readonly cladeHabitatPreference = new Map<number, number>();
+
   private readonly speciesHabitatPreference = new Map<number, number>();
 
   private readonly speciesTrophicLevel = new Map<number, number>();
@@ -190,6 +193,7 @@ export class LifeSimulation {
     }
     this.initializeCladeFounderGenomes();
     this.initializeSpeciesHabitatPreferences();
+    this.initializeCladeHabitatPreferences();
     this.initializeSpeciesTrophicLevels();
     this.initializeSpeciesDefenseLevels();
     this.initializeEvolutionHistory();
@@ -1084,6 +1088,21 @@ export class LifeSimulation {
     }
   }
 
+  private initializeCladeHabitatPreferences(): void {
+    const sums = new Map<number, { total: number; count: number }>();
+    for (const agent of this.agents) {
+      const fertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, 0);
+      const current = sums.get(agent.lineage) ?? { total: 0, count: 0 };
+      current.total += fertility;
+      current.count += 1;
+      sums.set(agent.lineage, current);
+    }
+    for (const [lineage, { total, count }] of sums) {
+      const preference = count === 0 ? 1 : total / count;
+      this.cladeHabitatPreference.set(lineage, clamp(preference, 0.1, 2));
+    }
+  }
+
   private initializeSpeciesTrophicLevels(): void {
     const sums = new Map<number, { total: number; count: number }>();
     for (const agent of this.agents) {
@@ -1334,7 +1353,7 @@ export class LifeSimulation {
     }
 
     const available = this.resources[agent.y][agent.x];
-    const habitatEfficiency = this.habitatMatchEfficiency(agent.species, agent.x, agent.y);
+    const habitatEfficiency = this.habitatMatchEfficiency(agent, agent.x, agent.y);
     const trophicEfficiency = this.trophicForagingEfficiency(agent.species);
     const defenseEfficiency = this.defenseForagingEfficiency(agent.species);
     const harvestAmount = Math.min(
@@ -1358,7 +1377,7 @@ export class LifeSimulation {
     let bestScore = -Infinity;
 
     for (const option of options) {
-      const food = this.resources[option.y][option.x] * this.habitatMatchEfficiency(agent.species, option.x, option.y);
+      const food = this.resources[option.y][option.x] * this.habitatMatchEfficiency(agent, option.x, option.y);
       const crowding = this.neighborhoodCrowding(option.x, option.y, occupancy);
       const score = food - this.config.dispersalPressure * crowding + this.rng.float() * 0.05;
       if (score > bestScore) {
@@ -1454,10 +1473,6 @@ export class LifeSimulation {
       const defenseDelta = this.defenseDeltaFromMutation(parent.genome, childGenome);
       this.speciesDefenseLevel.set(childSpecies, clamp(parentDefense + defenseDelta, 0, 1));
     }
-    const childLineage = this.shouldFoundNewClade(parent.lineage, diverged, childGenome)
-      ? this.foundClade(childGenome)
-      : parent.lineage;
-
     const neighbors = [
       { x: parent.x, y: parent.y },
       { x: this.wrapX(parent.x + 1), y: parent.y },
@@ -1466,6 +1481,9 @@ export class LifeSimulation {
       { x: parent.x, y: this.wrapY(parent.y - 1) }
     ];
     const childPos = this.rng.pick(neighbors);
+    const childLineage = this.shouldFoundNewClade(parent.lineage, diverged, childGenome)
+      ? this.foundClade(childGenome, childPos.x, childPos.y)
+      : parent.lineage;
 
     return {
       id: this.nextAgentId++,
@@ -1493,9 +1511,13 @@ export class LifeSimulation {
     return genomeDistance(founderGenome, childGenome) >= threshold;
   }
 
-  private foundClade(founderGenome: Genome): number {
+  private foundClade(founderGenome: Genome, founderX: number, founderY: number): number {
     const lineage = this.nextLineageId++;
     this.cladeFounderGenome.set(lineage, copyGenome(founderGenome));
+    this.cladeHabitatPreference.set(
+      lineage,
+      clamp(this.effectiveBiomeFertilityAt(founderX, founderY, this.tickCount + 1), 0.1, 2)
+    );
     return lineage;
   }
 
@@ -1528,15 +1550,25 @@ export class LifeSimulation {
     return min + this.rng.float() * (max - min);
   }
 
-  private habitatMatchEfficiency(species: number, x: number, y: number): number {
+  private habitatMatchEfficiency(agent: Pick<Agent, 'species' | 'lineage'>, x: number, y: number): number {
     const strength = Math.max(0, this.config.habitatPreferenceStrength);
     if (strength === 0) {
       return 1;
     }
-    const preference = this.getSpeciesHabitatPreference(species);
+    const preference = this.blendedHabitatPreference(agent.species, agent.lineage);
     const fertility = this.effectiveBiomeFertilityAt(x, y, this.tickCount + 1);
     const mismatch = fertility - preference;
     return Math.max(0.05, Math.exp(-strength * mismatch * mismatch));
+  }
+
+  private blendedHabitatPreference(species: number, lineage: number): number {
+    const speciesPreference = this.getSpeciesHabitatPreference(species);
+    const coupling = clamp(this.config.cladeHabitatCoupling, 0, 1);
+    if (coupling === 0) {
+      return speciesPreference;
+    }
+    const cladePreference = this.getCladeHabitatPreference(lineage);
+    return clamp(speciesPreference * (1 - coupling) + cladePreference * coupling, 0.1, 2);
   }
 
   private getSpeciesHabitatPreference(species: number): number {
@@ -1545,6 +1577,15 @@ export class LifeSimulation {
       return existing;
     }
     this.speciesHabitatPreference.set(species, 1);
+    return 1;
+  }
+
+  private getCladeHabitatPreference(lineage: number): number {
+    const existing = this.cladeHabitatPreference.get(lineage);
+    if (existing !== undefined) {
+      return existing;
+    }
+    this.cladeHabitatPreference.set(lineage, 1);
     return 1;
   }
 

@@ -1,0 +1,3405 @@
+{
+  "generatedAt": "2026-03-10T00:00:00.000Z",
+  "question": "Does opt-in clade habitat coupling create any actual-vs-matched-null separation on a short threshold-1.0 seed panel?",
+  "prediction": "Any non-zero actual-vs-null delta would indicate that lineage identity now changes clade-level outcomes, even if the sign is negative.",
+  "studyInput": {
+    "steps": 1000,
+    "windowSize": 100,
+    "burnIn": 200,
+    "seeds": [
+      20260307,
+      20260308,
+      20260309,
+      20260310
+    ],
+    "stopWhenExtinct": true,
+    "minSurvivalTicks": [
+      50
+    ],
+    "cladogenesisThresholds": [
+      1
+    ],
+    "simulation": {
+      "config": {
+        "cladeHabitatCoupling": 1
+      }
+    },
+    "generatedAt": "2026-03-10T00:00:00.000Z"
+  },
+  "summary": {
+    "birthScheduleMatchedAllSeeds": true,
+    "persistentWindowFractionDeltaVsNullMean": 0,
+    "persistentActivityMeanDeltaVsNullMean": -40.92857142857146
+  },
+  "study": {
+    "generatedAt": "2026-03-10T00:00:00.000Z",
+    "definition": {
+      "actual": {
+        "raw": {
+          "component": "clades",
+          "activityUnit": "activeCladeTick",
+          "cumulativeActivity": "Sum of occupied clade-ticks from simulation tick 1 through the end of each window.",
+          "normalizedCumulativeActivity": "Cumulative activity divided by elapsed simulation ticks at the end of each window.",
+          "newActivity": "Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window."
+        },
+        "observedLifetime": "Observed lifetime is extinctTick - firstSeenTick for extinct clades and maxTick - firstSeenTick for extant clades.",
+        "persistentNewActivity": "Occupied clade-ticks within an origin window contributed by clades whose observed lifetime reaches the survival threshold.",
+        "censoredWindow": "A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin clades in that window cannot yet be fully evaluated.",
+        "persistentWindowFraction": "For one seed and threshold, the fraction of evaluable post-burn-in windows whose persistentNewActivity is greater than zero.",
+        "allEvaluableWindowsPositive": "For one seed and threshold, true when every evaluable post-burn-in window has persistentNewActivity greater than zero."
+      },
+      "matchedNull": {
+        "raw": {
+          "component": "clades",
+          "activityUnit": "activeCladeTick",
+          "cumulativeActivity": "Sum of occupied clade-ticks from simulation tick 1 through the end of each window.",
+          "normalizedCumulativeActivity": "Cumulative activity divided by elapsed simulation ticks at the end of each window.",
+          "newActivity": "Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window."
+        },
+        "observedLifetime": "Observed lifetime is extinctTick - firstSeenTick for extinct clades and maxTick - firstSeenTick for extant clades.",
+        "persistentNewActivity": "Occupied clade-ticks within an origin window contributed by clades whose observed lifetime reaches the survival threshold.",
+        "censoredWindow": "A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin clades in that window cannot yet be fully evaluated.",
+        "persistentWindowFraction": "For one seed and threshold, the fraction of evaluable post-burn-in windows whose persistentNewActivity is greater than zero.",
+        "allEvaluableWindowsPositive": "For one seed and threshold, true when every evaluable post-burn-in window has persistentNewActivity greater than zero."
+      },
+      "matchedSchedule": "For each seed and cladogenesis threshold, the pseudo-clade null preserves the observed clade birth count at every firstSeenTick.",
+      "relabeling": "Pseudo-clade founders are randomly selected from species born at each matched birth tick, and remaining species are randomly reassigned to pseudo-clades that were already active at the prior tick.",
+      "actualToNullPersistentWindowFractionRatio": "For one seed and survival threshold, actual clade persistentWindowFraction divided by matched-null persistentWindowFraction. Null when the matched-null fraction is zero.",
+      "persistentWindowFractionDeltaVsNull": "For one seed and survival threshold, actual clade persistentWindowFraction minus matched-null persistentWindowFraction.",
+      "actualToNullPersistentActivityMeanRatio": "For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean divided by matched-null postBurnInPersistentNewActivityMean. Null when the matched-null mean is zero.",
+      "persistentActivityMeanDeltaVsNull": "For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean minus matched-null postBurnInPersistentNewActivityMean."
+    },
+    "config": {
+      "steps": 1000,
+      "windowSize": 100,
+      "burnIn": 200,
+      "seeds": [
+        20260307,
+        20260308,
+        20260309,
+        20260310
+      ],
+      "stopWhenExtinct": true,
+      "minSurvivalTicks": [
+        50
+      ],
+      "cladogenesisThresholds": [
+        1
+      ]
+    },
+    "thresholdResults": [
+      {
+        "cladogenesisThreshold": 1,
+        "seedResults": [
+          {
+            "seed": 20260307,
+            "relabelSeed": 3036252999,
+            "finalSummary": {
+              "tick": 1000,
+              "population": 2137,
+              "births": 26,
+              "deaths": 15,
+              "meanEnergy": 5.876130631438763,
+              "meanGenome": {
+                "metabolism": 0.3827044395586054,
+                "harvest": 1.3586717424948245,
+                "aggression": 0.972980259474198
+              },
+              "activeClades": 42,
+              "activeSpecies": 230,
+              "dominantSpeciesShare": 0.25128685072531587,
+              "selectionDifferential": {
+                "metabolism": 0.0007729824676596664,
+                "harvest": 0.005631320820490782,
+                "aggression": 0.00993440558032288
+              },
+              "cladeExtinctions": 0,
+              "speciesExtinctions": 3,
+              "cumulativeExtinctClades": 119,
+              "cumulativeExtinctSpecies": 2232
+            },
+            "actualRawSummary": {
+              "stepsExecuted": 1000,
+              "totalClades": 161,
+              "postBurnInWindows": 8,
+              "postBurnInWindowsWithNewActivity": 8,
+              "postBurnInNewClades": 130,
+              "postBurnInNewActivityMean": 819.125,
+              "postBurnInNewActivityMin": 114,
+              "postBurnInNewActivityMax": 2021,
+              "finalCumulativeActivity": 21554,
+              "finalNormalizedCumulativeActivity": 21.554,
+              "finalNewActivity": 2021
+            },
+            "matchedNullRawSummary": {
+              "stepsExecuted": 1000,
+              "totalClades": 161,
+              "postBurnInWindows": 8,
+              "postBurnInWindowsWithNewActivity": 8,
+              "postBurnInNewClades": 130,
+              "postBurnInNewActivityMean": 826,
+              "postBurnInNewActivityMin": 114,
+              "postBurnInNewActivityMax": 2114,
+              "finalCumulativeActivity": 50412,
+              "finalNormalizedCumulativeActivity": 50.412,
+              "finalNewActivity": 2114
+            },
+            "actualBirthSchedule": [
+              {
+                "tick": 0,
+                "births": 24
+              },
+              {
+                "tick": 73,
+                "births": 1
+              },
+              {
+                "tick": 101,
+                "births": 1
+              },
+              {
+                "tick": 107,
+                "births": 1
+              },
+              {
+                "tick": 142,
+                "births": 1
+              },
+              {
+                "tick": 162,
+                "births": 1
+              },
+              {
+                "tick": 195,
+                "births": 1
+              },
+              {
+                "tick": 198,
+                "births": 1
+              },
+              {
+                "tick": 220,
+                "births": 1
+              },
+              {
+                "tick": 273,
+                "births": 1
+              },
+              {
+                "tick": 296,
+                "births": 1
+              },
+              {
+                "tick": 304,
+                "births": 1
+              },
+              {
+                "tick": 306,
+                "births": 1
+              },
+              {
+                "tick": 325,
+                "births": 1
+              },
+              {
+                "tick": 348,
+                "births": 1
+              },
+              {
+                "tick": 381,
+                "births": 1
+              },
+              {
+                "tick": 390,
+                "births": 1
+              },
+              {
+                "tick": 406,
+                "births": 1
+              },
+              {
+                "tick": 418,
+                "births": 1
+              },
+              {
+                "tick": 433,
+                "births": 1
+              },
+              {
+                "tick": 443,
+                "births": 1
+              },
+              {
+                "tick": 462,
+                "births": 1
+              },
+              {
+                "tick": 502,
+                "births": 1
+              },
+              {
+                "tick": 505,
+                "births": 1
+              },
+              {
+                "tick": 515,
+                "births": 1
+              },
+              {
+                "tick": 525,
+                "births": 1
+              },
+              {
+                "tick": 541,
+                "births": 1
+              },
+              {
+                "tick": 546,
+                "births": 1
+              },
+              {
+                "tick": 593,
+                "births": 1
+              },
+              {
+                "tick": 595,
+                "births": 1
+              },
+              {
+                "tick": 599,
+                "births": 2
+              },
+              {
+                "tick": 606,
+                "births": 1
+              },
+              {
+                "tick": 621,
+                "births": 1
+              },
+              {
+                "tick": 630,
+                "births": 1
+              },
+              {
+                "tick": 631,
+                "births": 1
+              },
+              {
+                "tick": 634,
+                "births": 1
+              },
+              {
+                "tick": 647,
+                "births": 1
+              },
+              {
+                "tick": 649,
+                "births": 1
+              },
+              {
+                "tick": 669,
+                "births": 1
+              },
+              {
+                "tick": 675,
+                "births": 1
+              },
+              {
+                "tick": 702,
+                "births": 1
+              },
+              {
+                "tick": 705,
+                "births": 1
+              },
+              {
+                "tick": 709,
+                "births": 1
+              },
+              {
+                "tick": 719,
+                "births": 1
+              },
+              {
+                "tick": 729,
+                "births": 2
+              },
+              {
+                "tick": 731,
+                "births": 1
+              },
+              {
+                "tick": 732,
+                "births": 1
+              },
+              {
+                "tick": 736,
+                "births": 1
+              },
+              {
+                "tick": 747,
+                "births": 2
+              },
+              {
+                "tick": 756,
+                "births": 1
+              },
+              {
+                "tick": 760,
+                "births": 1
+              },
+              {
+                "tick": 762,
+                "births": 1
+              },
+              {
+                "tick": 768,
+                "births": 3
+              },
+              {
+                "tick": 770,
+                "births": 1
+              },
+              {
+                "tick": 773,
+                "births": 1
+              },
+              {
+                "tick": 774,
+                "births": 1
+              },
+              {
+                "tick": 775,
+                "births": 1
+              },
+              {
+                "tick": 780,
+                "births": 1
+              },
+              {
+                "tick": 782,
+                "births": 1
+              },
+              {
+                "tick": 785,
+                "births": 1
+              },
+              {
+                "tick": 789,
+                "births": 1
+              },
+              {
+                "tick": 808,
+                "births": 1
+              },
+              {
+                "tick": 810,
+                "births": 1
+              },
+              {
+                "tick": 811,
+                "births": 1
+              },
+              {
+                "tick": 812,
+                "births": 1
+              },
+              {
+                "tick": 816,
+                "births": 1
+              },
+              {
+                "tick": 817,
+                "births": 1
+              },
+              {
+                "tick": 819,
+                "births": 1
+              },
+              {
+                "tick": 828,
+                "births": 2
+              },
+              {
+                "tick": 835,
+                "births": 1
+              },
+              {
+                "tick": 836,
+                "births": 1
+              },
+              {
+                "tick": 841,
+                "births": 1
+              },
+              {
+                "tick": 842,
+                "births": 1
+              },
+              {
+                "tick": 844,
+                "births": 2
+              },
+              {
+                "tick": 846,
+                "births": 1
+              },
+              {
+                "tick": 847,
+                "births": 1
+              },
+              {
+                "tick": 850,
+                "births": 1
+              },
+              {
+                "tick": 852,
+                "births": 1
+              },
+              {
+                "tick": 853,
+                "births": 1
+              },
+              {
+                "tick": 859,
+                "births": 1
+              },
+              {
+                "tick": 863,
+                "births": 1
+              },
+              {
+                "tick": 864,
+                "births": 1
+              },
+              {
+                "tick": 866,
+                "births": 1
+              },
+              {
+                "tick": 878,
+                "births": 1
+              },
+              {
+                "tick": 880,
+                "births": 1
+              },
+              {
+                "tick": 881,
+                "births": 1
+              },
+              {
+                "tick": 882,
+                "births": 1
+              },
+              {
+                "tick": 884,
+                "births": 1
+              },
+              {
+                "tick": 897,
+                "births": 1
+              },
+              {
+                "tick": 898,
+                "births": 1
+              },
+              {
+                "tick": 905,
+                "births": 1
+              },
+              {
+                "tick": 908,
+                "births": 1
+              },
+              {
+                "tick": 914,
+                "births": 2
+              },
+              {
+                "tick": 916,
+                "births": 1
+              },
+              {
+                "tick": 917,
+                "births": 2
+              },
+              {
+                "tick": 918,
+                "births": 2
+              },
+              {
+                "tick": 922,
+                "births": 1
+              },
+              {
+                "tick": 924,
+                "births": 1
+              },
+              {
+                "tick": 927,
+                "births": 1
+              },
+              {
+                "tick": 928,
+                "births": 2
+              },
+              {
+                "tick": 929,
+                "births": 1
+              },
+              {
+                "tick": 931,
+                "births": 1
+              },
+              {
+                "tick": 932,
+                "births": 1
+              },
+              {
+                "tick": 935,
+                "births": 2
+              },
+              {
+                "tick": 936,
+                "births": 1
+              },
+              {
+                "tick": 937,
+                "births": 1
+              },
+              {
+                "tick": 939,
+                "births": 1
+              },
+              {
+                "tick": 940,
+                "births": 1
+              },
+              {
+                "tick": 943,
+                "births": 3
+              },
+              {
+                "tick": 952,
+                "births": 1
+              },
+              {
+                "tick": 958,
+                "births": 1
+              },
+              {
+                "tick": 969,
+                "births": 1
+              },
+              {
+                "tick": 975,
+                "births": 1
+              },
+              {
+                "tick": 980,
+                "births": 1
+              },
+              {
+                "tick": 983,
+                "births": 2
+              },
+              {
+                "tick": 986,
+                "births": 2
+              },
+              {
+                "tick": 989,
+                "births": 2
+              },
+              {
+                "tick": 991,
+                "births": 2
+              },
+              {
+                "tick": 996,
+                "births": 1
+              },
+              {
+                "tick": 1000,
+                "births": 1
+              }
+            ],
+            "matchedNullBirthSchedule": [
+              {
+                "tick": 0,
+                "births": 24
+              },
+              {
+                "tick": 73,
+                "births": 1
+              },
+              {
+                "tick": 101,
+                "births": 1
+              },
+              {
+                "tick": 107,
+                "births": 1
+              },
+              {
+                "tick": 142,
+                "births": 1
+              },
+              {
+                "tick": 162,
+                "births": 1
+              },
+              {
+                "tick": 195,
+                "births": 1
+              },
+              {
+                "tick": 198,
+                "births": 1
+              },
+              {
+                "tick": 220,
+                "births": 1
+              },
+              {
+                "tick": 273,
+                "births": 1
+              },
+              {
+                "tick": 296,
+                "births": 1
+              },
+              {
+                "tick": 304,
+                "births": 1
+              },
+              {
+                "tick": 306,
+                "births": 1
+              },
+              {
+                "tick": 325,
+                "births": 1
+              },
+              {
+                "tick": 348,
+                "births": 1
+              },
+              {
+                "tick": 381,
+                "births": 1
+              },
+              {
+                "tick": 390,
+                "births": 1
+              },
+              {
+                "tick": 406,
+                "births": 1
+              },
+              {
+                "tick": 418,
+                "births": 1
+              },
+              {
+                "tick": 433,
+                "births": 1
+              },
+              {
+                "tick": 443,
+                "births": 1
+              },
+              {
+                "tick": 462,
+                "births": 1
+              },
+              {
+                "tick": 502,
+                "births": 1
+              },
+              {
+                "tick": 505,
+                "births": 1
+              },
+              {
+                "tick": 515,
+                "births": 1
+              },
+              {
+                "tick": 525,
+                "births": 1
+              },
+              {
+                "tick": 541,
+                "births": 1
+              },
+              {
+                "tick": 546,
+                "births": 1
+              },
+              {
+                "tick": 593,
+                "births": 1
+              },
+              {
+                "tick": 595,
+                "births": 1
+              },
+              {
+                "tick": 599,
+                "births": 2
+              },
+              {
+                "tick": 606,
+                "births": 1
+              },
+              {
+                "tick": 621,
+                "births": 1
+              },
+              {
+                "tick": 630,
+                "births": 1
+              },
+              {
+                "tick": 631,
+                "births": 1
+              },
+              {
+                "tick": 634,
+                "births": 1
+              },
+              {
+                "tick": 647,
+                "births": 1
+              },
+              {
+                "tick": 649,
+                "births": 1
+              },
+              {
+                "tick": 669,
+                "births": 1
+              },
+              {
+                "tick": 675,
+                "births": 1
+              },
+              {
+                "tick": 702,
+                "births": 1
+              },
+              {
+                "tick": 705,
+                "births": 1
+              },
+              {
+                "tick": 709,
+                "births": 1
+              },
+              {
+                "tick": 719,
+                "births": 1
+              },
+              {
+                "tick": 729,
+                "births": 2
+              },
+              {
+                "tick": 731,
+                "births": 1
+              },
+              {
+                "tick": 732,
+                "births": 1
+              },
+              {
+                "tick": 736,
+                "births": 1
+              },
+              {
+                "tick": 747,
+                "births": 2
+              },
+              {
+                "tick": 756,
+                "births": 1
+              },
+              {
+                "tick": 760,
+                "births": 1
+              },
+              {
+                "tick": 762,
+                "births": 1
+              },
+              {
+                "tick": 768,
+                "births": 3
+              },
+              {
+                "tick": 770,
+                "births": 1
+              },
+              {
+                "tick": 773,
+                "births": 1
+              },
+              {
+                "tick": 774,
+                "births": 1
+              },
+              {
+                "tick": 775,
+                "births": 1
+              },
+              {
+                "tick": 780,
+                "births": 1
+              },
+              {
+                "tick": 782,
+                "births": 1
+              },
+              {
+                "tick": 785,
+                "births": 1
+              },
+              {
+                "tick": 789,
+                "births": 1
+              },
+              {
+                "tick": 808,
+                "births": 1
+              },
+              {
+                "tick": 810,
+                "births": 1
+              },
+              {
+                "tick": 811,
+                "births": 1
+              },
+              {
+                "tick": 812,
+                "births": 1
+              },
+              {
+                "tick": 816,
+                "births": 1
+              },
+              {
+                "tick": 817,
+                "births": 1
+              },
+              {
+                "tick": 819,
+                "births": 1
+              },
+              {
+                "tick": 828,
+                "births": 2
+              },
+              {
+                "tick": 835,
+                "births": 1
+              },
+              {
+                "tick": 836,
+                "births": 1
+              },
+              {
+                "tick": 841,
+                "births": 1
+              },
+              {
+                "tick": 842,
+                "births": 1
+              },
+              {
+                "tick": 844,
+                "births": 2
+              },
+              {
+                "tick": 846,
+                "births": 1
+              },
+              {
+                "tick": 847,
+                "births": 1
+              },
+              {
+                "tick": 850,
+                "births": 1
+              },
+              {
+                "tick": 852,
+                "births": 1
+              },
+              {
+                "tick": 853,
+                "births": 1
+              },
+              {
+                "tick": 859,
+                "births": 1
+              },
+              {
+                "tick": 863,
+                "births": 1
+              },
+              {
+                "tick": 864,
+                "births": 1
+              },
+              {
+                "tick": 866,
+                "births": 1
+              },
+              {
+                "tick": 878,
+                "births": 1
+              },
+              {
+                "tick": 880,
+                "births": 1
+              },
+              {
+                "tick": 881,
+                "births": 1
+              },
+              {
+                "tick": 882,
+                "births": 1
+              },
+              {
+                "tick": 884,
+                "births": 1
+              },
+              {
+                "tick": 897,
+                "births": 1
+              },
+              {
+                "tick": 898,
+                "births": 1
+              },
+              {
+                "tick": 905,
+                "births": 1
+              },
+              {
+                "tick": 908,
+                "births": 1
+              },
+              {
+                "tick": 914,
+                "births": 2
+              },
+              {
+                "tick": 916,
+                "births": 1
+              },
+              {
+                "tick": 917,
+                "births": 2
+              },
+              {
+                "tick": 918,
+                "births": 2
+              },
+              {
+                "tick": 922,
+                "births": 1
+              },
+              {
+                "tick": 924,
+                "births": 1
+              },
+              {
+                "tick": 927,
+                "births": 1
+              },
+              {
+                "tick": 928,
+                "births": 2
+              },
+              {
+                "tick": 929,
+                "births": 1
+              },
+              {
+                "tick": 931,
+                "births": 1
+              },
+              {
+                "tick": 932,
+                "births": 1
+              },
+              {
+                "tick": 935,
+                "births": 2
+              },
+              {
+                "tick": 936,
+                "births": 1
+              },
+              {
+                "tick": 937,
+                "births": 1
+              },
+              {
+                "tick": 939,
+                "births": 1
+              },
+              {
+                "tick": 940,
+                "births": 1
+              },
+              {
+                "tick": 943,
+                "births": 3
+              },
+              {
+                "tick": 952,
+                "births": 1
+              },
+              {
+                "tick": 958,
+                "births": 1
+              },
+              {
+                "tick": 969,
+                "births": 1
+              },
+              {
+                "tick": 975,
+                "births": 1
+              },
+              {
+                "tick": 980,
+                "births": 1
+              },
+              {
+                "tick": 983,
+                "births": 2
+              },
+              {
+                "tick": 986,
+                "births": 2
+              },
+              {
+                "tick": 989,
+                "births": 2
+              },
+              {
+                "tick": 991,
+                "births": 2
+              },
+              {
+                "tick": 996,
+                "births": 1
+              },
+              {
+                "tick": 1000,
+                "births": 1
+              }
+            ],
+            "birthScheduleMatched": true,
+            "thresholds": [
+              {
+                "minSurvivalTicks": 50,
+                "actual": {
+                  "minSurvivalTicks": 50,
+                  "summary": {
+                    "minSurvivalTicks": 50,
+                    "postBurnInWindows": 8,
+                    "censoredPostBurnInWindows": 1,
+                    "evaluablePostBurnInWindows": 7,
+                    "postBurnInWindowsWithPersistentNewActivity": 7,
+                    "postBurnInPersistentNewClades": 86,
+                    "postBurnInPersistentNewActivityMean": 633.7142857142857,
+                    "postBurnInPersistentNewActivityMin": 114,
+                    "postBurnInPersistentNewActivityMax": 1574,
+                    "finalPersistentNewActivity": null,
+                    "finalWindowCensored": true
+                  },
+                  "persistentWindowFraction": 1,
+                  "allEvaluableWindowsPositive": true
+                },
+                "matchedNull": {
+                  "minSurvivalTicks": 50,
+                  "summary": {
+                    "minSurvivalTicks": 50,
+                    "postBurnInWindows": 8,
+                    "censoredPostBurnInWindows": 1,
+                    "evaluablePostBurnInWindows": 7,
+                    "postBurnInWindowsWithPersistentNewActivity": 7,
+                    "postBurnInPersistentNewClades": 83,
+                    "postBurnInPersistentNewActivityMean": 615.2857142857143,
+                    "postBurnInPersistentNewActivityMin": 114,
+                    "postBurnInPersistentNewActivityMax": 1509,
+                    "finalPersistentNewActivity": null,
+                    "finalWindowCensored": true
+                  },
+                  "persistentWindowFraction": 1,
+                  "allEvaluableWindowsPositive": true
+                },
+                "actualToNullPersistentWindowFractionRatio": 1,
+                "persistentWindowFractionDeltaVsNull": 0,
+                "actualToNullPersistentActivityMeanRatio": 1.029951242163919,
+                "persistentActivityMeanDeltaVsNull": 18.42857142857133
+              }
+            ]
+          },
+          {
+            "seed": 20260308,
+            "relabelSeed": 3034525042,
+            "finalSummary": {
+              "tick": 1000,
+              "population": 2271,
+              "births": 20,
+              "deaths": 23,
+              "meanEnergy": 5.714914594377888,
+              "meanGenome": {
+                "metabolism": 0.37801948936006935,
+                "harvest": 2.3119599558767496,
+                "aggression": 0.9739599430784739
+              },
+              "activeClades": 7,
+              "activeSpecies": 198,
+              "dominantSpeciesShare": 0.13870541611624834,
+              "selectionDifferential": {
+                "metabolism": -0.0030378948794368976,
+                "harvest": 0.006019928320047274,
+                "aggression": 0.008618592478075837
+              },
+              "cladeExtinctions": 1,
+              "speciesExtinctions": 4,
+              "cumulativeExtinctClades": 74,
+              "cumulativeExtinctSpecies": 2350
+            },
+            "actualRawSummary": {
+              "stepsExecuted": 1000,
+              "totalClades": 81,
+              "postBurnInWindows": 8,
+              "postBurnInWindowsWithNewActivity": 8,
+              "postBurnInNewClades": 50,
+              "postBurnInNewActivityMean": 301.125,
+              "postBurnInNewActivityMin": 74,
+              "postBurnInNewActivityMax": 470,
+              "finalCumulativeActivity": 11760,
+              "finalNormalizedCumulativeActivity": 11.76,
+              "finalNewActivity": 381
+            },
+            "matchedNullRawSummary": {
+              "stepsExecuted": 1000,
+              "totalClades": 81,
+              "postBurnInWindows": 8,
+              "postBurnInWindowsWithNewActivity": 8,
+              "postBurnInNewClades": 50,
+              "postBurnInNewActivityMean": 334.375,
+              "postBurnInNewActivityMin": 74,
+              "postBurnInNewActivityMax": 564,
+              "finalCumulativeActivity": 40589,
+              "finalNormalizedCumulativeActivity": 40.589,
+              "finalNewActivity": 425
+            },
+            "actualBirthSchedule": [
+              {
+                "tick": 0,
+                "births": 24
+              },
+              {
+                "tick": 78,
+                "births": 1
+              },
+              {
+                "tick": 165,
+                "births": 1
+              },
+              {
+                "tick": 170,
+                "births": 1
+              },
+              {
+                "tick": 174,
+                "births": 1
+              },
+              {
+                "tick": 175,
+                "births": 1
+              },
+              {
+                "tick": 192,
+                "births": 1
+              },
+              {
+                "tick": 195,
+                "births": 1
+              },
+              {
+                "tick": 227,
+                "births": 1
+              },
+              {
+                "tick": 302,
+                "births": 1
+              },
+              {
+                "tick": 304,
+                "births": 1
+              },
+              {
+                "tick": 323,
+                "births": 1
+              },
+              {
+                "tick": 340,
+                "births": 1
+              },
+              {
+                "tick": 367,
+                "births": 1
+              },
+              {
+                "tick": 381,
+                "births": 1
+              },
+              {
+                "tick": 395,
+                "births": 1
+              },
+              {
+                "tick": 404,
+                "births": 1
+              },
+              {
+                "tick": 448,
+                "births": 1
+              },
+              {
+                "tick": 487,
+                "births": 1
+              },
+              {
+                "tick": 527,
+                "births": 1
+              },
+              {
+                "tick": 539,
+                "births": 1
+              },
+              {
+                "tick": 541,
+                "births": 1
+              },
+              {
+                "tick": 558,
+                "births": 1
+              },
+              {
+                "tick": 563,
+                "births": 1
+              },
+              {
+                "tick": 607,
+                "births": 1
+              },
+              {
+                "tick": 611,
+                "births": 1
+              },
+              {
+                "tick": 620,
+                "births": 1
+              },
+              {
+                "tick": 621,
+                "births": 1
+              },
+              {
+                "tick": 623,
+                "births": 1
+              },
+              {
+                "tick": 642,
+                "births": 1
+              },
+              {
+                "tick": 656,
+                "births": 1
+              },
+              {
+                "tick": 675,
+                "births": 1
+              },
+              {
+                "tick": 690,
+                "births": 1
+              },
+              {
+                "tick": 724,
+                "births": 1
+              },
+              {
+                "tick": 726,
+                "births": 1
+              },
+              {
+                "tick": 729,
+                "births": 1
+              },
+              {
+                "tick": 742,
+                "births": 1
+              },
+              {
+                "tick": 747,
+                "births": 1
+              },
+              {
+                "tick": 760,
+                "births": 1
+              },
+              {
+                "tick": 762,
+                "births": 1
+              },
+              {
+                "tick": 778,
+                "births": 1
+              },
+              {
+                "tick": 787,
+                "births": 2
+              },
+              {
+                "tick": 794,
+                "births": 1
+              },
+              {
+                "tick": 811,
+                "births": 1
+              },
+              {
+                "tick": 816,
+                "births": 1
+              },
+              {
+                "tick": 831,
+                "births": 1
+              },
+              {
+                "tick": 839,
+                "births": 1
+              },
+              {
+                "tick": 885,
+                "births": 1
+              },
+              {
+                "tick": 890,
+                "births": 1
+              },
+              {
+                "tick": 897,
+                "births": 1
+              },
+              {
+                "tick": 901,
+                "births": 1
+              },
+              {
+                "tick": 917,
+                "births": 1
+              },
+              {
+                "tick": 919,
+                "births": 1
+              },
+              {
+                "tick": 942,
+                "births": 1
+              },
+              {
+                "tick": 957,
+                "births": 1
+              },
+              {
+                "tick": 963,
+                "births": 1
+              },
+              {
+                "tick": 965,
+                "births": 1
+              }
+            ],
+            "matchedNullBirthSchedule": [
+              {
+                "tick": 0,
+                "births": 24
+              },
+              {
+                "tick": 78,
+                "births": 1
+              },
+              {
+                "tick": 165,
+                "births": 1
+              },
+              {
+                "tick": 170,
+                "births": 1
+              },
+              {
+                "tick": 174,
+                "births": 1
+              },
+              {
+                "tick": 175,
+                "births": 1
+              },
+              {
+                "tick": 192,
+                "births": 1
+              },
+              {
+                "tick": 195,
+                "births": 1
+              },
+              {
+                "tick": 227,
+                "births": 1
+              },
+              {
+                "tick": 302,
+                "births": 1
+              },
+              {
+                "tick": 304,
+                "births": 1
+              },
+              {
+                "tick": 323,
+                "births": 1
+              },
+              {
+                "tick": 340,
+                "births": 1
+              },
+              {
+                "tick": 367,
+                "births": 1
+              },
+              {
+                "tick": 381,
+                "births": 1
+              },
+              {
+                "tick": 395,
+                "births": 1
+              },
+              {
+                "tick": 404,
+                "births": 1
+              },
+              {
+                "tick": 448,
+                "births": 1
+              },
+              {
+                "tick": 487,
+                "births": 1
+              },
+              {
+                "tick": 527,
+                "births": 1
+              },
+              {
+                "tick": 539,
+                "births": 1
+              },
+              {
+                "tick": 541,
+                "births": 1
+              },
+              {
+                "tick": 558,
+                "births": 1
+              },
+              {
+                "tick": 563,
+                "births": 1
+              },
+              {
+                "tick": 607,
+                "births": 1
+              },
+              {
+                "tick": 611,
+                "births": 1
+              },
+              {
+                "tick": 620,
+                "births": 1
+              },
+              {
+                "tick": 621,
+                "births": 1
+              },
+              {
+                "tick": 623,
+                "births": 1
+              },
+              {
+                "tick": 642,
+                "births": 1
+              },
+              {
+                "tick": 656,
+                "births": 1
+              },
+              {
+                "tick": 675,
+                "births": 1
+              },
+              {
+                "tick": 690,
+                "births": 1
+              },
+              {
+                "tick": 724,
+                "births": 1
+              },
+              {
+                "tick": 726,
+                "births": 1
+              },
+              {
+                "tick": 729,
+                "births": 1
+              },
+              {
+                "tick": 742,
+                "births": 1
+              },
+              {
+                "tick": 747,
+                "births": 1
+              },
+              {
+                "tick": 760,
+                "births": 1
+              },
+              {
+                "tick": 762,
+                "births": 1
+              },
+              {
+                "tick": 778,
+                "births": 1
+              },
+              {
+                "tick": 787,
+                "births": 2
+              },
+              {
+                "tick": 794,
+                "births": 1
+              },
+              {
+                "tick": 811,
+                "births": 1
+              },
+              {
+                "tick": 816,
+                "births": 1
+              },
+              {
+                "tick": 831,
+                "births": 1
+              },
+              {
+                "tick": 839,
+                "births": 1
+              },
+              {
+                "tick": 885,
+                "births": 1
+              },
+              {
+                "tick": 890,
+                "births": 1
+              },
+              {
+                "tick": 897,
+                "births": 1
+              },
+              {
+                "tick": 901,
+                "births": 1
+              },
+              {
+                "tick": 917,
+                "births": 1
+              },
+              {
+                "tick": 919,
+                "births": 1
+              },
+              {
+                "tick": 942,
+                "births": 1
+              },
+              {
+                "tick": 957,
+                "births": 1
+              },
+              {
+                "tick": 963,
+                "births": 1
+              },
+              {
+                "tick": 965,
+                "births": 1
+              }
+            ],
+            "birthScheduleMatched": true,
+            "thresholds": [
+              {
+                "minSurvivalTicks": 50,
+                "actual": {
+                  "minSurvivalTicks": 50,
+                  "summary": {
+                    "minSurvivalTicks": 50,
+                    "postBurnInWindows": 8,
+                    "censoredPostBurnInWindows": 1,
+                    "evaluablePostBurnInWindows": 7,
+                    "postBurnInWindowsWithPersistentNewActivity": 7,
+                    "postBurnInPersistentNewClades": 33,
+                    "postBurnInPersistentNewActivityMean": 249,
+                    "postBurnInPersistentNewActivityMin": 74,
+                    "postBurnInPersistentNewActivityMax": 370,
+                    "finalPersistentNewActivity": null,
+                    "finalWindowCensored": true
+                  },
+                  "persistentWindowFraction": 1,
+                  "allEvaluableWindowsPositive": true
+                },
+                "matchedNull": {
+                  "minSurvivalTicks": 50,
+                  "summary": {
+                    "minSurvivalTicks": 50,
+                    "postBurnInWindows": 8,
+                    "censoredPostBurnInWindows": 1,
+                    "evaluablePostBurnInWindows": 7,
+                    "postBurnInWindowsWithPersistentNewActivity": 7,
+                    "postBurnInPersistentNewClades": 42,
+                    "postBurnInPersistentNewActivityMean": 316,
+                    "postBurnInPersistentNewActivityMin": 74,
+                    "postBurnInPersistentNewActivityMax": 564,
+                    "finalPersistentNewActivity": null,
+                    "finalWindowCensored": true
+                  },
+                  "persistentWindowFraction": 1,
+                  "allEvaluableWindowsPositive": true
+                },
+                "actualToNullPersistentWindowFractionRatio": 1,
+                "persistentWindowFractionDeltaVsNull": 0,
+                "actualToNullPersistentActivityMeanRatio": 0.7879746835443038,
+                "persistentActivityMeanDeltaVsNull": -67
+              }
+            ]
+          },
+          {
+            "seed": 20260309,
+            "relabelSeed": 3040266081,
+            "finalSummary": {
+              "tick": 1000,
+              "population": 2019,
+              "births": 26,
+              "deaths": 26,
+              "meanEnergy": 6.027103181719241,
+              "meanGenome": {
+                "metabolism": 0.39177215312860547,
+                "harvest": 2.455085111647639,
+                "aggression": 0.9732877515547246
+              },
+              "activeClades": 11,
+              "activeSpecies": 201,
+              "dominantSpeciesShare": 0.3630510153541357,
+              "selectionDifferential": {
+                "metabolism": -0.0018036977644618202,
+                "harvest": -0.01776627717746848,
+                "aggression": 0.009177446631910446
+              },
+              "cladeExtinctions": 0,
+              "speciesExtinctions": 3,
+              "cumulativeExtinctClades": 35,
+              "cumulativeExtinctSpecies": 1866
+            },
+            "actualRawSummary": {
+              "stepsExecuted": 1000,
+              "totalClades": 46,
+              "postBurnInWindows": 8,
+              "postBurnInWindowsWithNewActivity": 5,
+              "postBurnInNewClades": 22,
+              "postBurnInNewActivityMean": 113.5,
+              "postBurnInNewActivityMin": 0,
+              "postBurnInNewActivityMax": 354,
+              "finalCumulativeActivity": 7259,
+              "finalNormalizedCumulativeActivity": 7.259,
+              "finalNewActivity": 338
+            },
+            "matchedNullRawSummary": {
+              "stepsExecuted": 1000,
+              "totalClades": 46,
+              "postBurnInWindows": 8,
+              "postBurnInWindowsWithNewActivity": 5,
+              "postBurnInNewClades": 22,
+              "postBurnInNewActivityMean": 119.5,
+              "postBurnInNewActivityMin": 0,
+              "postBurnInNewActivityMax": 431,
+              "finalCumulativeActivity": 26922,
+              "finalNormalizedCumulativeActivity": 26.922,
+              "finalNewActivity": 309
+            },
+            "actualBirthSchedule": [
+              {
+                "tick": 0,
+                "births": 24
+              },
+              {
+                "tick": 466,
+                "births": 1
+              },
+              {
+                "tick": 670,
+                "births": 1
+              },
+              {
+                "tick": 677,
+                "births": 1
+              },
+              {
+                "tick": 707,
+                "births": 1
+              },
+              {
+                "tick": 769,
+                "births": 1
+              },
+              {
+                "tick": 819,
+                "births": 1
+              },
+              {
+                "tick": 830,
+                "births": 2
+              },
+              {
+                "tick": 842,
+                "births": 1
+              },
+              {
+                "tick": 852,
+                "births": 1
+              },
+              {
+                "tick": 869,
+                "births": 1
+              },
+              {
+                "tick": 874,
+                "births": 1
+              },
+              {
+                "tick": 876,
+                "births": 1
+              },
+              {
+                "tick": 886,
+                "births": 1
+              },
+              {
+                "tick": 913,
+                "births": 1
+              },
+              {
+                "tick": 916,
+                "births": 1
+              },
+              {
+                "tick": 929,
+                "births": 1
+              },
+              {
+                "tick": 933,
+                "births": 1
+              },
+              {
+                "tick": 977,
+                "births": 1
+              },
+              {
+                "tick": 982,
+                "births": 1
+              },
+              {
+                "tick": 985,
+                "births": 1
+              },
+              {
+                "tick": 994,
+                "births": 1
+              }
+            ],
+            "matchedNullBirthSchedule": [
+              {
+                "tick": 0,
+                "births": 24
+              },
+              {
+                "tick": 466,
+                "births": 1
+              },
+              {
+                "tick": 670,
+                "births": 1
+              },
+              {
+                "tick": 677,
+                "births": 1
+              },
+              {
+                "tick": 707,
+                "births": 1
+              },
+              {
+                "tick": 769,
+                "births": 1
+              },
+              {
+                "tick": 819,
+                "births": 1
+              },
+              {
+                "tick": 830,
+                "births": 2
+              },
+              {
+                "tick": 842,
+                "births": 1
+              },
+              {
+                "tick": 852,
+                "births": 1
+              },
+              {
+                "tick": 869,
+                "births": 1
+              },
+              {
+                "tick": 874,
+                "births": 1
+              },
+              {
+                "tick": 876,
+                "births": 1
+              },
+              {
+                "tick": 886,
+                "births": 1
+              },
+              {
+                "tick": 913,
+                "births": 1
+              },
+              {
+                "tick": 916,
+                "births": 1
+              },
+              {
+                "tick": 929,
+                "births": 1
+              },
+              {
+                "tick": 933,
+                "births": 1
+              },
+              {
+                "tick": 977,
+                "births": 1
+              },
+              {
+                "tick": 982,
+                "births": 1
+              },
+              {
+                "tick": 985,
+                "births": 1
+              },
+              {
+                "tick": 994,
+                "births": 1
+              }
+            ],
+            "birthScheduleMatched": true,
+            "thresholds": [
+              {
+                "minSurvivalTicks": 50,
+                "actual": {
+                  "minSurvivalTicks": 50,
+                  "summary": {
+                    "minSurvivalTicks": 50,
+                    "postBurnInWindows": 8,
+                    "censoredPostBurnInWindows": 1,
+                    "evaluablePostBurnInWindows": 7,
+                    "postBurnInWindowsWithPersistentNewActivity": 4,
+                    "postBurnInPersistentNewClades": 11,
+                    "postBurnInPersistentNewActivityMean": 66.71428571428571,
+                    "postBurnInPersistentNewActivityMin": 0,
+                    "postBurnInPersistentNewActivityMax": 251,
+                    "finalPersistentNewActivity": null,
+                    "finalWindowCensored": true
+                  },
+                  "persistentWindowFraction": 0.5714285714285714,
+                  "allEvaluableWindowsPositive": false
+                },
+                "matchedNull": {
+                  "minSurvivalTicks": 50,
+                  "summary": {
+                    "minSurvivalTicks": 50,
+                    "postBurnInWindows": 8,
+                    "censoredPostBurnInWindows": 1,
+                    "evaluablePostBurnInWindows": 7,
+                    "postBurnInWindowsWithPersistentNewActivity": 4,
+                    "postBurnInPersistentNewClades": 14,
+                    "postBurnInPersistentNewActivityMean": 92.42857142857143,
+                    "postBurnInPersistentNewActivityMin": 0,
+                    "postBurnInPersistentNewActivityMax": 431,
+                    "finalPersistentNewActivity": null,
+                    "finalWindowCensored": true
+                  },
+                  "persistentWindowFraction": 0.5714285714285714,
+                  "allEvaluableWindowsPositive": false
+                },
+                "actualToNullPersistentWindowFractionRatio": 1,
+                "persistentWindowFractionDeltaVsNull": 0,
+                "actualToNullPersistentActivityMeanRatio": 0.7217928902627511,
+                "persistentActivityMeanDeltaVsNull": -25.714285714285722
+              }
+            ]
+          },
+          {
+            "seed": 20260310,
+            "relabelSeed": 3039582572,
+            "finalSummary": {
+              "tick": 1000,
+              "population": 2171,
+              "births": 21,
+              "deaths": 26,
+              "meanEnergy": 5.861203675492484,
+              "meanGenome": {
+                "metabolism": 0.38034533558669126,
+                "harvest": 2.077944856070288,
+                "aggression": 0.9754352909394638
+              },
+              "activeClades": 35,
+              "activeSpecies": 215,
+              "dominantSpeciesShare": 0.18148318747121142,
+              "selectionDifferential": {
+                "metabolism": -0.0021547569206358808,
+                "harvest": -0.00026193447264910574,
+                "aggression": 0.008585734841437653
+              },
+              "cladeExtinctions": 1,
+              "speciesExtinctions": 4,
+              "cumulativeExtinctClades": 161,
+              "cumulativeExtinctSpecies": 2328
+            },
+            "actualRawSummary": {
+              "stepsExecuted": 1000,
+              "totalClades": 196,
+              "postBurnInWindows": 8,
+              "postBurnInWindowsWithNewActivity": 8,
+              "postBurnInNewClades": 172,
+              "postBurnInNewActivityMean": 936.25,
+              "postBurnInNewActivityMin": 126,
+              "postBurnInNewActivityMax": 1453,
+              "finalCumulativeActivity": 22392,
+              "finalNormalizedCumulativeActivity": 22.392,
+              "finalNewActivity": 1127
+            },
+            "matchedNullRawSummary": {
+              "stepsExecuted": 1000,
+              "totalClades": 196,
+              "postBurnInWindows": 8,
+              "postBurnInWindowsWithNewActivity": 8,
+              "postBurnInNewClades": 172,
+              "postBurnInNewActivityMean": 998.75,
+              "postBurnInNewActivityMin": 126,
+              "postBurnInNewActivityMax": 1556,
+              "finalCumulativeActivity": 53972,
+              "finalNormalizedCumulativeActivity": 53.972,
+              "finalNewActivity": 1240
+            },
+            "actualBirthSchedule": [
+              {
+                "tick": 0,
+                "births": 24
+              },
+              {
+                "tick": 239,
+                "births": 1
+              },
+              {
+                "tick": 270,
+                "births": 1
+              },
+              {
+                "tick": 278,
+                "births": 1
+              },
+              {
+                "tick": 291,
+                "births": 1
+              },
+              {
+                "tick": 301,
+                "births": 1
+              },
+              {
+                "tick": 302,
+                "births": 1
+              },
+              {
+                "tick": 305,
+                "births": 1
+              },
+              {
+                "tick": 314,
+                "births": 1
+              },
+              {
+                "tick": 330,
+                "births": 1
+              },
+              {
+                "tick": 332,
+                "births": 1
+              },
+              {
+                "tick": 333,
+                "births": 1
+              },
+              {
+                "tick": 342,
+                "births": 1
+              },
+              {
+                "tick": 364,
+                "births": 2
+              },
+              {
+                "tick": 368,
+                "births": 1
+              },
+              {
+                "tick": 373,
+                "births": 1
+              },
+              {
+                "tick": 394,
+                "births": 1
+              },
+              {
+                "tick": 404,
+                "births": 1
+              },
+              {
+                "tick": 415,
+                "births": 1
+              },
+              {
+                "tick": 422,
+                "births": 1
+              },
+              {
+                "tick": 425,
+                "births": 1
+              },
+              {
+                "tick": 426,
+                "births": 1
+              },
+              {
+                "tick": 435,
+                "births": 1
+              },
+              {
+                "tick": 444,
+                "births": 1
+              },
+              {
+                "tick": 452,
+                "births": 1
+              },
+              {
+                "tick": 453,
+                "births": 1
+              },
+              {
+                "tick": 455,
+                "births": 1
+              },
+              {
+                "tick": 458,
+                "births": 1
+              },
+              {
+                "tick": 462,
+                "births": 1
+              },
+              {
+                "tick": 466,
+                "births": 1
+              },
+              {
+                "tick": 469,
+                "births": 2
+              },
+              {
+                "tick": 484,
+                "births": 1
+              },
+              {
+                "tick": 488,
+                "births": 1
+              },
+              {
+                "tick": 489,
+                "births": 1
+              },
+              {
+                "tick": 504,
+                "births": 1
+              },
+              {
+                "tick": 510,
+                "births": 1
+              },
+              {
+                "tick": 519,
+                "births": 1
+              },
+              {
+                "tick": 520,
+                "births": 1
+              },
+              {
+                "tick": 521,
+                "births": 1
+              },
+              {
+                "tick": 523,
+                "births": 1
+              },
+              {
+                "tick": 524,
+                "births": 1
+              },
+              {
+                "tick": 527,
+                "births": 1
+              },
+              {
+                "tick": 528,
+                "births": 1
+              },
+              {
+                "tick": 534,
+                "births": 1
+              },
+              {
+                "tick": 535,
+                "births": 1
+              },
+              {
+                "tick": 537,
+                "births": 1
+              },
+              {
+                "tick": 540,
+                "births": 2
+              },
+              {
+                "tick": 544,
+                "births": 1
+              },
+              {
+                "tick": 547,
+                "births": 1
+              },
+              {
+                "tick": 550,
+                "births": 1
+              },
+              {
+                "tick": 553,
+                "births": 1
+              },
+              {
+                "tick": 554,
+                "births": 1
+              },
+              {
+                "tick": 563,
+                "births": 1
+              },
+              {
+                "tick": 576,
+                "births": 1
+              },
+              {
+                "tick": 580,
+                "births": 2
+              },
+              {
+                "tick": 583,
+                "births": 1
+              },
+              {
+                "tick": 587,
+                "births": 1
+              },
+              {
+                "tick": 589,
+                "births": 1
+              },
+              {
+                "tick": 591,
+                "births": 1
+              },
+              {
+                "tick": 599,
+                "births": 1
+              },
+              {
+                "tick": 602,
+                "births": 1
+              },
+              {
+                "tick": 604,
+                "births": 1
+              },
+              {
+                "tick": 611,
+                "births": 1
+              },
+              {
+                "tick": 615,
+                "births": 1
+              },
+              {
+                "tick": 618,
+                "births": 1
+              },
+              {
+                "tick": 631,
+                "births": 1
+              },
+              {
+                "tick": 634,
+                "births": 1
+              },
+              {
+                "tick": 639,
+                "births": 2
+              },
+              {
+                "tick": 644,
+                "births": 1
+              },
+              {
+                "tick": 646,
+                "births": 1
+              },
+              {
+                "tick": 657,
+                "births": 1
+              },
+              {
+                "tick": 658,
+                "births": 1
+              },
+              {
+                "tick": 668,
+                "births": 1
+              },
+              {
+                "tick": 671,
+                "births": 1
+              },
+              {
+                "tick": 677,
+                "births": 1
+              },
+              {
+                "tick": 682,
+                "births": 1
+              },
+              {
+                "tick": 685,
+                "births": 1
+              },
+              {
+                "tick": 690,
+                "births": 1
+              },
+              {
+                "tick": 694,
+                "births": 1
+              },
+              {
+                "tick": 697,
+                "births": 1
+              },
+              {
+                "tick": 704,
+                "births": 1
+              },
+              {
+                "tick": 705,
+                "births": 1
+              },
+              {
+                "tick": 711,
+                "births": 1
+              },
+              {
+                "tick": 715,
+                "births": 1
+              },
+              {
+                "tick": 720,
+                "births": 1
+              },
+              {
+                "tick": 729,
+                "births": 1
+              },
+              {
+                "tick": 730,
+                "births": 1
+              },
+              {
+                "tick": 731,
+                "births": 1
+              },
+              {
+                "tick": 732,
+                "births": 1
+              },
+              {
+                "tick": 739,
+                "births": 2
+              },
+              {
+                "tick": 746,
+                "births": 1
+              },
+              {
+                "tick": 749,
+                "births": 1
+              },
+              {
+                "tick": 755,
+                "births": 1
+              },
+              {
+                "tick": 758,
+                "births": 1
+              },
+              {
+                "tick": 760,
+                "births": 2
+              },
+              {
+                "tick": 761,
+                "births": 1
+              },
+              {
+                "tick": 765,
+                "births": 1
+              },
+              {
+                "tick": 766,
+                "births": 1
+              },
+              {
+                "tick": 770,
+                "births": 1
+              },
+              {
+                "tick": 771,
+                "births": 1
+              },
+              {
+                "tick": 772,
+                "births": 2
+              },
+              {
+                "tick": 779,
+                "births": 3
+              },
+              {
+                "tick": 780,
+                "births": 1
+              },
+              {
+                "tick": 781,
+                "births": 1
+              },
+              {
+                "tick": 783,
+                "births": 2
+              },
+              {
+                "tick": 784,
+                "births": 2
+              },
+              {
+                "tick": 785,
+                "births": 1
+              },
+              {
+                "tick": 788,
+                "births": 1
+              },
+              {
+                "tick": 790,
+                "births": 1
+              },
+              {
+                "tick": 796,
+                "births": 1
+              },
+              {
+                "tick": 799,
+                "births": 1
+              },
+              {
+                "tick": 802,
+                "births": 1
+              },
+              {
+                "tick": 815,
+                "births": 1
+              },
+              {
+                "tick": 816,
+                "births": 1
+              },
+              {
+                "tick": 822,
+                "births": 1
+              },
+              {
+                "tick": 828,
+                "births": 1
+              },
+              {
+                "tick": 830,
+                "births": 1
+              },
+              {
+                "tick": 832,
+                "births": 1
+              },
+              {
+                "tick": 837,
+                "births": 1
+              },
+              {
+                "tick": 841,
+                "births": 1
+              },
+              {
+                "tick": 846,
+                "births": 1
+              },
+              {
+                "tick": 849,
+                "births": 1
+              },
+              {
+                "tick": 860,
+                "births": 1
+              },
+              {
+                "tick": 867,
+                "births": 1
+              },
+              {
+                "tick": 870,
+                "births": 1
+              },
+              {
+                "tick": 871,
+                "births": 1
+              },
+              {
+                "tick": 876,
+                "births": 1
+              },
+              {
+                "tick": 885,
+                "births": 1
+              },
+              {
+                "tick": 889,
+                "births": 1
+              },
+              {
+                "tick": 894,
+                "births": 1
+              },
+              {
+                "tick": 896,
+                "births": 1
+              },
+              {
+                "tick": 907,
+                "births": 1
+              },
+              {
+                "tick": 912,
+                "births": 1
+              },
+              {
+                "tick": 916,
+                "births": 2
+              },
+              {
+                "tick": 920,
+                "births": 1
+              },
+              {
+                "tick": 925,
+                "births": 1
+              },
+              {
+                "tick": 929,
+                "births": 1
+              },
+              {
+                "tick": 936,
+                "births": 1
+              },
+              {
+                "tick": 937,
+                "births": 1
+              },
+              {
+                "tick": 943,
+                "births": 1
+              },
+              {
+                "tick": 947,
+                "births": 1
+              },
+              {
+                "tick": 951,
+                "births": 1
+              },
+              {
+                "tick": 955,
+                "births": 1
+              },
+              {
+                "tick": 958,
+                "births": 1
+              },
+              {
+                "tick": 961,
+                "births": 1
+              },
+              {
+                "tick": 964,
+                "births": 2
+              },
+              {
+                "tick": 967,
+                "births": 1
+              },
+              {
+                "tick": 971,
+                "births": 1
+              },
+              {
+                "tick": 973,
+                "births": 1
+              },
+              {
+                "tick": 977,
+                "births": 1
+              },
+              {
+                "tick": 986,
+                "births": 1
+              },
+              {
+                "tick": 989,
+                "births": 1
+              },
+              {
+                "tick": 990,
+                "births": 2
+              },
+              {
+                "tick": 992,
+                "births": 2
+              },
+              {
+                "tick": 998,
+                "births": 1
+              },
+              {
+                "tick": 999,
+                "births": 2
+              }
+            ],
+            "matchedNullBirthSchedule": [
+              {
+                "tick": 0,
+                "births": 24
+              },
+              {
+                "tick": 239,
+                "births": 1
+              },
+              {
+                "tick": 270,
+                "births": 1
+              },
+              {
+                "tick": 278,
+                "births": 1
+              },
+              {
+                "tick": 291,
+                "births": 1
+              },
+              {
+                "tick": 301,
+                "births": 1
+              },
+              {
+                "tick": 302,
+                "births": 1
+              },
+              {
+                "tick": 305,
+                "births": 1
+              },
+              {
+                "tick": 314,
+                "births": 1
+              },
+              {
+                "tick": 330,
+                "births": 1
+              },
+              {
+                "tick": 332,
+                "births": 1
+              },
+              {
+                "tick": 333,
+                "births": 1
+              },
+              {
+                "tick": 342,
+                "births": 1
+              },
+              {
+                "tick": 364,
+                "births": 2
+              },
+              {
+                "tick": 368,
+                "births": 1
+              },
+              {
+                "tick": 373,
+                "births": 1
+              },
+              {
+                "tick": 394,
+                "births": 1
+              },
+              {
+                "tick": 404,
+                "births": 1
+              },
+              {
+                "tick": 415,
+                "births": 1
+              },
+              {
+                "tick": 422,
+                "births": 1
+              },
+              {
+                "tick": 425,
+                "births": 1
+              },
+              {
+                "tick": 426,
+                "births": 1
+              },
+              {
+                "tick": 435,
+                "births": 1
+              },
+              {
+                "tick": 444,
+                "births": 1
+              },
+              {
+                "tick": 452,
+                "births": 1
+              },
+              {
+                "tick": 453,
+                "births": 1
+              },
+              {
+                "tick": 455,
+                "births": 1
+              },
+              {
+                "tick": 458,
+                "births": 1
+              },
+              {
+                "tick": 462,
+                "births": 1
+              },
+              {
+                "tick": 466,
+                "births": 1
+              },
+              {
+                "tick": 469,
+                "births": 2
+              },
+              {
+                "tick": 484,
+                "births": 1
+              },
+              {
+                "tick": 488,
+                "births": 1
+              },
+              {
+                "tick": 489,
+                "births": 1
+              },
+              {
+                "tick": 504,
+                "births": 1
+              },
+              {
+                "tick": 510,
+                "births": 1
+              },
+              {
+                "tick": 519,
+                "births": 1
+              },
+              {
+                "tick": 520,
+                "births": 1
+              },
+              {
+                "tick": 521,
+                "births": 1
+              },
+              {
+                "tick": 523,
+                "births": 1
+              },
+              {
+                "tick": 524,
+                "births": 1
+              },
+              {
+                "tick": 527,
+                "births": 1
+              },
+              {
+                "tick": 528,
+                "births": 1
+              },
+              {
+                "tick": 534,
+                "births": 1
+              },
+              {
+                "tick": 535,
+                "births": 1
+              },
+              {
+                "tick": 537,
+                "births": 1
+              },
+              {
+                "tick": 540,
+                "births": 2
+              },
+              {
+                "tick": 544,
+                "births": 1
+              },
+              {
+                "tick": 547,
+                "births": 1
+              },
+              {
+                "tick": 550,
+                "births": 1
+              },
+              {
+                "tick": 553,
+                "births": 1
+              },
+              {
+                "tick": 554,
+                "births": 1
+              },
+              {
+                "tick": 563,
+                "births": 1
+              },
+              {
+                "tick": 576,
+                "births": 1
+              },
+              {
+                "tick": 580,
+                "births": 2
+              },
+              {
+                "tick": 583,
+                "births": 1
+              },
+              {
+                "tick": 587,
+                "births": 1
+              },
+              {
+                "tick": 589,
+                "births": 1
+              },
+              {
+                "tick": 591,
+                "births": 1
+              },
+              {
+                "tick": 599,
+                "births": 1
+              },
+              {
+                "tick": 602,
+                "births": 1
+              },
+              {
+                "tick": 604,
+                "births": 1
+              },
+              {
+                "tick": 611,
+                "births": 1
+              },
+              {
+                "tick": 615,
+                "births": 1
+              },
+              {
+                "tick": 618,
+                "births": 1
+              },
+              {
+                "tick": 631,
+                "births": 1
+              },
+              {
+                "tick": 634,
+                "births": 1
+              },
+              {
+                "tick": 639,
+                "births": 2
+              },
+              {
+                "tick": 644,
+                "births": 1
+              },
+              {
+                "tick": 646,
+                "births": 1
+              },
+              {
+                "tick": 657,
+                "births": 1
+              },
+              {
+                "tick": 658,
+                "births": 1
+              },
+              {
+                "tick": 668,
+                "births": 1
+              },
+              {
+                "tick": 671,
+                "births": 1
+              },
+              {
+                "tick": 677,
+                "births": 1
+              },
+              {
+                "tick": 682,
+                "births": 1
+              },
+              {
+                "tick": 685,
+                "births": 1
+              },
+              {
+                "tick": 690,
+                "births": 1
+              },
+              {
+                "tick": 694,
+                "births": 1
+              },
+              {
+                "tick": 697,
+                "births": 1
+              },
+              {
+                "tick": 704,
+                "births": 1
+              },
+              {
+                "tick": 705,
+                "births": 1
+              },
+              {
+                "tick": 711,
+                "births": 1
+              },
+              {
+                "tick": 715,
+                "births": 1
+              },
+              {
+                "tick": 720,
+                "births": 1
+              },
+              {
+                "tick": 729,
+                "births": 1
+              },
+              {
+                "tick": 730,
+                "births": 1
+              },
+              {
+                "tick": 731,
+                "births": 1
+              },
+              {
+                "tick": 732,
+                "births": 1
+              },
+              {
+                "tick": 739,
+                "births": 2
+              },
+              {
+                "tick": 746,
+                "births": 1
+              },
+              {
+                "tick": 749,
+                "births": 1
+              },
+              {
+                "tick": 755,
+                "births": 1
+              },
+              {
+                "tick": 758,
+                "births": 1
+              },
+              {
+                "tick": 760,
+                "births": 2
+              },
+              {
+                "tick": 761,
+                "births": 1
+              },
+              {
+                "tick": 765,
+                "births": 1
+              },
+              {
+                "tick": 766,
+                "births": 1
+              },
+              {
+                "tick": 770,
+                "births": 1
+              },
+              {
+                "tick": 771,
+                "births": 1
+              },
+              {
+                "tick": 772,
+                "births": 2
+              },
+              {
+                "tick": 779,
+                "births": 3
+              },
+              {
+                "tick": 780,
+                "births": 1
+              },
+              {
+                "tick": 781,
+                "births": 1
+              },
+              {
+                "tick": 783,
+                "births": 2
+              },
+              {
+                "tick": 784,
+                "births": 2
+              },
+              {
+                "tick": 785,
+                "births": 1
+              },
+              {
+                "tick": 788,
+                "births": 1
+              },
+              {
+                "tick": 790,
+                "births": 1
+              },
+              {
+                "tick": 796,
+                "births": 1
+              },
+              {
+                "tick": 799,
+                "births": 1
+              },
+              {
+                "tick": 802,
+                "births": 1
+              },
+              {
+                "tick": 815,
+                "births": 1
+              },
+              {
+                "tick": 816,
+                "births": 1
+              },
+              {
+                "tick": 822,
+                "births": 1
+              },
+              {
+                "tick": 828,
+                "births": 1
+              },
+              {
+                "tick": 830,
+                "births": 1
+              },
+              {
+                "tick": 832,
+                "births": 1
+              },
+              {
+                "tick": 837,
+                "births": 1
+              },
+              {
+                "tick": 841,
+                "births": 1
+              },
+              {
+                "tick": 846,
+                "births": 1
+              },
+              {
+                "tick": 849,
+                "births": 1
+              },
+              {
+                "tick": 860,
+                "births": 1
+              },
+              {
+                "tick": 867,
+                "births": 1
+              },
+              {
+                "tick": 870,
+                "births": 1
+              },
+              {
+                "tick": 871,
+                "births": 1
+              },
+              {
+                "tick": 876,
+                "births": 1
+              },
+              {
+                "tick": 885,
+                "births": 1
+              },
+              {
+                "tick": 889,
+                "births": 1
+              },
+              {
+                "tick": 894,
+                "births": 1
+              },
+              {
+                "tick": 896,
+                "births": 1
+              },
+              {
+                "tick": 907,
+                "births": 1
+              },
+              {
+                "tick": 912,
+                "births": 1
+              },
+              {
+                "tick": 916,
+                "births": 2
+              },
+              {
+                "tick": 920,
+                "births": 1
+              },
+              {
+                "tick": 925,
+                "births": 1
+              },
+              {
+                "tick": 929,
+                "births": 1
+              },
+              {
+                "tick": 936,
+                "births": 1
+              },
+              {
+                "tick": 937,
+                "births": 1
+              },
+              {
+                "tick": 943,
+                "births": 1
+              },
+              {
+                "tick": 947,
+                "births": 1
+              },
+              {
+                "tick": 951,
+                "births": 1
+              },
+              {
+                "tick": 955,
+                "births": 1
+              },
+              {
+                "tick": 958,
+                "births": 1
+              },
+              {
+                "tick": 961,
+                "births": 1
+              },
+              {
+                "tick": 964,
+                "births": 2
+              },
+              {
+                "tick": 967,
+                "births": 1
+              },
+              {
+                "tick": 971,
+                "births": 1
+              },
+              {
+                "tick": 973,
+                "births": 1
+              },
+              {
+                "tick": 977,
+                "births": 1
+              },
+              {
+                "tick": 986,
+                "births": 1
+              },
+              {
+                "tick": 989,
+                "births": 1
+              },
+              {
+                "tick": 990,
+                "births": 2
+              },
+              {
+                "tick": 992,
+                "births": 2
+              },
+              {
+                "tick": 998,
+                "births": 1
+              },
+              {
+                "tick": 999,
+                "births": 2
+              }
+            ],
+            "birthScheduleMatched": true,
+            "thresholds": [
+              {
+                "minSurvivalTicks": 50,
+                "actual": {
+                  "minSurvivalTicks": 50,
+                  "summary": {
+                    "minSurvivalTicks": 50,
+                    "postBurnInWindows": 8,
+                    "censoredPostBurnInWindows": 1,
+                    "evaluablePostBurnInWindows": 7,
+                    "postBurnInWindowsWithPersistentNewActivity": 7,
+                    "postBurnInPersistentNewClades": 124,
+                    "postBurnInPersistentNewActivityMean": 827.4285714285714,
+                    "postBurnInPersistentNewActivityMin": 116,
+                    "postBurnInPersistentNewActivityMax": 1274,
+                    "finalPersistentNewActivity": null,
+                    "finalWindowCensored": true
+                  },
+                  "persistentWindowFraction": 1,
+                  "allEvaluableWindowsPositive": true
+                },
+                "matchedNull": {
+                  "minSurvivalTicks": 50,
+                  "summary": {
+                    "minSurvivalTicks": 50,
+                    "postBurnInWindows": 8,
+                    "censoredPostBurnInWindows": 1,
+                    "evaluablePostBurnInWindows": 7,
+                    "postBurnInWindowsWithPersistentNewActivity": 7,
+                    "postBurnInPersistentNewClades": 130,
+                    "postBurnInPersistentNewActivityMean": 916.8571428571429,
+                    "postBurnInPersistentNewActivityMin": 126,
+                    "postBurnInPersistentNewActivityMax": 1398,
+                    "finalPersistentNewActivity": null,
+                    "finalWindowCensored": true
+                  },
+                  "persistentWindowFraction": 1,
+                  "allEvaluableWindowsPositive": true
+                },
+                "actualToNullPersistentWindowFractionRatio": 1,
+                "persistentWindowFractionDeltaVsNull": 0,
+                "actualToNullPersistentActivityMeanRatio": 0.9024618261140542,
+                "persistentActivityMeanDeltaVsNull": -89.42857142857144
+              }
+            ]
+          }
+        ],
+        "aggregates": [
+          {
+            "minSurvivalTicks": 50,
+            "actual": {
+              "minSurvivalTicks": 50,
+              "seeds": 4,
+              "seedsWithEvaluableWindows": 4,
+              "seedsWithAllEvaluableWindowsPositive": 3,
+              "minPersistentWindowFraction": 0.5714285714285714,
+              "meanPersistentWindowFraction": 0.8928571428571428,
+              "maxPersistentWindowFraction": 1,
+              "minPersistentActivityMean": 66.71428571428571,
+              "meanPersistentActivityMean": 444.21428571428567,
+              "maxPersistentActivityMean": 827.4285714285714
+            },
+            "matchedNull": {
+              "minSurvivalTicks": 50,
+              "seeds": 4,
+              "seedsWithEvaluableWindows": 4,
+              "seedsWithAllEvaluableWindowsPositive": 3,
+              "minPersistentWindowFraction": 0.5714285714285714,
+              "meanPersistentWindowFraction": 0.8928571428571428,
+              "maxPersistentWindowFraction": 1,
+              "minPersistentActivityMean": 92.42857142857143,
+              "meanPersistentActivityMean": 485.14285714285717,
+              "maxPersistentActivityMean": 916.8571428571429
+            },
+            "actualToNullPersistentWindowFractionRatio": {
+              "definedSeeds": 4,
+              "mean": 1,
+              "min": 1,
+              "max": 1
+            },
+            "persistentWindowFractionDeltaVsNull": {
+              "mean": 0,
+              "min": 0,
+              "max": 0
+            },
+            "actualToNullPersistentActivityMeanRatio": {
+              "definedSeeds": 4,
+              "mean": 0.8605451605212571,
+              "min": 0.7217928902627511,
+              "max": 1.029951242163919
+            },
+            "persistentActivityMeanDeltaVsNull": {
+              "mean": -40.92857142857146,
+              "min": -89.42857142857144,
+              "max": 18.42857142857133
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

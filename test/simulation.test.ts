@@ -1280,6 +1280,117 @@ describe('LifeSimulation', () => {
     );
   });
 
+  it('lets clade habitat coupling change payoffs for same-species agents in different lineages', () => {
+    const baseConfig = {
+      width: 6,
+      height: 6,
+      maxResource: 20,
+      resourceRegen: 0,
+      biomeBands: 3,
+      biomeContrast: 0.8,
+      decompositionBase: 0,
+      decompositionEnergyFraction: 0,
+      metabolismCostBase: 1,
+      moveCost: 0,
+      dispersalPressure: 0,
+      harvestCap: 4,
+      reproduceProbability: 0,
+      maxAge: 100,
+      habitatPreferenceStrength: 4
+    };
+    const probe = new LifeSimulation({
+      seed: 55,
+      config: {
+        ...baseConfig,
+        initialAgents: 0
+      }
+    });
+    const cellsByFertility = listCellsByFertility(probe, baseConfig.width, baseConfig.height);
+    const lowCell = cellsByFertility[0]!;
+    const highCell = cellsByFertility[cellsByFertility.length - 1]!;
+    const pairedHighCell = cellsByFertility.find(
+      (cell) =>
+        cell.x === highCell.x &&
+        cell.y !== highCell.y &&
+        Math.abs(cell.fertility - highCell.fertility) < 1e-12
+    )!;
+    const initialAgents = [
+      {
+        x: lowCell.x,
+        y: lowCell.y,
+        energy: 0.1,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism: 2.2, harvest: 1, aggression: 0 }
+      },
+      {
+        x: highCell.x,
+        y: highCell.y,
+        energy: 10,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism: 0.3, harvest: 1, aggression: 0 }
+      },
+      {
+        x: highCell.x,
+        y: highCell.y,
+        energy: 0.1,
+        lineage: 2,
+        species: 1,
+        genome: { metabolism: 2.2, harvest: 1, aggression: 0 }
+      },
+      {
+        x: pairedHighCell.x,
+        y: pairedHighCell.y,
+        energy: 10,
+        lineage: 2,
+        species: 1,
+        genome: { metabolism: 0.3, harvest: 1, aggression: 0 }
+      }
+    ];
+
+    const neutral = new LifeSimulation({
+      seed: 55,
+      config: {
+        ...baseConfig,
+        cladeHabitatCoupling: 0
+      },
+      initialAgents
+    });
+    const coupled = new LifeSimulation({
+      seed: 55,
+      config: {
+        ...baseConfig,
+        cladeHabitatCoupling: 1
+      },
+      initialAgents
+    });
+
+    for (let y = 0; y < baseConfig.height; y += 1) {
+      for (let x = 0; x < baseConfig.width; x += 1) {
+        neutral.setResource(x, y, 0);
+        coupled.setResource(x, y, 0);
+      }
+    }
+    neutral.setResource(highCell.x, highCell.y, 20);
+    coupled.setResource(highCell.x, highCell.y, 20);
+    neutral.setResource(pairedHighCell.x, pairedHighCell.y, 20);
+    coupled.setResource(pairedHighCell.x, pairedHighCell.y, 20);
+
+    neutral.step();
+    coupled.step();
+
+    const neutralLineage1 = neutral.snapshot().agents.find((agent) => agent.lineage === 1)!;
+    const neutralLineage2 = neutral.snapshot().agents.find((agent) => agent.lineage === 2)!;
+    const coupledLineage1 = coupled.snapshot().agents.find((agent) => agent.lineage === 1)!;
+    const coupledLineage2 = coupled.snapshot().agents.find((agent) => agent.lineage === 2)!;
+
+    expect(neutralLineage1.energy).toBeCloseTo(neutralLineage2.energy, 10);
+    expect(coupledLineage2.energy).toBeGreaterThan(coupledLineage1.energy);
+    expect(coupledLineage1.energy).toBeLessThan(neutralLineage1.energy);
+    expect(coupledLineage2.energy).toBeGreaterThan(neutralLineage2.energy);
+  });
+
   it('charges additional metabolic upkeep to species with extreme habitat preference', () => {
     const baseConfig = {
       width: 6,
