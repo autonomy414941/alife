@@ -956,6 +956,77 @@ export interface CladeSpeciesActivityCouplingExport {
   thresholdResults: CladeSpeciesActivityCouplingThresholdResult[];
 }
 
+export interface TaxonBirthSchedulePoint {
+  tick: number;
+  births: number;
+}
+
+export interface CladeActivityRelabelNullDefinition {
+  actual: CladeActivitySeedPanelDefinition;
+  matchedNull: CladeActivitySeedPanelDefinition;
+  matchedSchedule: string;
+  relabeling: string;
+  actualToNullPersistentWindowFractionRatio: string;
+  persistentWindowFractionDeltaVsNull: string;
+  actualToNullPersistentActivityMeanRatio: string;
+  persistentActivityMeanDeltaVsNull: string;
+}
+
+export interface CladeActivityRelabelNullStudyConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number[];
+  cladogenesisThresholds: number[];
+}
+
+export interface CladeActivityRelabelNullThresholdSeedResult {
+  minSurvivalTicks: number;
+  actual: CladeActivitySeedPanelThresholdSeedResult;
+  matchedNull: CladeActivitySeedPanelThresholdSeedResult;
+  actualToNullPersistentWindowFractionRatio: number | null;
+  persistentWindowFractionDeltaVsNull: number;
+  actualToNullPersistentActivityMeanRatio: number | null;
+  persistentActivityMeanDeltaVsNull: number;
+}
+
+export interface CladeActivityRelabelNullSeedResult {
+  seed: number;
+  relabelSeed: number;
+  finalSummary: StepSummary;
+  actualRawSummary: CladeActivityProbeSummary;
+  matchedNullRawSummary: CladeActivityProbeSummary;
+  actualBirthSchedule: TaxonBirthSchedulePoint[];
+  matchedNullBirthSchedule: TaxonBirthSchedulePoint[];
+  birthScheduleMatched: boolean;
+  thresholds: CladeActivityRelabelNullThresholdSeedResult[];
+}
+
+export interface CladeActivityRelabelNullThresholdAggregate {
+  minSurvivalTicks: number;
+  actual: CladeActivitySeedPanelThresholdAggregate;
+  matchedNull: CladeActivitySeedPanelThresholdAggregate;
+  actualToNullPersistentWindowFractionRatio: CladeSpeciesActivityCouplingRatioAggregate;
+  persistentWindowFractionDeltaVsNull: NumericAggregate;
+  actualToNullPersistentActivityMeanRatio: CladeSpeciesActivityCouplingRatioAggregate;
+  persistentActivityMeanDeltaVsNull: NumericAggregate;
+}
+
+export interface CladeActivityRelabelNullThresholdResult {
+  cladogenesisThreshold: number;
+  seedResults: CladeActivityRelabelNullSeedResult[];
+  aggregates: CladeActivityRelabelNullThresholdAggregate[];
+}
+
+export interface CladeActivityRelabelNullStudyExport {
+  generatedAt: string;
+  definition: CladeActivityRelabelNullDefinition;
+  config: CladeActivityRelabelNullStudyConfig;
+  thresholdResults: CladeActivityRelabelNullThresholdResult[];
+}
+
 export interface SpeciesActivityHorizonSweepConfig {
   steps: number[];
   windowSize: number;

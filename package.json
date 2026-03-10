@@ -6,7 +6,8 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "study:clade-activity-relabel-null": "tsx src/clade-activity-relabel-null-study.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
