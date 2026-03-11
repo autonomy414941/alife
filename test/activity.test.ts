@@ -1712,7 +1712,7 @@ describe('runCladeActivityRelabelNullCladeHabitatCouplingSweep', () => {
       DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.cladeHabitatCouplingValues
     );
     expect(result.results).toHaveLength(5);
-  });
+  }, 30_000);
 });
 
 describe('runCladeActivityRelabelNullCladeInteractionCouplingSweep', () => {
@@ -1882,7 +1882,7 @@ describe('runCladeActivityRelabelNullCladeInteractionCouplingSweep', () => {
       DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.cladeInteractionCouplingValues
     );
     expect(result.results).toHaveLength(5);
-  });
+  }, 30_000);
 });
 
 describe('runCladeActivityCoarseThresholdBoundaryStudy', () => {

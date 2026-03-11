@@ -415,6 +415,110 @@ describe('LifeSimulation', () => {
     expect(withPenaltyAnchor).toMatchObject({ x: 3, y: 1 });
   });
 
+  it('steers offspring settlement away from same-lineage crowding when the penalty is enabled', () => {
+    const sim = new LifeSimulation({
+      seed: 23,
+      config: {
+        width: 5,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        biomeBands: 1,
+        biomeContrast: 0,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        dispersalPressure: 0,
+        dispersalRadius: 1,
+        habitatPreferenceStrength: 0,
+        trophicForagingPenalty: 0,
+        defenseForagingPenalty: 0,
+        lineageHarvestCrowdingPenalty: 0,
+        lineageDispersalCrowdingPenalty: 0,
+        lineageOffspringSettlementCrowdingPenalty: 1,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0,
+        speciationThreshold: 1,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 2,
+          y: 0,
+          energy: 30,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 1,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 1,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    const internal = sim as unknown as {
+      agents: Array<{
+        id: number;
+        lineage: number;
+        species: number;
+        x: number;
+        y: number;
+        energy: number;
+        genome: { metabolism: number; harvest: number; aggression: number };
+      }>;
+      buildOccupancyGrid: (agents?: Array<{ x: number; y: number }>) => number[][];
+      buildLineageOccupancyGrid: (
+        agents?: Array<{ lineage: number; x: number; y: number }>
+      ) => Map<number, number[][]>;
+      reproduce: (
+        parent: {
+          id: number;
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+          energy: number;
+          genome: { metabolism: number; harvest: number; aggression: number };
+        },
+        occupancy: number[][],
+        lineageOccupancy: Map<number, number[][]>
+      ) => {
+        lineage: number;
+        species: number;
+        x: number;
+        y: number;
+      };
+    };
+
+    const parent = internal.agents[0];
+    const occupancy = internal.buildOccupancyGrid(internal.agents);
+    const lineageOccupancy = internal.buildLineageOccupancyGrid(internal.agents);
+    const child = internal.reproduce(parent, occupancy, lineageOccupancy);
+
+    expect(child).toMatchObject({
+      lineage: 1,
+      species: 1,
+      x: 3,
+      y: 0
+    });
+  });
+
   it('amplifies encounter transfer when predation pressure is enabled', () => {
     const baseConfig = {
       width: 1,

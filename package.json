@@ -10,6 +10,7 @@
     "study:clade-activity-relabel-null": "tsx src/clade-activity-relabel-null-study.ts",
     "study:clade-activity-relabel-null-lineage-crowding-smoke": "tsx src/clade-activity-relabel-null-lineage-crowding-smoke-study.ts",
     "study:clade-activity-relabel-null-lineage-dispersal-crowding-smoke": "tsx src/clade-activity-relabel-null-lineage-dispersal-crowding-smoke-study.ts",
+    "study:clade-activity-relabel-null-lineage-offspring-settlement-smoke": "tsx src/clade-activity-relabel-null-lineage-offspring-settlement-smoke-study.ts",
     "study:clade-activity-relabel-null-clade-habitat-coupling-sweep": "tsx src/clade-activity-relabel-null-clade-habitat-coupling-sweep-study.ts",
     "study:clade-activity-relabel-null-clade-interaction-coupling-sweep": "tsx src/clade-activity-relabel-null-clade-interaction-coupling-sweep-study.ts"
   },

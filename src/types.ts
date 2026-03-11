@@ -232,6 +232,7 @@ export interface SimulationConfig {
   defenseMutation: number;
   lineageDispersalCrowdingPenalty: number;
   lineageHarvestCrowdingPenalty: number;
+  lineageOffspringSettlementCrowdingPenalty: number;
   harvestCap: number;
   reproduceThreshold: number;
   reproduceProbability: number;

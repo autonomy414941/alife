@@ -68,6 +68,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   defenseMutation: 0.16,
   lineageDispersalCrowdingPenalty: 0,
   lineageHarvestCrowdingPenalty: 0,
+  lineageOffspringSettlementCrowdingPenalty: 0,
   harvestCap: 2.5,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
@@ -212,10 +213,7 @@ export class LifeSimulation {
     this.applyDisturbanceIfScheduled(this.tickCount + 1);
 
     const occupancy = this.buildOccupancyGrid();
-    const lineageOccupancy =
-      this.config.lineageDispersalCrowdingPenalty > 0 || this.config.lineageHarvestCrowdingPenalty > 0
-        ? this.buildLineageOccupancyGrid()
-        : undefined;
+    const lineageOccupancy = this.usesAdultLineageOccupancy() ? this.buildLineageOccupancyGrid() : undefined;
     const turnOrder = this.rng.shuffle([...this.agents]);
     for (const agent of turnOrder) {
       if (!this.isAlive(agent.id)) {
@@ -226,14 +224,26 @@ export class LifeSimulation {
 
     this.resolveEncounters();
 
+    const useOffspringSettlementScoring = this.usesOffspringSettlementScoring();
+    const reproductiveAgents = useOffspringSettlementScoring
+      ? this.agents.filter((agent) => agent.energy > 0)
+      : undefined;
+    const reproductionOccupancy = reproductiveAgents ? this.buildOccupancyGrid(reproductiveAgents) : undefined;
+    const reproductionLineageOccupancy = reproductiveAgents ? this.buildLineageOccupancyGrid(reproductiveAgents) : undefined;
     const offspring: Agent[] = [];
     for (const agent of [...this.agents]) {
       if (!this.isAlive(agent.id)) {
         continue;
       }
       if (agent.energy >= this.config.reproduceThreshold && this.rng.float() < this.config.reproduceProbability) {
-        const child = this.reproduce(agent);
+        const child = this.reproduce(agent, reproductionOccupancy, reproductionLineageOccupancy);
         offspring.push(child);
+        if (reproductionOccupancy) {
+          reproductionOccupancy[child.y][child.x] += 1;
+        }
+        if (reproductionLineageOccupancy) {
+          this.adjustLineageOccupancy(reproductionLineageOccupancy, child.lineage, child.x, child.y, 1);
+        }
       }
     }
     const births = offspring.length;
@@ -1259,19 +1269,21 @@ export class LifeSimulation {
     );
   }
 
-  private buildOccupancyGrid(): number[][] {
+  private buildOccupancyGrid(agents: ReadonlyArray<Pick<Agent, 'x' | 'y'>> = this.agents): number[][] {
     const occupancy = Array.from({ length: this.config.height }, () =>
       Array.from({ length: this.config.width }, () => 0)
     );
-    for (const agent of this.agents) {
+    for (const agent of agents) {
       occupancy[agent.y][agent.x] += 1;
     }
     return occupancy;
   }
 
-  private buildLineageOccupancyGrid(): LineageOccupancyGrid {
+  private buildLineageOccupancyGrid(
+    agents: ReadonlyArray<Pick<Agent, 'lineage' | 'x' | 'y'>> = this.agents
+  ): LineageOccupancyGrid {
     const grids: LineageOccupancyGrid = new Map();
-    for (const agent of this.agents) {
+    for (const agent of agents) {
       let grid = grids.get(agent.lineage);
       if (!grid) {
         grid = Array.from({ length: this.config.height }, () => Array.from({ length: this.config.width }, () => 0));
@@ -1445,24 +1457,16 @@ export class LifeSimulation {
     const lineagePenalty = Math.max(0, this.config.lineageDispersalCrowdingPenalty);
 
     for (const option of options) {
-      const food = this.resources[option.y][option.x] * this.habitatMatchEfficiency(agent, option.x, option.y);
-      const crowding = this.neighborhoodCrowding(option.x, option.y, occupancy);
-      const lineageCrowding =
-        lineagePenalty > 0 && lineageOccupancy
-          ? this.sameLineageNeighborhoodCrowdingAt(
-              agent.lineage,
-              option.x,
-              option.y,
-              lineageOccupancy,
-              agent.x,
-              agent.y
-            )
-          : 0;
-      const score =
-        food -
-        this.config.dispersalPressure * crowding -
-        lineagePenalty * lineageCrowding +
-        this.rng.float() * 0.05;
+      const score = this.localEcologyScore(
+        agent,
+        option.x,
+        option.y,
+        occupancy,
+        lineageOccupancy,
+        lineagePenalty,
+        { x: agent.x, y: agent.y },
+        this.rng.float() * 0.05
+      );
       if (score > bestScore) {
         bestScore = score;
         best = option;
@@ -1521,7 +1525,10 @@ export class LifeSimulation {
     agent: Pick<Agent, 'lineage' | 'x' | 'y'>,
     lineageOccupancy: LineageOccupancyGrid
   ): number {
-    return this.sameLineageNeighborhoodCrowdingAt(agent.lineage, agent.x, agent.y, lineageOccupancy, agent.x, agent.y);
+    return this.sameLineageNeighborhoodCrowdingAt(agent.lineage, agent.x, agent.y, lineageOccupancy, {
+      x: agent.x,
+      y: agent.y
+    });
   }
 
   private sameLineageNeighborhoodCrowdingAt(
@@ -1529,8 +1536,7 @@ export class LifeSimulation {
     x: number,
     y: number,
     lineageOccupancy: LineageOccupancyGrid,
-    excludedX: number,
-    excludedY: number
+    excludedPosition?: { x: number; y: number }
   ): number {
     const grid = lineageOccupancy.get(lineage);
     if (!grid) {
@@ -1542,7 +1548,10 @@ export class LifeSimulation {
     const cellDistances = new Map<number, number>();
     const centerX = this.wrapX(x);
     const centerY = this.wrapY(y);
-    const excludedIndex = this.wrapY(excludedY) * width + this.wrapX(excludedX);
+    const excludedIndex =
+      excludedPosition === undefined
+        ? -1
+        : this.wrapY(excludedPosition.y) * width + this.wrapX(excludedPosition.x);
 
     for (let dy = -radius; dy <= radius; dy += 1) {
       for (let dx = -radius; dx <= radius; dx += 1) {
@@ -1619,7 +1628,11 @@ export class LifeSimulation {
     }
   }
 
-  private reproduce(parent: Agent): Agent {
+  private reproduce(
+    parent: Agent,
+    occupancy?: number[][],
+    lineageOccupancy?: LineageOccupancyGrid
+  ): Agent {
     const childEnergy = parent.energy * this.config.offspringEnergyFraction;
     parent.energy -= childEnergy;
     const childGenome = this.mutateGenome(parent.genome);
@@ -1636,14 +1649,14 @@ export class LifeSimulation {
       const defenseDelta = this.defenseDeltaFromMutation(parent.genome, childGenome);
       this.speciesDefenseLevel.set(childSpecies, clamp(parentDefense + defenseDelta, 0, 1));
     }
-    const neighbors = [
-      { x: parent.x, y: parent.y },
-      { x: this.wrapX(parent.x + 1), y: parent.y },
-      { x: this.wrapX(parent.x - 1), y: parent.y },
-      { x: parent.x, y: this.wrapY(parent.y + 1) },
-      { x: parent.x, y: this.wrapY(parent.y - 1) }
-    ];
-    const childPos = this.rng.pick(neighbors);
+    const childPos = this.pickOffspringSettlement(
+      {
+        ...parent,
+        species: childSpecies
+      },
+      occupancy,
+      lineageOccupancy
+    );
     const childLineage = this.shouldFoundNewClade(parent.lineage, diverged, childGenome)
       ? this.foundClade(childGenome, childPos.x, childPos.y)
       : parent.lineage;
@@ -1658,6 +1671,78 @@ export class LifeSimulation {
       age: 0,
       genome: childGenome
     };
+  }
+
+  private pickOffspringSettlement(
+    parent: Pick<Agent, 'lineage' | 'species' | 'x' | 'y'>,
+    occupancy?: number[][],
+    lineageOccupancy?: LineageOccupancyGrid
+  ): { x: number; y: number } {
+    const neighbors = [
+      { x: parent.x, y: parent.y },
+      { x: this.wrapX(parent.x + 1), y: parent.y },
+      { x: this.wrapX(parent.x - 1), y: parent.y },
+      { x: parent.x, y: this.wrapY(parent.y + 1) },
+      { x: parent.x, y: this.wrapY(parent.y - 1) }
+    ];
+    const lineagePenalty = Math.max(0, this.config.lineageOffspringSettlementCrowdingPenalty);
+    if (lineagePenalty === 0) {
+      return this.rng.pick(neighbors);
+    }
+
+    const aliveAgents = this.agents.filter((agent) => agent.energy > 0);
+    const effectiveOccupancy = occupancy ?? this.buildOccupancyGrid(aliveAgents);
+    const effectiveLineageOccupancy = lineageOccupancy ?? this.buildLineageOccupancyGrid(aliveAgents);
+
+    let best = neighbors[0];
+    let bestScore = -Infinity;
+    for (const option of neighbors) {
+      const score = this.localEcologyScore(
+        parent,
+        option.x,
+        option.y,
+        effectiveOccupancy,
+        effectiveLineageOccupancy,
+        lineagePenalty,
+        undefined,
+        this.rng.float() * 0.05
+      );
+      if (score > bestScore) {
+        bestScore = score;
+        best = option;
+      }
+    }
+
+    return best;
+  }
+
+  private localEcologyScore(
+    agent: Pick<Agent, 'lineage' | 'species'>,
+    x: number,
+    y: number,
+    occupancy: number[][],
+    lineageOccupancy: LineageOccupancyGrid | undefined,
+    lineagePenalty: number,
+    excludedPosition: { x: number; y: number } | undefined,
+    jitter: number
+  ): number {
+    const food =
+      this.resources[this.wrapY(y)][this.wrapX(x)] * this.habitatMatchEfficiency(agent, this.wrapX(x), this.wrapY(y));
+    const crowding = this.neighborhoodCrowding(x, y, occupancy);
+    const lineageCrowding =
+      lineagePenalty > 0 && lineageOccupancy
+        ? this.sameLineageNeighborhoodCrowdingAt(agent.lineage, x, y, lineageOccupancy, excludedPosition)
+        : 0;
+
+    return food - this.config.dispersalPressure * crowding - lineagePenalty * lineageCrowding + jitter;
+  }
+
+  private usesAdultLineageOccupancy(): boolean {
+    return this.config.lineageDispersalCrowdingPenalty > 0 || this.config.lineageHarvestCrowdingPenalty > 0;
+  }
+
+  private usesOffspringSettlementScoring(): boolean {
+    return this.config.lineageOffspringSettlementCrowdingPenalty > 0;
   }
 
   private shouldFoundNewClade(parentLineage: number, diverged: boolean, childGenome: Genome): boolean {
