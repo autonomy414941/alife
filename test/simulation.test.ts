@@ -218,6 +218,123 @@ describe('LifeSimulation', () => {
     expect(lowTrophic!.energy).toBeGreaterThan(highTrophic!.energy);
   });
 
+  it('reduces abiotic harvest only when same-lineage neighbors are present', () => {
+    const sharedConfig = {
+      width: 1,
+      height: 1,
+      maxResource: 2,
+      resourceRegen: 0,
+      biomeBands: 1,
+      biomeContrast: 0,
+      decompositionBase: 0,
+      decompositionEnergyFraction: 0,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      dispersalPressure: 0,
+      habitatPreferenceStrength: 0,
+      trophicForagingPenalty: 0,
+      defenseForagingPenalty: 0,
+      harvestCap: 1,
+      reproduceProbability: 0,
+      maxAge: 100
+    };
+
+    const sameLineageNeutral = new LifeSimulation({
+      seed: 21,
+      config: {
+        ...sharedConfig,
+        lineageHarvestCrowdingPenalty: 0
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+    const sameLineageCrowded = new LifeSimulation({
+      seed: 21,
+      config: {
+        ...sharedConfig,
+        lineageHarvestCrowdingPenalty: 1
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+    const splitLineagesCrowded = new LifeSimulation({
+      seed: 21,
+      config: {
+        ...sharedConfig,
+        lineageHarvestCrowdingPenalty: 1
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 2,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    sameLineageNeutral.setResource(0, 0, 2);
+    sameLineageCrowded.setResource(0, 0, 2);
+    splitLineagesCrowded.setResource(0, 0, 2);
+
+    sameLineageNeutral.step();
+    sameLineageCrowded.step();
+    splitLineagesCrowded.step();
+
+    const neutralEnergies = sameLineageNeutral.snapshot().agents.map((agent) => agent.energy);
+    const crowdedEnergies = sameLineageCrowded.snapshot().agents.map((agent) => agent.energy);
+    const splitEnergies = splitLineagesCrowded.snapshot().agents.map((agent) => agent.energy);
+    const neutralTotalEnergy = neutralEnergies.reduce((sum, energy) => sum + energy, 0);
+    const crowdedTotalEnergy = crowdedEnergies.reduce((sum, energy) => sum + energy, 0);
+    const splitTotalEnergy = splitEnergies.reduce((sum, energy) => sum + energy, 0);
+
+    expect(neutralTotalEnergy).toBeCloseTo(22, 10);
+    expect(crowdedTotalEnergy).toBeCloseTo(21, 10);
+    expect(splitTotalEnergy).toBeCloseTo(22, 10);
+  });
+
   it('amplifies encounter transfer when predation pressure is enabled', () => {
     const baseConfig = {
       width: 1,

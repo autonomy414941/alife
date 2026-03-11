@@ -66,6 +66,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   defenseMitigation: 0.45,
   defenseForagingPenalty: 0.2,
   defenseMutation: 0.16,
+  lineageHarvestCrowdingPenalty: 0,
   harvestCap: 2.5,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
@@ -138,6 +139,8 @@ interface DisturbanceEventState {
   recoveryRelapses: number;
 }
 
+type LineageOccupancyGrid = Map<number, number[][]>;
+
 export class LifeSimulation {
   private readonly rng: Rng;
 
@@ -208,12 +211,14 @@ export class LifeSimulation {
     this.applyDisturbanceIfScheduled(this.tickCount + 1);
 
     const occupancy = this.buildOccupancyGrid();
+    const lineageOccupancy =
+      this.config.lineageHarvestCrowdingPenalty > 0 ? this.buildLineageOccupancyGrid() : undefined;
     const turnOrder = this.rng.shuffle([...this.agents]);
     for (const agent of turnOrder) {
       if (!this.isAlive(agent.id)) {
         continue;
       }
-      this.processAgentTurn(agent, occupancy);
+      this.processAgentTurn(agent, occupancy, lineageOccupancy);
     }
 
     this.resolveEncounters();
@@ -1261,6 +1266,38 @@ export class LifeSimulation {
     return occupancy;
   }
 
+  private buildLineageOccupancyGrid(): LineageOccupancyGrid {
+    const grids: LineageOccupancyGrid = new Map();
+    for (const agent of this.agents) {
+      let grid = grids.get(agent.lineage);
+      if (!grid) {
+        grid = Array.from({ length: this.config.height }, () => Array.from({ length: this.config.width }, () => 0));
+        grids.set(agent.lineage, grid);
+      }
+      grid[agent.y][agent.x] += 1;
+    }
+    return grids;
+  }
+
+  private adjustLineageOccupancy(
+    lineageOccupancy: LineageOccupancyGrid,
+    lineage: number,
+    x: number,
+    y: number,
+    delta: number
+  ): void {
+    let grid = lineageOccupancy.get(lineage);
+    if (!grid) {
+      if (delta <= 0) {
+        return;
+      }
+      grid = Array.from({ length: this.config.height }, () => Array.from({ length: this.config.width }, () => 0));
+      lineageOccupancy.set(lineage, grid);
+    }
+
+    grid[y][x] = Math.max(0, grid[y][x] + delta);
+  }
+
   private buildBiomeFertility(): number[][] {
     const width = this.config.width;
     const height = this.config.height;
@@ -1327,12 +1364,19 @@ export class LifeSimulation {
     return agent;
   }
 
-  private processAgentTurn(agent: Agent, occupancy: number[][]): void {
+  private processAgentTurn(
+    agent: Agent,
+    occupancy: number[][],
+    lineageOccupancy: LineageOccupancyGrid | undefined
+  ): void {
     agent.age += 1;
     agent.energy -= this.config.metabolismCostBase * agent.genome.metabolism;
     agent.energy -= this.specializationMetabolicPenalty(agent);
     if (agent.energy <= 0 || agent.age > this.config.maxAge) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
+      if (lineageOccupancy) {
+        this.adjustLineageOccupancy(lineageOccupancy, agent.lineage, agent.x, agent.y, -1);
+      }
       return;
     }
 
@@ -1346,10 +1390,17 @@ export class LifeSimulation {
     if (moved) {
       occupancy[previousY][previousX] = Math.max(0, occupancy[previousY][previousX] - 1);
       occupancy[agent.y][agent.x] += 1;
+      if (lineageOccupancy) {
+        this.adjustLineageOccupancy(lineageOccupancy, agent.lineage, previousX, previousY, -1);
+        this.adjustLineageOccupancy(lineageOccupancy, agent.lineage, agent.x, agent.y, 1);
+      }
       agent.energy -= this.config.moveCost * agent.genome.metabolism;
     }
     if (agent.energy <= 0) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
+      if (lineageOccupancy) {
+        this.adjustLineageOccupancy(lineageOccupancy, agent.lineage, agent.x, agent.y, -1);
+      }
       return;
     }
 
@@ -1357,9 +1408,17 @@ export class LifeSimulation {
     const habitatEfficiency = this.habitatMatchEfficiency(agent, agent.x, agent.y);
     const trophicEfficiency = this.trophicForagingEfficiency(agent.species, agent.lineage);
     const defenseEfficiency = this.defenseForagingEfficiency(agent.species, agent.lineage);
+    const lineageCrowdingEfficiency = lineageOccupancy
+      ? this.lineageHarvestCrowdingEfficiency(agent, lineageOccupancy)
+      : 1;
     const harvestAmount = Math.min(
       available,
-      this.config.harvestCap * agent.genome.harvest * habitatEfficiency * trophicEfficiency * defenseEfficiency
+      this.config.harvestCap *
+        agent.genome.harvest *
+        habitatEfficiency *
+        trophicEfficiency *
+        defenseEfficiency *
+        lineageCrowdingEfficiency
     );
     this.resources[agent.y][agent.x] -= harvestAmount;
     agent.energy += harvestAmount;
@@ -1391,7 +1450,7 @@ export class LifeSimulation {
   }
 
   private neighborhoodCrowding(x: number, y: number, occupancy: number[][]): number {
-    const radius = Math.max(0, Math.floor(this.config.dispersalRadius));
+    const radius = this.normalizedDispersalRadius();
     if (radius === 0) {
       return occupancy[this.wrapY(y)][this.wrapX(x)];
     }
@@ -1416,6 +1475,69 @@ export class LifeSimulation {
       return 0;
     }
     return weightedCount / totalWeight;
+  }
+
+  private lineageHarvestCrowdingEfficiency(
+    agent: Pick<Agent, 'lineage' | 'x' | 'y'>,
+    lineageOccupancy: LineageOccupancyGrid
+  ): number {
+    const penalty = Math.max(0, this.config.lineageHarvestCrowdingPenalty);
+    if (penalty === 0) {
+      return 1;
+    }
+
+    const crowding = this.sameLineageNeighborhoodCrowding(agent, lineageOccupancy);
+    if (crowding <= 0) {
+      return 1;
+    }
+
+    return Math.max(0.05, 1 / (1 + penalty * crowding));
+  }
+
+  private sameLineageNeighborhoodCrowding(
+    agent: Pick<Agent, 'lineage' | 'x' | 'y'>,
+    lineageOccupancy: LineageOccupancyGrid
+  ): number {
+    const grid = lineageOccupancy.get(agent.lineage);
+    if (!grid) {
+      return 0;
+    }
+
+    const radius = this.normalizedDispersalRadius();
+    const width = this.config.width;
+    const cellDistances = new Map<number, number>();
+
+    for (let dy = -radius; dy <= radius; dy += 1) {
+      for (let dx = -radius; dx <= radius; dx += 1) {
+        const distance = Math.abs(dx) + Math.abs(dy);
+        if (distance > radius) {
+          continue;
+        }
+
+        const x = this.wrapX(agent.x + dx);
+        const y = this.wrapY(agent.y + dy);
+        const index = y * width + x;
+        const current = cellDistances.get(index);
+        if (current === undefined || distance < current) {
+          cellDistances.set(index, distance);
+        }
+      }
+    }
+
+    let crowding = 0;
+    const centerIndex = agent.y * width + agent.x;
+    for (const [index, distance] of cellDistances) {
+      const x = index % width;
+      const y = Math.floor(index / width);
+      const rawCount = grid[y][x];
+      const count = index === centerIndex ? Math.max(0, rawCount - 1) : rawCount;
+      if (count <= 0) {
+        continue;
+      }
+      crowding += count / (distance + 1);
+    }
+
+    return crowding;
   }
 
   private resolveEncounters(): void {
@@ -1693,6 +1815,10 @@ export class LifeSimulation {
 
   private specializationLoad(species: number): number {
     return Math.min(1, Math.abs(this.getSpeciesHabitatPreference(species) - 1));
+  }
+
+  private normalizedDispersalRadius(): number {
+    return Math.max(0, Math.floor(this.config.dispersalRadius));
   }
 
   private regenerateResources(): void {
