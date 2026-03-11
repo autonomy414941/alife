@@ -230,6 +230,7 @@ export interface SimulationConfig {
   defenseMitigation: number;
   defenseForagingPenalty: number;
   defenseMutation: number;
+  lineageDispersalCrowdingPenalty: number;
   lineageHarvestCrowdingPenalty: number;
   harvestCap: number;
   reproduceThreshold: number;

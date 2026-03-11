@@ -66,6 +66,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   defenseMitigation: 0.45,
   defenseForagingPenalty: 0.2,
   defenseMutation: 0.16,
+  lineageDispersalCrowdingPenalty: 0,
   lineageHarvestCrowdingPenalty: 0,
   harvestCap: 2.5,
   reproduceThreshold: 20,
@@ -212,7 +213,9 @@ export class LifeSimulation {
 
     const occupancy = this.buildOccupancyGrid();
     const lineageOccupancy =
-      this.config.lineageHarvestCrowdingPenalty > 0 ? this.buildLineageOccupancyGrid() : undefined;
+      this.config.lineageDispersalCrowdingPenalty > 0 || this.config.lineageHarvestCrowdingPenalty > 0
+        ? this.buildLineageOccupancyGrid()
+        : undefined;
     const turnOrder = this.rng.shuffle([...this.agents]);
     for (const agent of turnOrder) {
       if (!this.isAlive(agent.id)) {
@@ -1382,7 +1385,7 @@ export class LifeSimulation {
 
     const previousX = agent.x;
     const previousY = agent.y;
-    const destination = this.pickDestination(agent, occupancy);
+    const destination = this.pickDestination(agent, occupancy, lineageOccupancy);
     const moved = destination.x !== agent.x || destination.y !== agent.y;
     agent.x = destination.x;
     agent.y = destination.y;
@@ -1424,7 +1427,11 @@ export class LifeSimulation {
     agent.energy += harvestAmount;
   }
 
-  private pickDestination(agent: Agent, occupancy: number[][]): { x: number; y: number } {
+  private pickDestination(
+    agent: Agent,
+    occupancy: number[][],
+    lineageOccupancy: LineageOccupancyGrid | undefined
+  ): { x: number; y: number } {
     const options = [
       { x: agent.x, y: agent.y },
       { x: this.wrapX(agent.x + 1), y: agent.y },
@@ -1435,11 +1442,27 @@ export class LifeSimulation {
 
     let best = options[0];
     let bestScore = -Infinity;
+    const lineagePenalty = Math.max(0, this.config.lineageDispersalCrowdingPenalty);
 
     for (const option of options) {
       const food = this.resources[option.y][option.x] * this.habitatMatchEfficiency(agent, option.x, option.y);
       const crowding = this.neighborhoodCrowding(option.x, option.y, occupancy);
-      const score = food - this.config.dispersalPressure * crowding + this.rng.float() * 0.05;
+      const lineageCrowding =
+        lineagePenalty > 0 && lineageOccupancy
+          ? this.sameLineageNeighborhoodCrowdingAt(
+              agent.lineage,
+              option.x,
+              option.y,
+              lineageOccupancy,
+              agent.x,
+              agent.y
+            )
+          : 0;
+      const score =
+        food -
+        this.config.dispersalPressure * crowding -
+        lineagePenalty * lineageCrowding +
+        this.rng.float() * 0.05;
       if (score > bestScore) {
         bestScore = score;
         best = option;
@@ -1498,7 +1521,18 @@ export class LifeSimulation {
     agent: Pick<Agent, 'lineage' | 'x' | 'y'>,
     lineageOccupancy: LineageOccupancyGrid
   ): number {
-    const grid = lineageOccupancy.get(agent.lineage);
+    return this.sameLineageNeighborhoodCrowdingAt(agent.lineage, agent.x, agent.y, lineageOccupancy, agent.x, agent.y);
+  }
+
+  private sameLineageNeighborhoodCrowdingAt(
+    lineage: number,
+    x: number,
+    y: number,
+    lineageOccupancy: LineageOccupancyGrid,
+    excludedX: number,
+    excludedY: number
+  ): number {
+    const grid = lineageOccupancy.get(lineage);
     if (!grid) {
       return 0;
     }
@@ -1506,6 +1540,9 @@ export class LifeSimulation {
     const radius = this.normalizedDispersalRadius();
     const width = this.config.width;
     const cellDistances = new Map<number, number>();
+    const centerX = this.wrapX(x);
+    const centerY = this.wrapY(y);
+    const excludedIndex = this.wrapY(excludedY) * width + this.wrapX(excludedX);
 
     for (let dy = -radius; dy <= radius; dy += 1) {
       for (let dx = -radius; dx <= radius; dx += 1) {
@@ -1514,9 +1551,9 @@ export class LifeSimulation {
           continue;
         }
 
-        const x = this.wrapX(agent.x + dx);
-        const y = this.wrapY(agent.y + dy);
-        const index = y * width + x;
+        const nx = this.wrapX(centerX + dx);
+        const ny = this.wrapY(centerY + dy);
+        const index = ny * width + nx;
         const current = cellDistances.get(index);
         if (current === undefined || distance < current) {
           cellDistances.set(index, distance);
@@ -1525,12 +1562,11 @@ export class LifeSimulation {
     }
 
     let crowding = 0;
-    const centerIndex = agent.y * width + agent.x;
     for (const [index, distance] of cellDistances) {
-      const x = index % width;
-      const y = Math.floor(index / width);
-      const rawCount = grid[y][x];
-      const count = index === centerIndex ? Math.max(0, rawCount - 1) : rawCount;
+      const cellX = index % width;
+      const cellY = Math.floor(index / width);
+      const rawCount = grid[cellY][cellX];
+      const count = index === excludedIndex ? Math.max(0, rawCount - 1) : rawCount;
       if (count <= 0) {
         continue;
       }

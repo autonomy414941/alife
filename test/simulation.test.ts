@@ -335,6 +335,86 @@ describe('LifeSimulation', () => {
     expect(splitTotalEnergy).toBeCloseTo(22, 10);
   });
 
+  it('steers dispersal away from same-lineage crowding when the penalty is enabled', () => {
+    const sharedConfig = {
+      width: 5,
+      height: 3,
+      maxResource: 2,
+      resourceRegen: 0,
+      biomeBands: 1,
+      biomeContrast: 0,
+      decompositionBase: 0,
+      decompositionEnergyFraction: 0,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      dispersalPressure: 0,
+      dispersalRadius: 1,
+      habitatPreferenceStrength: 0,
+      trophicForagingPenalty: 0,
+      defenseForagingPenalty: 0,
+      lineageHarvestCrowdingPenalty: 0,
+      harvestCap: 0,
+      reproduceProbability: 0,
+      maxAge: 100
+    };
+    const initialAgents = [
+      {
+        x: 2,
+        y: 1,
+        energy: 10,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism: 1, harvest: 1, aggression: 0 }
+      },
+      {
+        x: 3,
+        y: 1,
+        energy: 10,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism: 1, harvest: 1, aggression: 0 }
+      }
+    ];
+
+    const withoutPenalty = new LifeSimulation({
+      seed: 22,
+      config: {
+        ...sharedConfig,
+        lineageDispersalCrowdingPenalty: 0
+      },
+      initialAgents
+    });
+    const withPenalty = new LifeSimulation({
+      seed: 22,
+      config: {
+        ...sharedConfig,
+        lineageDispersalCrowdingPenalty: 1
+      },
+      initialAgents
+    });
+
+    for (const sim of [withoutPenalty, withPenalty]) {
+      for (let y = 0; y < sharedConfig.height; y += 1) {
+        for (let x = 0; x < sharedConfig.width; x += 1) {
+          sim.setResource(x, y, 0);
+        }
+      }
+      sim.setResource(3, 1, 1.6);
+      sim.setResource(1, 1, 1);
+    }
+
+    withoutPenalty.step();
+    withPenalty.step();
+
+    const withoutPenaltyFocal = withoutPenalty.snapshot().agents.find((agent) => agent.id === 1);
+    const withPenaltyFocal = withPenalty.snapshot().agents.find((agent) => agent.id === 1);
+    const withPenaltyAnchor = withPenalty.snapshot().agents.find((agent) => agent.id === 2);
+
+    expect(withoutPenaltyFocal).toMatchObject({ x: 3, y: 1 });
+    expect(withPenaltyFocal).toMatchObject({ x: 1, y: 1 });
+    expect(withPenaltyAnchor).toMatchObject({ x: 3, y: 1 });
+  });
+
   it('amplifies encounter transfer when predation pressure is enabled', () => {
     const baseConfig = {
       width: 1,
