@@ -6,6 +6,9 @@ import {
   CladeActivityRelabelNullCladeHabitatCouplingSweepDefinition,
   CladeActivityRelabelNullCladeHabitatCouplingSweepExport,
   CladeActivityRelabelNullCladeHabitatCouplingSweepResult,
+  CladeActivityRelabelNullCladeInteractionCouplingSweepDefinition,
+  CladeActivityRelabelNullCladeInteractionCouplingSweepExport,
+  CladeActivityRelabelNullCladeInteractionCouplingSweepResult,
   CladeActivityRelabelNullDefinition,
   CladeActivityRelabelNullSeedResult,
   CladeActivityRelabelNullStudyConfig,
@@ -216,6 +219,23 @@ export interface RunCladeActivityRelabelNullCladeHabitatCouplingSweepInput
   generatedAt?: string;
 }
 
+export interface CladeActivityRelabelNullCladeInteractionCouplingSweepConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number;
+  cladogenesisThreshold: number;
+  cladeInteractionCouplingValues: number[];
+}
+
+export interface RunCladeActivityRelabelNullCladeInteractionCouplingSweepInput
+  extends Partial<CladeActivityRelabelNullCladeInteractionCouplingSweepConfig> {
+  simulation?: Omit<LifeSimulationOptions, 'seed'>;
+  generatedAt?: string;
+}
+
 export const DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY: CladeActivityCoarseThresholdBoundaryStudyConfig =
   {
     steps: 2000,
@@ -267,6 +287,18 @@ export const DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP: C
     minSurvivalTicks: 50,
     cladogenesisThreshold: 1,
     cladeHabitatCouplingValues: [0, 0.25, 0.5, 0.75, 1]
+  };
+
+export const DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP: CladeActivityRelabelNullCladeInteractionCouplingSweepConfig =
+  {
+    steps: 1000,
+    windowSize: 100,
+    burnIn: 200,
+    seeds: [20260307, 20260308, 20260309, 20260310],
+    stopWhenExtinct: true,
+    minSurvivalTicks: 50,
+    cladogenesisThreshold: 1,
+    cladeInteractionCouplingValues: [0, 0.25, 0.5, 0.75, 1]
   };
 
 interface AnalyzeTaxonActivityInput {
@@ -497,6 +529,23 @@ export const CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP_DEFINITION
     study: CLADE_ACTIVITY_RELABEL_NULL_DEFINITION,
     cladeHabitatCoupling:
       'Blend weight applied to clade-level habitat preference during movement and harvest. Zero uses only species habitat preference; one applies the full configured clade coupling.',
+    birthScheduleMatchedAllSeeds:
+      'True when every seed in the coupling row preserved the actual clade birth schedule in the matched pseudo-clade null.',
+    actualToNullPersistentWindowFractionRatioMean:
+      'Mean across seeds of actualToNullPersistentWindowFractionRatio for the selected survival threshold.',
+    persistentWindowFractionDeltaVsNullMean:
+      'Mean across seeds of actual persistentWindowFraction minus matched-null persistentWindowFraction for the selected survival threshold.',
+    actualToNullPersistentActivityMeanRatioMean:
+      'Mean across seeds of actualToNullPersistentActivityMeanRatio for the selected survival threshold.',
+    persistentActivityMeanDeltaVsNullMean:
+      'Mean across seeds of actual persistent activity mean minus matched-null persistent activity mean for the selected survival threshold.'
+  };
+
+export const CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP_DEFINITION: CladeActivityRelabelNullCladeInteractionCouplingSweepDefinition =
+  {
+    study: CLADE_ACTIVITY_RELABEL_NULL_DEFINITION,
+    cladeInteractionCoupling:
+      'Blend weight applied to clade-level trophic and defense interaction traits during foraging and encounters. Zero uses only species interaction traits; one applies the full configured clade coupling.',
     birthScheduleMatchedAllSeeds:
       'True when every seed in the coupling row preserved the actual clade birth schedule in the matched pseudo-clade null.',
     actualToNullPersistentWindowFractionRatioMean:
@@ -1191,6 +1240,94 @@ export function runCladeActivityRelabelNullCladeHabitatCouplingSweep(
       minSurvivalTicks,
       cladogenesisThreshold,
       cladeHabitatCouplingValues
+    },
+    results
+  };
+}
+
+export function runCladeActivityRelabelNullCladeInteractionCouplingSweep(
+  input: RunCladeActivityRelabelNullCladeInteractionCouplingSweepInput = {}
+): CladeActivityRelabelNullCladeInteractionCouplingSweepExport {
+  const steps = toPositiveInt(
+    'steps',
+    input.steps ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.steps
+  );
+  const windowSize = toPositiveInt(
+    'windowSize',
+    input.windowSize ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.windowSize
+  );
+  const burnIn = toNonNegativeInt(
+    'burnIn',
+    input.burnIn ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.burnIn
+  );
+  const seeds = toUniqueIntegerList(
+    'seeds',
+    input.seeds ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.seeds
+  );
+  const stopWhenExtinct =
+    input.stopWhenExtinct ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.stopWhenExtinct;
+  const minSurvivalTicks = toNonNegativeInt(
+    'minSurvivalTicks',
+    input.minSurvivalTicks ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.minSurvivalTicks
+  );
+  const cladogenesisThreshold = toFiniteNumber(
+    'cladogenesisThreshold',
+    input.cladogenesisThreshold ??
+      DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.cladogenesisThreshold
+  );
+  const cladeInteractionCouplingValues = toUniqueFiniteNumberList(
+    'cladeInteractionCouplingValues',
+    input.cladeInteractionCouplingValues ??
+      DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.cladeInteractionCouplingValues
+  );
+
+  const results: CladeActivityRelabelNullCladeInteractionCouplingSweepResult[] = cladeInteractionCouplingValues.map(
+    (cladeInteractionCoupling) => {
+      const study = runCladeActivityRelabelNullStudy({
+        steps,
+        windowSize,
+        burnIn,
+        seeds,
+        stopWhenExtinct,
+        minSurvivalTicks: [minSurvivalTicks],
+        cladogenesisThresholds: [cladogenesisThreshold],
+        simulation: withCladeInteractionCoupling(input.simulation, cladeInteractionCoupling),
+        generatedAt: input.generatedAt
+      });
+      const thresholdResult = study.thresholdResults[0];
+      if (!thresholdResult) {
+        throw new Error('Clade interaction coupling sweep produced no threshold results');
+      }
+      const aggregate = thresholdResult.aggregates[0];
+      if (!aggregate) {
+        throw new Error('Clade interaction coupling sweep produced no aggregate results');
+      }
+
+      return {
+        cladeInteractionCoupling,
+        seedResults: thresholdResult.seedResults,
+        aggregate,
+        birthScheduleMatchedAllSeeds: thresholdResult.seedResults.every((seedResult) => seedResult.birthScheduleMatched),
+        actualToNullPersistentWindowFractionRatioMean: aggregate.actualToNullPersistentWindowFractionRatio.mean,
+        persistentWindowFractionDeltaVsNullMean: aggregate.persistentWindowFractionDeltaVsNull.mean,
+        actualToNullPersistentActivityMeanRatioMean: aggregate.actualToNullPersistentActivityMeanRatio.mean,
+        persistentActivityMeanDeltaVsNullMean: aggregate.persistentActivityMeanDeltaVsNull.mean
+      };
+    }
+  );
+
+  return {
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    definition: CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP_DEFINITION,
+    config: {
+      steps,
+      windowSize,
+      burnIn,
+      seeds,
+      stopWhenExtinct,
+      minSurvivalTicks,
+      cladogenesisThreshold,
+      cladeInteractionCouplingValues
     },
     results
   };
@@ -2062,6 +2199,19 @@ function withCladeHabitatCoupling(
     config: {
       ...simulation?.config,
       cladeHabitatCoupling
+    }
+  };
+}
+
+function withCladeInteractionCoupling(
+  simulation: Omit<LifeSimulationOptions, 'seed'> | undefined,
+  cladeInteractionCoupling: number
+): Omit<LifeSimulationOptions, 'seed'> {
+  return {
+    ...simulation,
+    config: {
+      ...simulation?.config,
+      cladeInteractionCoupling
     }
   };
 }

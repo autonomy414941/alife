@@ -5,6 +5,7 @@ import {
   DEFAULT_CLADE_ACTIVITY_CLADOGENESIS_HORIZON_STUDY,
   DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY,
   DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP,
+  DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP,
   DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY,
   DEFAULT_CLADE_SPECIES_ACTIVITY_COUPLING_STUDY,
   runCladeActivityCladogenesisHorizonStudy,
@@ -12,6 +13,7 @@ import {
   runCladeActivityCladogenesisSweep,
   runCladeActivityCoarseThresholdBoundaryStudy,
   runCladeActivityRelabelNullCladeHabitatCouplingSweep,
+  runCladeActivityRelabelNullCladeInteractionCouplingSweep,
   runCladeActivityPersistenceSweep,
   runCladeActivityRelabelNullStudy,
   runCladeActivitySeedPanel,
@@ -1708,6 +1710,176 @@ describe('runCladeActivityRelabelNullCladeHabitatCouplingSweep', () => {
     );
     expect(result.config.cladeHabitatCouplingValues).toEqual(
       DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.cladeHabitatCouplingValues
+    );
+    expect(result.results).toHaveLength(5);
+  });
+});
+
+describe('runCladeActivityRelabelNullCladeInteractionCouplingSweep', () => {
+  it('is deterministic for a fixed coupling sweep configuration', () => {
+    const simulation = {
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 100,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    };
+    const input = {
+      steps: 6,
+      windowSize: 1,
+      burnIn: 2,
+      seeds: [77, 78],
+      minSurvivalTicks: 1,
+      cladogenesisThreshold: 0,
+      cladeInteractionCouplingValues: [0, 1],
+      stopWhenExtinct: true,
+      simulation,
+      generatedAt: '2026-03-11T00:00:00.000Z'
+    };
+
+    const first = runCladeActivityRelabelNullCladeInteractionCouplingSweep(input);
+    const second = runCladeActivityRelabelNullCladeInteractionCouplingSweep(input);
+
+    expect(first).toEqual(second);
+    expect(first.results).toHaveLength(2);
+    expect(first.results.every((result) => result.birthScheduleMatchedAllSeeds)).toBe(true);
+  });
+
+  it('matches standalone relabel-null studies at the sweep endpoints', () => {
+    const input = {
+      steps: 400,
+      windowSize: 50,
+      burnIn: 100,
+      seeds: [20260307],
+      minSurvivalTicks: 50,
+      cladogenesisThreshold: 1,
+      cladeInteractionCouplingValues: [0, 1],
+      generatedAt: '2026-03-11T00:00:00.000Z'
+    };
+
+    const result = runCladeActivityRelabelNullCladeInteractionCouplingSweep(input);
+    expect(result.results).toHaveLength(2);
+
+    const uncoupledStudy = runCladeActivityRelabelNullStudy({
+      steps: input.steps,
+      windowSize: input.windowSize,
+      burnIn: input.burnIn,
+      seeds: input.seeds,
+      minSurvivalTicks: [input.minSurvivalTicks],
+      cladogenesisThresholds: [input.cladogenesisThreshold],
+      simulation: {
+        config: {
+          cladeInteractionCoupling: 0
+        }
+      },
+      generatedAt: input.generatedAt
+    });
+    const coupledStudy = runCladeActivityRelabelNullStudy({
+      steps: input.steps,
+      windowSize: input.windowSize,
+      burnIn: input.burnIn,
+      seeds: input.seeds,
+      minSurvivalTicks: [input.minSurvivalTicks],
+      cladogenesisThresholds: [input.cladogenesisThreshold],
+      simulation: {
+        config: {
+          cladeInteractionCoupling: 1
+        }
+      },
+      generatedAt: input.generatedAt
+    });
+
+    const uncoupledResult = result.results.find((sweepResult) => sweepResult.cladeInteractionCoupling === 0);
+    const coupledResult = result.results.find((sweepResult) => sweepResult.cladeInteractionCoupling === 1);
+
+    expect(uncoupledResult).toBeDefined();
+    expect(coupledResult).toBeDefined();
+    expect(uncoupledResult!.seedResults).toEqual(uncoupledStudy.thresholdResults[0]!.seedResults);
+    expect(uncoupledResult!.aggregate).toEqual(uncoupledStudy.thresholdResults[0]!.aggregates[0]);
+    expect(coupledResult!.seedResults).toEqual(coupledStudy.thresholdResults[0]!.seedResults);
+    expect(coupledResult!.aggregate).toEqual(coupledStudy.thresholdResults[0]!.aggregates[0]);
+    expect(uncoupledResult!.birthScheduleMatchedAllSeeds).toBe(true);
+    expect(coupledResult!.birthScheduleMatchedAllSeeds).toBe(true);
+    expect(uncoupledResult!.persistentActivityMeanDeltaVsNullMean).toBeCloseTo(
+      uncoupledResult!.aggregate.persistentActivityMeanDeltaVsNull.mean,
+      10
+    );
+    expect(coupledResult!.persistentWindowFractionDeltaVsNullMean).toBeCloseTo(
+      coupledResult!.aggregate.persistentWindowFractionDeltaVsNull.mean,
+      10
+    );
+    expect(Math.abs(coupledResult!.persistentActivityMeanDeltaVsNullMean)).toBeGreaterThan(0.1);
+  }, 20000);
+
+  it('preserves the March 11 short-panel defaults for the coupling sweep', () => {
+    const result = runCladeActivityRelabelNullCladeInteractionCouplingSweep({
+      steps: 6,
+      windowSize: 1,
+      burnIn: 2,
+      seeds: [77],
+      simulation: {
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceThreshold: 10,
+          reproduceProbability: 1,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0.2,
+          speciationThreshold: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 100,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+          }
+        ]
+      },
+      generatedAt: '2026-03-11T00:00:00.000Z'
+    });
+
+    expect(DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.steps).toBe(1000);
+    expect(DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.minSurvivalTicks).toBe(50);
+    expect(DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.cladogenesisThreshold).toBe(1);
+    expect(
+      DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.cladeInteractionCouplingValues
+    ).toEqual([0, 0.25, 0.5, 0.75, 1]);
+    expect(result.config.stopWhenExtinct).toBe(
+      DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.stopWhenExtinct
+    );
+    expect(result.config.minSurvivalTicks).toBe(
+      DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.minSurvivalTicks
+    );
+    expect(result.config.cladogenesisThreshold).toBe(
+      DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.cladogenesisThreshold
+    );
+    expect(result.config.cladeInteractionCouplingValues).toEqual(
+      DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.cladeInteractionCouplingValues
     );
     expect(result.results).toHaveLength(5);
   });

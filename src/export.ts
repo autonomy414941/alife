@@ -2,6 +2,7 @@ import {
   CladeActivityCladogenesisHorizonSweepExport,
   CladeActivityCladogenesisSweepExport,
   CladeActivityRelabelNullCladeHabitatCouplingSweepExport,
+  CladeActivityRelabelNullCladeInteractionCouplingSweepExport,
   CladeActivityPersistenceSweepExport,
   CladeActivityRelabelNullStudyExport,
   CladeActivitySeedPanelExport,
@@ -340,6 +341,12 @@ export function cladeActivityRelabelNullToJson(exportData: CladeActivityRelabelN
 
 export function cladeActivityRelabelNullCladeHabitatCouplingSweepToJson(
   exportData: CladeActivityRelabelNullCladeHabitatCouplingSweepExport
+): string {
+  return `${JSON.stringify(exportData, null, 2)}\n`;
+}
+
+export function cladeActivityRelabelNullCladeInteractionCouplingSweepToJson(
+  exportData: CladeActivityRelabelNullCladeInteractionCouplingSweepExport
 ): string {
   return `${JSON.stringify(exportData, null, 2)}\n`;
 }
