@@ -3,6 +3,9 @@ import { Rng } from './rng';
 import {
   CladeActivityCladogenesisHorizonSweepExport,
   CladeActivityCladogenesisHorizonSweepPoint,
+  CladeActivityRelabelNullCladeHabitatCouplingSweepDefinition,
+  CladeActivityRelabelNullCladeHabitatCouplingSweepExport,
+  CladeActivityRelabelNullCladeHabitatCouplingSweepResult,
   CladeActivityRelabelNullDefinition,
   CladeActivityRelabelNullSeedResult,
   CladeActivityRelabelNullStudyConfig,
@@ -196,6 +199,23 @@ export interface RunCladeActivityRelabelNullStudyInput extends Partial<CladeActi
   generatedAt?: string;
 }
 
+export interface CladeActivityRelabelNullCladeHabitatCouplingSweepConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number;
+  cladogenesisThreshold: number;
+  cladeHabitatCouplingValues: number[];
+}
+
+export interface RunCladeActivityRelabelNullCladeHabitatCouplingSweepInput
+  extends Partial<CladeActivityRelabelNullCladeHabitatCouplingSweepConfig> {
+  simulation?: Omit<LifeSimulationOptions, 'seed'>;
+  generatedAt?: string;
+}
+
 export const DEFAULT_CLADE_ACTIVITY_COARSE_THRESHOLD_BOUNDARY_STUDY: CladeActivityCoarseThresholdBoundaryStudyConfig =
   {
     steps: 2000,
@@ -236,6 +256,18 @@ export const DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY: CladeActivityRelabelNull
   minSurvivalTicks: [50, 100],
   cladogenesisThresholds: [1, 1.2]
 };
+
+export const DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP: CladeActivityRelabelNullCladeHabitatCouplingSweepConfig =
+  {
+    steps: 1000,
+    windowSize: 100,
+    burnIn: 200,
+    seeds: [20260307, 20260308, 20260309, 20260310],
+    stopWhenExtinct: true,
+    minSurvivalTicks: 50,
+    cladogenesisThreshold: 1,
+    cladeHabitatCouplingValues: [0, 0.25, 0.5, 0.75, 1]
+  };
 
 interface AnalyzeTaxonActivityInput {
   taxa: TaxonHistory[];
@@ -459,6 +491,23 @@ export const CLADE_ACTIVITY_RELABEL_NULL_DEFINITION: CladeActivityRelabelNullDef
   persistentActivityMeanDeltaVsNull:
     'For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean minus matched-null postBurnInPersistentNewActivityMean.'
 };
+
+export const CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP_DEFINITION: CladeActivityRelabelNullCladeHabitatCouplingSweepDefinition =
+  {
+    study: CLADE_ACTIVITY_RELABEL_NULL_DEFINITION,
+    cladeHabitatCoupling:
+      'Blend weight applied to clade-level habitat preference during movement and harvest. Zero uses only species habitat preference; one applies the full configured clade coupling.',
+    birthScheduleMatchedAllSeeds:
+      'True when every seed in the coupling row preserved the actual clade birth schedule in the matched pseudo-clade null.',
+    actualToNullPersistentWindowFractionRatioMean:
+      'Mean across seeds of actualToNullPersistentWindowFractionRatio for the selected survival threshold.',
+    persistentWindowFractionDeltaVsNullMean:
+      'Mean across seeds of actual persistentWindowFraction minus matched-null persistentWindowFraction for the selected survival threshold.',
+    actualToNullPersistentActivityMeanRatioMean:
+      'Mean across seeds of actualToNullPersistentActivityMeanRatio for the selected survival threshold.',
+    persistentActivityMeanDeltaVsNullMean:
+      'Mean across seeds of actual persistent activity mean minus matched-null persistent activity mean for the selected survival threshold.'
+  };
 
 export function analyzeSpeciesActivity(input: AnalyzeSpeciesActivityInput): AnalyzeSpeciesActivityResult {
   const analysis = analyzeTaxonActivity({
@@ -1056,6 +1105,94 @@ export function runCladeActivityRelabelNullStudy(
       cladogenesisThresholds
     },
     thresholdResults
+  };
+}
+
+export function runCladeActivityRelabelNullCladeHabitatCouplingSweep(
+  input: RunCladeActivityRelabelNullCladeHabitatCouplingSweepInput = {}
+): CladeActivityRelabelNullCladeHabitatCouplingSweepExport {
+  const steps = toPositiveInt(
+    'steps',
+    input.steps ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.steps
+  );
+  const windowSize = toPositiveInt(
+    'windowSize',
+    input.windowSize ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.windowSize
+  );
+  const burnIn = toNonNegativeInt(
+    'burnIn',
+    input.burnIn ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.burnIn
+  );
+  const seeds = toUniqueIntegerList(
+    'seeds',
+    input.seeds ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.seeds
+  );
+  const stopWhenExtinct =
+    input.stopWhenExtinct ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.stopWhenExtinct;
+  const minSurvivalTicks = toNonNegativeInt(
+    'minSurvivalTicks',
+    input.minSurvivalTicks ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.minSurvivalTicks
+  );
+  const cladogenesisThreshold = toFiniteNumber(
+    'cladogenesisThreshold',
+    input.cladogenesisThreshold ??
+      DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.cladogenesisThreshold
+  );
+  const cladeHabitatCouplingValues = toUniqueFiniteNumberList(
+    'cladeHabitatCouplingValues',
+    input.cladeHabitatCouplingValues ??
+      DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.cladeHabitatCouplingValues
+  );
+
+  const results: CladeActivityRelabelNullCladeHabitatCouplingSweepResult[] = cladeHabitatCouplingValues.map(
+    (cladeHabitatCoupling) => {
+      const study = runCladeActivityRelabelNullStudy({
+        steps,
+        windowSize,
+        burnIn,
+        seeds,
+        stopWhenExtinct,
+        minSurvivalTicks: [minSurvivalTicks],
+        cladogenesisThresholds: [cladogenesisThreshold],
+        simulation: withCladeHabitatCoupling(input.simulation, cladeHabitatCoupling),
+        generatedAt: input.generatedAt
+      });
+      const thresholdResult = study.thresholdResults[0];
+      if (!thresholdResult) {
+        throw new Error('Clade habitat coupling sweep produced no threshold results');
+      }
+      const aggregate = thresholdResult.aggregates[0];
+      if (!aggregate) {
+        throw new Error('Clade habitat coupling sweep produced no aggregate results');
+      }
+
+      return {
+        cladeHabitatCoupling,
+        seedResults: thresholdResult.seedResults,
+        aggregate,
+        birthScheduleMatchedAllSeeds: thresholdResult.seedResults.every((seedResult) => seedResult.birthScheduleMatched),
+        actualToNullPersistentWindowFractionRatioMean: aggregate.actualToNullPersistentWindowFractionRatio.mean,
+        persistentWindowFractionDeltaVsNullMean: aggregate.persistentWindowFractionDeltaVsNull.mean,
+        actualToNullPersistentActivityMeanRatioMean: aggregate.actualToNullPersistentActivityMeanRatio.mean,
+        persistentActivityMeanDeltaVsNullMean: aggregate.persistentActivityMeanDeltaVsNull.mean
+      };
+    }
+  );
+
+  return {
+    generatedAt: input.generatedAt ?? new Date().toISOString(),
+    definition: CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP_DEFINITION,
+    config: {
+      steps,
+      windowSize,
+      burnIn,
+      seeds,
+      stopWhenExtinct,
+      minSurvivalTicks,
+      cladogenesisThreshold,
+      cladeHabitatCouplingValues
+    },
+    results
   };
 }
 
@@ -1916,6 +2053,19 @@ function withCladogenesisThreshold(
   };
 }
 
+function withCladeHabitatCoupling(
+  simulation: Omit<LifeSimulationOptions, 'seed'> | undefined,
+  cladeHabitatCoupling: number
+): Omit<LifeSimulationOptions, 'seed'> {
+  return {
+    ...simulation,
+    config: {
+      ...simulation?.config,
+      cladeHabitatCoupling
+    }
+  };
+}
+
 function buildCladeSpeciesCountSummary(
   finalSummary: StepSummary,
   totalClades: number,
@@ -2226,6 +2376,13 @@ function toUniqueFiniteNumberList(name: string, values: number[]): number[] {
   }
 
   return normalized;
+}
+
+function toFiniteNumber(name: string, value: number): number {
+  if (!Number.isFinite(value)) {
+    throw new Error(`${name} must be a finite number`);
+  }
+  return value;
 }
 
 function toNonNegativeInt(name: string, value: number): number {

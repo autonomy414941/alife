@@ -1028,6 +1028,45 @@ export interface CladeActivityRelabelNullStudyExport {
   thresholdResults: CladeActivityRelabelNullThresholdResult[];
 }
 
+export interface CladeActivityRelabelNullCladeHabitatCouplingSweepDefinition {
+  study: CladeActivityRelabelNullDefinition;
+  cladeHabitatCoupling: string;
+  birthScheduleMatchedAllSeeds: string;
+  actualToNullPersistentWindowFractionRatioMean: string;
+  persistentWindowFractionDeltaVsNullMean: string;
+  actualToNullPersistentActivityMeanRatioMean: string;
+  persistentActivityMeanDeltaVsNullMean: string;
+}
+
+export interface CladeActivityRelabelNullCladeHabitatCouplingSweepConfig {
+  steps: number;
+  windowSize: number;
+  burnIn: number;
+  seeds: number[];
+  stopWhenExtinct: boolean;
+  minSurvivalTicks: number;
+  cladogenesisThreshold: number;
+  cladeHabitatCouplingValues: number[];
+}
+
+export interface CladeActivityRelabelNullCladeHabitatCouplingSweepResult {
+  cladeHabitatCoupling: number;
+  seedResults: CladeActivityRelabelNullSeedResult[];
+  aggregate: CladeActivityRelabelNullThresholdAggregate;
+  birthScheduleMatchedAllSeeds: boolean;
+  actualToNullPersistentWindowFractionRatioMean: number | null;
+  persistentWindowFractionDeltaVsNullMean: number;
+  actualToNullPersistentActivityMeanRatioMean: number | null;
+  persistentActivityMeanDeltaVsNullMean: number;
+}
+
+export interface CladeActivityRelabelNullCladeHabitatCouplingSweepExport {
+  generatedAt: string;
+  definition: CladeActivityRelabelNullCladeHabitatCouplingSweepDefinition;
+  config: CladeActivityRelabelNullCladeHabitatCouplingSweepConfig;
+  results: CladeActivityRelabelNullCladeHabitatCouplingSweepResult[];
+}
+
 export interface SpeciesActivityHorizonSweepConfig {
   steps: number[];
   windowSize: number;
