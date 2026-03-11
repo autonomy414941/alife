@@ -158,6 +158,125 @@ describe('LifeSimulation', () => {
     expect(passive.energy).toBeLessThan(10);
   });
 
+  it('reduces encounter transfer only for same-lineage targets when restraint is enabled', () => {
+    const sharedConfig = {
+      width: 1,
+      height: 1,
+      maxResource: 0,
+      resourceRegen: 0,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      harvestCap: 0,
+      reproduceProbability: 0,
+      maxAge: 100,
+      predationPressure: 0,
+      defenseMitigation: 0,
+      trophicForagingPenalty: 0,
+      defenseForagingPenalty: 0
+    };
+
+    const sameLineageNeutral = new LifeSimulation({
+      seed: 24,
+      config: {
+        ...sharedConfig,
+        lineageEncounterRestraint: 0
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 1 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+    const sameLineageRestrained = new LifeSimulation({
+      seed: 24,
+      config: {
+        ...sharedConfig,
+        lineageEncounterRestraint: 1
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 1 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+    const splitLineagesRestrained = new LifeSimulation({
+      seed: 24,
+      config: {
+        ...sharedConfig,
+        lineageEncounterRestraint: 1
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 1 }
+        },
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 2,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    sameLineageNeutral.step();
+    sameLineageRestrained.step();
+    splitLineagesRestrained.step();
+
+    const neutralAggressor = sameLineageNeutral.snapshot().agents.find((agent) => agent.genome.aggression === 1);
+    const neutralTarget = sameLineageNeutral.snapshot().agents.find((agent) => agent.genome.aggression === 0);
+    const restrainedAggressor = sameLineageRestrained.snapshot().agents.find((agent) => agent.genome.aggression === 1);
+    const restrainedTarget = sameLineageRestrained.snapshot().agents.find((agent) => agent.genome.aggression === 0);
+    const splitAggressor = splitLineagesRestrained.snapshot().agents.find((agent) => agent.genome.aggression === 1);
+    const splitTarget = splitLineagesRestrained.snapshot().agents.find((agent) => agent.genome.aggression === 0);
+
+    expect(neutralAggressor).toBeDefined();
+    expect(neutralTarget).toBeDefined();
+    expect(restrainedAggressor).toBeDefined();
+    expect(restrainedTarget).toBeDefined();
+    expect(splitAggressor).toBeDefined();
+    expect(splitTarget).toBeDefined();
+
+    expect(neutralAggressor!.energy).toBeCloseTo(12.75, 10);
+    expect(neutralTarget!.energy).toBeCloseTo(7.25, 10);
+    expect(restrainedAggressor!.energy).toBeCloseTo(11.375, 10);
+    expect(restrainedTarget!.energy).toBeCloseTo(8.625, 10);
+    expect(splitAggressor!.energy).toBeCloseTo(12.75, 10);
+    expect(splitTarget!.energy).toBeCloseTo(7.25, 10);
+  });
+
   it('reduces abiotic harvest for high-trophic species', () => {
     const sim = new LifeSimulation({
       seed: 14,

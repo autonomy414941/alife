@@ -66,6 +66,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   defenseMitigation: 0.45,
   defenseForagingPenalty: 0.2,
   defenseMutation: 0.16,
+  lineageEncounterRestraint: 0,
   lineageDispersalCrowdingPenalty: 0,
   lineageHarvestCrowdingPenalty: 0,
   lineageOffspringSettlementCrowdingPenalty: 0,
@@ -1618,7 +1619,11 @@ export class LifeSimulation {
           0.05,
           1 - mitigation * this.blendedDefenseLevel(target.species, target.lineage)
         );
-        const stolen = Math.min(target.energy, target.energy * pressure * 0.25 * predationMultiplier * defenseMultiplier);
+        const lineageMultiplier = this.encounterLineageTransferMultiplier(dominant, target);
+        const stolen = Math.min(
+          target.energy,
+          target.energy * pressure * 0.25 * predationMultiplier * defenseMultiplier * lineageMultiplier
+        );
         if (stolen <= 0) {
           continue;
         }
@@ -1735,6 +1740,22 @@ export class LifeSimulation {
         : 0;
 
     return food - this.config.dispersalPressure * crowding - lineagePenalty * lineageCrowding + jitter;
+  }
+
+  private encounterLineageTransferMultiplier(
+    dominant: Pick<Agent, 'lineage'>,
+    target: Pick<Agent, 'lineage'>
+  ): number {
+    if (dominant.lineage !== target.lineage) {
+      return 1;
+    }
+
+    const restraint = Math.max(0, this.config.lineageEncounterRestraint);
+    if (restraint === 0) {
+      return 1;
+    }
+
+    return 1 / (1 + restraint);
   }
 
   private usesAdultLineageOccupancy(): boolean {
