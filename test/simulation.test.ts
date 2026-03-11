@@ -342,6 +342,98 @@ describe('LifeSimulation', () => {
     expect(withMitigationPrey.energy).toBeGreaterThan(noMitigationPrey.energy);
   });
 
+  it('lets clade interaction coupling change encounter outcomes for same-species agents in different lineages', () => {
+    const baseConfig = {
+      width: 1,
+      height: 1,
+      maxResource: 0,
+      resourceRegen: 0,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      harvestCap: 0,
+      reproduceProbability: 0,
+      maxAge: 100,
+      predationPressure: 0,
+      defenseMitigation: 0.9,
+      trophicForagingPenalty: 0,
+      defenseForagingPenalty: 0
+    };
+    const initialAgents = [
+      {
+        x: 0,
+        y: 0,
+        energy: 1,
+        age: 100,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism: 2.2, harvest: 1, aggression: 0 }
+      },
+      {
+        x: 0,
+        y: 0,
+        energy: 1,
+        age: 100,
+        lineage: 2,
+        species: 1,
+        genome: { metabolism: 0.3, harvest: 1, aggression: 1 }
+      },
+      {
+        x: 0,
+        y: 0,
+        energy: 10,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism: 1, harvest: 1, aggression: 0 }
+      },
+      {
+        x: 0,
+        y: 0,
+        energy: 10,
+        lineage: 2,
+        species: 1,
+        genome: { metabolism: 1, harvest: 1, aggression: 0 }
+      },
+      {
+        x: 0,
+        y: 0,
+        energy: 10,
+        lineage: 3,
+        species: 2,
+        genome: { metabolism: 1, harvest: 1, aggression: 1 }
+      }
+    ];
+
+    const neutral = new LifeSimulation({
+      seed: 19,
+      config: {
+        ...baseConfig,
+        cladeInteractionCoupling: 0
+      },
+      initialAgents
+    });
+    const coupled = new LifeSimulation({
+      seed: 19,
+      config: {
+        ...baseConfig,
+        cladeInteractionCoupling: 1
+      },
+      initialAgents
+    });
+
+    neutral.step();
+    coupled.step();
+
+    const neutralLineage1 = neutral.snapshot().agents.find((agent) => agent.lineage === 1)!;
+    const neutralLineage2 = neutral.snapshot().agents.find((agent) => agent.lineage === 2)!;
+    const coupledLineage1 = coupled.snapshot().agents.find((agent) => agent.lineage === 1)!;
+    const coupledLineage2 = coupled.snapshot().agents.find((agent) => agent.lineage === 2)!;
+
+    expect(neutralLineage1.energy).toBeCloseTo(neutralLineage2.energy, 10);
+    expect(coupledLineage1.energy).toBeGreaterThan(neutralLineage1.energy);
+    expect(coupledLineage2.energy).toBeLessThan(neutralLineage2.energy);
+    expect(coupledLineage1.energy).toBeGreaterThan(coupledLineage2.energy);
+  });
+
   it('applies foraging tradeoff pressure to high-defense species', () => {
     const sim = new LifeSimulation({
       seed: 18,

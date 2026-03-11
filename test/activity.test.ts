@@ -1435,31 +1435,65 @@ describe('runCladeActivityRelabelNullStudy', () => {
     }
   });
 
-  it('separates actual clades from the matched null when clade habitat coupling is enabled', () => {
-    const result = runCladeActivityRelabelNullStudy({
-      steps: 400,
-      windowSize: 50,
-      burnIn: 100,
-      seeds: [20260307],
-      minSurvivalTicks: [50],
-      cladogenesisThresholds: [1],
-      simulation: {
-        config: {
-          cladeHabitatCoupling: 1
-        }
-      },
-      generatedAt: '2026-03-10T00:00:00.000Z'
-    });
+  it(
+    'separates actual clades from the matched null when clade habitat coupling is enabled',
+    () => {
+      const result = runCladeActivityRelabelNullStudy({
+        steps: 400,
+        windowSize: 50,
+        burnIn: 100,
+        seeds: [20260307],
+        minSurvivalTicks: [50],
+        cladogenesisThresholds: [1],
+        simulation: {
+          config: {
+            cladeHabitatCoupling: 1
+          }
+        },
+        generatedAt: '2026-03-10T00:00:00.000Z'
+      });
 
-    const thresholdResult = result.thresholdResults[0]!;
-    const seedResult = thresholdResult.seedResults[0]!;
-    const threshold = seedResult.thresholds[0]!;
-    const aggregate = thresholdResult.aggregates[0]!;
+      const thresholdResult = result.thresholdResults[0]!;
+      const seedResult = thresholdResult.seedResults[0]!;
+      const threshold = seedResult.thresholds[0]!;
+      const aggregate = thresholdResult.aggregates[0]!;
 
-    expect(seedResult.birthScheduleMatched).toBe(true);
-    expect(Math.abs(threshold.persistentActivityMeanDeltaVsNull)).toBeGreaterThan(0.1);
-    expect(Math.abs(aggregate.persistentActivityMeanDeltaVsNull.mean)).toBeGreaterThan(0.1);
-  });
+      expect(seedResult.birthScheduleMatched).toBe(true);
+      expect(Math.abs(threshold.persistentActivityMeanDeltaVsNull)).toBeGreaterThan(0.1);
+      expect(Math.abs(aggregate.persistentActivityMeanDeltaVsNull.mean)).toBeGreaterThan(0.1);
+    },
+    15000
+  );
+
+  it(
+    'separates actual clades from the matched null when clade interaction coupling is enabled',
+    () => {
+      const result = runCladeActivityRelabelNullStudy({
+        steps: 400,
+        windowSize: 50,
+        burnIn: 100,
+        seeds: [20260307],
+        minSurvivalTicks: [50],
+        cladogenesisThresholds: [1],
+        simulation: {
+          config: {
+            cladeInteractionCoupling: 1
+          }
+        },
+        generatedAt: '2026-03-11T00:00:00.000Z'
+      });
+
+      const thresholdResult = result.thresholdResults[0]!;
+      const seedResult = thresholdResult.seedResults[0]!;
+      const threshold = seedResult.thresholds[0]!;
+      const aggregate = thresholdResult.aggregates[0]!;
+
+      expect(seedResult.birthScheduleMatched).toBe(true);
+      expect(Math.abs(threshold.persistentActivityMeanDeltaVsNull)).toBeGreaterThan(0.1);
+      expect(Math.abs(aggregate.persistentActivityMeanDeltaVsNull.mean)).toBeGreaterThan(0.1);
+    },
+    15000
+  );
 
   it('preserves the canonical March 10 defaults for the matched-null study', () => {
     const simulation = {

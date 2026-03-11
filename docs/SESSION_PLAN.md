@@ -2,60 +2,57 @@
 
 ## Compact Context
 - `npm` is the package manager; the baseline verification path is `npm test && npm run build`.
-- `src/simulation.ts` already makes lineage ecologically causal through `cladeHabitatCoupling`, which blends clade and species habitat preference in movement and harvest.
-- `test/simulation.test.ts` already proves that same-species agents in different lineages can receive different payoffs when `cladeHabitatCoupling` is enabled.
-- `docs/clade_activity_cladogenesis_horizon_2026-03-09.json` keeps threshold `1` clade persistence high through `4000` steps (`meanPersistentWindowFraction` `0.9797` / `0.9392` at `50` / `100` survival ticks).
-- `docs/clade_activity_relabel_null_2026-03-10.json` still shows canonical uncoupled actual clades do not beat the matched pseudo-clade null at thresholds `1` and `1.2`.
-- `docs/clade_activity_relabel_null_clade_habitat_smoke_2026-03-10.json` shows the coupled short panel produced a non-zero activity delta (`persistentActivityMeanDeltaVsNullMean = -40.93`) but zero persistent-window separation.
+- `src/simulation.ts` already has species-level habitat, trophic, and defense ecology, but lineage-level ecology only enters through `cladeHabitatCoupling`.
+- `test/simulation.test.ts` already proves that same-species agents in different lineages can receive different payoffs when habitat coupling is enabled.
+- `src/activity.ts` and `test/activity.test.ts` already provide matched relabel-null clade activity studies, so a new mechanic can be checked without inventing new metrics first.
+- `docs/clade_activity_relabel_null_2026-03-10.json` shows actual clades lose to the matched pseudo-clade null on the canonical `4000`-step panel at cladogenesis thresholds `1` and `1.2`.
+- `docs/clade_activity_relabel_null_clade_habitat_coupling_sweep_2026-03-11.json` is negative across `cladeHabitatCoupling` values `0` through `1`, so habitat-only lineage ecology did not rescue clade persistence.
 
 ## Project State
-- The repo now has deterministic species/clade activity analyzers, cladogenesis threshold and horizon studies, a matched relabel-null study, and one coupled smoke artifact around the new lineage mechanic.
-- Recent sessions moved from finding clade-positive thresholds to falsifying bookkeeping explanations with matched null controls, then to making lineage identity ecologically causal via habitat coupling.
-- The underdeveloped area is dose-response evaluation of that new mechanism: only one `cladeHabitatCoupling = 1` smoke point exists, so the project cannot tell whether the negative result is a weak operating point or a genuine failure of habitat-mediated lineage ecology.
+- The repo now has deterministic clade/species activity analyzers, matched-null controls, and a March 11 sweep around the new habitat-coupling mechanism.
+- Recent sessions mostly extended measurement around cladogenesis and null controls, then added one lineage-mediated ecological term for habitat matching.
+- The underdeveloped area is interaction ecology: lineages still do not affect trophic or defense roles, so clade identity remains ecologically narrow.
 
 ## External Context
-- de Pinho and Sinapayen, *A speciation simulation that partly passes open-endedness tests* (2026): the open-endedness verdict changed with the component being measured, so clade-level claims need direct component-specific controls. Source: https://arxiv.org/abs/2603.01701
-- Moreno, Rodriguez Papa, and Dolson, *Ecology, Spatial Structure, and Selection Pressure Induce Strong Signatures in Phylogenetic Structure* (2025): sufficiently strong ecology can leave detectable phylogenetic signatures, which makes a coupling-strength sweep more informative than a single on/off smoke test. Source: https://direct.mit.edu/artl/article/31/2/129/130570/Ecology-Spatial-Structure-and-Selection-Pressure
+- Moreno, Rodriguez Papa, and Dolson, *Ecology, Spatial Structure, and Selection Pressure Induce Strong Signatures in Phylogenetic Structure* (2025): stronger ecology produced clearer phylogenetic signal, which argues for strengthening ecological differentiation instead of adding another null-only analysis. Source: https://direct.mit.edu/artl/article/31/2/129/130570/Ecology-Spatial-Structure-and-Selection-Pressure
+- Araujo and Lurgi, *Mutualism provides a basis for biodiversity in eco-evolutionary community assembly* (2025): eco-evolutionary assembly with multiple interaction types and speciation produced higher complexity and stability, pointing toward richer interaction ecology as a plausible lever. Source: https://pubmed.ncbi.nlm.nih.gov/40892908/
 
 ## Research Gaps
-- Across a short fixed seed panel, does actual-vs-null clade separation respond to `cladeHabitatCoupling` strength, and is there any coupling value where persistent clade novelty beats the matched null instead of merely changing it?
+- If lineage identity also shapes trophic and defense interaction roles, does the existing short relabel-null panel show larger actual-vs-null clade separation than habitat coupling alone?
 
 ## Current Anti-Evidence
-- The strongest current result is still negative: on the canonical `4000`-step panel, actual clades are matched or beaten by pseudo-clades built from the same species histories.
-- After lineage was made ecologically causal, the only coupled artifact still shows zero persistent-window separation and a negative activity delta, so there is no evidence yet that the new mechanism improves clade-level open-endedness.
+- On the canonical `4000`-step relabel-null panel, actual clades still underperform the matched pseudo-clade null in persistent activity at both tested cladogenesis thresholds.
+- On the March 11 habitat-coupling sweep, every tested `cladeHabitatCoupling` value kept `persistentActivityMeanDeltaVsNullMean` negative and left persistent-window separation at `0` or worse.
 
 ## Candidate Bets
-- A: Add a clade-habitat-coupling dose-response study that sweeps a small fixed set of `cladeHabitatCoupling` values on the threshold-`1` relabel-null panel and exports per-coupling actual-vs-null deltas.
-  Why now: it directly tests whether the newly causal lineage mechanic has a usable operating regime or is only causally real while remaining open-endedness-negative.
+- A: Add a lineage-mediated interaction mechanic by blending clade-level trophic and defense traits into harvest and encounter resolution, then cover it with one deterministic simulation test and one short relabel-null smoke test.
+  Why now: it is the smallest mechanism change that expands lineage ecology beyond habitat while reusing existing tests and null-study infrastructure.
   Est. low-context human time: 45m
-  Expected information gain: high
-  Main risk: every coupling value may stay flat or negative, leaving no immediate positive mechanism lead.
-- B: Extend the coupled relabel-null evaluation from the `1000`-step smoke to the full `4000`-step canonical panel at `cladeHabitatCoupling = 1`.
-  Why now: it checks whether the current negative smoke result is just a short-horizon artifact before more code surface is added.
+  Main risk: the extra coupling may still make lineages different without improving actual-vs-null clade persistence.
+- B: Promote the March 11 habitat-coupling sweep from the `1000`-step short panel to the full `4000`-step canonical panel.
+  Why now: it would confirm whether the current negative result persists at the production horizon.
   Est. low-context human time: 30m
-  Expected information gain: medium
-  Main risk: one point at `1` still cannot distinguish a bad strength choice from a fundamentally weak mechanism.
-- C: Add a second lineage-mediated ecological term for encounters or defense and run one matched-null smoke study.
-  Why now: habitat coupling proved lineage causality but may be too narrow to influence clade persistence.
+  Main risk: it is still measurement-only and does not address the narrow ecological role of clade identity.
+- C: Add a positive interaction mechanic such as local cross-feeding or mutualistic resource sharing and attach a smoke study.
+  Why now: recent eco-evolutionary work suggests mixed interaction types can support richer community assembly.
   Est. low-context human time: >60m
-  Expected information gain: medium
-  Main risk: mechanism work can sprawl and obscure whether the real gap is evaluation rather than missing code.
+  Main risk: defining and testing a new mutualism surface cleanly may sprawl past one session.
 
 ## Selected Bet
-Execute A. Build one deterministic study surface around the existing mechanism instead of adding another mechanism immediately. The tight version is a short threshold-`1` relabel-null sweep over a few coupling values such as `0`, `0.25`, `0.5`, `0.75`, and `1`, with tests and export covering both the uncoupled baseline at `0` and the already-known non-zero coupled direction at `1`. The goal is one machine-readable artifact that answers whether any coupling value produces positive actual-vs-null clade separation or whether the whole habitat-coupling family remains negative.
+Add clade-level interaction coupling, not more habitat measurement. The bounded slice is to introduce one new config knob that blends lineage-level trophic and defense values into the existing species-level foraging and encounter calculations, then prove it matters in a deterministic micro-regime and in a short relabel-null smoke test. This keeps the session on one mechanism surface while answering whether broader lineage ecology is a better lever than habitat-only coupling.
 
 ## Why This Fits The Horizon
-- It reuses the current relabel-null machinery, the existing `cladeHabitatCoupling` knob, and the March 10 smoke-study pattern instead of opening another simulation-mechanics branch.
-- Success is autonomously verifiable with deterministic tests and one fixed-`generatedAt` JSON artifact whose per-coupling deltas can be queried directly.
+- The actor can reuse existing species trophic/defense code paths, the clade founder bookkeeping in `src/simulation.ts`, and the existing relabel-null smoke-test pattern in `test/activity.test.ts`.
+- Success is autonomously verifiable with deterministic tests only; no broad sweep or new analysis framework is required.
 
 ## Success Evidence
-- A new JSON artifact records one row per coupling value for the fixed threshold-`1` seed panel, and the `0` and `1` endpoints respectively reproduce the uncoupled baseline behavior and the current coupled smoke direction.
-- `npm test && npm run build`, plus `jq '.results[] | {cladeHabitatCoupling, persistentWindowFractionDeltaVsNullMean, persistentActivityMeanDeltaVsNullMean}' docs/clade_activity_relabel_null_clade_habitat_coupling_sweep_2026-03-11.json`.
+- `test/simulation.test.ts` gains a deterministic case where same-species agents in different lineages diverge in encounter or foraging payoffs only when the new clade interaction coupling is enabled.
+- `test/activity.test.ts` gains a short relabel-null smoke asserting a non-zero `persistentActivityMeanDeltaVsNull` under the new coupling, verified with `npm test && npm run build`.
 
 ## Stop Conditions
-- Stop after one threshold (`1`) and a small fixed coupling grid; do not turn this into a joint threshold-by-coupling sweep or another mechanism session.
-- If the study/export surface gets messy, shrink to the endpoint comparison (`0` vs `1`) with deterministic tests and a machine-readable artifact instead of thrashing on richer parameter coverage.
+- Stop after one coupling knob and one short smoke configuration; do not turn this into a sweep across multiple new interaction parameters.
+- If adding both trophic and defense lineage blending becomes awkward, shrink to trophic-only coupling plus the deterministic test and record defense coupling as deferred.
 
 ## Assumptions / Unknowns
-- Assumption: the current `cladeHabitatCoupling` knob is strong enough to produce a measurable dose-response if habitat-mediated lineage ecology is a real leverage point.
-- Unknown: whether any positive separation exists inside the current habitat-coupling family, or whether the whole mechanism should be treated as causally real but insufficient for clade-level open-endedness.
+- Assumption: the existing species-level trophic and defense terms are strong enough that lineage-level blending will materially change ecological outcomes.
+- Unknown: whether broader lineage ecology improves actual-vs-null clade persistence or only creates another causally real but still open-endedness-negative distinction.

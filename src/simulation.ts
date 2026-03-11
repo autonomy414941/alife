@@ -58,6 +58,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   habitatPreferenceStrength: 1.4,
   habitatPreferenceMutation: 0.2,
   cladeHabitatCoupling: 0,
+  cladeInteractionCoupling: 0,
   specializationMetabolicCost: 0.08,
   predationPressure: 0.35,
   trophicForagingPenalty: 0.35,
@@ -1354,8 +1355,8 @@ export class LifeSimulation {
 
     const available = this.resources[agent.y][agent.x];
     const habitatEfficiency = this.habitatMatchEfficiency(agent, agent.x, agent.y);
-    const trophicEfficiency = this.trophicForagingEfficiency(agent.species);
-    const defenseEfficiency = this.defenseForagingEfficiency(agent.species);
+    const trophicEfficiency = this.trophicForagingEfficiency(agent.species, agent.lineage);
+    const defenseEfficiency = this.defenseForagingEfficiency(agent.species, agent.lineage);
     const harvestAmount = Math.min(
       available,
       this.config.harvestCap * agent.genome.harvest * habitatEfficiency * trophicEfficiency * defenseEfficiency
@@ -1442,10 +1443,14 @@ export class LifeSimulation {
       for (const target of agentsInCell.slice(1)) {
         const pressure = Math.max(0, dominant.genome.aggression - target.genome.aggression + 0.1);
         const trophicGap =
-          this.getSpeciesTrophicLevel(dominant.species) - this.getSpeciesTrophicLevel(target.species);
+          this.blendedTrophicLevel(dominant.species, dominant.lineage) -
+          this.blendedTrophicLevel(target.species, target.lineage);
         const predationMultiplier = 1 + Math.max(0, this.config.predationPressure) * Math.max(0, trophicGap);
         const mitigation = clamp(this.config.defenseMitigation, 0, 0.95);
-        const defenseMultiplier = Math.max(0.05, 1 - mitigation * this.getSpeciesDefenseLevel(target.species));
+        const defenseMultiplier = Math.max(
+          0.05,
+          1 - mitigation * this.blendedDefenseLevel(target.species, target.lineage)
+        );
         const stolen = Math.min(target.energy, target.energy * pressure * 0.25 * predationMultiplier * defenseMultiplier);
         if (stolen <= 0) {
           continue;
@@ -1589,14 +1594,42 @@ export class LifeSimulation {
     return 1;
   }
 
-  private trophicForagingEfficiency(species: number): number {
+  private trophicForagingEfficiency(species: number, lineage: number): number {
     const penalty = clamp(this.config.trophicForagingPenalty, 0, 0.95);
-    return Math.max(0.05, 1 - penalty * this.getSpeciesTrophicLevel(species));
+    return Math.max(0.05, 1 - penalty * this.blendedTrophicLevel(species, lineage));
   }
 
-  private defenseForagingEfficiency(species: number): number {
+  private defenseForagingEfficiency(species: number, lineage: number): number {
     const penalty = clamp(this.config.defenseForagingPenalty, 0, 0.95);
-    return Math.max(0.05, 1 - penalty * this.getSpeciesDefenseLevel(species));
+    return Math.max(0.05, 1 - penalty * this.blendedDefenseLevel(species, lineage));
+  }
+
+  private blendedTrophicLevel(species: number, lineage: number): number {
+    const speciesLevel = this.getSpeciesTrophicLevel(species);
+    const coupling = clamp(this.config.cladeInteractionCoupling, 0, 1);
+    if (coupling === 0) {
+      return speciesLevel;
+    }
+    const cladeLevel = this.getCladeTrophicLevel(lineage);
+    return clamp(speciesLevel * (1 - coupling) + cladeLevel * coupling, 0, 1);
+  }
+
+  private blendedDefenseLevel(species: number, lineage: number): number {
+    const speciesLevel = this.getSpeciesDefenseLevel(species);
+    const coupling = clamp(this.config.cladeInteractionCoupling, 0, 1);
+    if (coupling === 0) {
+      return speciesLevel;
+    }
+    const cladeLevel = this.getCladeDefenseLevel(lineage);
+    return clamp(speciesLevel * (1 - coupling) + cladeLevel * coupling, 0, 1);
+  }
+
+  private getCladeTrophicLevel(lineage: number): number {
+    return this.genomeTrophicSignal(this.getCladeFounderGenome(lineage));
+  }
+
+  private getCladeDefenseLevel(lineage: number): number {
+    return this.genomeDefenseSignal(this.getCladeFounderGenome(lineage));
   }
 
   private getSpeciesTrophicLevel(species: number): number {
