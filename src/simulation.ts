@@ -48,6 +48,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   biomeContrast: 0.45,
   decompositionBase: 0.6,
   decompositionEnergyFraction: 0.25,
+  decompositionSpilloverFraction: 0,
   initialAgents: 24,
   initialEnergy: 12,
   metabolismCostBase: 0.25,
@@ -2278,6 +2279,7 @@ export class LifeSimulation {
 
   private recycleDeadAgents(deadAgents: Agent[]): void {
     const stepTick = this.tickCount + 1;
+    const spilloverFraction = clamp(this.config.decompositionSpilloverFraction, 0, 1);
     for (const agent of deadAgents) {
       const fertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, stepTick);
       const recycled =
@@ -2287,12 +2289,32 @@ export class LifeSimulation {
       if (recycled <= 0) {
         continue;
       }
-      this.resources[agent.y][agent.x] = clamp(
-        this.resources[agent.y][agent.x] + recycled,
-        0,
-        this.config.maxResource
-      );
+      const resourceDeltas = new Map<number, number>();
+      this.accumulateResourceDelta(resourceDeltas, agent.x, agent.y, recycled * (1 - spilloverFraction));
+
+      if (spilloverFraction > 0) {
+        const cardinalShare = (recycled * spilloverFraction) / 4;
+        this.accumulateResourceDelta(resourceDeltas, agent.x + 1, agent.y, cardinalShare);
+        this.accumulateResourceDelta(resourceDeltas, agent.x - 1, agent.y, cardinalShare);
+        this.accumulateResourceDelta(resourceDeltas, agent.x, agent.y + 1, cardinalShare);
+        this.accumulateResourceDelta(resourceDeltas, agent.x, agent.y - 1, cardinalShare);
+      }
+
+      for (const [index, delta] of resourceDeltas) {
+        const x = index % this.config.width;
+        const y = Math.floor(index / this.config.width);
+        this.resources[y][x] = clamp(this.resources[y][x] + delta, 0, this.config.maxResource);
+      }
     }
+  }
+
+  private accumulateResourceDelta(resourceDeltas: Map<number, number>, x: number, y: number, delta: number): void {
+    if (delta <= 0) {
+      return;
+    }
+
+    const index = this.cellIndex(x, y);
+    resourceDeltas.set(index, (resourceDeltas.get(index) ?? 0) + delta);
   }
 
   private effectiveBiomeFertilityAt(x: number, y: number, tick: number): number {

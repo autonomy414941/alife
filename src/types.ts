@@ -212,6 +212,7 @@ export interface SimulationConfig {
   biomeContrast: number;
   decompositionBase: number;
   decompositionEnergyFraction: number;
+  decompositionSpilloverFraction: number;
   initialAgents: number;
   initialEnergy: number;
   metabolismCostBase: number;

@@ -1330,6 +1330,62 @@ describe('LifeSimulation', () => {
     expect(energyAfterTick2).toBeGreaterThan(energyAfterTick1 + 1);
   });
 
+  it('spills recycled biomass into wrapped cardinal neighbors while conserving the deposited total before clamping', () => {
+    const sim = new LifeSimulation({
+      seed: 29,
+      config: {
+        width: 3,
+        height: 3,
+        maxResource: 100,
+        resourceRegen: 0,
+        biomeContrast: 0,
+        decompositionBase: 8,
+        decompositionEnergyFraction: 0,
+        decompositionSpilloverFraction: 0.5,
+        metabolismCostBase: 1,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 1,
+          y: 1,
+          energy: 0.5,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    for (let y = 0; y < 3; y += 1) {
+      for (let x = 0; x < 3; x += 1) {
+        sim.setResource(x, y, 0);
+      }
+    }
+
+    const summary = sim.step();
+    let totalResources = 0;
+    for (let y = 0; y < 3; y += 1) {
+      for (let x = 0; x < 3; x += 1) {
+        totalResources += sim.getResource(x, y);
+      }
+    }
+
+    expect(summary.deaths).toBe(1);
+    expect(summary.population).toBe(0);
+    expect(sim.getResource(1, 1)).toBeCloseTo(4, 10);
+    expect(sim.getResource(2, 1)).toBeCloseTo(1, 10);
+    expect(sim.getResource(0, 1)).toBeCloseTo(1, 10);
+    expect(sim.getResource(1, 2)).toBeCloseTo(1, 10);
+    expect(sim.getResource(1, 0)).toBeCloseTo(1, 10);
+    expect(sim.getResource(0, 0)).toBeCloseTo(0, 10);
+    expect(sim.getResource(2, 0)).toBeCloseTo(0, 10);
+    expect(sim.getResource(0, 2)).toBeCloseTo(0, 10);
+    expect(sim.getResource(2, 2)).toBeCloseTo(0, 10);
+    expect(totalResources).toBeCloseTo(8, 10);
+  });
+
   it('applies biome fertility to per-cell resource regeneration', () => {
     const sim = new LifeSimulation({
       seed: 21,
