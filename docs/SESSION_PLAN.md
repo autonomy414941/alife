@@ -1,73 +1,72 @@
 # Session Plan — 2026-03-12
 
 ## Compact Context
-- `src/simulation.ts` is `2745` lines and `src/activity.ts` is `2695`, so the next bet must stay narrow.
-- The current best short stack is `lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, and `offspringSettlementEcologyScoring=true`.
-- The `1000`-step short study at cladogenesis threshold `1` is still `+29.25` `persistentActivityMeanDeltaVsNullMean`, but the new diagnostics show `actualActiveCladesMean=47` vs `matchedNullActiveCladesMean=83.75` with dominant loss mode `activeCladeDeficit`.
-- The canonical `4000`-step best-stack panel improved versus `2026-03-10` but remains negative in all four cells: `-34.63`, `-111.78`, `-18.24`, `-93.65`.
-- Disturbance, localized radius, and refugia mechanics already exist with tests, but no current relabel-null study combines them with the best short stack.
+- `src/simulation.ts` is `2809` lines and `src/activity.ts` is `2695`, so the next bet should avoid widening either god file unless it clearly pays for itself.
+- The current best short stack is still `lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, and `offspringSettlementEcologyScoring=true`, with short-horizon `persistentActivityMeanDeltaVsNullMean=29.25`.
+- The canonical `4000`-step best-stack comparison improved versus `2026-03-10` but remains negative in all four cells: `-34.63`, `-111.78`, `-18.24`, `-93.65`.
+- Four recent March 12 feature knobs all worsened the short winner: `encounterRiskAversion=1` to `-60.79`, `trophicOpportunityAttraction=1` to `-17.25`, `cladogenesisEcologyAdvantageThreshold=0.1` to `5.29`, and disturbance openings to `11.75`.
+- The shared relabel-null smoke harness now emits diagnostic snapshots, but there is still no single artifact ranking the failed knobs by `activeCladeDeltaVsNull`, raw-vs-persistent tradeoff, and loss mode.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Founder gating / recruitment ecology | 3 | 8e477ff |
-| Occupant-aware ecology scoring | 2 | 5003c4f |
-| Relabel-null diagnostics / study harness | 2 | 5cbd5f7 |
+| Juvenile settlement / local ecology scoring | 4 | 496f1a8 |
+| Cladogenesis gating | 2 | 8e477ff |
+| Relabel-null tooling / diagnostics | 2 | 5cbd5f7 |
 | Long-horizon validation | 1 | a843a91 |
 | Recycling feedback | 1 | 6631bd9 |
-| Kin encounter restraint | 1 | 37a91c7 |
-| Disturbance / resilience | 0 | — |
-| Communication / signaling | 0 | — |
+| Revert / codebase simplification | 0 | — |
+| Simulation split / module extraction | 0 | — |
 
-Dominant axis: Founder gating / recruitment ecology (3/10)
-Underexplored axes: long-horizon validation, recycling feedback, kin encounter restraint, disturbance / resilience, communication / signaling
+Dominant axis: Juvenile settlement / local ecology scoring (4/10)
+Underexplored axes: long-horizon validation, recycling feedback, revert / codebase simplification, simulation split / module extraction
 
 ## Project State
-- The relabel-null smoke harness is now shared and emits aggregate diagnostics with loss-mode classification.
-- Recent sessions kept stacking founder filters and occupant-aware scoring on top of the short-stack baseline; every March 12 feature after `offspringSettlementEcologyScoring=true` made the short metric worse.
-- The main missing mechanism is coexistence support: current gains come from stronger surviving clades, not from maintaining enough active clades at once.
+- The project has a reusable short relabel-null smoke harness, a validated best-short-stack preset, and diagnostic loss-mode classification in `activity.ts`.
+- Recent sessions have kept adding settlement-scoring and founder-gating mechanics on top of the short winner, but most March 12 additions made the short metric worse instead of better.
+- The biggest evidence gap is not another knob; it is the lack of one compact comparison showing which failed knobs are true dead ends versus coexistence-improving tradeoffs that collapse persistence.
 
 ## External Context
-- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): post-founding ecological performance matters more than raw founding counts, which matches the current `activeCladeDeficit` diagnosis.
-- Botta & Mitarai, `Patch disturbances accelerate nature-based solutions in vegetation ecosystems`: localized shocks can create persistent patch heterogeneity when recolonization is local, making disturbance a plausible coexistence lever rather than pure damage.
+- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): sustained coexistence and post-founding ecological performance matter more than just producing more founders, which matches the current short-stack `activeCladeDeficit` signal.
+- Botta & Mitarai, `Patch disturbances accelerate nature-based solutions in vegetation ecosystems`: disturbance can create useful heterogeneity, but the checked-in `2026-03-12` smoke artifact shows the current opening implementation did not translate that idea into better relabel-null persistence.
 
 ## Research Gaps
-- Can localized disturbance create temporary colonization windows that raise actual active clade counts toward the matched null without erasing the short-stack `+29.25` gain?
-- Does the current deficit come from dominant clades immediately refilling vacancies, implying that patch turnover is more important than stricter founder filters?
+- Which recent default-off knobs are pure regressions, and which ones improve `activeCladeDeltaVsNullMean` while paying too much persistence cost?
+- Do the negative March 11-12 add-ons mostly fail through `activeCladeDeficit`, `founderSuppression`, or `persistenceFailure` when measured under one shared diagnostic artifact?
 
 ## Current Anti-Evidence
 - The best validated `4000`-step stack is still below matched-null persistent activity in every canonical cell, so durable above-null clade persistence is still unproven.
-- Even the short-stack winner finishes with far fewer active clades than the matched null, so the system still lacks a reliable coexistence-generating mechanism.
+- Even the short-stack winner that reaches `+29.25` still shows `activeCladeDeltaVsNullMean=-36.75`, so the system still lacks a reliable coexistence mechanism.
 
 ## Candidate Bets
-- A: [feat] Add disturbance-conditioned offspring settlement so recently shocked cells act as temporary colonization openings in the best short stack, then run a short relabel-null smoke study with localized disturbance and refugia.
-  Why now: it directly targets the diagnosed `activeCladeDeficit` on a different axis than the recent founder-filter streak while reusing existing disturbance machinery.
+- A: [investigate] Add a single regression-diagnostic study that reruns the best short stack plus the recent failed March 11-12 knobs and ranks them by persistent delta, active-clade delta, raw-vs-persistent penalty, and dominant loss mode.
+  Why now: four consecutive feature experiments worsened the short winner, so another mechanic without a consolidated failure map is likely blind thrash.
+  Est. low-context human time: 40m
+  Main risk: it may only confirm that the recent knobs are bad without revealing an immediately salvageable pattern.
+- B: [revert] Remove the default-off knobs with only negative smoke evidence from the active search surface: encounter risk, trophic opportunity, decomposition spillover, lineage offspring crowding, cladogenesis gates, and disturbance settlement openings.
+  Why now: there are already more than five default `0`/`-1` knobs with no positive checked-in result, and they are inflating `simulation.ts` faster than insight.
   Est. low-context human time: 55m
-  Main risk: disturbance damage may reduce population faster than the settlement bonus creates extra coexistence.
-- B: [investigate] Regenerate the `4000`-step best-stack comparison and one failed March 12 variant with the current diagnostic schema to confirm whether `activeCladeDeficit` is still the dominant long-horizon loss mode.
-  Why now: the code path exists but the checked-in long-horizon artifact predates the new diagnostic snapshot, so part of the current evidence is stale.
-  Est. low-context human time: 35m
-  Main risk: it may only confirm what the short-horizon diagnostics already strongly suggest.
-- C: [revert] Remove the clearly negative default-off knobs from the active exploration surface: encounter risk, trophic opportunity, decomposition spillover, trait/ecology cladogenesis gates, and lineage offspring settlement crowding.
-  Why now: there are already more than five default `0`/`-1` knobs with only worsening relabel-null evidence, and they are expanding search noise faster than insight.
-  Est. low-context human time: 45m
-  Main risk: a later multi-knob interaction could make one reverted axis useful again.
+  Main risk: a later interaction could make one reverted knob useful again.
+- C: [feat] Add a more targeted recolonization mechanic that only boosts offspring settlement into recently disturbed cells when the parent's lineage is absent there, then rerun the short relabel-null smoke.
+  Why now: the current disturbance opening improved `activeCladeDeltaVsNullMean` slightly (`-36.75` to `-31.25`) but hurt persistence, suggesting the coexistence lever may need to be lineage-targeted instead of global.
+  Est. low-context human time: 55m
+  Main risk: it is still another new knob on the dominant axis before the current failures are properly sorted.
 
 ## Selected Bet
-Choose A. The last investigate session already answered the immediate failure question: the short-stack gain is persistence inside too few surviving clades, not a durable coexistence win. The next bounded move should therefore change spatial recruitment dynamics on an underused axis by letting disturbances create temporary settlement openings, then test whether active clade counts and short relabel-null deltas move in the right direction.
+Choose A. The immediate bottleneck is no longer missing instrumentation inside the smoke harness; it is the lack of one compact artifact that turns the recent failed knobs into an actionable map of failure modes. Build that comparison first, then use it to decide what to revert and which tradeoffs are worth another mechanics pass.
 
 ## Why This Fits The Horizon
-- It reuses the existing disturbance pipeline, short smoke harness, and best-stack preset; the actor only needs one narrow simulation change plus one focused study path.
-- Success is autonomously verifiable with deterministic tests and a smoke artifact that compares disturbance-off against one localized disturbance setting.
+- It is bounded to one study wrapper plus one focused export shape, reusing existing smoke-study builders instead of touching broad simulation logic.
+- Success is autonomously verifiable with a deterministic test and a generated artifact that clearly ranks the recent knobs under one schema.
 
 ## Success Evidence
-- A new short smoke artifact shows localized disturbance/refugia improving either `activeCladeDeltaVsNullMean` or `persistentActivityMeanDeltaVsNullMean` relative to the disturbance-off baseline while keeping matched birth schedules.
-- Specific verification command or output: `npm test && npx tsx src/clade-activity-relabel-null-disturbance-colonization-smoke-study.ts --generated-at 2026-03-12T00:00:00.000Z`.
+- A new artifact such as `docs/clade_activity_relabel_null_regression_diagnostics_2026-03-12.json` lists the best short stack and selected failed knobs with comparable `persistentActivityMeanDeltaVsNullMean`, `activeCladeDeltaVsNullMean`, `persistencePenaltyVsRawDeltaMean`, and `dominantLossMode`.
+- Specific verification command or output: `npm test && npx tsx src/clade-activity-relabel-null-regression-diagnostics-study.ts --generated-at 2026-03-12T00:00:00.000Z`.
 
 ## Stop Conditions
-- Stop after disturbance history affects offspring settlement only; do not extend the same session to adult movement, harvest, or long-horizon sweeps.
-- If a deterministic test cannot show a freshly disturbed cell changes settlement choice, shrink scope to a pure short disturbance smoke study using existing knobs and record the negative result.
+- Stop after comparing the best short stack plus the recent negative knobs that touch juvenile settlement or cladogenesis; do not expand the same session into new mechanics or 4000-step reruns.
+- If integrating every failed knob becomes messy, shrink scope to the best short stack plus `encounterRiskAversion`, `trophicOpportunityAttraction`, `cladogenesisTraitNoveltyThreshold`, and disturbance openings, and ship that smaller diagnostic table.
 
 ## Assumptions / Unknowns
-- Assumption: the current `activeCladeDeficit` is partly a spatial vacancy problem, not only a clade-birth-volume problem.
-- Unknown: whether useful disturbance must be very local and refugia-heavy to avoid collapsing population and masking any coexistence gain.
+- Assumption: the current smoke-study diagnostic snapshot is already sufficient to separate coexistence gains from persistence losses without changing simulation code.
+- Unknown: whether older March 11 studies need to be rerun under the new diagnostic schema to make the comparison fair enough for revert decisions.

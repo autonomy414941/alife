@@ -1,0 +1,317 @@
+{
+  "generatedAt": "2026-03-12T00:00:00.000Z",
+  "question": "Which recent default-off add-on knobs are pure short-horizon regressions on top of the current best stack, and which ones mainly fail through active-clade deficit versus raw-to-persistent collapse?",
+  "prediction": "If the March 11-12 add-ons are mostly dead ends rather than hidden coexistence tradeoffs, the best short stack should stay on top of persistent activity while the failed knobs separate into active-clade-deficit and persistence-failure loss modes.",
+  "config": {
+    "steps": 1000,
+    "windowSize": 100,
+    "burnIn": 200,
+    "seeds": [
+      20260307,
+      20260308,
+      20260309,
+      20260310
+    ],
+    "stopWhenExtinct": true,
+    "minSurvivalTicks": [
+      50
+    ],
+    "cladogenesisThresholds": [
+      1
+    ],
+    "baselineSimulationConfig": {
+      "lineageHarvestCrowdingPenalty": 1,
+      "lineageDispersalCrowdingPenalty": 1,
+      "lineageEncounterRestraint": 1,
+      "lineageOffspringSettlementCrowdingPenalty": 0,
+      "offspringSettlementEcologyScoring": true,
+      "encounterRiskAversion": 0,
+      "decompositionSpilloverFraction": 0
+    },
+    "rankingOrder": [
+      "birthScheduleMatchedAllSeeds desc",
+      "persistentActivityMeanDeltaVsNullMean desc",
+      "activeCladeDeltaVsNullMean desc",
+      "persistencePenaltyVsRawDeltaMean asc",
+      "rawNewCladeActivityMeanDeltaVsNullMean desc"
+    ],
+    "scenarios": [
+      {
+        "scenario": "bestShortStack",
+        "label": "Best short stack",
+        "configOverrides": {}
+      },
+      {
+        "scenario": "lineageOffspringSettlementCrowding",
+        "label": "Lineage offspring settlement penalty",
+        "configOverrides": {
+          "lineageOffspringSettlementCrowdingPenalty": 1
+        }
+      },
+      {
+        "scenario": "decompositionSpillover",
+        "label": "Decomposition spillover",
+        "configOverrides": {
+          "decompositionSpilloverFraction": 0.5
+        }
+      },
+      {
+        "scenario": "encounterRiskAversion",
+        "label": "Encounter risk aversion",
+        "configOverrides": {
+          "encounterRiskAversion": 1
+        }
+      },
+      {
+        "scenario": "trophicOpportunityAttraction",
+        "label": "Trophic opportunity attraction",
+        "configOverrides": {
+          "trophicOpportunityAttraction": 1
+        }
+      },
+      {
+        "scenario": "cladogenesisEcologyGate",
+        "label": "Cladogenesis ecology gate",
+        "configOverrides": {
+          "cladogenesisEcologyAdvantageThreshold": 0.1
+        }
+      },
+      {
+        "scenario": "cladogenesisTraitNoveltyGate",
+        "label": "Cladogenesis trait novelty gate",
+        "configOverrides": {
+          "cladogenesisEcologyAdvantageThreshold": -1,
+          "cladogenesisTraitNoveltyThreshold": 0.02
+        }
+      },
+      {
+        "scenario": "disturbanceLocalizedOpening",
+        "label": "Disturbance localized opening",
+        "configOverrides": {
+          "disturbanceInterval": 50,
+          "disturbanceEnergyLoss": 0.5,
+          "disturbanceResourceLoss": 0,
+          "disturbanceRadius": 2,
+          "disturbanceRefugiaFraction": 0.5,
+          "disturbanceSettlementOpeningTicks": 10,
+          "disturbanceSettlementOpeningBonus": 0.75
+        }
+      }
+    ]
+  },
+  "results": [
+    {
+      "scenario": "bestShortStack",
+      "label": "Best short stack",
+      "configOverrides": {},
+      "birthScheduleMatchedAllSeeds": true,
+      "persistentWindowFractionDeltaVsNullMean": 0,
+      "persistentActivityMeanDeltaVsNullMean": 29.25000000000003,
+      "activeCladeDeltaVsNullMean": -36.75,
+      "rawNewCladeActivityMeanDeltaVsNullMean": 7.3125,
+      "persistencePenaltyVsRawDeltaMean": -21.93750000000003,
+      "dominantLossMode": "activeCladeDeficit",
+      "deltaVsBestShortStack": {
+        "persistentWindowFractionDeltaVsNullMean": 0,
+        "persistentActivityMeanDeltaVsNullMean": 0,
+        "activeCladeDeltaVsNullMean": 0,
+        "rawNewCladeActivityMeanDeltaVsNullMean": 0,
+        "persistencePenaltyVsRawDeltaMean": 0
+      },
+      "overallRank": 1,
+      "persistentActivityRank": 1,
+      "activeCladeRank": 8,
+      "rawActivityRank": 2,
+      "persistencePenaltyRank": 1
+    },
+    {
+      "scenario": "decompositionSpillover",
+      "label": "Decomposition spillover",
+      "configOverrides": {
+        "decompositionSpilloverFraction": 0.5
+      },
+      "birthScheduleMatchedAllSeeds": true,
+      "persistentWindowFractionDeltaVsNullMean": 0,
+      "persistentActivityMeanDeltaVsNullMean": 14.85714285714284,
+      "activeCladeDeltaVsNullMean": -36.25,
+      "rawNewCladeActivityMeanDeltaVsNullMean": 10.125,
+      "persistencePenaltyVsRawDeltaMean": -4.73214285714284,
+      "dominantLossMode": "activeCladeDeficit",
+      "deltaVsBestShortStack": {
+        "persistentWindowFractionDeltaVsNullMean": 0,
+        "persistentActivityMeanDeltaVsNullMean": -14.392857142857189,
+        "activeCladeDeltaVsNullMean": 0.5,
+        "rawNewCladeActivityMeanDeltaVsNullMean": 2.8125,
+        "persistencePenaltyVsRawDeltaMean": 17.20535714285719
+      },
+      "overallRank": 2,
+      "persistentActivityRank": 2,
+      "activeCladeRank": 6,
+      "rawActivityRank": 1,
+      "persistencePenaltyRank": 3
+    },
+    {
+      "scenario": "disturbanceLocalizedOpening",
+      "label": "Disturbance localized opening",
+      "configOverrides": {
+        "disturbanceInterval": 50,
+        "disturbanceEnergyLoss": 0.5,
+        "disturbanceResourceLoss": 0,
+        "disturbanceRadius": 2,
+        "disturbanceRefugiaFraction": 0.5,
+        "disturbanceSettlementOpeningTicks": 10,
+        "disturbanceSettlementOpeningBonus": 0.75
+      },
+      "birthScheduleMatchedAllSeeds": true,
+      "persistentWindowFractionDeltaVsNullMean": 0,
+      "persistentActivityMeanDeltaVsNullMean": 11.75,
+      "activeCladeDeltaVsNullMean": -31.25,
+      "rawNewCladeActivityMeanDeltaVsNullMean": 4.46875,
+      "persistencePenaltyVsRawDeltaMean": -7.28125,
+      "dominantLossMode": "activeCladeDeficit",
+      "deltaVsBestShortStack": {
+        "persistentWindowFractionDeltaVsNullMean": 0,
+        "persistentActivityMeanDeltaVsNullMean": -17.50000000000003,
+        "activeCladeDeltaVsNullMean": 5.5,
+        "rawNewCladeActivityMeanDeltaVsNullMean": -2.84375,
+        "persistencePenaltyVsRawDeltaMean": 14.656250000000028
+      },
+      "overallRank": 3,
+      "persistentActivityRank": 3,
+      "activeCladeRank": 4,
+      "rawActivityRank": 4,
+      "persistencePenaltyRank": 2
+    },
+    {
+      "scenario": "lineageOffspringSettlementCrowding",
+      "label": "Lineage offspring settlement penalty",
+      "configOverrides": {
+        "lineageOffspringSettlementCrowdingPenalty": 1
+      },
+      "birthScheduleMatchedAllSeeds": true,
+      "persistentWindowFractionDeltaVsNullMean": 0,
+      "persistentActivityMeanDeltaVsNullMean": 5.535714285714292,
+      "activeCladeDeltaVsNullMean": -34,
+      "rawNewCladeActivityMeanDeltaVsNullMean": 5,
+      "persistencePenaltyVsRawDeltaMean": -0.5357142857142918,
+      "dominantLossMode": "activeCladeDeficit",
+      "deltaVsBestShortStack": {
+        "persistentWindowFractionDeltaVsNullMean": 0,
+        "persistentActivityMeanDeltaVsNullMean": -23.714285714285737,
+        "activeCladeDeltaVsNullMean": 2.75,
+        "rawNewCladeActivityMeanDeltaVsNullMean": -2.3125,
+        "persistencePenaltyVsRawDeltaMean": 21.401785714285737
+      },
+      "overallRank": 4,
+      "persistentActivityRank": 4,
+      "activeCladeRank": 5,
+      "rawActivityRank": 3,
+      "persistencePenaltyRank": 6
+    },
+    {
+      "scenario": "cladogenesisEcologyGate",
+      "label": "Cladogenesis ecology gate",
+      "configOverrides": {
+        "cladogenesisEcologyAdvantageThreshold": 0.1
+      },
+      "birthScheduleMatchedAllSeeds": true,
+      "persistentWindowFractionDeltaVsNullMean": 0,
+      "persistentActivityMeanDeltaVsNullMean": 5.285714285714285,
+      "activeCladeDeltaVsNullMean": -26.5,
+      "rawNewCladeActivityMeanDeltaVsNullMean": 1.46875,
+      "persistencePenaltyVsRawDeltaMean": -3.8169642857142847,
+      "dominantLossMode": "activeCladeDeficit",
+      "deltaVsBestShortStack": {
+        "persistentWindowFractionDeltaVsNullMean": 0,
+        "persistentActivityMeanDeltaVsNullMean": -23.964285714285744,
+        "activeCladeDeltaVsNullMean": 10.25,
+        "rawNewCladeActivityMeanDeltaVsNullMean": -5.84375,
+        "persistencePenaltyVsRawDeltaMean": 18.120535714285744
+      },
+      "overallRank": 5,
+      "persistentActivityRank": 5,
+      "activeCladeRank": 1,
+      "rawActivityRank": 5,
+      "persistencePenaltyRank": 4
+    },
+    {
+      "scenario": "cladogenesisTraitNoveltyGate",
+      "label": "Cladogenesis trait novelty gate",
+      "configOverrides": {
+        "cladogenesisEcologyAdvantageThreshold": -1,
+        "cladogenesisTraitNoveltyThreshold": 0.02
+      },
+      "birthScheduleMatchedAllSeeds": true,
+      "persistentWindowFractionDeltaVsNullMean": -0.035714285714285726,
+      "persistentActivityMeanDeltaVsNullMean": 1.4642857142857153,
+      "activeCladeDeltaVsNullMean": -26.5,
+      "rawNewCladeActivityMeanDeltaVsNullMean": -1.15625,
+      "persistencePenaltyVsRawDeltaMean": -2.6205357142857153,
+      "dominantLossMode": "activeCladeDeficit",
+      "deltaVsBestShortStack": {
+        "persistentWindowFractionDeltaVsNullMean": -0.035714285714285726,
+        "persistentActivityMeanDeltaVsNullMean": -27.785714285714313,
+        "activeCladeDeltaVsNullMean": 10.25,
+        "rawNewCladeActivityMeanDeltaVsNullMean": -8.46875,
+        "persistencePenaltyVsRawDeltaMean": 19.316964285714313
+      },
+      "overallRank": 6,
+      "persistentActivityRank": 6,
+      "activeCladeRank": 2,
+      "rawActivityRank": 6,
+      "persistencePenaltyRank": 5
+    },
+    {
+      "scenario": "trophicOpportunityAttraction",
+      "label": "Trophic opportunity attraction",
+      "configOverrides": {
+        "trophicOpportunityAttraction": 1
+      },
+      "birthScheduleMatchedAllSeeds": true,
+      "persistentWindowFractionDeltaVsNullMean": 0,
+      "persistentActivityMeanDeltaVsNullMean": -17.249999999999986,
+      "activeCladeDeltaVsNullMean": -36.25,
+      "rawNewCladeActivityMeanDeltaVsNullMean": -16.4375,
+      "persistencePenaltyVsRawDeltaMean": 0.8124999999999858,
+      "dominantLossMode": "activeCladeDeficit",
+      "deltaVsBestShortStack": {
+        "persistentWindowFractionDeltaVsNullMean": 0,
+        "persistentActivityMeanDeltaVsNullMean": -46.500000000000014,
+        "activeCladeDeltaVsNullMean": 0.5,
+        "rawNewCladeActivityMeanDeltaVsNullMean": -23.75,
+        "persistencePenaltyVsRawDeltaMean": 22.750000000000014
+      },
+      "overallRank": 7,
+      "persistentActivityRank": 7,
+      "activeCladeRank": 7,
+      "rawActivityRank": 7,
+      "persistencePenaltyRank": 7
+    },
+    {
+      "scenario": "encounterRiskAversion",
+      "label": "Encounter risk aversion",
+      "configOverrides": {
+        "encounterRiskAversion": 1
+      },
+      "birthScheduleMatchedAllSeeds": true,
+      "persistentWindowFractionDeltaVsNullMean": 0,
+      "persistentActivityMeanDeltaVsNullMean": -60.78571428571427,
+      "activeCladeDeltaVsNullMean": -30.5,
+      "rawNewCladeActivityMeanDeltaVsNullMean": -38.90625,
+      "persistencePenaltyVsRawDeltaMean": 21.87946428571427,
+      "dominantLossMode": "founderSuppression",
+      "deltaVsBestShortStack": {
+        "persistentWindowFractionDeltaVsNullMean": 0,
+        "persistentActivityMeanDeltaVsNullMean": -90.0357142857143,
+        "activeCladeDeltaVsNullMean": 6.25,
+        "rawNewCladeActivityMeanDeltaVsNullMean": -46.21875,
+        "persistencePenaltyVsRawDeltaMean": 43.8169642857143
+      },
+      "overallRank": 8,
+      "persistentActivityRank": 8,
+      "activeCladeRank": 3,
+      "rawActivityRank": 8,
+      "persistencePenaltyRank": 8
+    }
+  ]
+}
