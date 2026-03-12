@@ -74,6 +74,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   lineageHarvestCrowdingPenalty: 0,
   lineageOffspringSettlementCrowdingPenalty: 0,
   offspringSettlementEcologyScoring: false,
+  cladogenesisTraitNoveltyThreshold: -1,
   cladogenesisEcologyAdvantageThreshold: -1,
   harvestCap: 2.5,
   reproduceThreshold: 20,
@@ -2050,7 +2051,34 @@ export class LifeSimulation {
       return false;
     }
 
+    if (!this.passesCladogenesisTraitNoveltyGate(parentLineage, settlementAgent)) {
+      return false;
+    }
+
     return this.passesCladogenesisEcologyGate(settlementAgent, childPos, settlementContext);
+  }
+
+  private passesCladogenesisTraitNoveltyGate(
+    parentLineage: number,
+    settlementAgent: Pick<Agent, 'genome' | 'lineage' | 'species' | 'x' | 'y'>
+  ): boolean {
+    const threshold = this.config.cladogenesisTraitNoveltyThreshold;
+    if (!Number.isFinite(threshold) || threshold < 0) {
+      return true;
+    }
+
+    const habitatDifference =
+      Math.abs(this.getSpeciesHabitatPreference(settlementAgent.species) - this.getCladeHabitatPreference(parentLineage)) /
+      1.9;
+    const trophicDifference = Math.abs(
+      this.getSpeciesTrophicLevel(settlementAgent.species) - this.getCladeTrophicLevel(parentLineage)
+    );
+    const defenseDifference = Math.abs(
+      this.getSpeciesDefenseLevel(settlementAgent.species) - this.getCladeDefenseLevel(parentLineage)
+    );
+    const compositeDifference = (habitatDifference + trophicDifference + defenseDifference) / 3;
+
+    return compositeDifference >= threshold;
   }
 
   private passesCladogenesisEcologyGate(

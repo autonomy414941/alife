@@ -1227,6 +1227,89 @@ describe('LifeSimulation', () => {
     });
   });
 
+  it('requires the configured trait novelty before a diverged offspring founds a new clade', () => {
+    const buildSimulation = (cladogenesisTraitNoveltyThreshold: number) =>
+      new LifeSimulation({
+        seed: 3,
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceProbability: 0,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0,
+          speciationThreshold: 0,
+          cladogenesisThreshold: 0,
+          cladogenesisTraitNoveltyThreshold,
+          cladogenesisEcologyAdvantageThreshold: -1,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 30,
+            lineage: 1,
+            species: 1,
+            genome: { metabolism: 1, harvest: 1, aggression: 0 }
+          }
+        ]
+      });
+
+    const canFoundClade = (sim: LifeSimulation) => {
+      const internal = sim as unknown as {
+        shouldFoundNewClade: (
+          parentLineage: number,
+          diverged: boolean,
+          childGenome: { metabolism: number; harvest: number; aggression: number },
+          settlementAgent: {
+            lineage: number;
+            species: number;
+            x: number;
+            y: number;
+            genome: { metabolism: number; harvest: number; aggression: number };
+          },
+          childPos: { x: number; y: number },
+          settlementContext: undefined
+        ) => boolean;
+        cladeFounderGenome: Map<number, { metabolism: number; harvest: number; aggression: number }>;
+        cladeHabitatPreference: Map<number, number>;
+        speciesHabitatPreference: Map<number, number>;
+        speciesTrophicLevel: Map<number, number>;
+        speciesDefenseLevel: Map<number, number>;
+      };
+
+      const founderGenome = { metabolism: 0.3, harvest: 2.8, aggression: 1 };
+      internal.cladeFounderGenome.set(1, founderGenome);
+      internal.cladeHabitatPreference.set(1, 1);
+      internal.speciesHabitatPreference.set(2, 1.57);
+      internal.speciesTrophicLevel.set(2, 1);
+      internal.speciesDefenseLevel.set(2, 0.3);
+
+      return internal.shouldFoundNewClade(
+        1,
+        true,
+        founderGenome,
+        {
+          lineage: 1,
+          species: 2,
+          x: 0,
+          y: 0,
+          genome: founderGenome
+        },
+        { x: 0, y: 0 },
+        undefined
+      );
+    };
+
+    expect(canFoundClade(buildSimulation(0.31))).toBe(false);
+    expect(canFoundClade(buildSimulation(0.29))).toBe(true);
+  });
+
   it('steers ecology-scored offspring settlement away from predator pressure when encounter risk aversion is enabled', () => {
     const buildSimulation = (encounterRiskAversion: number) =>
       new LifeSimulation({
