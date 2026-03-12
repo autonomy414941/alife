@@ -70,7 +70,16 @@
       "summary": {
         "birthScheduleMatchedAllSeeds": true,
         "persistentWindowFractionDeltaVsNullMean": 0,
-        "persistentActivityMeanDeltaVsNullMean": 29.25000000000003
+        "persistentActivityMeanDeltaVsNullMean": 29.25000000000003,
+        "diagnostics": {
+          "finalPopulationMean": 1904,
+          "actualActiveCladesMean": 47,
+          "matchedNullActiveCladesMean": 83.75,
+          "activeCladeDeltaVsNullMean": -36.75,
+          "rawNewCladeActivityMeanDeltaVsNullMean": 7.3125,
+          "persistencePenaltyVsRawDeltaMean": -21.93750000000003,
+          "dominantLossMode": "activeCladeDeficit"
+        }
       },
       "study": {
         "generatedAt": "2026-03-12T00:00:00.000Z",
@@ -105,6 +114,8 @@
           },
           "matchedSchedule": "For each seed and cladogenesis threshold, the pseudo-clade null preserves the observed clade birth count at every firstSeenTick.",
           "relabeling": "Pseudo-clade founders are randomly selected from species born at each matched birth tick, and remaining species are randomly reassigned to pseudo-clades that were already active at the prior tick.",
+          "diagnostics": "Diagnostics compare per-seed raw new-clade activity, persistent activity, final population, and final active clade counts so founder suppression can be separated from post-founding persistence loss.",
+          "dominantLossMode": "matchedOrBetter means the actual clades are not behind the matched null on the tracked signals; founderSuppression means the main deficit appears before the persistence filter; persistenceFailure means the persistence filter widens the deficit; activeCladeDeficit means the final active clade count trails the matched null the most.",
           "actualToNullPersistentWindowFractionRatio": "For one seed and survival threshold, actual clade persistentWindowFraction divided by matched-null persistentWindowFraction. Null when the matched-null fraction is zero.",
           "persistentWindowFractionDeltaVsNull": "For one seed and survival threshold, actual clade persistentWindowFraction minus matched-null persistentWindowFraction.",
           "actualToNullPersistentActivityMeanRatio": "For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean divided by matched-null postBurnInPersistentNewActivityMean. Null when the matched-null mean is zero.",
@@ -1736,7 +1747,21 @@
                     "actualToNullPersistentWindowFractionRatio": 1,
                     "persistentWindowFractionDeltaVsNull": 0,
                     "actualToNullPersistentActivityMeanRatio": 1.0498321020819341,
-                    "persistentActivityMeanDeltaVsNull": 53
+                    "persistentActivityMeanDeltaVsNull": 53,
+                    "diagnostics": {
+                      "finalPopulation": 2010,
+                      "actualActiveClades": 78,
+                      "matchedNullActiveClades": 118,
+                      "activeCladeDeltaVsNull": -40,
+                      "actualRawNewCladeActivityMean": 1286.75,
+                      "matchedNullRawNewCladeActivityMean": 1281.625,
+                      "actualPersistentActivityMean": 1116.5714285714287,
+                      "matchedNullPersistentActivityMean": 1063.5714285714287,
+                      "persistencePenaltyVsRawDelta": -47.875,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": 5.125,
+                      "persistentActivityMeanDeltaVsNull": 53
+                    }
                   }
                 ]
               },
@@ -2320,7 +2345,21 @@
                     "actualToNullPersistentWindowFractionRatio": 1,
                     "persistentWindowFractionDeltaVsNull": 0,
                     "actualToNullPersistentActivityMeanRatio": 1.0325704225352115,
-                    "persistentActivityMeanDeltaVsNull": 10.571428571428612
+                    "persistentActivityMeanDeltaVsNull": 10.571428571428612,
+                    "diagnostics": {
+                      "finalPopulation": 1845,
+                      "actualActiveClades": 26,
+                      "matchedNullActiveClades": 65,
+                      "activeCladeDeltaVsNull": -39,
+                      "actualRawNewCladeActivityMean": 342.25,
+                      "matchedNullRawNewCladeActivityMean": 339.5,
+                      "actualPersistentActivityMean": 335.14285714285717,
+                      "matchedNullPersistentActivityMean": 324.57142857142856,
+                      "persistencePenaltyVsRawDelta": -7.821428571428612,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": 2.75,
+                      "persistentActivityMeanDeltaVsNull": 10.571428571428612
+                    }
                   }
                 ]
               },
@@ -3616,7 +3655,21 @@
                     "actualToNullPersistentWindowFractionRatio": 1,
                     "persistentWindowFractionDeltaVsNull": 0,
                     "actualToNullPersistentActivityMeanRatio": 1.064622641509434,
-                    "persistentActivityMeanDeltaVsNull": 58.71428571428578
+                    "persistentActivityMeanDeltaVsNull": 58.71428571428578,
+                    "diagnostics": {
+                      "finalPopulation": 1959,
+                      "actualActiveClades": 50,
+                      "matchedNullActiveClades": 89,
+                      "activeCladeDeltaVsNull": -39,
+                      "actualRawNewCladeActivityMean": 953.625,
+                      "matchedNullRawNewCladeActivityMean": 932.75,
+                      "actualPersistentActivityMean": 967.2857142857143,
+                      "matchedNullPersistentActivityMean": 908.5714285714286,
+                      "persistencePenaltyVsRawDelta": -37.83928571428578,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": 20.875,
+                      "persistentActivityMeanDeltaVsNull": 58.71428571428578
+                    }
                   }
                 ]
               },
@@ -4096,7 +4149,21 @@
                     "actualToNullPersistentWindowFractionRatio": 1,
                     "persistentWindowFractionDeltaVsNull": 0,
                     "actualToNullPersistentActivityMeanRatio": 0.9750000000000001,
-                    "persistentActivityMeanDeltaVsNull": -5.285714285714278
+                    "persistentActivityMeanDeltaVsNull": -5.285714285714278,
+                    "diagnostics": {
+                      "finalPopulation": 1802,
+                      "actualActiveClades": 34,
+                      "matchedNullActiveClades": 63,
+                      "activeCladeDeltaVsNull": -29,
+                      "actualRawNewCladeActivityMean": 262.875,
+                      "matchedNullRawNewCladeActivityMean": 262.375,
+                      "actualPersistentActivityMean": 206.14285714285714,
+                      "matchedNullPersistentActivityMean": 211.42857142857142,
+                      "persistencePenaltyVsRawDelta": 5.785714285714278,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": 0.5,
+                      "persistentActivityMeanDeltaVsNull": -5.285714285714278
+                    }
                   }
                 ]
               }
@@ -4149,6 +4216,64 @@
                   "mean": 29.25000000000003,
                   "min": -5.285714285714278,
                   "max": 58.71428571428578
+                },
+                "diagnostics": {
+                  "finalPopulation": {
+                    "mean": 1904,
+                    "min": 1802,
+                    "max": 2010
+                  },
+                  "actualActiveClades": {
+                    "mean": 47,
+                    "min": 26,
+                    "max": 78
+                  },
+                  "matchedNullActiveClades": {
+                    "mean": 83.75,
+                    "min": 63,
+                    "max": 118
+                  },
+                  "activeCladeDeltaVsNull": {
+                    "mean": -36.75,
+                    "min": -40,
+                    "max": -29
+                  },
+                  "actualRawNewCladeActivityMean": {
+                    "mean": 711.375,
+                    "min": 262.875,
+                    "max": 1286.75
+                  },
+                  "matchedNullRawNewCladeActivityMean": {
+                    "mean": 704.0625,
+                    "min": 262.375,
+                    "max": 1281.625
+                  },
+                  "rawNewCladeActivityMeanDeltaVsNull": {
+                    "mean": 7.3125,
+                    "min": 0.5,
+                    "max": 20.875
+                  },
+                  "actualPersistentActivityMean": {
+                    "mean": 656.2857142857143,
+                    "min": 206.14285714285714,
+                    "max": 1116.5714285714287
+                  },
+                  "matchedNullPersistentActivityMean": {
+                    "mean": 627.0357142857143,
+                    "min": 211.42857142857142,
+                    "max": 1063.5714285714287
+                  },
+                  "persistentActivityMeanDeltaVsNull": {
+                    "mean": 29.25000000000003,
+                    "min": -5.285714285714278,
+                    "max": 58.71428571428578
+                  },
+                  "persistencePenaltyVsRawDelta": {
+                    "mean": -21.93750000000003,
+                    "min": -47.875,
+                    "max": 5.785714285714278
+                  },
+                  "dominantLossMode": "activeCladeDeficit"
                 }
               }
             ]
@@ -4193,7 +4318,16 @@
       "summary": {
         "birthScheduleMatchedAllSeeds": true,
         "persistentWindowFractionDeltaVsNullMean": -0.035714285714285726,
-        "persistentActivityMeanDeltaVsNullMean": 1.4642857142857153
+        "persistentActivityMeanDeltaVsNullMean": 1.4642857142857153,
+        "diagnostics": {
+          "finalPopulationMean": 1791.25,
+          "actualActiveCladesMean": 26.5,
+          "matchedNullActiveCladesMean": 53,
+          "activeCladeDeltaVsNullMean": -26.5,
+          "rawNewCladeActivityMeanDeltaVsNullMean": -1.15625,
+          "persistencePenaltyVsRawDeltaMean": -2.6205357142857153,
+          "dominantLossMode": "activeCladeDeficit"
+        }
       },
       "study": {
         "generatedAt": "2026-03-12T00:00:00.000Z",
@@ -4228,6 +4362,8 @@
           },
           "matchedSchedule": "For each seed and cladogenesis threshold, the pseudo-clade null preserves the observed clade birth count at every firstSeenTick.",
           "relabeling": "Pseudo-clade founders are randomly selected from species born at each matched birth tick, and remaining species are randomly reassigned to pseudo-clades that were already active at the prior tick.",
+          "diagnostics": "Diagnostics compare per-seed raw new-clade activity, persistent activity, final population, and final active clade counts so founder suppression can be separated from post-founding persistence loss.",
+          "dominantLossMode": "matchedOrBetter means the actual clades are not behind the matched null on the tracked signals; founderSuppression means the main deficit appears before the persistence filter; persistenceFailure means the persistence filter widens the deficit; activeCladeDeficit means the final active clade count trails the matched null the most.",
           "actualToNullPersistentWindowFractionRatio": "For one seed and survival threshold, actual clade persistentWindowFraction divided by matched-null persistentWindowFraction. Null when the matched-null fraction is zero.",
           "persistentWindowFractionDeltaVsNull": "For one seed and survival threshold, actual clade persistentWindowFraction minus matched-null persistentWindowFraction.",
           "actualToNullPersistentActivityMeanRatio": "For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean divided by matched-null postBurnInPersistentNewActivityMean. Null when the matched-null mean is zero.",
@@ -4907,7 +5043,21 @@
                     "actualToNullPersistentWindowFractionRatio": 1,
                     "persistentWindowFractionDeltaVsNull": 0,
                     "actualToNullPersistentActivityMeanRatio": 1,
-                    "persistentActivityMeanDeltaVsNull": 0
+                    "persistentActivityMeanDeltaVsNull": 0,
+                    "diagnostics": {
+                      "finalPopulation": 1861,
+                      "actualActiveClades": 42,
+                      "matchedNullActiveClades": 71,
+                      "activeCladeDeltaVsNull": -29,
+                      "actualRawNewCladeActivityMean": 380.875,
+                      "matchedNullRawNewCladeActivityMean": 380.875,
+                      "actualPersistentActivityMean": 348.7142857142857,
+                      "matchedNullPersistentActivityMean": 348.7142857142857,
+                      "persistencePenaltyVsRawDelta": 0,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": 0,
+                      "persistentActivityMeanDeltaVsNull": 0
+                    }
                   }
                 ]
               },
@@ -5251,7 +5401,21 @@
                     "actualToNullPersistentWindowFractionRatio": 1,
                     "persistentWindowFractionDeltaVsNull": 0,
                     "actualToNullPersistentActivityMeanRatio": 1.0092850510677809,
-                    "persistentActivityMeanDeltaVsNull": 1.4285714285714164
+                    "persistentActivityMeanDeltaVsNull": 1.4285714285714164,
+                    "diagnostics": {
+                      "finalPopulation": 1670,
+                      "actualActiveClades": 21,
+                      "matchedNullActiveClades": 48,
+                      "activeCladeDeltaVsNull": -27,
+                      "actualRawNewCladeActivityMean": 180,
+                      "matchedNullRawNewCladeActivityMean": 180,
+                      "actualPersistentActivityMean": 155.28571428571428,
+                      "matchedNullPersistentActivityMean": 153.85714285714286,
+                      "persistencePenaltyVsRawDelta": -1.4285714285714164,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": 0,
+                      "persistentActivityMeanDeltaVsNull": 1.4285714285714164
+                    }
                   }
                 ]
               },
@@ -5795,7 +5959,21 @@
                     "actualToNullPersistentWindowFractionRatio": 1,
                     "persistentWindowFractionDeltaVsNull": 0,
                     "actualToNullPersistentActivityMeanRatio": 1.0103092783505154,
-                    "persistentActivityMeanDeltaVsNull": 3.428571428571445
+                    "persistentActivityMeanDeltaVsNull": 3.428571428571445,
+                    "diagnostics": {
+                      "finalPopulation": 1868,
+                      "actualActiveClades": 28,
+                      "matchedNullActiveClades": 56,
+                      "activeCladeDeltaVsNull": -28,
+                      "actualRawNewCladeActivityMean": 340.875,
+                      "matchedNullRawNewCladeActivityMean": 341.875,
+                      "actualPersistentActivityMean": 336,
+                      "matchedNullPersistentActivityMean": 332.57142857142856,
+                      "persistencePenaltyVsRawDelta": -4.428571428571445,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": -1,
+                      "persistentActivityMeanDeltaVsNull": 3.428571428571445
+                    }
                   }
                 ]
               },
@@ -6043,7 +6221,21 @@
                     "actualToNullPersistentWindowFractionRatio": 0.7999999999999999,
                     "persistentWindowFractionDeltaVsNull": -0.1428571428571429,
                     "actualToNullPersistentActivityMeanRatio": 1.0091623036649215,
-                    "persistentActivityMeanDeltaVsNull": 1
+                    "persistentActivityMeanDeltaVsNull": 1,
+                    "diagnostics": {
+                      "finalPopulation": 1766,
+                      "actualActiveClades": 15,
+                      "matchedNullActiveClades": 37,
+                      "activeCladeDeltaVsNull": -22,
+                      "actualRawNewCladeActivityMean": 115.625,
+                      "matchedNullRawNewCladeActivityMean": 119.25,
+                      "actualPersistentActivityMean": 110.14285714285714,
+                      "matchedNullPersistentActivityMean": 109.14285714285714,
+                      "persistencePenaltyVsRawDelta": -4.625,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": -3.625,
+                      "persistentActivityMeanDeltaVsNull": 1
+                    }
                   }
                 ]
               }
@@ -6096,6 +6288,64 @@
                   "mean": 1.4642857142857153,
                   "min": 0,
                   "max": 3.428571428571445
+                },
+                "diagnostics": {
+                  "finalPopulation": {
+                    "mean": 1791.25,
+                    "min": 1670,
+                    "max": 1868
+                  },
+                  "actualActiveClades": {
+                    "mean": 26.5,
+                    "min": 15,
+                    "max": 42
+                  },
+                  "matchedNullActiveClades": {
+                    "mean": 53,
+                    "min": 37,
+                    "max": 71
+                  },
+                  "activeCladeDeltaVsNull": {
+                    "mean": -26.5,
+                    "min": -29,
+                    "max": -22
+                  },
+                  "actualRawNewCladeActivityMean": {
+                    "mean": 254.34375,
+                    "min": 115.625,
+                    "max": 380.875
+                  },
+                  "matchedNullRawNewCladeActivityMean": {
+                    "mean": 255.5,
+                    "min": 119.25,
+                    "max": 380.875
+                  },
+                  "rawNewCladeActivityMeanDeltaVsNull": {
+                    "mean": -1.15625,
+                    "min": -3.625,
+                    "max": 0
+                  },
+                  "actualPersistentActivityMean": {
+                    "mean": 237.53571428571428,
+                    "min": 110.14285714285714,
+                    "max": 348.7142857142857
+                  },
+                  "matchedNullPersistentActivityMean": {
+                    "mean": 236.07142857142856,
+                    "min": 109.14285714285714,
+                    "max": 348.7142857142857
+                  },
+                  "persistentActivityMeanDeltaVsNull": {
+                    "mean": 1.4642857142857153,
+                    "min": 0,
+                    "max": 3.428571428571445
+                  },
+                  "persistencePenaltyVsRawDelta": {
+                    "mean": -2.6205357142857153,
+                    "min": -4.625,
+                    "max": 0
+                  },
+                  "dominantLossMode": "activeCladeDeficit"
                 }
               }
             ]

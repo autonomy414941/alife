@@ -1422,6 +1422,14 @@ describe('runCladeActivityRelabelNullStudy', () => {
         expect(threshold.persistentWindowFractionDeltaVsNull).toBeCloseTo(0, 10);
         expect(threshold.actualToNullPersistentActivityMeanRatio).toBe(1);
         expect(threshold.persistentActivityMeanDeltaVsNull).toBeCloseTo(0, 10);
+        expect(threshold.diagnostics.finalPopulation).toBe(seedResult.finalSummary.population);
+        expect(threshold.diagnostics.actualActiveClades).toBe(seedResult.finalSummary.activeClades);
+        expect(threshold.diagnostics.actualActiveClades).toBe(threshold.diagnostics.matchedNullActiveClades);
+        expect(threshold.diagnostics.activeCladeDeltaVsNull).toBe(0);
+        expect(threshold.diagnostics.rawNewCladeActivityMeanDeltaVsNull).toBeCloseTo(0, 10);
+        expect(threshold.diagnostics.persistentActivityMeanDeltaVsNull).toBeCloseTo(0, 10);
+        expect(threshold.diagnostics.persistencePenaltyVsRawDelta).toBeCloseTo(0, 10);
+        expect(threshold.diagnostics.dominantLossMode).toBe('matchedOrBetter');
       }
     }
 
@@ -1434,6 +1442,15 @@ describe('runCladeActivityRelabelNullStudy', () => {
       expect(aggregate.persistentWindowFractionDeltaVsNull.mean).toBeCloseTo(0, 10);
       expect(aggregate.actualToNullPersistentActivityMeanRatio.mean).toBe(1);
       expect(aggregate.persistentActivityMeanDeltaVsNull.mean).toBeCloseTo(0, 10);
+      expect(aggregate.diagnostics.actualActiveClades.mean).toBeCloseTo(
+        aggregate.diagnostics.matchedNullActiveClades.mean,
+        10
+      );
+      expect(aggregate.diagnostics.activeCladeDeltaVsNull.mean).toBeCloseTo(0, 10);
+      expect(aggregate.diagnostics.rawNewCladeActivityMeanDeltaVsNull.mean).toBeCloseTo(0, 10);
+      expect(aggregate.diagnostics.persistentActivityMeanDeltaVsNull.mean).toBeCloseTo(0, 10);
+      expect(aggregate.diagnostics.persistencePenaltyVsRawDelta.mean).toBeCloseTo(0, 10);
+      expect(aggregate.diagnostics.dominantLossMode).toBe('matchedOrBetter');
     }
   });
 

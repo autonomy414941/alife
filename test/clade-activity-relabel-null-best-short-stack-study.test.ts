@@ -96,7 +96,24 @@ describe('runCladeActivityRelabelNullBestShortStackStudy', () => {
       persistentWindowFractionDeltaImprovementVsBaseline: 0,
       baselinePersistentActivityMeanDeltaVsNullMean: 0,
       currentPersistentActivityMeanDeltaVsNullMean: 0,
-      persistentActivityMeanImprovementVsBaseline: 0
+      persistentActivityMeanImprovementVsBaseline: 0,
+      baselineDiagnostics: {
+        activeCladeDeltaVsNullMean: 0,
+        rawNewCladeActivityMeanDeltaVsNullMean: 0,
+        persistencePenaltyVsRawDeltaMean: 0,
+        dominantLossMode: 'matchedOrBetter'
+      },
+      currentDiagnostics: {
+        activeCladeDeltaVsNullMean: 0,
+        rawNewCladeActivityMeanDeltaVsNullMean: 0,
+        persistencePenaltyVsRawDeltaMean: 0,
+        dominantLossMode: 'matchedOrBetter'
+      }
     });
+    expect(result.comparison[0].baselineDiagnostics.finalPopulationMean).toBeGreaterThan(0);
+    expect(result.comparison[0].baselineDiagnostics.actualActiveCladesMean).toBe(
+      result.comparison[0].baselineDiagnostics.matchedNullActiveCladesMean
+    );
+    expect(result.comparison[0].currentDiagnostics).toEqual(result.comparison[0].baselineDiagnostics);
   });
 });

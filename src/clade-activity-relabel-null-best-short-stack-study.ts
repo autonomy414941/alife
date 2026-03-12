@@ -5,7 +5,11 @@ import {
   DEFAULT_BEST_SHORT_STACK_STUDY_INPUT,
   buildCladeActivityRelabelNullBestShortStackStudyInput
 } from './clade-activity-relabel-null-best-short-stack';
-import { CladeActivityRelabelNullStudyExport } from './types';
+import {
+  CladeActivityRelabelNullDiagnosticSnapshot,
+  CladeActivityRelabelNullLossMode,
+  CladeActivityRelabelNullStudyExport
+} from './types';
 
 export {
   BEST_SHORT_STACK_SIMULATION_CONFIG,
@@ -27,6 +31,8 @@ export interface CladeActivityRelabelNullBestShortStackComparison {
   baselinePersistentActivityMeanDeltaVsNullMean: number;
   currentPersistentActivityMeanDeltaVsNullMean: number;
   persistentActivityMeanImprovementVsBaseline: number;
+  baselineDiagnostics: CladeActivityRelabelNullDiagnosticSnapshot;
+  currentDiagnostics: CladeActivityRelabelNullDiagnosticSnapshot;
 }
 
 export interface CladeActivityRelabelNullBestShortStackStudyExport {
@@ -86,10 +92,97 @@ export function compareCladeActivityRelabelNullStudies(
         baselinePersistentActivityMeanDeltaVsNullMean: baselineAggregate.persistentActivityMeanDeltaVsNull.mean,
         currentPersistentActivityMeanDeltaVsNullMean: aggregate.persistentActivityMeanDeltaVsNull.mean,
         persistentActivityMeanImprovementVsBaseline:
-          aggregate.persistentActivityMeanDeltaVsNull.mean - baselineAggregate.persistentActivityMeanDeltaVsNull.mean
+          aggregate.persistentActivityMeanDeltaVsNull.mean - baselineAggregate.persistentActivityMeanDeltaVsNull.mean,
+        baselineDiagnostics: toCladeActivityRelabelNullDiagnosticSnapshot(baselineThresholdResult, baselineAggregate),
+        currentDiagnostics: toCladeActivityRelabelNullDiagnosticSnapshot(thresholdResult, aggregate)
       };
     });
   });
+}
+
+function toCladeActivityRelabelNullDiagnosticSnapshot(
+  thresholdResult: CladeActivityRelabelNullStudyExport['thresholdResults'][number],
+  aggregate: CladeActivityRelabelNullStudyExport['thresholdResults'][number]['aggregates'][number]
+): CladeActivityRelabelNullDiagnosticSnapshot {
+  if (!('diagnostics' in aggregate) || aggregate.diagnostics === undefined) {
+    return buildLegacyDiagnosticSnapshot(thresholdResult, aggregate.minSurvivalTicks);
+  }
+
+  return {
+    finalPopulationMean: aggregate.diagnostics.finalPopulation.mean,
+    actualActiveCladesMean: aggregate.diagnostics.actualActiveClades.mean,
+    matchedNullActiveCladesMean: aggregate.diagnostics.matchedNullActiveClades.mean,
+    activeCladeDeltaVsNullMean: aggregate.diagnostics.activeCladeDeltaVsNull.mean,
+    rawNewCladeActivityMeanDeltaVsNullMean: aggregate.diagnostics.rawNewCladeActivityMeanDeltaVsNull.mean,
+    persistencePenaltyVsRawDeltaMean: aggregate.diagnostics.persistencePenaltyVsRawDelta.mean,
+    dominantLossMode: aggregate.diagnostics.dominantLossMode
+  };
+}
+
+function buildLegacyDiagnosticSnapshot(
+  thresholdResult: CladeActivityRelabelNullStudyExport['thresholdResults'][number],
+  minSurvivalTicks: number
+): CladeActivityRelabelNullDiagnosticSnapshot {
+  const perSeed = thresholdResult.seedResults.map((seedResult) => {
+    const threshold = seedResult.thresholds.find((candidate) => candidate.minSurvivalTicks === minSurvivalTicks);
+    if (!threshold) {
+      throw new Error(
+        `Study is missing minSurvivalTicks=${minSurvivalTicks} for cladogenesis threshold ${thresholdResult.cladogenesisThreshold}`
+      );
+    }
+
+    const rawNewCladeActivityMeanDeltaVsNull =
+      seedResult.actualRawSummary.postBurnInNewActivityMean - seedResult.matchedNullRawSummary.postBurnInNewActivityMean;
+    const persistencePenaltyVsRawDelta = rawNewCladeActivityMeanDeltaVsNull - threshold.persistentActivityMeanDeltaVsNull;
+
+    return {
+      finalPopulation: seedResult.finalSummary.population,
+      actualActiveClades: seedResult.finalSummary.activeClades,
+      rawNewCladeActivityMeanDeltaVsNull,
+      persistencePenaltyVsRawDelta
+    };
+  });
+
+  const finalPopulationMean = mean(perSeed.map((seed) => seed.finalPopulation));
+  const actualActiveCladesMean = mean(perSeed.map((seed) => seed.actualActiveClades));
+  const rawNewCladeActivityMeanDeltaVsNullMean = mean(perSeed.map((seed) => seed.rawNewCladeActivityMeanDeltaVsNull));
+  const persistencePenaltyVsRawDeltaMean = mean(perSeed.map((seed) => seed.persistencePenaltyVsRawDelta));
+
+  return {
+    finalPopulationMean,
+    actualActiveCladesMean,
+    matchedNullActiveCladesMean: null,
+    activeCladeDeltaVsNullMean: null,
+    rawNewCladeActivityMeanDeltaVsNullMean,
+    persistencePenaltyVsRawDeltaMean,
+    dominantLossMode: inferLegacyDiagnosticLossMode({
+      rawNewCladeActivityMeanDeltaVsNullMean,
+      persistencePenaltyVsRawDeltaMean
+    })
+  };
+}
+
+function inferLegacyDiagnosticLossMode(input: {
+  rawNewCladeActivityMeanDeltaVsNullMean: number;
+  persistencePenaltyVsRawDeltaMean: number;
+}): CladeActivityRelabelNullLossMode {
+  const founderSuppression = Math.max(0, -input.rawNewCladeActivityMeanDeltaVsNullMean);
+  const persistenceFailure = Math.max(0, input.persistencePenaltyVsRawDeltaMean);
+
+  if (founderSuppression === 0 && persistenceFailure === 0) {
+    return 'matchedOrBetter';
+  }
+  if (persistenceFailure >= founderSuppression) {
+    return 'persistenceFailure';
+  }
+  return 'founderSuppression';
+}
+
+function mean(values: number[]): number {
+  if (values.length === 0) {
+    return 0;
+  }
+  return values.reduce((total, value) => total + value, 0) / values.length;
 }
 
 export function runCladeActivityRelabelNullBestShortStackStudy(

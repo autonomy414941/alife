@@ -978,6 +978,8 @@ export interface CladeActivityRelabelNullDefinition {
   matchedNull: CladeActivitySeedPanelDefinition;
   matchedSchedule: string;
   relabeling: string;
+  diagnostics: string;
+  dominantLossMode: string;
   actualToNullPersistentWindowFractionRatio: string;
   persistentWindowFractionDeltaVsNull: string;
   actualToNullPersistentActivityMeanRatio: string;
@@ -994,6 +996,52 @@ export interface CladeActivityRelabelNullStudyConfig {
   cladogenesisThresholds: number[];
 }
 
+export type CladeActivityRelabelNullLossMode =
+  | 'matchedOrBetter'
+  | 'founderSuppression'
+  | 'persistenceFailure'
+  | 'activeCladeDeficit';
+
+export interface CladeActivityRelabelNullSeedDiagnostics {
+  finalPopulation: number;
+  actualActiveClades: number;
+  matchedNullActiveClades: number;
+  activeCladeDeltaVsNull: number;
+  actualRawNewCladeActivityMean: number;
+  matchedNullRawNewCladeActivityMean: number;
+  rawNewCladeActivityMeanDeltaVsNull: number;
+  actualPersistentActivityMean: number;
+  matchedNullPersistentActivityMean: number;
+  persistentActivityMeanDeltaVsNull: number;
+  persistencePenaltyVsRawDelta: number;
+  dominantLossMode: CladeActivityRelabelNullLossMode;
+}
+
+export interface CladeActivityRelabelNullAggregateDiagnostics {
+  finalPopulation: NumericAggregate;
+  actualActiveClades: NumericAggregate;
+  matchedNullActiveClades: NumericAggregate;
+  activeCladeDeltaVsNull: NumericAggregate;
+  actualRawNewCladeActivityMean: NumericAggregate;
+  matchedNullRawNewCladeActivityMean: NumericAggregate;
+  rawNewCladeActivityMeanDeltaVsNull: NumericAggregate;
+  actualPersistentActivityMean: NumericAggregate;
+  matchedNullPersistentActivityMean: NumericAggregate;
+  persistentActivityMeanDeltaVsNull: NumericAggregate;
+  persistencePenaltyVsRawDelta: NumericAggregate;
+  dominantLossMode: CladeActivityRelabelNullLossMode;
+}
+
+export interface CladeActivityRelabelNullDiagnosticSnapshot {
+  finalPopulationMean: number;
+  actualActiveCladesMean: number;
+  matchedNullActiveCladesMean: number | null;
+  activeCladeDeltaVsNullMean: number | null;
+  rawNewCladeActivityMeanDeltaVsNullMean: number;
+  persistencePenaltyVsRawDeltaMean: number;
+  dominantLossMode: CladeActivityRelabelNullLossMode;
+}
+
 export interface CladeActivityRelabelNullThresholdSeedResult {
   minSurvivalTicks: number;
   actual: CladeActivitySeedPanelThresholdSeedResult;
@@ -1002,6 +1050,7 @@ export interface CladeActivityRelabelNullThresholdSeedResult {
   persistentWindowFractionDeltaVsNull: number;
   actualToNullPersistentActivityMeanRatio: number | null;
   persistentActivityMeanDeltaVsNull: number;
+  diagnostics: CladeActivityRelabelNullSeedDiagnostics;
 }
 
 export interface CladeActivityRelabelNullSeedResult {
@@ -1024,6 +1073,7 @@ export interface CladeActivityRelabelNullThresholdAggregate {
   persistentWindowFractionDeltaVsNull: NumericAggregate;
   actualToNullPersistentActivityMeanRatio: CladeSpeciesActivityCouplingRatioAggregate;
   persistentActivityMeanDeltaVsNull: NumericAggregate;
+  diagnostics: CladeActivityRelabelNullAggregateDiagnostics;
 }
 
 export interface CladeActivityRelabelNullThresholdResult {

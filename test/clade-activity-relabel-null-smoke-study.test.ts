@@ -83,11 +83,21 @@ describe('runCladeActivityRelabelNullSmokeStudy', () => {
       encounterRiskAversion: 1
     });
     expect(result.results[1].studyInput.simulation?.initialAgents).toHaveLength(1);
-    expect(result.results[0].summary).toEqual({
+    expect(result.results[0].summary).toMatchObject({
       birthScheduleMatchedAllSeeds: true,
       persistentWindowFractionDeltaVsNullMean: 0,
-      persistentActivityMeanDeltaVsNullMean: 0
+      persistentActivityMeanDeltaVsNullMean: 0,
+      diagnostics: {
+        activeCladeDeltaVsNullMean: 0,
+        rawNewCladeActivityMeanDeltaVsNullMean: 0,
+        persistencePenaltyVsRawDeltaMean: 0,
+        dominantLossMode: 'matchedOrBetter'
+      }
     });
+    expect(result.results[0].summary.diagnostics.finalPopulationMean).toBeGreaterThan(0);
+    expect(result.results[0].summary.diagnostics.actualActiveCladesMean).toBe(
+      result.results[0].summary.diagnostics.matchedNullActiveCladesMean
+    );
   });
 
   it('parses the shared generated-at flag', () => {

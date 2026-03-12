@@ -3,6 +3,7 @@ import { Rng } from './rng';
 import {
   CladeActivityCladogenesisHorizonSweepExport,
   CladeActivityCladogenesisHorizonSweepPoint,
+  CladeActivityRelabelNullAggregateDiagnostics,
   CladeActivityRelabelNullCladeHabitatCouplingSweepDefinition,
   CladeActivityRelabelNullCladeHabitatCouplingSweepExport,
   CladeActivityRelabelNullCladeHabitatCouplingSweepResult,
@@ -10,7 +11,9 @@ import {
   CladeActivityRelabelNullCladeInteractionCouplingSweepExport,
   CladeActivityRelabelNullCladeInteractionCouplingSweepResult,
   CladeActivityRelabelNullDefinition,
+  CladeActivityRelabelNullLossMode,
   CladeActivityRelabelNullSeedResult,
+  CladeActivityRelabelNullSeedDiagnostics,
   CladeActivityRelabelNullStudyConfig,
   CladeActivityRelabelNullStudyExport,
   CladeActivityRelabelNullThresholdAggregate,
@@ -514,6 +517,10 @@ export const CLADE_ACTIVITY_RELABEL_NULL_DEFINITION: CladeActivityRelabelNullDef
     'For each seed and cladogenesis threshold, the pseudo-clade null preserves the observed clade birth count at every firstSeenTick.',
   relabeling:
     'Pseudo-clade founders are randomly selected from species born at each matched birth tick, and remaining species are randomly reassigned to pseudo-clades that were already active at the prior tick.',
+  diagnostics:
+    'Diagnostics compare per-seed raw new-clade activity, persistent activity, final population, and final active clade counts so founder suppression can be separated from post-founding persistence loss.',
+  dominantLossMode:
+    'matchedOrBetter means the actual clades are not behind the matched null on the tracked signals; founderSuppression means the main deficit appears before the persistence filter; persistenceFailure means the persistence filter widens the deficit; activeCladeDeficit means the final active clade count trails the matched null the most.',
   actualToNullPersistentWindowFractionRatio:
     'For one seed and survival threshold, actual clade persistentWindowFraction divided by matched-null persistentWindowFraction. Null when the matched-null fraction is zero.',
   persistentWindowFractionDeltaVsNull:
@@ -1729,6 +1736,8 @@ function buildCladeActivityRelabelNullSeedResult(input: {
   );
   const actualBirthSchedule = buildTaxonBirthSchedule(input.history.clades);
   const matchedNullBirthSchedule = buildTaxonBirthSchedule(matchedNullClades);
+  const actualActiveClades = input.finalSummary.activeClades;
+  const matchedNullActiveClades = countActiveTaxaAtTick(matchedNullClades, input.finalSummary.tick);
 
   return {
     seed: input.seed,
@@ -1743,7 +1752,12 @@ function buildCladeActivityRelabelNullSeedResult(input: {
       buildCladeActivityRelabelNullThresholdSeedResult({
         minSurvivalTicks,
         actual: findThresholdResult(input.seed, minSurvivalTicks, actualThresholds),
-        matchedNull: findThresholdResult(input.seed, minSurvivalTicks, matchedNullThresholds)
+        matchedNull: findThresholdResult(input.seed, minSurvivalTicks, matchedNullThresholds),
+        finalPopulation: input.finalSummary.population,
+        actualActiveClades,
+        matchedNullActiveClades,
+        actualRawSummary,
+        matchedNullRawSummary
       })
     )
   };
@@ -1753,7 +1767,27 @@ function buildCladeActivityRelabelNullThresholdSeedResult(input: {
   minSurvivalTicks: number;
   actual: CladeActivitySeedPanelThresholdSeedResult;
   matchedNull: CladeActivitySeedPanelThresholdSeedResult;
+  finalPopulation: number;
+  actualActiveClades: number;
+  matchedNullActiveClades: number;
+  actualRawSummary: CladeActivityProbeSummary;
+  matchedNullRawSummary: CladeActivityProbeSummary;
 }): CladeActivityRelabelNullThresholdSeedResult {
+  const rawNewCladeActivityMeanDeltaVsNull =
+    input.actualRawSummary.postBurnInNewActivityMean - input.matchedNullRawSummary.postBurnInNewActivityMean;
+  const persistentActivityMeanDeltaVsNull =
+    input.actual.summary.postBurnInPersistentNewActivityMean -
+    input.matchedNull.summary.postBurnInPersistentNewActivityMean;
+  const diagnostics = buildCladeActivityRelabelNullSeedDiagnostics({
+    finalPopulation: input.finalPopulation,
+    actualActiveClades: input.actualActiveClades,
+    matchedNullActiveClades: input.matchedNullActiveClades,
+    actualRawNewCladeActivityMean: input.actualRawSummary.postBurnInNewActivityMean,
+    matchedNullRawNewCladeActivityMean: input.matchedNullRawSummary.postBurnInNewActivityMean,
+    actualPersistentActivityMean: input.actual.summary.postBurnInPersistentNewActivityMean,
+    matchedNullPersistentActivityMean: input.matchedNull.summary.postBurnInPersistentNewActivityMean
+  });
+
   return {
     minSurvivalTicks: input.minSurvivalTicks,
     actual: input.actual,
@@ -1768,9 +1802,12 @@ function buildCladeActivityRelabelNullThresholdSeedResult(input: {
       input.actual.summary.postBurnInPersistentNewActivityMean,
       input.matchedNull.summary.postBurnInPersistentNewActivityMean
     ),
-    persistentActivityMeanDeltaVsNull:
-      input.actual.summary.postBurnInPersistentNewActivityMean -
-      input.matchedNull.summary.postBurnInPersistentNewActivityMean
+    persistentActivityMeanDeltaVsNull,
+    diagnostics: {
+      ...diagnostics,
+      rawNewCladeActivityMeanDeltaVsNull,
+      persistentActivityMeanDeltaVsNull
+    }
   };
 }
 
@@ -1813,8 +1850,109 @@ function buildCladeActivityRelabelNullThresholdAggregate(
     ),
     persistentActivityMeanDeltaVsNull: buildNumericAggregate(
       thresholdResults.map((threshold) => threshold.persistentActivityMeanDeltaVsNull)
-    )
+    ),
+    diagnostics: buildCladeActivityRelabelNullThresholdAggregateDiagnostics(thresholdResults)
   };
+}
+
+function buildCladeActivityRelabelNullSeedDiagnostics(input: {
+  finalPopulation: number;
+  actualActiveClades: number;
+  matchedNullActiveClades: number;
+  actualRawNewCladeActivityMean: number;
+  matchedNullRawNewCladeActivityMean: number;
+  actualPersistentActivityMean: number;
+  matchedNullPersistentActivityMean: number;
+}): Omit<
+  CladeActivityRelabelNullSeedDiagnostics,
+  'rawNewCladeActivityMeanDeltaVsNull' | 'persistentActivityMeanDeltaVsNull'
+> {
+  const activeCladeDeltaVsNull = input.actualActiveClades - input.matchedNullActiveClades;
+  const rawNewCladeActivityMeanDeltaVsNull =
+    input.actualRawNewCladeActivityMean - input.matchedNullRawNewCladeActivityMean;
+  const persistentActivityMeanDeltaVsNull =
+    input.actualPersistentActivityMean - input.matchedNullPersistentActivityMean;
+  const persistencePenaltyVsRawDelta = rawNewCladeActivityMeanDeltaVsNull - persistentActivityMeanDeltaVsNull;
+
+  return {
+    finalPopulation: input.finalPopulation,
+    actualActiveClades: input.actualActiveClades,
+    matchedNullActiveClades: input.matchedNullActiveClades,
+    activeCladeDeltaVsNull,
+    actualRawNewCladeActivityMean: input.actualRawNewCladeActivityMean,
+    matchedNullRawNewCladeActivityMean: input.matchedNullRawNewCladeActivityMean,
+    actualPersistentActivityMean: input.actualPersistentActivityMean,
+    matchedNullPersistentActivityMean: input.matchedNullPersistentActivityMean,
+    persistencePenaltyVsRawDelta,
+    dominantLossMode: inferCladeActivityRelabelNullLossMode({
+      activeCladeDeltaVsNull,
+      rawNewCladeActivityMeanDeltaVsNull,
+      persistencePenaltyVsRawDelta
+    })
+  };
+}
+
+function buildCladeActivityRelabelNullThresholdAggregateDiagnostics(
+  thresholdResults: CladeActivityRelabelNullThresholdSeedResult[]
+): CladeActivityRelabelNullAggregateDiagnostics {
+  const diagnostics = thresholdResults.map((threshold) => threshold.diagnostics);
+
+  return {
+    finalPopulation: buildNumericAggregate(diagnostics.map((diagnostic) => diagnostic.finalPopulation)),
+    actualActiveClades: buildNumericAggregate(diagnostics.map((diagnostic) => diagnostic.actualActiveClades)),
+    matchedNullActiveClades: buildNumericAggregate(diagnostics.map((diagnostic) => diagnostic.matchedNullActiveClades)),
+    activeCladeDeltaVsNull: buildNumericAggregate(diagnostics.map((diagnostic) => diagnostic.activeCladeDeltaVsNull)),
+    actualRawNewCladeActivityMean: buildNumericAggregate(
+      diagnostics.map((diagnostic) => diagnostic.actualRawNewCladeActivityMean)
+    ),
+    matchedNullRawNewCladeActivityMean: buildNumericAggregate(
+      diagnostics.map((diagnostic) => diagnostic.matchedNullRawNewCladeActivityMean)
+    ),
+    rawNewCladeActivityMeanDeltaVsNull: buildNumericAggregate(
+      diagnostics.map((diagnostic) => diagnostic.rawNewCladeActivityMeanDeltaVsNull)
+    ),
+    actualPersistentActivityMean: buildNumericAggregate(
+      diagnostics.map((diagnostic) => diagnostic.actualPersistentActivityMean)
+    ),
+    matchedNullPersistentActivityMean: buildNumericAggregate(
+      diagnostics.map((diagnostic) => diagnostic.matchedNullPersistentActivityMean)
+    ),
+    persistentActivityMeanDeltaVsNull: buildNumericAggregate(
+      diagnostics.map((diagnostic) => diagnostic.persistentActivityMeanDeltaVsNull)
+    ),
+    persistencePenaltyVsRawDelta: buildNumericAggregate(
+      diagnostics.map((diagnostic) => diagnostic.persistencePenaltyVsRawDelta)
+    ),
+    dominantLossMode: inferCladeActivityRelabelNullLossMode({
+      activeCladeDeltaVsNull: mean(diagnostics.map((diagnostic) => diagnostic.activeCladeDeltaVsNull)),
+      rawNewCladeActivityMeanDeltaVsNull: mean(
+        diagnostics.map((diagnostic) => diagnostic.rawNewCladeActivityMeanDeltaVsNull)
+      ),
+      persistencePenaltyVsRawDelta: mean(diagnostics.map((diagnostic) => diagnostic.persistencePenaltyVsRawDelta))
+    })
+  };
+}
+
+function inferCladeActivityRelabelNullLossMode(input: {
+  activeCladeDeltaVsNull: number;
+  rawNewCladeActivityMeanDeltaVsNull: number;
+  persistencePenaltyVsRawDelta: number;
+}): CladeActivityRelabelNullLossMode {
+  const founderSuppression = Math.max(0, -input.rawNewCladeActivityMeanDeltaVsNull);
+  const persistenceFailure = Math.max(0, input.persistencePenaltyVsRawDelta);
+  const activeCladeDeficit = Math.max(0, -input.activeCladeDeltaVsNull);
+  const largestDeficit = Math.max(founderSuppression, persistenceFailure, activeCladeDeficit);
+
+  if (largestDeficit === 0) {
+    return 'matchedOrBetter';
+  }
+  if (activeCladeDeficit === largestDeficit) {
+    return 'activeCladeDeficit';
+  }
+  if (persistenceFailure === largestDeficit) {
+    return 'persistenceFailure';
+  }
+  return 'founderSuppression';
 }
 
 function buildMatchedSchedulePseudoClades(input: {
@@ -2229,6 +2367,13 @@ function buildCladeSpeciesCountSummary(
     activeCladeToSpeciesRatio: divideOrZero(finalSummary.activeClades, finalSummary.activeSpecies),
     totalCladeToSpeciesRatio: divideOrZero(totalClades, totalSpecies)
   };
+}
+
+function countActiveTaxaAtTick(taxa: TaxonHistory[], tick: number): number {
+  return taxa.filter((taxon) => {
+    const lastPoint = taxon.timeline[taxon.timeline.length - 1];
+    return lastPoint !== undefined && lastPoint.tick === tick && lastPoint.population > 0;
+  }).length;
 }
 
 function buildCladeSpeciesCountAggregate(

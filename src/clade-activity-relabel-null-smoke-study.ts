@@ -1,6 +1,10 @@
 import { RunCladeActivityRelabelNullStudyInput, runCladeActivityRelabelNullStudy } from './activity';
 import { buildCladeActivityRelabelNullShortSmokeStudyInput } from './clade-activity-relabel-null-best-short-stack';
-import { CladeActivityRelabelNullStudyExport, SimulationConfig } from './types';
+import {
+  CladeActivityRelabelNullDiagnosticSnapshot,
+  CladeActivityRelabelNullStudyExport,
+  SimulationConfig
+} from './types';
 
 export interface GeneratedAtCliOptions {
   generatedAt?: string;
@@ -12,6 +16,7 @@ export interface CladeActivityRelabelNullSmokeSummary {
   birthScheduleMatchedAllSeeds: boolean;
   persistentWindowFractionDeltaVsNullMean: number;
   persistentActivityMeanDeltaVsNullMean: number;
+  diagnostics: CladeActivityRelabelNullDiagnosticSnapshot;
 }
 
 export type CladeActivityRelabelNullSmokeResult<TSettingName extends string, TValue extends SmokeSettingValue> = Record<
@@ -165,7 +170,16 @@ function summarizeCladeActivityRelabelNullSmokeStudy(
   return {
     birthScheduleMatchedAllSeeds: thresholdResult.seedResults.every((seedResult) => seedResult.birthScheduleMatched),
     persistentWindowFractionDeltaVsNullMean: aggregate.persistentWindowFractionDeltaVsNull.mean,
-    persistentActivityMeanDeltaVsNullMean: aggregate.persistentActivityMeanDeltaVsNull.mean
+    persistentActivityMeanDeltaVsNullMean: aggregate.persistentActivityMeanDeltaVsNull.mean,
+    diagnostics: {
+      finalPopulationMean: aggregate.diagnostics.finalPopulation.mean,
+      actualActiveCladesMean: aggregate.diagnostics.actualActiveClades.mean,
+      matchedNullActiveCladesMean: aggregate.diagnostics.matchedNullActiveClades.mean,
+      activeCladeDeltaVsNullMean: aggregate.diagnostics.activeCladeDeltaVsNull.mean,
+      rawNewCladeActivityMeanDeltaVsNullMean: aggregate.diagnostics.rawNewCladeActivityMeanDeltaVsNull.mean,
+      persistencePenaltyVsRawDeltaMean: aggregate.diagnostics.persistencePenaltyVsRawDelta.mean,
+      dominantLossMode: aggregate.diagnostics.dominantLossMode
+    }
   };
 }
 

@@ -896,6 +896,8 @@ describe('run export', () => {
     expect(parsed.thresholdResults).toHaveLength(1);
     expect(parsed.thresholdResults[0].seedResults[0].birthScheduleMatched).toBe(true);
     expect(parsed.thresholdResults[0].aggregates[0].actualToNullPersistentWindowFractionRatio.definedSeeds).toBe(2);
+    expect(parsed.thresholdResults[0].seedResults[0].thresholds[0].diagnostics.dominantLossMode).toBe('matchedOrBetter');
+    expect(parsed.thresholdResults[0].aggregates[0].diagnostics.activeCladeDeltaVsNull.mean).toBe(0);
   });
 
   it('renders clade habitat coupling relabel-null sweeps to JSON', () => {

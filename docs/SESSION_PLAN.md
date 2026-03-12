@@ -1,72 +1,73 @@
 # Session Plan — 2026-03-12
 
 ## Compact Context
-- `src/simulation.ts` is `2745` lines, `src/activity.ts` is `2550`, and ten `src/clade-activity-relabel-null-*-smoke-study.ts` entrypoints repeat the same `DEFAULT_STUDY_INPUT` / `parseCli` / summary scaffold.
-- The current best validated stack is still `lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, `lineageOffspringSettlementCrowdingPenalty=0`, `offspringSettlementEcologyScoring=true`, `encounterRiskAversion=0`, `decompositionSpilloverFraction=0`.
-- `docs/clade_activity_relabel_null_best_short_stack_2026-03-12.json` improved the canonical `4000`-step panel versus `2026-03-10`, but `persistentActivityMeanDeltaVsNullMean` remains negative in all four canonical cells: `-34.63`, `-111.78`, `-18.24`, `-93.65`.
-- Recent short smokes show fragile gains: trait novelty dropped the threshold-`1` delta from `+29.25` to `+1.46`; trophic opportunity fell to `-17.25`; ecology gain fell to `+5.29`; decomposition spillover only reached `+14.86`.
-- `test/simulation.test.ts` already covers encounter-risk scoring, trophic opportunity attraction, ecology-scored settlement, ecology-gated and trait-novelty-gated cladogenesis, and decomposition spillover, so missing mechanism tests are not the current bottleneck.
+- `src/simulation.ts` is `2745` lines and `src/activity.ts` is `2550`; recent mechanism work keeps touching the same local-ecology, settlement, cladogenesis, and disturbance blocks.
+- The shared relabel-null smoke harness and best-short-stack preset now exist, so bounded study instrumentation can be reused across multiple variants.
+- The current short-stack baseline at `1000` steps / threshold `1` is `+29.25` `persistentActivityMeanDeltaVsNullMean`; `offspringSettlementEcologyScoring=true` beats `false` (`+29.25` vs `+20.29`).
+- Recent March 12 toggles mostly regress that baseline: trait novelty `+1.46`, ecology gate `+5.29`, decomposition spillover `+14.86`, trophic opportunity `-17.25`, encounter risk `-60.79`.
+- The canonical `4000`-step best-short-stack panel improved versus `2026-03-10` but is still negative in all four cells: `-34.63`, `-111.78`, `-18.24`, `-93.65`.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Founder filtering / recruitment ecology | 4 | 8e477ff |
+| Recruitment ecology / founder filtering | 4 | 8e477ff |
 | Kin-structured local competition | 2 | 37a91c7 |
+| Experiment infrastructure | 1 | 07955c8 |
 | Long-horizon relabel-null validation | 1 | a843a91 |
-| Environmental feedback / nutrient recycling | 1 | 6631bd9 |
-| Spatial interaction / risk-aware movement | 1 | e5243bf |
-| Trophic opportunity / prey-seeking | 1 | 5003c4f |
+| Environmental feedback / recycling | 1 | 6631bd9 |
+| Spatial threat response | 1 | e5243bf |
 | Disturbance / resilience | 0 | — |
 | Communication / signaling | 0 | — |
 
-Dominant axis: Founder filtering / recruitment ecology (4/10)
-Underexplored axes: long-horizon relabel-null validation, environmental feedback / nutrient recycling, spatial interaction / risk-aware movement, trophic opportunity / prey-seeking, disturbance / resilience, communication / signaling
+Dominant axis: Recruitment ecology / founder filtering (4/10)
+Underexplored axes: experiment infrastructure, long-horizon relabel-null validation, environmental feedback / recycling, spatial threat response, disturbance / resilience, communication / signaling
 
 ## Project State
-- The simulation already has cladogenesis, habitat and interaction coupling, kin-aware harvest/dispersal/encounter controls, ecology-scored juvenile placement, occupant-aware risk/opportunity scoring, disturbance, and decomposition recycling.
-- Recent sessions have been iterating short threshold-`1` relabel-null toggle studies around the same best kin-aware stack, then checking whether the most promising stack survives the canonical `4000`-step panel.
-- The main gap is now twofold: long-horizon persistence is still weaker than the matched null, and the experiment surface is slowed by duplicated smoke-study entrypoints plus oversized core files.
+- The simulation already has localized disturbance/refugia, trophic and defense traits, kin-aware harvest/dispersal/encounter controls, ecology-scored settlement, and cladogenesis gating.
+- Recent sessions have stacked kin-aware local competition with ecology-scored recruitment, then tested several founder filters and occupant-aware scoring knobs on top of that best short stack.
+- The missing piece is failure diagnosis: current artifacts say which toggle won or lost, but not whether losses come from fewer clade births, weaker persistence after birth, or reduced population/clade occupancy over time.
 
 ## External Context
-- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): ToLSim suggests post-speciation ecological performance matters more than raw founding counts, which matches the current need to compare mechanism families cleanly rather than keep adding one-off founder filters.
-- [Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity](https://arxiv.org/abs/2406.04235): sustained diversity improves when search preserves differentiated niches, so faster standardized evaluation across underexplored mechanisms is more valuable now than another bespoke smoke script.
+- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): ToLSim argues that post-speciation ecological performance matters more than raw founding counts, which matches the current need to separate founder suppression from survival failure.
+- [Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity](https://arxiv.org/abs/2406.04235): persistent differentiated niches matter more than novelty alone, which supports instrumenting why current filters flatten clade activity.
 
 ## Research Gaps
-- Which underexplored mechanism family can beat the current short threshold-`1` baseline of `+29.25` `persistentActivityMeanDeltaVsNullMean` and still warrant promotion to the canonical `4000`-step panel once all candidates are evaluated through the same harness?
+- Do the recent trait/ecology gates fail mainly by suppressing clade formation volume, by reducing post-founding persistence, or by lowering overall population/activity relative to the current best short stack?
+- Are the short-stack gains concentrated in early post-burn-in windows while failed variants collapse later, which would explain the `1000`-step positives but `4000`-step negatives?
 
 ## Current Anti-Evidence
-- Even the best validated stack still loses to the matched relabel-null in every canonical `4000`-step cell, so the system still lacks durable above-null clade persistence.
-- Recent short-run improvements are brittle and non-monotonic: multiple new toggles regress the current short baseline, suggesting the search process is producing noise faster than reusable knowledge.
+- Even the best validated stack is still below matched-null persistent activity in every canonical `4000`-step cell, so durable above-null clade persistence is still unproven.
+- Recent founder/ecology variants often shrink actual persistent activity mean and active clades toward the null or below it, implying the system still lacks a reliable niche-creation mechanism.
 
 ## Candidate Bets
-- A: [refactor] Extract a shared short relabel-null smoke-study harness plus a single exported best-short-stack preset, then convert the March 11-12 smoke scripts into thin wrappers.
-  Why now: code-health triggers are active and the bottleneck is comparable iteration across axes, not another copy-pasted toggle script.
+- A: [investigate] Add a compact diagnostic export to relabel-null smoke and best-stack studies that reports per-seed actual-vs-null persistent activity, raw new-clade activity, final population, and active clade counts, then apply it to the current best stack plus one failed variant.
+  Why now: three consecutive feature experiments worsened the short metric, and the current JSON artifacts do not isolate whether the failure is suppressed founding, weak persistence, or general population loss.
   Est. low-context human time: 45m
-  Main risk: no simulation behavior changes this session.
-- B: [feat] Add disturbance-coupled fertility rebound so shocked cells become temporary high-resource niches instead of pure losses.
-  Why now: disturbance / resilience is still untouched as a niche-creation mechanism, while current mechanics mostly filter existing founders rather than create new ecological openings.
+  Main risk: the scope could sprawl if it tries to emit full time-series traces instead of a small reusable schema.
+- B: [split] Extract local ecology scoring, offspring settlement, and cladogenesis gating helpers from `src/simulation.ts` into a focused module.
+  Why now: nearly every recent mechanism touched the same `1500`-`2100` block of a `2745`-line file, so the next experiment will otherwise keep paying navigation and merge tax.
   Est. low-context human time: 50m
-  Main risk: it may inflate activity without improving matched-null persistence.
-- C: [validate] Run the canonical `4000`-step relabel-null panel for the trait-novelty gate to retire or confirm the founder-filtering branch.
-  Why now: the short threshold-`1` delta fell from `+29.25` to `+1.46`, so this branch may already be near dead.
-  Est. low-context human time: 35m
-  Main risk: likely negative evidence only, while duplication debt keeps slowing every next experiment.
+  Main risk: it improves iteration speed but does not answer the current scientific failure mode by itself.
+- C: [feat] Add disturbance-driven fertility rebound around shocked cells and refugia so disturbances create temporary colonization windows instead of only removing energy and resources.
+  Why now: disturbance / resilience is still unused as a niche-creation axis and is clearly different from the recent founder-filtering streak.
+  Est. low-context human time: 55m
+  Main risk: it may raise raw activity without improving matched-null persistence, so diagnostics would still be needed immediately afterward.
 
 ## Selected Bet
-Refactor the experiment surface, not the simulation core: extract one shared relabel-null smoke harness and one shared best-stack config, then collapse the ten near-identical March 11-12 smoke entrypoints into thin wrappers. The latest founder-gating and ecology toggles already have enough negative short-run evidence that the highest-leverage bounded move is to make the next axis change cheap, consistent, and less error-prone.
+Choose A. The last several feature sessions mostly made the short-stack baseline worse, and the long-horizon panel is still decisively negative, so the highest-leverage bounded move is to expose the failure mode on the existing relabel-null path before adding another mechanism. The necessary simulation summaries already exist, which keeps this investigation small and directly useful for the next different-axis feature bet.
 
 ## Why This Fits The Horizon
-- The scope is bounded to duplicated smoke entrypoints and shared study config; it avoids broad surgery inside `src/simulation.ts` or `src/activity.ts`.
-- Success is autonomously verifiable without new scientific claims: builds and tests stay green, and representative scripts reproduce the existing `2026-03-12` summaries from current JSON artifacts.
+- It reuses the existing relabel-null study path and smoke wrappers; no new simulation mechanic, sweep framework, or long benchmark is required.
+- Success is autonomously verifiable with tests and regenerated JSON artifacts that contain the new diagnostic section for known studies.
 
 ## Success Evidence
-- Representative reruns match current summaries from `docs/clade_activity_relabel_null_cladogenesis_trait_novelty_smoke_2026-03-12.json` and `docs/clade_activity_relabel_null_trophic_opportunity_smoke_2026-03-12.json`, especially `+29.25 -> +1.46` for trait novelty and `+29.25 -> -17.25` for trophic opportunity.
-- Specific verification command or output: `npm run build && npm test && npx tsx src/clade-activity-relabel-null-cladogenesis-trait-novelty-smoke-study.ts && npx tsx src/clade-activity-relabel-null-trophic-opportunity-smoke-study.ts`.
+- Regenerated best-stack and failed-variant artifacts include a new diagnostic section that makes the dominant loss mode explicit, such as lower actual persistent activity, fewer active clades, or lower population.
+- Specific verification command or output: `npm test && npx tsx src/clade-activity-relabel-null-best-short-stack-study.ts --generated-at 2026-03-12T00:00:00.000Z && npx tsx src/clade-activity-relabel-null-cladogenesis-trait-novelty-smoke-study.ts --generated-at 2026-03-12T00:00:00.000Z`.
 
 ## Stop Conditions
-- Stop after one generic smoke helper plus one shared best-stack preset and the wrapper conversions for the relabel-null smoke scripts that already share the same summary shape; do not refactor sweep studies or split `src/simulation.ts` in the same session.
-- If a generic helper starts requiring awkward generic typing across incompatible result shapes, shrink scope to shared preset/config plus shared CLI and summary extraction for the March 12 smoke scripts only.
+- Stop after one reusable diagnostic schema is wired into relabel-null smoke and best-stack studies; do not add generic CSV exporters or full per-tick traces in the same session.
+- If window-level diagnostics cause heavy type churn, shrink scope to per-seed final-summary and persistent-activity comparisons, then document the remaining blind spot in the artifact output.
 
 ## Assumptions / Unknowns
-- Assumption: duplicated study scaffolding is now consuming more future progress than another single toggle would add.
-- Unknown: whether one helper can cleanly cover both boolean and numeric toggle scripts without forcing a larger `activity.ts` redesign.
+- Assumption: existing step summaries and taxon histories are sufficient to distinguish fewer founders from weaker survivors without changing simulation rules.
+- Unknown: whether per-window diagnostics are enough, or whether the real failure only becomes visible in finer step-level turnover traces.
