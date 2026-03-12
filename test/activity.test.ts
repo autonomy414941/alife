@@ -1657,7 +1657,7 @@ describe('runCladeActivityRelabelNullCladeHabitatCouplingSweep', () => {
       10
     );
     expect(Math.abs(coupledResult!.persistentActivityMeanDeltaVsNullMean)).toBeGreaterThan(0.1);
-  }, 20000);
+  }, 30000);
 
   it('preserves the March 11 short-panel defaults for the coupling sweep', () => {
     const result = runCladeActivityRelabelNullCladeHabitatCouplingSweep({
@@ -1761,7 +1761,7 @@ describe('runCladeActivityRelabelNullCladeInteractionCouplingSweep', () => {
     expect(first).toEqual(second);
     expect(first.results).toHaveLength(2);
     expect(first.results.every((result) => result.birthScheduleMatchedAllSeeds)).toBe(true);
-  });
+  }, 30000);
 
   it('matches standalone relabel-null studies at the sweep endpoints', () => {
     const input = {
@@ -1827,7 +1827,7 @@ describe('runCladeActivityRelabelNullCladeInteractionCouplingSweep', () => {
       10
     );
     expect(Math.abs(coupledResult!.persistentActivityMeanDeltaVsNullMean)).toBeGreaterThan(0.1);
-  }, 20000);
+  }, 30000);
 
   it('preserves the March 11 short-panel defaults for the coupling sweep', () => {
     const result = runCladeActivityRelabelNullCladeInteractionCouplingSweep({

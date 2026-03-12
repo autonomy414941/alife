@@ -638,6 +638,79 @@ describe('LifeSimulation', () => {
     });
   });
 
+  it('steers vulnerable adults away from predator pressure when encounter risk aversion is enabled', () => {
+    const buildSimulation = (encounterRiskAversion: number) =>
+      new LifeSimulation({
+        seed: 19,
+        config: {
+          width: 5,
+          height: 3,
+          maxResource: 2,
+          resourceRegen: 0,
+          biomeBands: 1,
+          biomeContrast: 0,
+          decompositionBase: 0,
+          decompositionEnergyFraction: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          dispersalPressure: 0,
+          dispersalRadius: 1,
+          habitatPreferenceStrength: 0,
+          predationPressure: 1,
+          trophicForagingPenalty: 0,
+          defenseForagingPenalty: 0,
+          encounterRiskAversion,
+          lineageHarvestCrowdingPenalty: 0,
+          lineageDispersalCrowdingPenalty: 0,
+          harvestCap: 0,
+          reproduceProbability: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 2,
+            y: 1,
+            energy: 10,
+            lineage: 1,
+            species: 1,
+            genome: { metabolism: 0.3, harvest: 2.8, aggression: 0.2 }
+          },
+          {
+            x: 3,
+            y: 1,
+            energy: 10,
+            lineage: 2,
+            species: 2,
+            genome: { metabolism: 0.3, harvest: 0.4, aggression: 1 }
+          }
+        ]
+      });
+
+    const withoutRisk = buildSimulation(0);
+    const withRisk = buildSimulation(1);
+
+    for (const sim of [withoutRisk, withRisk]) {
+      for (let y = 0; y < 3; y += 1) {
+        for (let x = 0; x < 5; x += 1) {
+          sim.setResource(x, y, 0);
+        }
+      }
+      sim.setResource(3, 1, 1.6);
+      sim.setResource(1, 1, 1);
+    }
+
+    withoutRisk.step();
+    withRisk.step();
+
+    const withoutRiskFocal = withoutRisk.snapshot().agents.find((agent) => agent.id === 1);
+    const withRiskFocal = withRisk.snapshot().agents.find((agent) => agent.id === 1);
+    const withRiskPredator = withRisk.snapshot().agents.find((agent) => agent.id === 2);
+
+    expect(withoutRiskFocal).toMatchObject({ x: 3, y: 1 });
+    expect(withRiskFocal).toMatchObject({ x: 1, y: 1 });
+    expect(withRiskPredator).toMatchObject({ x: 3, y: 1 });
+  });
+
   it('can enable ecology-scored offspring settlement without lineage settlement crowding', () => {
     const buildSimulation = (offspringSettlementEcologyScoring: boolean) =>
       new LifeSimulation({
@@ -756,6 +829,125 @@ describe('LifeSimulation', () => {
       species: 1,
       x: 3,
       y: 0
+    });
+  });
+
+  it('steers ecology-scored offspring settlement away from predator pressure when encounter risk aversion is enabled', () => {
+    const buildSimulation = (encounterRiskAversion: number) =>
+      new LifeSimulation({
+        seed: 29,
+        config: {
+          width: 5,
+          height: 3,
+          maxResource: 2,
+          resourceRegen: 0,
+          biomeBands: 1,
+          biomeContrast: 0,
+          decompositionBase: 0,
+          decompositionEnergyFraction: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          dispersalPressure: 0,
+          dispersalRadius: 1,
+          habitatPreferenceStrength: 0,
+          predationPressure: 1,
+          trophicForagingPenalty: 0,
+          defenseForagingPenalty: 0,
+          lineageHarvestCrowdingPenalty: 0,
+          lineageDispersalCrowdingPenalty: 0,
+          lineageOffspringSettlementCrowdingPenalty: 0,
+          offspringSettlementEcologyScoring: true,
+          encounterRiskAversion,
+          harvestCap: 0,
+          reproduceProbability: 0,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0,
+          speciationThreshold: 1,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 2,
+            y: 1,
+            energy: 30,
+            lineage: 1,
+            species: 1,
+            genome: { metabolism: 0.3, harvest: 2.8, aggression: 0.2 }
+          },
+          {
+            x: 3,
+            y: 1,
+            energy: 10,
+            lineage: 2,
+            species: 2,
+            genome: { metabolism: 0.3, harvest: 0.4, aggression: 1 }
+          }
+        ]
+      });
+
+    const reproduceChild = (sim: LifeSimulation) => {
+      const internal = sim as unknown as {
+        agents: Array<{
+          id: number;
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+          energy: number;
+          genome: { metabolism: number; harvest: number; aggression: number };
+        }>;
+        buildOccupancyGrid: (agents?: Array<{ x: number; y: number }>) => number[][];
+        buildLineageOccupancyGrid: (
+          agents?: Array<{ lineage: number; x: number; y: number }>
+        ) => Map<number, number[][]>;
+        reproduce: (
+          parent: {
+            id: number;
+            lineage: number;
+            species: number;
+            x: number;
+            y: number;
+            energy: number;
+            genome: { metabolism: number; harvest: number; aggression: number };
+          },
+          occupancy: number[][],
+          lineageOccupancy: Map<number, number[][]>
+        ) => {
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+        };
+      };
+
+      for (let y = 0; y < 3; y += 1) {
+        for (let x = 0; x < 5; x += 1) {
+          sim.setResource(x, y, 0);
+        }
+      }
+      sim.setResource(3, 1, 1.6);
+      sim.setResource(1, 1, 1);
+
+      const parent = internal.agents[0];
+      const occupancy = internal.buildOccupancyGrid(internal.agents);
+      const lineageOccupancy = internal.buildLineageOccupancyGrid(internal.agents);
+      return internal.reproduce(parent, occupancy, lineageOccupancy);
+    };
+
+    const withoutRisk = reproduceChild(buildSimulation(0));
+    const withRisk = reproduceChild(buildSimulation(1));
+
+    expect(withoutRisk).toMatchObject({
+      lineage: 1,
+      species: 1,
+      x: 3,
+      y: 1
+    });
+    expect(withRisk).toMatchObject({
+      lineage: 1,
+      species: 1,
+      x: 1,
+      y: 1
     });
   });
 
