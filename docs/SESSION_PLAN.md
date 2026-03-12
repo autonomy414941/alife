@@ -1,71 +1,71 @@
 # Session Plan — 2026-03-12
 
 ## Compact Context
-- `npm`/TypeScript/vitest repo with deterministic simulation tests and several short relabel-null smoke-study scripts already wired through `package.json`.
-- The best recent short result is still `docs/clade_activity_relabel_null_offspring_ecology_settlement_smoke_2026-03-12.json`: enabling `offspringSettlementEcologyScoring` raises `persistentActivityMeanDeltaVsNullMean` from `+20.285714285714263` to `+29.25000000000003` while keeping matched birth schedules.
-- `docs/clade_activity_relabel_null_encounter_risk_smoke_2026-03-12.json` shows the next spatial tweak failed hard: `encounterRiskAversion=1` flips the same short metric to `-60.78571428571427`, with `persistentWindowFractionDeltaVsNullMean` still `0`.
-- The canonical anti-evidence remains `docs/clade_activity_relabel_null_2026-03-10.json`: at `4000` steps, actual clades are still strongly below the relabel-null on persistent activity at cladogenesis thresholds `1` and `1.2`.
-- The simulation already has seasonality, localized disturbance, and fertility-scaled decomposition, but `recycleDeadAgents()` returns biomass only to the death cell.
-- The last five commits stayed on kin-aware spatial ecology, so the next bet must move to a different axis.
+- `src/simulation.ts` and `src/activity.ts` are both over `2500` lines, and seven relabel-null smoke-study entrypoints in `src/` now share near-identical structure.
+- The current best short stack is `lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, `offspringSettlementEcologyScoring=true`, `encounterRiskAversion=0`, `decompositionSpilloverFraction=0`.
+- `docs/clade_activity_relabel_null_offspring_ecology_settlement_smoke_2026-03-12.json` improved the short threshold-`1` delta to `+29.25`, but `persistentWindowFractionDeltaVsNullMean` stayed `0`.
+- The two follow-up tweaks both underperformed that stack: `docs/clade_activity_relabel_null_encounter_risk_smoke_2026-03-12.json` fell to `-60.79`, and `docs/clade_activity_relabel_null_decomposition_spillover_smoke_2026-03-12.json` fell to `+14.86`.
+- The canonical anti-evidence still comes from `docs/clade_activity_relabel_null_2026-03-10.json`: at `4000` steps, actual clades remain below the matched relabel-null at cladogenesis thresholds `1` and `1.2`.
+- `runCladeActivityRelabelNullStudy()` already accepts injected simulation config, so a dedicated long-horizon validation entrypoint is low-overhead.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
 | Kin-aware spatial ecology | 6 | e5243bf |
 | Clade interaction inheritance | 2 | 220dd20 |
-| Clade habitat inheritance | 2 | 14e9fca |
-| Environmental feedback / disturbance | 0 | — |
+| Environmental feedback / nutrient recycling | 1 | 6631bd9 |
+| Clade habitat inheritance | 1 | 14e9fca |
 | Reproduction mechanics | 0 | — |
 | Communication / signaling | 0 | — |
 
 Dominant axis: Kin-aware spatial ecology (6/10)
-Underexplored axes: environmental feedback / disturbance, reproduction mechanics, communication / signaling
+Underexplored axes: environmental feedback / nutrient recycling, clade habitat inheritance, reproduction mechanics, communication / signaling
 
 ## Project State
-- The simulation already includes cladogenesis, clade habitat/interaction coupling, trophic and defense traits, seasonality, localized disturbance, and decomposition analytics.
-- Recent sessions moved from clade-level inheritance sweeps into a run of kin-aware harvest/dispersal/settlement/encounter mechanics after the long relabel-null panel came back negative.
-- The important gap is endogenous environmental memory: resources mostly regenerate exogenously, while deaths and disturbances do not yet create reusable spatial nutrient structure beyond the single impacted cell.
+- The simulation already has cladogenesis, clade habitat and interaction coupling, kin-aware harvest/dispersal/encounter/settlement knobs, disturbance, and decomposition spillover with deterministic tests for recent mechanics.
+- Recent sessions have been optimizing a short `1000`-step clade-activity delta at threshold `1`; only ecology-scored juvenile placement improved that short metric, and the next two tweaks did not.
+- The important gap is long-horizon falsification of the current best stack, while study-entrypoint duplication is also starting to tax iteration speed.
 
 ## External Context
-- `Spatial Pattern Formation in Eco-Evolutionary Games with Environment-Driven Motion` (arXiv, 2025): changing local environmental quality and movement coupling can produce qualitatively different spatial structure, which supports testing resource-field feedbacks instead of another agent-only avoidance term. Source: arXiv.
-- `Predicting ecosystem changes by a new model of ecosystem evolution` (Scientific Reports, 2023): explicit nutrient-cycle and decomposition dynamics changed long-run ecosystem structure, which supports making biomass recycling spatially consequential instead of point-local. Source: Scientific Reports.
+- [Characterizing Open-Ended Evolution Through Undecidability Mechanisms in Random Boolean Networks](https://arxiv.org/abs/2512.15534) (arXiv, 2025): argues OEE diagnostics should separate enduring innovation from transient noise, which directly supports rerunning the long-horizon panel before treating a short win as meaningful.
+- [Adaptive Exploration in Lenia with Intrinsic Multi-Objective Ranking](https://arxiv.org/abs/2506.02990) (arXiv, 2025): sustained exploration pressure improved long-run novelty in Lenia, which suggests local short-horizon gains here need horizon checks before more tuning.
 
 ## Research Gaps
-- If some recycled biomass spills into neighboring cells instead of only the corpse cell, does the current best kin-aware stack gain persistent-window coverage or at least preserve its short activity advantage without breaking matched birth schedules?
+- Does the current best short stack still underperform the matched relabel-null at `4000` steps, or has the `+29.25` short-horizon gain actually shifted the canonical anti-evidence at thresholds `1` and `1.2`?
 
 ## Current Anti-Evidence
-- No artifact yet shows a positive actual-vs-null advantage on the canonical `4000`-step horizon; persistent clade activity remains strongly negative versus the relabel-null baseline.
-- Even the short wins still leave `persistentWindowFractionDeltaVsNullMean = 0`, so the system has not yet shown broader ongoing renewal instead of denser transient activity.
+- No current artifact shows positive `4000`-step actual-vs-null persistent activity on the canonical relabel-null panel; the 2026-03-10 baseline is still strongly negative.
+- Every short smoke artifact on 2026-03-12 still has `persistentWindowFractionDeltaVsNullMean = 0`, so even the best configuration has not broadened persistent-window coverage.
 
 ## Candidate Bets
-- A: Add an opt-in decomposition spillover fraction so deaths fertilize the four wrapped neighboring cells as well as the death cell, then run a 2-point short relabel-null smoke on top of the current best stack.
-  Why now: it is a localized mechanism change on a completely different axis that can reuse the existing decomposition test surface and relabel-null study path.
+- A: [validate] Run the canonical `4000`-step relabel-null panel on the current best short stack and emit a dedicated artifact for direct comparison with `docs/clade_activity_relabel_null_2026-03-10.json`.
+  Why now: six feat sessions have passed since the last hard validation, and the strongest claim in the repo is still unsupported at the long horizon.
+  Est. low-context human time: 35m
+  Main risk: the result may still be negative, leaving no new mechanism added.
+- B: [feat] Add a small post-disturbance regrowth pulse or refugia-edge fertility bonus, then run a 2-point short relabel-null smoke.
+  Why now: it targets an underexplored environmental-feedback axis that is structurally different from the kin-aware tuning streak.
   Est. low-context human time: 45m
-  Main risk: spillover may smooth the landscape too much and reduce ecological differentiation instead of increasing it.
-- B: Add a short-lived post-disturbance regrowth pulse on shocked cells or refugia edges, then run a narrow disturbance smoke.
-  Why now: disturbance scheduling and analytics already exist, so a small regenerative response can be verified without inventing new measurement infrastructure.
-  Est. low-context human time: 45m
-  Main risk: synchronized regrowth pulses may wash out turnover and create one global rhythm.
-- C: Run the canonical `4000`-step relabel-null panel on the current best offspring-ecology stack with no new mechanics.
-  Why now: the short gain still needs a hard falsification pass before more local tuning accumulates.
-  Est. low-context human time: 30m
-  Main risk: it spends the session on measurement only and leaves the environmental-feedback gap untouched.
+  Main risk: synchronized regrowth may create another global rhythm without improving persistence.
+- C: [refactor] Extract a generic paired-setting relabel-null smoke helper and migrate the repeated smoke-study entrypoints to it.
+  Why now: seven nearly identical scripts plus `>2500`-line core files are now a real code-health drag on the next few sessions.
+  Est. low-context human time: 50m
+  Main risk: the refactor can consume the session without changing or validating simulation behavior.
 
 ## Selected Bet
-Implement an opt-in `decompositionSpilloverFraction` with fixed radius-1 cardinal spillover so a configurable share of recycled biomass leaves the corpse cell and fertilizes neighboring cells instead. Add one deterministic test proving neighbor cells gain resources while total recycled biomass is conserved before clamping, then add a 2-point `study:clade-activity-relabel-null-decomposition-spillover-smoke` off/on comparison atop the current best short stack (`lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, `offspringSettlementEcologyScoring=true`, `encounterRiskAversion=0`).
+Run the canonical `4000`-step relabel-null panel on the current best short stack, not another new knob. Implement one dedicated study entrypoint that reuses `runCladeActivityRelabelNullStudy()` with `lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, `offspringSettlementEcologyScoring=true`, `encounterRiskAversion=0`, and `decompositionSpilloverFraction=0`, then compare its threshold `1` and `1.2` aggregates against the 2026-03-10 baseline artifact.
 
 ## Why This Fits The Horizon
-- The code path is narrow: one config field, `recycleDeadAgents()` resource placement, one deterministic test, and one small smoke-study script plus `package.json` entry.
-- Success is autonomously checkable with `npm test`, `npm run build`, and a single off/on study artifact.
+- The code change is narrow: one study script, one script entry if needed, and one artifact; the simulation core stays untouched.
+- Success is autonomously verifiable from deterministic JSON output plus `npm run build` and the study command; no human interpretation is needed to decide whether the long-horizon anti-evidence moved.
 
 ## Success Evidence
-- A new artifact such as `docs/clade_activity_relabel_null_decomposition_spillover_smoke_2026-03-12.json` reports off/on `persistentWindowFractionDeltaVsNullMean`, `persistentActivityMeanDeltaVsNullMean`, and `birthScheduleMatchedAllSeeds`.
-- Specific verification command or output: `npm test && npm run build && npm run study:clade-activity-relabel-null-decomposition-spillover-smoke`, plus a deterministic test where one death at `(x,y)` increases adjacent resources when spillover is enabled.
+- A new artifact such as `docs/clade_activity_relabel_null_best_short_stack_2026-03-12.json` reports threshold `1` and `1.2` aggregates for `minSurvivalTicks` `50` and `100`.
+- Specific verification command or output: `npm run build && npm run study:clade-activity-relabel-null-best-short-stack`, followed by a direct comparison showing whether `persistentActivityMeanDeltaVsNullMean` improved over `-317.63` and `-247.32` at `minSurvivalTicks=50`.
 
 ## Stop Conditions
-- Stop after one spillover knob, one deterministic recycling test, and one 2-point smoke result; do not also add disturbance memory, delayed nutrient decay, or more kin-aware movement tuning.
-- If conserving recycled biomass across wrapped neighbors requires refactors beyond config plumbing and `recycleDeadAgents()`, shrink scope to fixed equal sharing over the four cardinal neighbors or stop with the negative result.
+- Stop after producing one dedicated long-horizon artifact for the best short stack; do not add another mechanic in the same session.
+- If the new script starts turning into a generalized study framework or requires refactoring `activity.ts`, shrink scope to a single-purpose entrypoint and document the negative result.
 
 ## Assumptions / Unknowns
-- Assumption: point-local decomposition is currently trapping mortality feedback inside the same patch instead of creating exploitable nutrient gradients.
-- Unknown: whether spillover creates richer successional mosaics or simply homogenizes food and leaves persistent-window coverage unchanged.
+- Assumption: the `1000`-step `+29.25` improvement is large enough to justify one long-horizon falsification pass before more feature work.
+- Unknown: whether the current best stack helps at `4000` steps or only shifts early transient activity without changing long-run persistent renewal.
