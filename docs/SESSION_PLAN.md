@@ -1,71 +1,73 @@
 # Session Plan — 2026-03-12
 
 ## Compact Context
-- `src/simulation.ts` and `src/activity.ts` are both over `2500` lines, and seven relabel-null smoke-study entrypoints in `src/` now share near-identical structure.
-- The current best short stack is `lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, `offspringSettlementEcologyScoring=true`, `encounterRiskAversion=0`, `decompositionSpilloverFraction=0`.
-- `docs/clade_activity_relabel_null_offspring_ecology_settlement_smoke_2026-03-12.json` improved the short threshold-`1` delta to `+29.25`, but `persistentWindowFractionDeltaVsNullMean` stayed `0`.
-- The two follow-up tweaks both underperformed that stack: `docs/clade_activity_relabel_null_encounter_risk_smoke_2026-03-12.json` fell to `-60.79`, and `docs/clade_activity_relabel_null_decomposition_spillover_smoke_2026-03-12.json` fell to `+14.86`.
-- The canonical anti-evidence still comes from `docs/clade_activity_relabel_null_2026-03-10.json`: at `4000` steps, actual clades remain below the matched relabel-null at cladogenesis thresholds `1` and `1.2`.
-- `runCladeActivityRelabelNullStudy()` already accepts injected simulation config, so a dedicated long-horizon validation entrypoint is low-overhead.
+- `src/simulation.ts` and `src/activity.ts` are both over `2500` lines, and the relabel-null study entrypoints in `src/` now repeat a lot of CLI and JSON scaffolding.
+- The current validated best stack is `lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, `lineageOffspringSettlementCrowdingPenalty=0`, `offspringSettlementEcologyScoring=true`, `encounterRiskAversion=0`, `decompositionSpilloverFraction=0`.
+- `docs/clade_activity_relabel_null_best_short_stack_2026-03-12.json` improved the canonical `4000`-step persistent-activity gap versus the 2026-03-10 baseline, but all four canonical cells are still negative against the matched relabel-null.
+- In that same artifact, persistent-window coverage now matches the null in every canonical cell, so the remaining deficit is persistent activity intensity after founding, not missing persistent windows.
+- `shouldFoundNewClade()` in `src/simulation.ts` currently gates new clades only on genome divergence versus the parent lineage founder genome; no ecology or establishment check participates.
+- `test/simulation.test.ts` already covers reproduction, settlement scoring, encounter risk, spillover, and cladogenesis, so a small reproduction mechanic can be verified deterministically.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Kin-aware spatial ecology | 6 | e5243bf |
+| Kin-structured local competition | 4 | e5243bf |
+| Offspring placement / recruitment | 2 | 2421461 |
 | Clade interaction inheritance | 2 | 220dd20 |
+| Long-horizon relabel-null validation | 1 | a843a91 |
 | Environmental feedback / nutrient recycling | 1 | 6631bd9 |
-| Clade habitat inheritance | 1 | 14e9fca |
-| Reproduction mechanics | 0 | — |
+| Trophic dynamics / resource competition | 0 | — |
 | Communication / signaling | 0 | — |
+| Disturbance / resilience | 0 | — |
 
-Dominant axis: Kin-aware spatial ecology (6/10)
-Underexplored axes: environmental feedback / nutrient recycling, clade habitat inheritance, reproduction mechanics, communication / signaling
+Dominant axis: Kin-structured local competition (4/10)
+Underexplored axes: long-horizon relabel-null validation, environmental feedback / nutrient recycling, trophic dynamics / resource competition, communication / signaling, disturbance / resilience
 
 ## Project State
-- The simulation already has cladogenesis, clade habitat and interaction coupling, kin-aware harvest/dispersal/encounter/settlement knobs, disturbance, and decomposition spillover with deterministic tests for recent mechanics.
-- Recent sessions have been optimizing a short `1000`-step clade-activity delta at threshold `1`; only ecology-scored juvenile placement improved that short metric, and the next two tweaks did not.
-- The important gap is long-horizon falsification of the current best stack, while study-entrypoint duplication is also starting to tax iteration speed.
+- The simulation already has cladogenesis, clade habitat and interaction coupling, trophic/defense strategy signals, kin-aware harvest/dispersal/encounter controls, ecology-scored offspring settlement, and decomposition spillover with strong deterministic test coverage.
+- Recent sessions pushed the short-horizon relabel-null delta upward, and the latest validation confirmed that those gains carry into the canonical `4000`-step panel much more than the 2026-03-10 baseline did.
+- The important gap is now narrower and more specific: actual clades persist across windows about as often as the matched null, but they still accumulate less persistent activity once they exist.
 
 ## External Context
-- [Characterizing Open-Ended Evolution Through Undecidability Mechanisms in Random Boolean Networks](https://arxiv.org/abs/2512.15534) (arXiv, 2025): argues OEE diagnostics should separate enduring innovation from transient noise, which directly supports rerunning the long-horizon panel before treating a short win as meaningful.
-- [Adaptive Exploration in Lenia with Intrinsic Multi-Objective Ranking](https://arxiv.org/abs/2506.02990) (arXiv, 2025): sustained exploration pressure improved long-run novelty in Lenia, which suggests local short-horizon gains here need horizon checks before more tuning.
+- [Characterizing Open-Ended Evolution Through Undecidability Mechanisms in Random Boolean Networks](https://arxiv.org/abs/2512.15534): argues that open-endedness claims should distinguish durable generative structure from transient novelty bursts, which fits the need to improve persistent activity rather than just early wins.
+- [Adaptive Exploration in Lenia with Intrinsic Multi-Objective Ranking](https://arxiv.org/abs/2506.02990): sustained novelty improved when exploration pressure was made selective, which suggests making clade founding more discriminating may be more useful than simply increasing raw reproduction.
 
 ## Research Gaps
-- Does the current best short stack still underperform the matched relabel-null at `4000` steps, or has the `+29.25` short-horizon gain actually shifted the canonical anti-evidence at thresholds `1` and `1.2`?
+- Does ecology-gated cladogenesis improve `persistentActivityMeanDeltaVsNullMean` on a short threshold-`1` relabel-null smoke while preserving the current best stack's matched persistent-window coverage?
 
 ## Current Anti-Evidence
-- No current artifact shows positive `4000`-step actual-vs-null persistent activity on the canonical relabel-null panel; the 2026-03-10 baseline is still strongly negative.
-- Every short smoke artifact on 2026-03-12 still has `persistentWindowFractionDeltaVsNullMean = 0`, so even the best configuration has not broadened persistent-window coverage.
+- Even the best validated stack still loses to the matched relabel-null at all four canonical `4000`-step cells: `-34.63`, `-111.78`, `-18.24`, and `-93.65` on `persistentActivityMeanDeltaVsNullMean`.
+- The 2026-03-12 validation artifact suggests the remaining failure mode is low activity intensity per persistent clade, not absence of persistent clade windows.
 
 ## Candidate Bets
-- A: [validate] Run the canonical `4000`-step relabel-null panel on the current best short stack and emit a dedicated artifact for direct comparison with `docs/clade_activity_relabel_null_2026-03-10.json`.
-  Why now: six feat sessions have passed since the last hard validation, and the strongest claim in the repo is still unsupported at the long horizon.
-  Est. low-context human time: 35m
-  Main risk: the result may still be negative, leaving no new mechanism added.
-- B: [feat] Add a small post-disturbance regrowth pulse or refugia-edge fertility bonus, then run a 2-point short relabel-null smoke.
-  Why now: it targets an underexplored environmental-feedback axis that is structurally different from the kin-aware tuning streak.
+- A: [feat] Add an ecology-gated cladogenesis threshold so diverged offspring found a new clade only when their chosen settlement site is sufficiently better than the parent site on local ecology score, then run a 2-point short relabel-null smoke on top of the current best stack.
+  Why now: the latest validation narrowed the gap enough to point at founder quality as the next bottleneck, and this targets reproduction mechanics rather than another kin-crowding tweak.
   Est. low-context human time: 45m
-  Main risk: synchronized regrowth may create another global rhythm without improving persistence.
-- C: [refactor] Extract a generic paired-setting relabel-null smoke helper and migrate the repeated smoke-study entrypoints to it.
-  Why now: seven nearly identical scripts plus `>2500`-line core files are now a real code-health drag on the next few sessions.
+  Main risk: it may just suppress clade births and novelty without improving actual-vs-null persistent activity.
+- B: [refactor] Extract a shared relabel-null smoke-study helper and migrate the repeated smoke entrypoints before adding another mechanism.
+  Why now: study-script duplication is now real iteration drag, and the code-health triggers are already active.
   Est. low-context human time: 50m
-  Main risk: the refactor can consume the session without changing or validating simulation behavior.
+  Main risk: the session ends with cleaner code but no new simulation behavior or evidence about open-endedness.
+- C: [validate] Run a minimal short panel on one existing reproduction-control parameter such as `offspringEnergyFraction` atop the best stack to see whether juvenile viability, not founding logic, is the active bottleneck.
+  Why now: it probes the reproduction hypothesis without touching the large study framework first.
+  Est. low-context human time: 30m
+  Main risk: global reproduction-rate changes may confound crowding and birth schedules, producing an ambiguous read.
 
 ## Selected Bet
-Run the canonical `4000`-step relabel-null panel on the current best short stack, not another new knob. Implement one dedicated study entrypoint that reuses `runCladeActivityRelabelNullStudy()` with `lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, `offspringSettlementEcologyScoring=true`, `encounterRiskAversion=0`, and `decompositionSpilloverFraction=0`, then compare its threshold `1` and `1.2` aggregates against the 2026-03-10 baseline artifact.
+Add one new reproduction mechanic: ecology-gated cladogenesis. After a diverged offspring picks its settlement site, compare that site's local ecology score to the parent site's score and require a positive configurable improvement before founding a new clade; otherwise keep the offspring in the parent lineage. Verify it with deterministic simulation tests and one short threshold-`1` relabel-null smoke comparing gate off vs on atop the current best stack.
 
 ## Why This Fits The Horizon
-- The code change is narrow: one study script, one script entry if needed, and one artifact; the simulation core stays untouched.
-- Success is autonomously verifiable from deterministic JSON output plus `npm run build` and the study command; no human interpretation is needed to decide whether the long-horizon anti-evidence moved.
+- The code change is narrow: one new config knob, one branch in the existing reproduction/cladogenesis path, one focused test addition, and one off/on smoke script.
+- Success is autonomously verifiable with deterministic unit tests plus a single JSON artifact comparing the gated and ungated settings.
 
 ## Success Evidence
-- A new artifact such as `docs/clade_activity_relabel_null_best_short_stack_2026-03-12.json` reports threshold `1` and `1.2` aggregates for `minSurvivalTicks` `50` and `100`.
-- Specific verification command or output: `npm run build && npm run study:clade-activity-relabel-null-best-short-stack`, followed by a direct comparison showing whether `persistentActivityMeanDeltaVsNullMean` improved over `-317.63` and `-247.32` at `minSurvivalTicks=50`.
+- A new artifact such as `docs/clade_activity_relabel_null_cladogenesis_ecology_gate_smoke_2026-03-12.json` reports gate-off vs gate-on summaries and shows whether `persistentActivityMeanDeltaVsNullMean` improves over the current short best baseline.
+- Specific verification command or output: `npm run build && npm test && tsx src/clade-activity-relabel-null-cladogenesis-ecology-gate-smoke-study.ts`, with matched birth schedules preserved and the gated summary reported explicitly.
 
 ## Stop Conditions
-- Stop after producing one dedicated long-horizon artifact for the best short stack; do not add another mechanic in the same session.
-- If the new script starts turning into a generalized study framework or requires refactoring `activity.ts`, shrink scope to a single-purpose entrypoint and document the negative result.
+- Stop after one off/on gate comparison; do not add a broader parameter sweep or refactor study infrastructure in the same session.
+- If the gate worsens the short relabel-null delta or requires deeper surgery in `activity.ts` or the study harness, shrink scope to the deterministic tests plus one negative-result artifact.
 
 ## Assumptions / Unknowns
-- Assumption: the `1000`-step `+29.25` improvement is large enough to justify one long-horizon falsification pass before more feature work.
-- Unknown: whether the current best stack helps at `4000` steps or only shifts early transient activity without changing long-run persistent renewal.
+- Assumption: the latest long-horizon anti-evidence is now mostly about weak or over-fragmented clade founding, not adult movement or harvest behavior.
+- Unknown: whether stricter founding improves durable clade coherence or simply reduces novelty by creating fewer clades.

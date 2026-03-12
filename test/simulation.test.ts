@@ -540,7 +540,7 @@ describe('LifeSimulation', () => {
       config: {
         width: 5,
         height: 1,
-        maxResource: 0,
+        maxResource: 6,
         resourceRegen: 0,
         biomeBands: 1,
         biomeContrast: 0,
@@ -718,7 +718,7 @@ describe('LifeSimulation', () => {
         config: {
           width: 5,
           height: 1,
-          maxResource: 0,
+          maxResource: 6,
           resourceRegen: 0,
           biomeBands: 1,
           biomeContrast: 0,
@@ -827,6 +827,212 @@ describe('LifeSimulation', () => {
     expect(withScoring).toMatchObject({
       lineage: 1,
       species: 1,
+      x: 3,
+      y: 0
+    });
+  });
+
+  it('preserves clade founding when the cladogenesis ecology gate is disabled', () => {
+    const sim = new LifeSimulation({
+      seed: 3,
+      config: {
+        width: 5,
+        height: 1,
+        maxResource: 6,
+        resourceRegen: 0,
+        biomeBands: 1,
+        biomeContrast: 0,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        dispersalPressure: 0,
+        dispersalRadius: 1,
+        habitatPreferenceStrength: 0,
+        trophicForagingPenalty: 0,
+        defenseForagingPenalty: 0,
+        lineageHarvestCrowdingPenalty: 0,
+        lineageDispersalCrowdingPenalty: 0,
+        lineageOffspringSettlementCrowdingPenalty: 0,
+        offspringSettlementEcologyScoring: true,
+        cladogenesisEcologyAdvantageThreshold: -1,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0,
+        speciationThreshold: 0,
+        cladogenesisThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 2,
+          y: 0,
+          energy: 30,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    const internal = sim as unknown as {
+      agents: Array<{
+        id: number;
+        lineage: number;
+        species: number;
+        x: number;
+        y: number;
+        energy: number;
+        genome: { metabolism: number; harvest: number; aggression: number };
+      }>;
+      buildOccupancyGrid: (agents?: Array<{ x: number; y: number }>) => number[][];
+      buildLineageOccupancyGrid: (
+        agents?: Array<{ lineage: number; x: number; y: number }>
+      ) => Map<number, number[][]>;
+      reproduce: (
+        parent: {
+          id: number;
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+          energy: number;
+          genome: { metabolism: number; harvest: number; aggression: number };
+        },
+        occupancy: number[][],
+        lineageOccupancy: Map<number, number[][]>
+      ) => {
+        lineage: number;
+        species: number;
+        x: number;
+        y: number;
+      };
+    };
+
+    for (let x = 0; x < 5; x += 1) {
+      sim.setResource(x, 0, 0);
+    }
+    sim.setResource(2, 0, 4);
+    sim.setResource(3, 0, 5);
+
+    const parent = internal.agents[0];
+    const occupancy = internal.buildOccupancyGrid(internal.agents);
+    const lineageOccupancy = internal.buildLineageOccupancyGrid(internal.agents);
+    const child = internal.reproduce(parent, occupancy, lineageOccupancy);
+
+    expect(child).toMatchObject({
+      lineage: 2,
+      species: 2,
+      x: 3,
+      y: 0
+    });
+  });
+
+  it('requires the configured ecology advantage before a diverged offspring founds a new clade', () => {
+    const buildSimulation = (cladogenesisEcologyAdvantageThreshold: number) =>
+      new LifeSimulation({
+        seed: 3,
+        config: {
+          width: 5,
+          height: 1,
+          maxResource: 6,
+          resourceRegen: 0,
+          biomeBands: 1,
+          biomeContrast: 0,
+          decompositionBase: 0,
+          decompositionEnergyFraction: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          dispersalPressure: 0,
+          dispersalRadius: 1,
+          habitatPreferenceStrength: 0,
+          trophicForagingPenalty: 0,
+          defenseForagingPenalty: 0,
+          lineageHarvestCrowdingPenalty: 0,
+          lineageDispersalCrowdingPenalty: 0,
+          lineageOffspringSettlementCrowdingPenalty: 0,
+          offspringSettlementEcologyScoring: true,
+          cladogenesisEcologyAdvantageThreshold,
+          harvestCap: 0,
+          reproduceProbability: 0,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0,
+          speciationThreshold: 0,
+          cladogenesisThreshold: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 2,
+            y: 0,
+            energy: 30,
+            lineage: 1,
+            species: 1,
+            genome: { metabolism: 1, harvest: 1, aggression: 0 }
+          }
+        ]
+      });
+
+    const reproduceChild = (sim: LifeSimulation) => {
+      const internal = sim as unknown as {
+        agents: Array<{
+          id: number;
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+          energy: number;
+          genome: { metabolism: number; harvest: number; aggression: number };
+        }>;
+        buildOccupancyGrid: (agents?: Array<{ x: number; y: number }>) => number[][];
+        buildLineageOccupancyGrid: (
+          agents?: Array<{ lineage: number; x: number; y: number }>
+        ) => Map<number, number[][]>;
+        reproduce: (
+          parent: {
+            id: number;
+            lineage: number;
+            species: number;
+            x: number;
+            y: number;
+            energy: number;
+            genome: { metabolism: number; harvest: number; aggression: number };
+          },
+          occupancy: number[][],
+          lineageOccupancy: Map<number, number[][]>
+        ) => {
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+        };
+      };
+
+      for (let x = 0; x < 5; x += 1) {
+        sim.setResource(x, 0, 0);
+      }
+      sim.setResource(2, 0, 4);
+      sim.setResource(3, 0, 5);
+
+      const parent = internal.agents[0];
+      const occupancy = internal.buildOccupancyGrid(internal.agents);
+      const lineageOccupancy = internal.buildLineageOccupancyGrid(internal.agents);
+      return internal.reproduce(parent, occupancy, lineageOccupancy);
+    };
+
+    const blocked = reproduceChild(buildSimulation(1.1));
+    const allowed = reproduceChild(buildSimulation(0.5));
+
+    expect(blocked).toMatchObject({
+      lineage: 1,
+      species: 2,
+      x: 3,
+      y: 0
+    });
+    expect(allowed).toMatchObject({
+      lineage: 2,
+      species: 2,
       x: 3,
       y: 0
     });

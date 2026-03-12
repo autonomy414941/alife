@@ -73,6 +73,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   lineageHarvestCrowdingPenalty: 0,
   lineageOffspringSettlementCrowdingPenalty: 0,
   offspringSettlementEcologyScoring: false,
+  cladogenesisEcologyAdvantageThreshold: -1,
   harvestCap: 2.5,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
@@ -147,6 +148,13 @@ interface DisturbanceEventState {
 
 type LineageOccupancyGrid = Map<number, number[][]>;
 type OccupantGrid = Map<number, Agent[]>;
+
+interface OffspringSettlementContext {
+  occupancy: number[][];
+  lineageOccupancy: LineageOccupancyGrid | undefined;
+  occupantsByCell: OccupantGrid | undefined;
+  lineagePenalty: number;
+}
 
 export class LifeSimulation {
   private readonly rng: Rng;
@@ -230,12 +238,16 @@ export class LifeSimulation {
 
     this.resolveEncounters();
 
-    const useOffspringSettlementScoring = this.usesOffspringSettlementScoring();
-    const reproductiveAgents = useOffspringSettlementScoring
+    const useOffspringSettlementContext =
+      this.usesOffspringSettlementScoring() || this.usesCladogenesisEcologyGate();
+    const reproductiveAgents = useOffspringSettlementContext
       ? this.agents.filter((agent) => agent.energy > 0)
       : undefined;
     const reproductionOccupancy = reproductiveAgents ? this.buildOccupancyGrid(reproductiveAgents) : undefined;
-    const reproductionLineageOccupancy = reproductiveAgents ? this.buildLineageOccupancyGrid(reproductiveAgents) : undefined;
+    const reproductionLineageOccupancy =
+      reproductiveAgents && Math.max(0, this.config.lineageOffspringSettlementCrowdingPenalty) > 0
+        ? this.buildLineageOccupancyGrid(reproductiveAgents)
+        : undefined;
     const reproductionOccupantsByCell =
       reproductiveAgents && this.usesEncounterRiskAversion() ? this.buildOccupantGrid(reproductiveAgents) : undefined;
     const offspring: Agent[] = [];
@@ -1768,23 +1780,39 @@ export class LifeSimulation {
       const defenseDelta = this.defenseDeltaFromMutation(parent.genome, childGenome);
       this.speciesDefenseLevel.set(childSpecies, clamp(parentDefense + defenseDelta, 0, 1));
     }
-    const childPos = this.pickOffspringSettlement(
-      {
-        ...parent,
-        species: childSpecies,
-        genome: childGenome
-      },
+    const settlementAgent = {
+      ...parent,
+      species: childSpecies,
+      genome: childGenome
+    };
+    const settlementContext = this.resolveOffspringSettlementContext(
       occupancy,
       lineageOccupancy,
-      occupantsByCell
+      occupantsByCell,
+      this.usesOffspringSettlementScoring()
     );
-    const childLineage = this.shouldFoundNewClade(parent.lineage, diverged, childGenome)
-      ? this.foundClade(childGenome, childPos.x, childPos.y)
-      : parent.lineage;
+    const childPos = this.pickOffspringSettlement(settlementAgent, settlementContext);
+    const cladogenesisContext =
+      settlementContext ??
+      this.resolveOffspringSettlementContext(
+        occupancy,
+        lineageOccupancy,
+        occupantsByCell,
+        this.usesCladogenesisEcologyGate()
+      );
+    const foundNewClade = this.shouldFoundNewClade(
+      parent.lineage,
+      diverged,
+      childGenome,
+      settlementAgent,
+      childPos,
+      cladogenesisContext
+    );
+    const nextLineage = foundNewClade ? this.foundClade(childGenome, childPos.x, childPos.y) : parent.lineage;
 
     return {
       id: this.nextAgentId++,
-      lineage: childLineage,
+      lineage: nextLineage,
       species: childSpecies,
       x: childPos.x,
       y: childPos.y,
@@ -1796,9 +1824,7 @@ export class LifeSimulation {
 
   private pickOffspringSettlement(
     parent: Pick<Agent, 'genome' | 'lineage' | 'species' | 'x' | 'y'>,
-    occupancy?: number[][],
-    lineageOccupancy?: LineageOccupancyGrid,
-    occupantsByCell?: OccupantGrid
+    settlementContext?: OffspringSettlementContext
   ): { x: number; y: number } {
     const neighbors = [
       { x: parent.x, y: parent.y },
@@ -1807,16 +1833,9 @@ export class LifeSimulation {
       { x: parent.x, y: this.wrapY(parent.y + 1) },
       { x: parent.x, y: this.wrapY(parent.y - 1) }
     ];
-    const lineagePenalty = Math.max(0, this.config.lineageOffspringSettlementCrowdingPenalty);
-    if (!this.config.offspringSettlementEcologyScoring && lineagePenalty === 0 && !this.usesEncounterRiskAversion()) {
+    if (!settlementContext) {
       return this.rng.pick(neighbors);
     }
-
-    const aliveAgents = this.agents.filter((agent) => agent.energy > 0);
-    const effectiveOccupancy = occupancy ?? this.buildOccupancyGrid(aliveAgents);
-    const effectiveLineageOccupancy = lineageOccupancy ?? this.buildLineageOccupancyGrid(aliveAgents);
-    const effectiveOccupantsByCell =
-      occupantsByCell ?? (this.usesEncounterRiskAversion() ? this.buildOccupantGrid(aliveAgents) : undefined);
 
     let best = neighbors[0];
     let bestScore = -Infinity;
@@ -1825,10 +1844,10 @@ export class LifeSimulation {
         parent,
         option.x,
         option.y,
-        effectiveOccupancy,
-        effectiveLineageOccupancy,
-        effectiveOccupantsByCell,
-        lineagePenalty,
+        settlementContext.occupancy,
+        settlementContext.lineageOccupancy,
+        settlementContext.occupantsByCell,
+        settlementContext.lineagePenalty,
         undefined,
         undefined,
         this.rng.float() * 0.05
@@ -1902,11 +1921,48 @@ export class LifeSimulation {
     );
   }
 
+  private usesCladogenesisEcologyGate(): boolean {
+    return (
+      Number.isFinite(this.config.cladogenesisEcologyAdvantageThreshold) &&
+      this.config.cladogenesisEcologyAdvantageThreshold >= 0
+    );
+  }
+
   private usesEncounterRiskAversion(): boolean {
     return this.config.encounterRiskAversion > 0;
   }
 
-  private shouldFoundNewClade(parentLineage: number, diverged: boolean, childGenome: Genome): boolean {
+  private resolveOffspringSettlementContext(
+    occupancy?: number[][],
+    lineageOccupancy?: LineageOccupancyGrid,
+    occupantsByCell?: OccupantGrid,
+    required = true
+  ): OffspringSettlementContext | undefined {
+    if (!required) {
+      return undefined;
+    }
+
+    const lineagePenalty = Math.max(0, this.config.lineageOffspringSettlementCrowdingPenalty);
+    const aliveAgents = this.agents.filter((agent) => agent.energy > 0);
+    return {
+      occupancy: occupancy ?? this.buildOccupancyGrid(aliveAgents),
+      lineageOccupancy:
+        lineageOccupancy ??
+        (lineagePenalty > 0 ? this.buildLineageOccupancyGrid(aliveAgents) : undefined),
+      occupantsByCell:
+        occupantsByCell ?? (this.usesEncounterRiskAversion() ? this.buildOccupantGrid(aliveAgents) : undefined),
+      lineagePenalty
+    };
+  }
+
+  private shouldFoundNewClade(
+    parentLineage: number,
+    diverged: boolean,
+    childGenome: Genome,
+    settlementAgent: Pick<Agent, 'genome' | 'lineage' | 'species' | 'x' | 'y'>,
+    childPos: { x: number; y: number },
+    settlementContext: OffspringSettlementContext | undefined
+  ): boolean {
     if (!diverged) {
       return false;
     }
@@ -1917,7 +1973,54 @@ export class LifeSimulation {
     }
 
     const founderGenome = this.getCladeFounderGenome(parentLineage);
-    return genomeDistance(founderGenome, childGenome) >= threshold;
+    if (genomeDistance(founderGenome, childGenome) < threshold) {
+      return false;
+    }
+
+    return this.passesCladogenesisEcologyGate(settlementAgent, childPos, settlementContext);
+  }
+
+  private passesCladogenesisEcologyGate(
+    settlementAgent: Pick<Agent, 'genome' | 'lineage' | 'species' | 'x' | 'y'>,
+    childPos: { x: number; y: number },
+    settlementContext: OffspringSettlementContext | undefined
+  ): boolean {
+    const threshold = this.config.cladogenesisEcologyAdvantageThreshold;
+    if (!Number.isFinite(threshold) || threshold < 0) {
+      return true;
+    }
+
+    const effectiveSettlementContext = settlementContext ?? this.resolveOffspringSettlementContext();
+    if (!effectiveSettlementContext) {
+      return true;
+    }
+
+    const parentScore = this.localEcologyScore(
+      settlementAgent,
+      settlementAgent.x,
+      settlementAgent.y,
+      effectiveSettlementContext.occupancy,
+      effectiveSettlementContext.lineageOccupancy,
+      effectiveSettlementContext.occupantsByCell,
+      effectiveSettlementContext.lineagePenalty,
+      undefined,
+      undefined,
+      0
+    );
+    const childScore = this.localEcologyScore(
+      settlementAgent,
+      childPos.x,
+      childPos.y,
+      effectiveSettlementContext.occupancy,
+      effectiveSettlementContext.lineageOccupancy,
+      effectiveSettlementContext.occupantsByCell,
+      effectiveSettlementContext.lineagePenalty,
+      undefined,
+      undefined,
+      0
+    );
+
+    return childScore - parentScore >= threshold;
   }
 
   private foundClade(founderGenome: Genome, founderX: number, founderY: number): number {
