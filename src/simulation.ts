@@ -68,6 +68,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   defenseForagingPenalty: 0.2,
   defenseMutation: 0.16,
   encounterRiskAversion: 0,
+  trophicOpportunityAttraction: 0,
   lineageEncounterRestraint: 0,
   lineageDispersalCrowdingPenalty: 0,
   lineageHarvestCrowdingPenalty: 0,
@@ -227,7 +228,7 @@ export class LifeSimulation {
 
     const occupancy = this.buildOccupancyGrid();
     const lineageOccupancy = this.usesAdultLineageOccupancy() ? this.buildLineageOccupancyGrid() : undefined;
-    const occupantsByCell = this.usesEncounterRiskAversion() ? this.buildOccupantGrid() : undefined;
+    const occupantsByCell = this.usesOccupantAwareEcology() ? this.buildOccupantGrid() : undefined;
     const turnOrder = this.rng.shuffle([...this.agents]);
     for (const agent of turnOrder) {
       if (!this.isAlive(agent.id)) {
@@ -249,7 +250,9 @@ export class LifeSimulation {
         ? this.buildLineageOccupancyGrid(reproductiveAgents)
         : undefined;
     const reproductionOccupantsByCell =
-      reproductiveAgents && this.usesEncounterRiskAversion() ? this.buildOccupantGrid(reproductiveAgents) : undefined;
+      reproductiveAgents && this.usesOccupantAwareEcology()
+        ? this.buildOccupantGrid(reproductiveAgents)
+        : undefined;
     const offspring: Agent[] = [];
     for (const agent of [...this.agents]) {
       if (!this.isAlive(agent.id)) {
@@ -1711,6 +1714,63 @@ export class LifeSimulation {
     return risk;
   }
 
+  private neighborhoodPreyOpportunity(
+    agent: Pick<Agent, 'genome' | 'lineage' | 'species'>,
+    x: number,
+    y: number,
+    occupantsByCell: OccupantGrid,
+    excludedAgentId: number | undefined
+  ): number {
+    if (!this.usesTrophicOpportunityAttraction() || occupantsByCell.size === 0 || agent.genome.aggression <= 0) {
+      return 0;
+    }
+
+    const focalTrophicLevel = this.blendedTrophicLevel(agent.species, agent.lineage);
+    if (focalTrophicLevel <= 0) {
+      return 0;
+    }
+
+    const mitigation = clamp(this.config.defenseMitigation, 0, 0.95);
+    let opportunity = 0;
+
+    for (const [index, distance] of this.neighborhoodCellDistances(x, y)) {
+      const occupants = occupantsByCell.get(index);
+      if (!occupants) {
+        continue;
+      }
+
+      const weight = 1 / (distance + 1);
+      for (const occupant of occupants) {
+        if (excludedAgentId !== undefined && occupant.id === excludedAgentId) {
+          continue;
+        }
+        if (occupant.energy <= 0) {
+          continue;
+        }
+
+        const trophicGap = focalTrophicLevel - this.blendedTrophicLevel(occupant.species, occupant.lineage);
+        if (trophicGap <= 0) {
+          continue;
+        }
+
+        const pressure = Math.max(0, agent.genome.aggression - occupant.genome.aggression + 0.1);
+        if (pressure === 0) {
+          continue;
+        }
+
+        const predationMultiplier = 1 + Math.max(0, this.config.predationPressure) * trophicGap;
+        const defenseMultiplier = Math.max(
+          0.05,
+          1 - mitigation * this.blendedDefenseLevel(occupant.species, occupant.lineage)
+        );
+        const lineageMultiplier = this.encounterLineageTransferMultiplier(agent, occupant);
+        opportunity += occupant.energy * pressure * 0.25 * predationMultiplier * defenseMultiplier * lineageMultiplier * weight;
+      }
+    }
+
+    return opportunity;
+  }
+
   private resolveEncounters(): void {
     const byCell = new Map<string, Agent[]>();
 
@@ -1883,11 +1943,15 @@ export class LifeSimulation {
     const encounterRisk = occupantsByCell
       ? this.neighborhoodEncounterRisk(agent, x, y, occupantsByCell, excludedAgentId)
       : 0;
+    const preyOpportunity = occupantsByCell
+      ? this.neighborhoodPreyOpportunity(agent, x, y, occupantsByCell, excludedAgentId)
+      : 0;
 
     return (
       food -
       this.config.dispersalPressure * crowding -
-      lineagePenalty * lineageCrowding -
+      lineagePenalty * lineageCrowding +
+      Math.max(0, this.config.trophicOpportunityAttraction) * preyOpportunity -
       Math.max(0, this.config.encounterRiskAversion) * encounterRisk +
       jitter
     );
@@ -1917,7 +1981,8 @@ export class LifeSimulation {
     return (
       this.config.offspringSettlementEcologyScoring ||
       this.config.lineageOffspringSettlementCrowdingPenalty > 0 ||
-      this.usesEncounterRiskAversion()
+      this.usesEncounterRiskAversion() ||
+      this.usesTrophicOpportunityAttraction()
     );
   }
 
@@ -1930,6 +1995,14 @@ export class LifeSimulation {
 
   private usesEncounterRiskAversion(): boolean {
     return this.config.encounterRiskAversion > 0;
+  }
+
+  private usesTrophicOpportunityAttraction(): boolean {
+    return this.config.trophicOpportunityAttraction > 0;
+  }
+
+  private usesOccupantAwareEcology(): boolean {
+    return this.usesEncounterRiskAversion() || this.usesTrophicOpportunityAttraction();
   }
 
   private resolveOffspringSettlementContext(
@@ -1950,7 +2023,7 @@ export class LifeSimulation {
         lineageOccupancy ??
         (lineagePenalty > 0 ? this.buildLineageOccupancyGrid(aliveAgents) : undefined),
       occupantsByCell:
-        occupantsByCell ?? (this.usesEncounterRiskAversion() ? this.buildOccupantGrid(aliveAgents) : undefined),
+        occupantsByCell ?? (this.usesOccupantAwareEcology() ? this.buildOccupantGrid(aliveAgents) : undefined),
       lineagePenalty
     };
   }

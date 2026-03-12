@@ -232,6 +232,7 @@ export interface SimulationConfig {
   defenseForagingPenalty: number;
   defenseMutation: number;
   encounterRiskAversion: number;
+  trophicOpportunityAttraction: number;
   lineageEncounterRestraint: number;
   lineageDispersalCrowdingPenalty: number;
   lineageHarvestCrowdingPenalty: number;

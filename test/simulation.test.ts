@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { LifeSimulation } from '../src/simulation';
 
+type InternalTestAgent = {
+  id: number;
+  lineage: number;
+  species: number;
+  x: number;
+  y: number;
+  energy: number;
+  genome: { metabolism: number; harvest: number; aggression: number };
+};
+
 describe('LifeSimulation', () => {
   it('is deterministic with the same seed', () => {
     const a = new LifeSimulation({ seed: 42 });
@@ -709,6 +719,185 @@ describe('LifeSimulation', () => {
     expect(withoutRiskFocal).toMatchObject({ x: 3, y: 1 });
     expect(withRiskFocal).toMatchObject({ x: 1, y: 1 });
     expect(withRiskPredator).toMatchObject({ x: 3, y: 1 });
+  });
+
+  it('steers predator-like adults toward prey opportunity when trophic attraction is enabled', () => {
+    const buildSimulation = (trophicOpportunityAttraction: number) =>
+      new LifeSimulation({
+        seed: 23,
+        config: {
+          width: 5,
+          height: 3,
+          maxResource: 2,
+          resourceRegen: 0,
+          biomeBands: 1,
+          biomeContrast: 0,
+          decompositionBase: 0,
+          decompositionEnergyFraction: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          dispersalPressure: 0,
+          dispersalRadius: 1,
+          habitatPreferenceStrength: 0,
+          predationPressure: 1,
+          trophicForagingPenalty: 0,
+          defenseForagingPenalty: 0,
+          encounterRiskAversion: 0,
+          trophicOpportunityAttraction,
+          lineageHarvestCrowdingPenalty: 0,
+          lineageDispersalCrowdingPenalty: 0,
+          harvestCap: 0,
+          reproduceProbability: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 2,
+            y: 1,
+            energy: 10,
+            lineage: 1,
+            species: 1,
+            genome: { metabolism: 0.3, harvest: 0.4, aggression: 1 }
+          },
+          {
+            x: 1,
+            y: 1,
+            energy: 10,
+            lineage: 2,
+            species: 2,
+            genome: { metabolism: 0.3, harvest: 2.8, aggression: 0.1 }
+          }
+        ]
+      });
+
+    const pickDestination = (sim: LifeSimulation) => {
+      const internal = sim as unknown as {
+        agents: InternalTestAgent[];
+        buildOccupancyGrid: (agents?: Array<Pick<InternalTestAgent, 'x' | 'y'>>) => number[][];
+        buildOccupantGrid: (agents?: InternalTestAgent[]) => Map<number, InternalTestAgent[]>;
+        pickDestination: (
+          agent: InternalTestAgent,
+          occupancy: number[][],
+          lineageOccupancy: Map<number, number[][]> | undefined,
+          occupantsByCell: Map<number, InternalTestAgent[]> | undefined
+        ) => {
+          x: number;
+          y: number;
+        };
+      };
+
+      for (let y = 0; y < 3; y += 1) {
+        for (let x = 0; x < 5; x += 1) {
+          sim.setResource(x, y, 0);
+        }
+      }
+      sim.setResource(1, 1, 1);
+      sim.setResource(3, 1, 1.6);
+
+      const occupancy = internal.buildOccupancyGrid(internal.agents);
+      const occupantsByCell = internal.buildOccupantGrid(internal.agents);
+      return internal.pickDestination(internal.agents[0], occupancy, undefined, occupantsByCell);
+    };
+
+    expect(pickDestination(buildSimulation(0))).toMatchObject({ x: 3, y: 1 });
+    expect(pickDestination(buildSimulation(1))).toMatchObject({ x: 1, y: 1 });
+  });
+
+  it('can enable prey-opportunity offspring settlement without abiotic settlement scoring', () => {
+    const buildSimulation = (trophicOpportunityAttraction: number) =>
+      new LifeSimulation({
+        seed: 17,
+        config: {
+          width: 5,
+          height: 3,
+          maxResource: 2,
+          resourceRegen: 0,
+          biomeBands: 1,
+          biomeContrast: 0,
+          decompositionBase: 0,
+          decompositionEnergyFraction: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          dispersalPressure: 0,
+          dispersalRadius: 1,
+          habitatPreferenceStrength: 0,
+          predationPressure: 1,
+          trophicForagingPenalty: 0,
+          defenseForagingPenalty: 0,
+          lineageHarvestCrowdingPenalty: 0,
+          lineageDispersalCrowdingPenalty: 0,
+          lineageOffspringSettlementCrowdingPenalty: 0,
+          offspringSettlementEcologyScoring: false,
+          trophicOpportunityAttraction,
+          harvestCap: 0,
+          reproduceProbability: 0,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0,
+          speciationThreshold: 1,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 2,
+            y: 1,
+            energy: 30,
+            lineage: 1,
+            species: 1,
+            genome: { metabolism: 0.3, harvest: 0.4, aggression: 1 }
+          },
+          {
+            x: 1,
+            y: 1,
+            energy: 10,
+            lineage: 2,
+            species: 2,
+            genome: { metabolism: 0.3, harvest: 2.8, aggression: 0.1 }
+          }
+        ]
+      });
+
+    const reproduceChild = (sim: LifeSimulation) => {
+      const internal = sim as unknown as {
+        agents: InternalTestAgent[];
+        buildOccupancyGrid: (agents?: Array<Pick<InternalTestAgent, 'x' | 'y'>>) => number[][];
+        buildOccupantGrid: (agents?: InternalTestAgent[]) => Map<number, InternalTestAgent[]>;
+        reproduce: (
+          parent: InternalTestAgent,
+          occupancy: number[][],
+          lineageOccupancy: Map<number, number[][]> | undefined,
+          occupantsByCell: Map<number, InternalTestAgent[]> | undefined
+        ) => {
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+        };
+      };
+
+      for (let y = 0; y < 3; y += 1) {
+        for (let x = 0; x < 5; x += 1) {
+          sim.setResource(x, y, 0);
+        }
+      }
+
+      const parent = internal.agents[0];
+      const occupancy = internal.buildOccupancyGrid(internal.agents);
+      const occupantsByCell = internal.buildOccupantGrid(internal.agents);
+      return internal.reproduce(parent, occupancy, undefined, occupantsByCell);
+    };
+
+    expect(reproduceChild(buildSimulation(0))).toMatchObject({
+      lineage: 1,
+      species: 1,
+      x: 3,
+      y: 1
+    });
+    expect(reproduceChild(buildSimulation(1))).toMatchObject({
+      lineage: 1,
+      species: 1,
+      x: 1,
+      y: 1
+    });
   });
 
   it('can enable ecology-scored offspring settlement without lineage settlement crowding', () => {

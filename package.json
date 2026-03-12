@@ -14,6 +14,7 @@
     "study:clade-activity-relabel-null-lineage-offspring-settlement-smoke": "tsx src/clade-activity-relabel-null-lineage-offspring-settlement-smoke-study.ts",
     "study:clade-activity-relabel-null-offspring-ecology-settlement-smoke": "tsx src/clade-activity-relabel-null-offspring-ecology-settlement-smoke-study.ts",
     "study:clade-activity-relabel-null-encounter-risk-smoke": "tsx src/clade-activity-relabel-null-encounter-risk-smoke-study.ts",
+    "study:clade-activity-relabel-null-trophic-opportunity-smoke": "tsx src/clade-activity-relabel-null-trophic-opportunity-smoke-study.ts",
     "study:clade-activity-relabel-null-decomposition-spillover-smoke": "tsx src/clade-activity-relabel-null-decomposition-spillover-smoke-study.ts",
     "study:clade-activity-relabel-null-cladogenesis-ecology-gate-smoke": "tsx src/clade-activity-relabel-null-cladogenesis-ecology-gate-smoke-study.ts",
     "study:clade-activity-relabel-null-best-short-stack": "tsx src/clade-activity-relabel-null-best-short-stack-study.ts",
