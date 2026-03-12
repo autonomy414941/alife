@@ -70,6 +70,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   lineageDispersalCrowdingPenalty: 0,
   lineageHarvestCrowdingPenalty: 0,
   lineageOffspringSettlementCrowdingPenalty: 0,
+  offspringSettlementEcologyScoring: false,
   harvestCap: 2.5,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
@@ -1691,7 +1692,7 @@ export class LifeSimulation {
       { x: parent.x, y: this.wrapY(parent.y - 1) }
     ];
     const lineagePenalty = Math.max(0, this.config.lineageOffspringSettlementCrowdingPenalty);
-    if (lineagePenalty === 0) {
+    if (!this.config.offspringSettlementEcologyScoring && lineagePenalty === 0) {
       return this.rng.pick(neighbors);
     }
 
@@ -1763,7 +1764,7 @@ export class LifeSimulation {
   }
 
   private usesOffspringSettlementScoring(): boolean {
-    return this.config.lineageOffspringSettlementCrowdingPenalty > 0;
+    return this.config.offspringSettlementEcologyScoring || this.config.lineageOffspringSettlementCrowdingPenalty > 0;
   }
 
   private shouldFoundNewClade(parentLineage: number, diverged: boolean, childGenome: Genome): boolean {

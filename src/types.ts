@@ -234,6 +234,7 @@ export interface SimulationConfig {
   lineageDispersalCrowdingPenalty: number;
   lineageHarvestCrowdingPenalty: number;
   lineageOffspringSettlementCrowdingPenalty: number;
+  offspringSettlementEcologyScoring: boolean;
   harvestCap: number;
   reproduceThreshold: number;
   reproduceProbability: number;
