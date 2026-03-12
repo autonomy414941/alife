@@ -1,74 +1,72 @@
 # Session Plan — 2026-03-12
 
 ## Compact Context
-- `src/simulation.ts` is `2717` lines and `src/activity.ts` is `2550` lines; seven recent relabel-null smoke entrypoints in `src/` still repeat nearly identical CLI and JSON scaffolding.
-- The current best validated stack is `lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, `lineageOffspringSettlementCrowdingPenalty=0`, `offspringSettlementEcologyScoring=true`, `encounterRiskAversion=0`, `decompositionSpilloverFraction=0`, `trophicOpportunityAttraction=0`, `cladogenesisEcologyAdvantageThreshold=-1`.
-- `docs/clade_activity_relabel_null_best_short_stack_2026-03-12.json` improved the canonical `4000`-step panel versus `2026-03-10`, but `persistentActivityMeanDeltaVsNullMean` is still negative in all four canonical cells: `-34.63`, `-111.78`, `-18.24`, `-93.65`.
-- `docs/clade_activity_relabel_null_trophic_opportunity_smoke_2026-03-12.json` regressed the short threshold-`1` delta from `+29.25` to `-17.25`; `encounterRiskAversion=1`, `decompositionSpilloverFraction=0.5`, and `cladogenesisEcologyAdvantageThreshold=0.1` also failed to beat the current short best.
-- `shouldFoundNewClade()` currently gates only on genome distance and optional local ecology advantage; it does not require ecological trait novelty relative to the parent clade.
-- `test/simulation.test.ts` already covers ecology-scored settlement and cladogenesis ecology gating, so one more founder-gating rule is narrowly testable.
+- `src/simulation.ts` is `2745` lines, `src/activity.ts` is `2550`, and ten `src/clade-activity-relabel-null-*-smoke-study.ts` entrypoints repeat the same `DEFAULT_STUDY_INPUT` / `parseCli` / summary scaffold.
+- The current best validated stack is still `lineageHarvestCrowdingPenalty=1`, `lineageDispersalCrowdingPenalty=1`, `lineageEncounterRestraint=1`, `lineageOffspringSettlementCrowdingPenalty=0`, `offspringSettlementEcologyScoring=true`, `encounterRiskAversion=0`, `decompositionSpilloverFraction=0`.
+- `docs/clade_activity_relabel_null_best_short_stack_2026-03-12.json` improved the canonical `4000`-step panel versus `2026-03-10`, but `persistentActivityMeanDeltaVsNullMean` remains negative in all four canonical cells: `-34.63`, `-111.78`, `-18.24`, `-93.65`.
+- Recent short smokes show fragile gains: trait novelty dropped the threshold-`1` delta from `+29.25` to `+1.46`; trophic opportunity fell to `-17.25`; ecology gain fell to `+5.29`; decomposition spillover only reached `+14.86`.
+- `test/simulation.test.ts` already covers encounter-risk scoring, trophic opportunity attraction, ecology-scored settlement, ecology-gated and trait-novelty-gated cladogenesis, and decomposition spillover, so missing mechanism tests are not the current bottleneck.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Kin-structured local competition | 3 | 37a91c7 |
-| Offspring placement / recruitment | 2 | 2421461 |
-| Trophic dynamics / resource competition | 1 | 5003c4f |
-| Reproduction mechanics / founder gating | 1 | e512298 |
+| Founder filtering / recruitment ecology | 4 | 8e477ff |
+| Kin-structured local competition | 2 | 37a91c7 |
 | Long-horizon relabel-null validation | 1 | a843a91 |
 | Environmental feedback / nutrient recycling | 1 | 6631bd9 |
-| Spatial interaction fields / risk-aware movement | 1 | e5243bf |
-| Communication / signaling | 0 | — |
+| Spatial interaction / risk-aware movement | 1 | e5243bf |
+| Trophic opportunity / prey-seeking | 1 | 5003c4f |
 | Disturbance / resilience | 0 | — |
+| Communication / signaling | 0 | — |
 
-Dominant axis: Kin-structured local competition (3/10)
-Underexplored axes: trophic dynamics / resource competition, reproduction mechanics / founder gating, long-horizon relabel-null validation, environmental feedback / nutrient recycling, spatial interaction fields / risk-aware movement, communication / signaling, disturbance / resilience
+Dominant axis: Founder filtering / recruitment ecology (4/10)
+Underexplored axes: long-horizon relabel-null validation, environmental feedback / nutrient recycling, spatial interaction / risk-aware movement, trophic opportunity / prey-seeking, disturbance / resilience, communication / signaling
 
 ## Project State
-- The simulation already has cladogenesis, clade habitat and interaction coupling, trophic and defense traits, kin-aware harvest/dispersal/encounter controls, ecology-scored offspring settlement, disturbance, and decomposition recycling.
-- Recent sessions improved short-horizon relabel-null deltas mainly by reducing kin self-crowding and improving offspring placement, but the canonical `4000`-step panel still loses on persistent clade activity intensity after clades are founded.
-- The key gap is that new clades can still be founded by ecologically redundant offspring because founding checks location advantage, not niche divergence in habitat, trophic, or defense strategy.
+- The simulation already has cladogenesis, habitat and interaction coupling, kin-aware harvest/dispersal/encounter controls, ecology-scored juvenile placement, occupant-aware risk/opportunity scoring, disturbance, and decomposition recycling.
+- Recent sessions have been iterating short threshold-`1` relabel-null toggle studies around the same best kin-aware stack, then checking whether the most promising stack survives the canonical `4000`-step panel.
+- The main gap is now twofold: long-horizon persistence is still weaker than the matched null, and the experiment surface is slowed by duplicated smoke-study entrypoints plus oversized core files.
 
 ## External Context
-- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): ToLSim reports unbounded total cumulative activity while normalized novelty channels remain bounded, which matches the current need to improve what happens after speciation rather than merely increase founding events.
-- [Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity](https://arxiv.org/abs/2406.04235): sustained diversity improves when search preserves differentiated niches, which supports gating cladogenesis on ecological strategy divergence instead of location-only advantage.
+- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): ToLSim suggests post-speciation ecological performance matters more than raw founding counts, which matches the current need to compare mechanism families cleanly rather than keep adding one-off founder filters.
+- [Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity](https://arxiv.org/abs/2406.04235): sustained diversity improves when search preserves differentiated niches, so faster standardized evaluation across underexplored mechanisms is more valuable now than another bespoke smoke script.
 
 ## Research Gaps
-- Does requiring a minimum ecological trait divergence before cladogenesis improve short threshold-`1` `persistentActivityMeanDeltaVsNullMean` by filtering weak redundant founders while keeping birth schedules matched?
+- Which underexplored mechanism family can beat the current short threshold-`1` baseline of `+29.25` `persistentActivityMeanDeltaVsNullMean` and still warrant promotion to the canonical `4000`-step panel once all candidates are evaluated through the same harness?
 
 ## Current Anti-Evidence
-- Even the best validated stack still underperforms the matched relabel-null at all four canonical `4000`-step cells, so the system still cannot claim stronger-than-null persistent clade activity.
-- Recent positive short-run changes mostly reduce intra-lineage interference; they still do not force founders into durable ecological differentiation once a new clade appears.
+- Even the best validated stack still loses to the matched relabel-null in every canonical `4000`-step cell, so the system still lacks durable above-null clade persistence.
+- Recent short-run improvements are brittle and non-monotonic: multiple new toggles regress the current short baseline, suggesting the search process is producing noise faster than reusable knowledge.
 
 ## Candidate Bets
-- A: [feat] Add a cladogenesis trait-novelty gate that requires a diverged offspring to exceed a habitat/trophic/defense niche-distance threshold relative to its parent clade before founding a new clade.
-  Why now: the current anti-evidence points to too many weak post-founding clades, and the existing code already exposes the trait signals needed for a bounded founder-gating change.
+- A: [refactor] Extract a shared short relabel-null smoke-study harness plus a single exported best-short-stack preset, then convert the March 11-12 smoke scripts into thin wrappers.
+  Why now: code-health triggers are active and the bottleneck is comparable iteration across axes, not another copy-pasted toggle script.
   Est. low-context human time: 45m
-  Main risk: a strict gate could simply reduce clade count without improving persistent activity.
-- B: [refactor] Extract a shared relabel-null smoke-study harness and collapse the seven near-identical March 11-12 smoke entrypoints into thin wrappers.
-  Why now: the code-health triggers are active, and duplicated study scaffolding is starting to slow iteration on each new mechanism.
+  Main risk: no simulation behavior changes this session.
+- B: [feat] Add disturbance-coupled fertility rebound so shocked cells become temporary high-resource niches instead of pure losses.
+  Why now: disturbance / resilience is still untouched as a niche-creation mechanism, while current mechanics mostly filter existing founders rather than create new ecological openings.
   Est. low-context human time: 50m
-  Main risk: it improves infrastructure but does not change simulation behavior this session.
-- C: [validate] Run one canonical `4000`-step relabel-null panel for the ecology-gated cladogenesis variant to decide whether local-advantage founder gating is already a dead end.
-  Why now: the short smoke fell from `+29.25` to `+5.29`, so one long-horizon check would retire or confirm that branch quickly.
+  Main risk: it may inflate activity without improving matched-null persistence.
+- C: [validate] Run the canonical `4000`-step relabel-null panel for the trait-novelty gate to retire or confirm the founder-filtering branch.
+  Why now: the short threshold-`1` delta fell from `+29.25` to `+1.46`, so this branch may already be near dead.
   Est. low-context human time: 35m
-  Main risk: it is likely to produce negative evidence only.
+  Main risk: likely negative evidence only, while duplication debt keeps slowing every next experiment.
 
 ## Selected Bet
-Add one reproduction-mechanics change: a clade-founding ecological novelty gate. Extend `shouldFoundNewClade()` so a diverged offspring must clear a configurable composite niche-difference threshold, using the existing habitat, trophic, and defense signals, before founding a new clade. Then verify it with one deterministic cladogenesis test and one short threshold-`1` relabel-null smoke comparing the gate off vs on on top of the current best kin-aware ecology stack.
+Refactor the experiment surface, not the simulation core: extract one shared relabel-null smoke harness and one shared best-stack config, then collapse the ten near-identical March 11-12 smoke entrypoints into thin wrappers. The latest founder-gating and ecology toggles already have enough negative short-run evidence that the highest-leverage bounded move is to make the next axis change cheap, consistent, and less error-prone.
 
 ## Why This Fits The Horizon
-- The change is narrow: one new config knob, one helper that compares child-vs-parent ecological traits, one small branch in existing cladogenesis logic, one focused test, and one off/on smoke entrypoint.
-- Success is autonomously verifiable with deterministic unit tests plus a single JSON artifact; no sweep or `4000`-step rerun is required in the same session.
+- The scope is bounded to duplicated smoke entrypoints and shared study config; it avoids broad surgery inside `src/simulation.ts` or `src/activity.ts`.
+- Success is autonomously verifiable without new scientific claims: builds and tests stay green, and representative scripts reproduce the existing `2026-03-12` summaries from current JSON artifacts.
 
 ## Success Evidence
-- A new artifact such as `docs/clade_activity_relabel_null_cladogenesis_trait_novelty_smoke_2026-03-12.json` reports gate-off vs gate-on summaries, matched birth schedules, and `persistentActivityMeanDeltaVsNullMean`.
-- Specific verification command or output: `npm run build && npm test && npx tsx src/clade-activity-relabel-null-cladogenesis-trait-novelty-smoke-study.ts`.
+- Representative reruns match current summaries from `docs/clade_activity_relabel_null_cladogenesis_trait_novelty_smoke_2026-03-12.json` and `docs/clade_activity_relabel_null_trophic_opportunity_smoke_2026-03-12.json`, especially `+29.25 -> +1.46` for trait novelty and `+29.25 -> -17.25` for trophic opportunity.
+- Specific verification command or output: `npm run build && npm test && npx tsx src/clade-activity-relabel-null-cladogenesis-trait-novelty-smoke-study.ts && npx tsx src/clade-activity-relabel-null-trophic-opportunity-smoke-study.ts`.
 
 ## Stop Conditions
-- Stop after one off/on comparison at threshold `1`; do not tune multiple weights, add sweeps, or run the canonical `4000`-step panel in the same session.
-- If the composite niche-distance gate is not cleanly expressible from the existing habitat/trophic/defense signals, shrink scope to a two-axis gate (`habitat` + `trophic`) and still deliver deterministic tests plus one smoke artifact.
+- Stop after one generic smoke helper plus one shared best-stack preset and the wrapper conversions for the relabel-null smoke scripts that already share the same summary shape; do not refactor sweep studies or split `src/simulation.ts` in the same session.
+- If a generic helper starts requiring awkward generic typing across incompatible result shapes, shrink scope to shared preset/config plus shared CLI and summary extraction for the March 12 smoke scripts only.
 
 ## Assumptions / Unknowns
-- Assumption: part of the remaining long-horizon gap comes from ecologically redundant founders diluting activity rather than from founder scarcity alone.
-- Unknown: whether fewer but more distinct founders improve persistent activity relative to the relabel-null, or merely lower clade birth counts for both.
+- Assumption: duplicated study scaffolding is now consuming more future progress than another single toggle would add.
+- Unknown: whether one helper can cleanly cover both boolean and numeric toggle scripts without forcing a larger `activity.ts` redesign.

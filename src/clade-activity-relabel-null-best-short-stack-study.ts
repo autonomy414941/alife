@@ -1,7 +1,17 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { runCladeActivityRelabelNullStudy, RunCladeActivityRelabelNullStudyInput } from './activity';
+import {
+  DEFAULT_BEST_SHORT_STACK_STUDY_INPUT,
+  buildCladeActivityRelabelNullBestShortStackStudyInput
+} from './clade-activity-relabel-null-best-short-stack';
 import { CladeActivityRelabelNullStudyExport } from './types';
+
+export {
+  BEST_SHORT_STACK_SIMULATION_CONFIG,
+  DEFAULT_BEST_SHORT_STACK_STUDY_INPUT,
+  buildCladeActivityRelabelNullBestShortStackStudyInput
+} from './clade-activity-relabel-null-best-short-stack';
 
 interface CliOptions {
   generatedAt?: string;
@@ -38,58 +48,6 @@ export interface RunCladeActivityRelabelNullBestShortStackStudyInput {
 }
 
 export const BASELINE_RELABEL_NULL_ARTIFACT = 'docs/clade_activity_relabel_null_2026-03-10.json';
-
-export const DEFAULT_BEST_SHORT_STACK_STUDY_INPUT: RunCladeActivityRelabelNullStudyInput = {
-  steps: 4000,
-  windowSize: 100,
-  burnIn: 200,
-  seeds: [20260307, 20260308, 20260309, 20260310],
-  stopWhenExtinct: true,
-  minSurvivalTicks: [50, 100],
-  cladogenesisThresholds: [1, 1.2],
-  simulation: {
-    config: {
-      lineageHarvestCrowdingPenalty: 1,
-      lineageDispersalCrowdingPenalty: 1,
-      lineageEncounterRestraint: 1,
-      lineageOffspringSettlementCrowdingPenalty: 0,
-      offspringSettlementEcologyScoring: true,
-      encounterRiskAversion: 0,
-      decompositionSpilloverFraction: 0
-    }
-  }
-};
-
-export function buildCladeActivityRelabelNullBestShortStackStudyInput(
-  overrides: RunCladeActivityRelabelNullStudyInput = {},
-  generatedAt?: string
-): RunCladeActivityRelabelNullStudyInput {
-  const defaultSimulation = DEFAULT_BEST_SHORT_STACK_STUDY_INPUT.simulation ?? {};
-  const overrideSimulation = overrides.simulation;
-
-  return {
-    steps: overrides.steps ?? DEFAULT_BEST_SHORT_STACK_STUDY_INPUT.steps,
-    windowSize: overrides.windowSize ?? DEFAULT_BEST_SHORT_STACK_STUDY_INPUT.windowSize,
-    burnIn: overrides.burnIn ?? DEFAULT_BEST_SHORT_STACK_STUDY_INPUT.burnIn,
-    seeds: overrides.seeds ?? DEFAULT_BEST_SHORT_STACK_STUDY_INPUT.seeds,
-    stopWhenExtinct: overrides.stopWhenExtinct ?? DEFAULT_BEST_SHORT_STACK_STUDY_INPUT.stopWhenExtinct,
-    minSurvivalTicks: overrides.minSurvivalTicks ?? DEFAULT_BEST_SHORT_STACK_STUDY_INPUT.minSurvivalTicks,
-    cladogenesisThresholds:
-      overrides.cladogenesisThresholds ?? DEFAULT_BEST_SHORT_STACK_STUDY_INPUT.cladogenesisThresholds,
-    simulation:
-      overrideSimulation === undefined
-        ? defaultSimulation
-        : {
-            ...defaultSimulation,
-            ...overrideSimulation,
-            config: {
-              ...defaultSimulation.config,
-              ...overrideSimulation.config
-            }
-          },
-    generatedAt: generatedAt ?? overrides.generatedAt
-  };
-}
 
 export function compareCladeActivityRelabelNullStudies(
   currentStudy: CladeActivityRelabelNullStudyExport,
