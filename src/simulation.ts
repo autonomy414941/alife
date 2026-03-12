@@ -74,6 +74,8 @@ const DEFAULT_CONFIG: SimulationConfig = {
   lineageHarvestCrowdingPenalty: 0,
   lineageOffspringSettlementCrowdingPenalty: 0,
   offspringSettlementEcologyScoring: false,
+  disturbanceSettlementOpeningTicks: 0,
+  disturbanceSettlementOpeningBonus: 0,
   cladogenesisTraitNoveltyThreshold: -1,
   cladogenesisEcologyAdvantageThreshold: -1,
   harvestCap: 2.5,
@@ -195,6 +197,8 @@ export class LifeSimulation {
 
   private readonly disturbanceEvents: DisturbanceEventState[] = [];
 
+  private readonly disturbanceSettlementOpenUntilTick: number[][];
+
   private extinctClades = 0;
 
   private extinctSpecies = 0;
@@ -204,6 +208,7 @@ export class LifeSimulation {
     this.rng = new Rng(options.seed ?? 1);
     this.biomeFertility = this.buildBiomeFertility();
     this.resources = this.buildInitialResources();
+    this.disturbanceSettlementOpenUntilTick = this.buildZeroGrid();
     this.agents = options.initialAgents
       ? options.initialAgents.map((seed, index) => this.createAgentFromSeed(seed, index + 1, index + 1))
       : this.spawnInitialPopulation();
@@ -1301,6 +1306,12 @@ export class LifeSimulation {
     );
   }
 
+  private buildZeroGrid(): number[][] {
+    return Array.from({ length: this.config.height }, () =>
+      Array.from({ length: this.config.width }, () => 0)
+    );
+  }
+
   private buildOccupancyGrid(agents: ReadonlyArray<Pick<Agent, 'x' | 'y'>> = this.agents): number[][] {
     const occupancy = Array.from({ length: this.config.height }, () =>
       Array.from({ length: this.config.width }, () => 0)
@@ -1894,25 +1905,30 @@ export class LifeSimulation {
       { x: parent.x, y: this.wrapY(parent.y + 1) },
       { x: parent.x, y: this.wrapY(parent.y - 1) }
     ];
-    if (!settlementContext) {
+    const currentStepTick = this.tickCount + 1;
+    const useDisturbanceOpeningBonus = this.usesDisturbanceSettlementOpenings();
+    if (!settlementContext && !useDisturbanceOpeningBonus) {
       return this.rng.pick(neighbors);
     }
 
     let best = neighbors[0];
     let bestScore = -Infinity;
     for (const option of neighbors) {
-      const score = this.localEcologyScore(
-        parent,
-        option.x,
-        option.y,
-        settlementContext.occupancy,
-        settlementContext.lineageOccupancy,
-        settlementContext.occupantsByCell,
-        settlementContext.lineagePenalty,
-        undefined,
-        undefined,
-        this.rng.float() * 0.05
-      );
+      const score =
+        (settlementContext
+          ? this.localEcologyScore(
+              parent,
+              option.x,
+              option.y,
+              settlementContext.occupancy,
+              settlementContext.lineageOccupancy,
+              settlementContext.occupantsByCell,
+              settlementContext.lineagePenalty,
+              undefined,
+              undefined,
+              this.rng.float() * 0.05
+            )
+          : this.rng.float() * 0.05) + this.disturbanceSettlementOpeningBonusAt(option.x, option.y, currentStepTick);
       if (score > bestScore) {
         bestScore = score;
         best = option;
@@ -2000,6 +2016,13 @@ export class LifeSimulation {
 
   private usesTrophicOpportunityAttraction(): boolean {
     return this.config.trophicOpportunityAttraction > 0;
+  }
+
+  private usesDisturbanceSettlementOpenings(): boolean {
+    return (
+      this.normalizedDisturbanceSettlementOpeningTicks() > 0 &&
+      this.normalizedDisturbanceSettlementOpeningBonus() > 0
+    );
   }
 
   private usesOccupantAwareEcology(): boolean {
@@ -2336,6 +2359,7 @@ export class LifeSimulation {
     if (affectedCellIndices.size === 0) {
       return;
     }
+    this.markDisturbanceSettlementOpenings(affectedCellIndices, stepTick);
 
     const populationBefore = this.agents.filter((agent) => agent.energy > 0).length;
     const activeSpeciesBefore = this.activeSpeciesCountFromLivingAgents();
@@ -2431,6 +2455,38 @@ export class LifeSimulation {
         this.rng.shuffle([...targetedCellIndices]).slice(0, affectedCount)
       )
     };
+  }
+
+  private markDisturbanceSettlementOpenings(affectedCellIndices: ReadonlySet<number>, stepTick: number): void {
+    if (!this.usesDisturbanceSettlementOpenings()) {
+      return;
+    }
+
+    const openingTicks = this.normalizedDisturbanceSettlementOpeningTicks();
+    const openUntilTick = stepTick + openingTicks - 1;
+    for (const index of affectedCellIndices) {
+      const x = index % this.config.width;
+      const y = Math.floor(index / this.config.width);
+      this.disturbanceSettlementOpenUntilTick[y][x] = Math.max(
+        this.disturbanceSettlementOpenUntilTick[y][x],
+        openUntilTick
+      );
+    }
+  }
+
+  private disturbanceSettlementOpeningBonusAt(x: number, y: number, currentStepTick: number): number {
+    if (!this.usesDisturbanceSettlementOpenings()) {
+      return 0;
+    }
+
+    const openUntilTick = this.disturbanceSettlementOpenUntilTick[this.wrapY(y)][this.wrapX(x)];
+    if (openUntilTick < currentStepTick) {
+      return 0;
+    }
+
+    const openingTicks = this.normalizedDisturbanceSettlementOpeningTicks();
+    const freshnessFraction = clamp((openUntilTick - currentStepTick + 1) / openingTicks, 0, 1);
+    return this.normalizedDisturbanceSettlementOpeningBonus() * freshnessFraction;
   }
 
   private updateDisturbanceEventState(
@@ -2593,6 +2649,14 @@ export class LifeSimulation {
 
   private normalizedDisturbanceRefugiaFraction(): number {
     return clamp(this.config.disturbanceRefugiaFraction, 0, 1);
+  }
+
+  private normalizedDisturbanceSettlementOpeningTicks(): number {
+    return Math.max(0, Math.floor(this.config.disturbanceSettlementOpeningTicks));
+  }
+
+  private normalizedDisturbanceSettlementOpeningBonus(): number {
+    return Math.max(0, this.config.disturbanceSettlementOpeningBonus);
   }
 
   private countBy(agents: Agent[], selector: (agent: Agent) => number): Map<number, number> {

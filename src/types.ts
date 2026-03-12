@@ -238,6 +238,8 @@ export interface SimulationConfig {
   lineageHarvestCrowdingPenalty: number;
   lineageOffspringSettlementCrowdingPenalty: number;
   offspringSettlementEcologyScoring: boolean;
+  disturbanceSettlementOpeningTicks: number;
+  disturbanceSettlementOpeningBonus: number;
   cladogenesisTraitNoveltyThreshold: number;
   cladogenesisEcologyAdvantageThreshold: number;
   harvestCap: number;
