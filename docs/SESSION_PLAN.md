@@ -1,71 +1,72 @@
 # Session Plan — 2026-03-13
 
 ## Compact Context
-- `src/simulation.ts` is `2809` lines and `src/activity.ts` is `2695`; recent feature churn is concentrated in the offspring-settlement and cladogenesis seam inside `simulation.ts`.
-- The latest short-horizon ranking artifact is `docs/clade_activity_relabel_null_regression_diagnostics_2026-03-12.json`, which compares recent default-off add-ons on top of the current best short stack.
-- The best short stack still wins the `1000`-step smoke at `persistentActivityMeanDeltaVsNullMean=29.25`, but the canonical `4000`-step comparison remains negative in all four cells: `-34.63`, `-111.78`, `-18.24`, `-93.65`.
-- In the regression diagnostics, `encounterRiskAversion` ranks last at `-60.79` persistent delta and is the only recent add-on whose dominant loss mode is `founderSuppression`; `trophicOpportunityAttraction` is also negative at `-17.25`.
-- Disturbance openings and cladogenesis gates slightly reduce the active-clade deficit, so the current weakest branch is the encounter-aware settlement path rather than every recent mechanic.
+- `src/simulation.ts` is `2604` lines, `src/activity.ts` is `2695`, `test/simulation.test.ts` is `3149`, and `test/activity.test.ts` is `2073`; the hottest mechanic seam is still offspring settlement plus disturbance-opening plus cladogenesis logic inside `simulation.ts`.
+- Commit `344d4a3` on `2026-03-13` already removed the encounter-aware settlement branch; current `src/` and `test/` no longer reference those knobs, so the prior plan is stale.
+- The checked-in JSON artifacts are from `2026-03-12`, before that revert. They still show the current best short stack at `persistentActivityMeanDeltaVsNullMean=29.25` over `1000` steps.
+- The canonical `4000`-step best-stack comparison is still negative in every cell: `-34.63`, `-111.78`, `-18.24`, and `-93.65` persistent activity delta versus matched null.
+- In the latest short ranking, decomposition spillover (`14.86`) and disturbance localized opening (`11.75`) are the best non-baseline add-ons, but both still trail the current best short stack and leave an active-clade deficit.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
 | Relabel-null diagnostics / harness | 3 | cd697f0 |
-| Encounter-aware ecology scoring | 2 | 5003c4f |
+| Settlement / recolonization mechanics | 2 | 496f1a8 |
 | Cladogenesis gating | 2 | 8e477ff |
-| Disturbance-mediated settlement openings | 1 | 496f1a8 |
 | Long-horizon validation | 1 | a843a91 |
 | Decomposition recycling | 1 | 6631bd9 |
-| Failed-knob revert / cleanup | 0 | — |
-| Simulation split / module extraction | 0 | — |
+| Failed-knob revert / cleanup | 1 | 344d4a3 |
+| Simulation seam split / module extraction | 0 | — |
 
 Dominant axis: Relabel-null diagnostics / harness (3/10)
-Underexplored axes: disturbance-mediated settlement openings, long-horizon validation, decomposition recycling, failed-knob revert / cleanup, simulation split / module extraction
+Underexplored axes: long-horizon validation, decomposition recycling, failed-knob revert / cleanup, simulation seam split / module extraction
 
 ## Project State
-- The repo already has reusable smoke-study scaffolding, a best-short-stack preset, a regression ranking study, and direct simulation tests for recent settlement and cladogenesis knobs.
-- Recent sessions shifted from adding new knobs to diagnosing why March 11-12 mechanics underperformed the best short stack.
-- The main gap is now code and search-surface discipline: the encounter-aware settlement branch added complexity to `simulation.ts` without any checked-in positive evidence.
+- The repo already has reusable relabel-null smoke-study scaffolding, a best-short-stack preset, regression diagnostics, and deterministic simulation tests for disturbance openings, offspring settlement scoring, decomposition spillover, and cladogenesis gates.
+- Recent sessions moved from adding short-horizon knobs on `2026-03-12` to diagnosing them and pruning the weakest settlement branch on `2026-03-13`.
+- The main gap is now structural: the next recolonization or coexistence mechanic still has to land in one oversized `simulation.ts` seam that mixes settlement scoring, disturbance bonuses, and clade-founding rules.
 
 ## External Context
-- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): durable coexistence after founding matters more than producing extra founders, which makes founder-suppressing settlement heuristics a poor search direction.
+- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): durable coexistence after founding matters more than merely producing more founders, so the settlement and persistence seam remains the highest-leverage simulation surface.
+- Martin Fowler’s extract-function refactoring guidance is directly relevant to the current long-method bottleneck before adding more logic to it: https://martinfowler.com/articles/refactoring-2nd-changes.html
 
 ## Research Gaps
-- Is there any inspected evidence that encounter-aware settlement scoring improves post-founding coexistence versus the current best short stack, or is it pure founder-suppression noise that should be pruned?
+- Can the current settlement plus disturbance-opening plus cladogenesis seam be extracted into coherent helpers or modules without changing behavior, so the next recolonization mechanic can be added and tested in isolation?
+- Are the existing deterministic settlement and cladogenesis tests strong enough to lock down that extraction?
 
 ## Current Anti-Evidence
-- The best validated `4000`-step stack is still below matched-null persistent activity in every canonical cell, so durable above-null clade persistence is still unproven.
-- Even the short-stack winner remains at `activeCladeDeltaVsNullMean=-36.75`, so the system still lacks a reliable coexistence mechanism.
+- The best validated `4000`-step stack is still below matched-null persistent activity in all canonical cells, so durable above-null clade persistence is still unproven.
+- Even the short-horizon winner remains at `activeCladeDeltaVsNullMean=-36.75`, so the system still sustains fewer concurrent clades than the matched-null baseline.
 
 ## Candidate Bets
-- A: [revert] Remove the encounter-aware settlement branch (`encounterRiskAversion` and `trophicOpportunityAttraction`) from config, simulation logic, smoke studies, diagnostics, and tests.
-  Why now: both knobs are bottom-tier in the new ranking artifact, and one is the clearest recent founder-suppression regression.
-  Est. low-context human time: 50m
-  Main risk: a later interaction-coupling change could have made this branch useful after all.
-- B: [split] Extract offspring-settlement and cladogenesis ecology scoring helpers from `simulation.ts` into a dedicated module without changing behavior.
-  Why now: nearly all recent feature churn lands in one dense seam of a `2809`-line file, which is now a clear code-health bottleneck.
+- A: [split] Extract offspring-settlement scoring, disturbance-opening bonus logic, and cladogenesis gating helpers out of `src/simulation.ts` without changing behavior.
+  Why now: the weakest branch is already gone, which makes this seam smaller and safer to extract before adding another recolonization mechanic.
   Est. low-context human time: 55m
-  Main risk: it improves iteration speed but does not directly change the simulation this session.
-- C: [feat] Replace the global disturbance opening bonus with a lineage-absent recolonization bonus that only boosts settlement into recently disturbed cells where the parent's lineage is absent.
-  Why now: disturbance openings improved `activeCladeDeltaVsNullMean` more than most recent add-ons, but the current global bonus still hurt persistence.
+  Main risk: it improves leverage and safety more than metrics in this session.
+- B: [feat] Replace the unconditional disturbance opening bonus with a lineage-absent recolonization bonus that only boosts freshly disturbed cells the parent lineage does not already dominate.
+  Why now: disturbance localized opening was the best recent active-clade improvement outside the baseline, but the current bonus still allows dominant lineages to refill vacancies immediately.
   Est. low-context human time: 60m
-  Main risk: it is still another settlement-axis knob before the weakest branches are pruned.
+  Main risk: it is still another settlement-axis knob in a seam that is already hard to change safely.
+- C: [refactor] Convert the remaining single-purpose relabel-null smoke-study wrappers into a small declarative registry on top of the shared smoke-study harness.
+  Why now: there are still multiple near-identical study entrypoints, and every new knob currently adds boilerplate around the same harness.
+  Est. low-context human time: 40m
+  Main risk: it reduces duplication but does not address the main simulation bottleneck.
 
 ## Selected Bet
-Choose A. The diagnostic pass has already paid for itself: there is now enough evidence to prune the encounter-aware settlement branch rather than widening the same seam again. Removing `encounterRiskAversion` and `trophicOpportunityAttraction` reduces code and search-surface noise while preserving the more promising active-clade directions for later follow-up.
+Choose A. The code-health triggers are active, the previous revert already simplified the target seam, and every plausible next mechanism still depends on the same settlement and clade-founding block in `src/simulation.ts`. A behavior-preserving split is the highest-leverage bounded bet because it removes the current bottleneck without widening the mechanic search space again this session.
 
 ## Why This Fits The Horizon
-- It is bounded to one weak mechanism family with clear code touchpoints in config, settlement scoring, study wrappers, and tests.
-- Success is autonomously verifiable with the existing test/build pipeline plus a no-references check for the removed knobs.
+- It is bounded to one coherent seam inside `src/simulation.ts`; the actor can stop once settlement, disturbance-opening, and cladogenesis helpers are extracted behind a stable internal interface.
+- Success is autonomously verifiable with existing deterministic tests and a normal build, with no need for long experiment runtime or hidden human judgment.
 
 ## Success Evidence
-- `src/` and `test/` no longer reference `encounterRiskAversion` or `trophicOpportunityAttraction`, and the regression diagnostics no longer include those scenarios.
-- Specific verification command or output: `npm test && npm run build && ! rg -n "encounterRiskAversion|trophicOpportunityAttraction" src test package.json`.
+- `src/simulation.ts` is materially smaller and the extracted settlement or cladogenesis helpers live in dedicated module(s) or helper file(s) with no intended behavior change.
+- Specific verification command or output: `npm test -- --runInBand test/simulation.test.ts test/activity.test.ts && npm run build`.
 
 ## Stop Conditions
-- Stop after removing the encounter-aware settlement branch end-to-end; do not expand the session into removing every negative knob or adding a replacement mechanic.
-- If the revert starts entangling unrelated predation or clade-interaction logic, shrink scope to `encounterRiskAversion` first and leave `trophicOpportunityAttraction` documented as follow-up.
+- Stop after the settlement plus disturbance-opening plus cladogenesis seam is extracted and verified; do not continue into adding a new mechanic in the same session.
+- If the extraction starts requiring broad exposure of unrelated simulation internals, shrink scope to offspring-settlement plus disturbance-opening helpers first and leave cladogenesis gating in place.
 
 ## Assumptions / Unknowns
-- Assumption: no checked-in artifact outside the inspected March 11-12 studies shows a positive result for encounter-aware settlement scoring.
-- Unknown: how much reusable occupant-grid support remains worth keeping once these two knobs are gone.
+- Assumption: the current deterministic tests around settlement, disturbance openings, and clade founding are sufficient to catch behavior drift during extraction.
+- Unknown: whether a clean module boundary is possible without threading too much mutable simulation state through helper APIs.
