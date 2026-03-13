@@ -65,7 +65,6 @@ describe('runCladeActivityRelabelNullRegressionDiagnosticsStudy', () => {
         lineageEncounterRestraint: 1,
         lineageOffspringSettlementCrowdingPenalty: 0,
         offspringSettlementEcologyScoring: true,
-        encounterRiskAversion: 0,
         decompositionSpilloverFraction: 0
       }
     });
@@ -139,10 +138,10 @@ describe('runCladeActivityRelabelNullRegressionDiagnosticsStudy', () => {
           }
         },
         {
-          scenario: 'encounterRiskAversion',
-          label: 'Encounter risk aversion',
+          scenario: 'lineageOffspringSettlementCrowding',
+          label: 'Lineage offspring settlement penalty',
           configOverrides: {
-            encounterRiskAversion: 1
+            lineageOffspringSettlementCrowdingPenalty: 1
           },
           birthScheduleMatchedAllSeeds: true,
           persistentWindowFractionDeltaVsNullMean: 0.1,
@@ -160,10 +159,10 @@ describe('runCladeActivityRelabelNullRegressionDiagnosticsStudy', () => {
           }
         },
         {
-          scenario: 'trophicOpportunityAttraction',
-          label: 'Trophic opportunity attraction',
+          scenario: 'cladogenesisEcologyGate',
+          label: 'Cladogenesis ecology gate',
           configOverrides: {
-            trophicOpportunityAttraction: 1
+            cladogenesisEcologyAdvantageThreshold: 0.1
           },
           birthScheduleMatchedAllSeeds: true,
           persistentWindowFractionDeltaVsNullMean: 0.15,
@@ -202,13 +201,13 @@ describe('runCladeActivityRelabelNullRegressionDiagnosticsStudy', () => {
           }
         }
       ],
-      ['bestShortStack', 'trophicOpportunityAttraction', 'encounterRiskAversion', 'decompositionSpillover']
+      ['bestShortStack', 'cladogenesisEcologyGate', 'lineageOffspringSettlementCrowding', 'decompositionSpillover']
     );
 
     expect(ranked.map((entry) => entry.scenario)).toEqual([
       'bestShortStack',
-      'trophicOpportunityAttraction',
-      'encounterRiskAversion',
+      'cladogenesisEcologyGate',
+      'lineageOffspringSettlementCrowding',
       'decompositionSpillover'
     ]);
     expect(ranked.map((entry) => entry.overallRank)).toEqual([1, 2, 3, 4]);
@@ -218,13 +217,13 @@ describe('runCladeActivityRelabelNullRegressionDiagnosticsStudy', () => {
       rawActivityRank: 3,
       persistencePenaltyRank: 4
     });
-    expect(ranked.find((entry) => entry.scenario === 'trophicOpportunityAttraction')).toMatchObject({
+    expect(ranked.find((entry) => entry.scenario === 'cladogenesisEcologyGate')).toMatchObject({
       persistentActivityRank: 3,
       activeCladeRank: 2,
       rawActivityRank: 2,
       persistencePenaltyRank: 2
     });
-    expect(ranked.find((entry) => entry.scenario === 'encounterRiskAversion')).toMatchObject({
+    expect(ranked.find((entry) => entry.scenario === 'lineageOffspringSettlementCrowding')).toMatchObject({
       persistentActivityRank: 4,
       activeCladeRank: 3,
       rawActivityRank: 4,

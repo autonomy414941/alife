@@ -18,7 +18,6 @@ describe('runCladeActivityRelabelNullBestShortStackStudy', () => {
       lineageEncounterRestraint: 1,
       lineageOffspringSettlementCrowdingPenalty: 0,
       offspringSettlementEcologyScoring: true,
-      encounterRiskAversion: 0,
       decompositionSpilloverFraction: 0
     });
 
@@ -81,7 +80,6 @@ describe('runCladeActivityRelabelNullBestShortStackStudy', () => {
       lineageEncounterRestraint: 1,
       lineageOffspringSettlementCrowdingPenalty: 0,
       offspringSettlementEcologyScoring: true,
-      encounterRiskAversion: 0,
       decompositionSpilloverFraction: 0
     });
     expect(result.study.config.minSurvivalTicks).toEqual([1]);

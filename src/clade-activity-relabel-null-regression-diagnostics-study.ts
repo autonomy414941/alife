@@ -31,20 +31,6 @@ export const CLADE_ACTIVITY_RELABEL_NULL_REGRESSION_DIAGNOSTIC_SCENARIOS = [
     }
   },
   {
-    scenario: 'encounterRiskAversion',
-    label: 'Encounter risk aversion',
-    configOverrides: {
-      encounterRiskAversion: 1
-    }
-  },
-  {
-    scenario: 'trophicOpportunityAttraction',
-    label: 'Trophic opportunity attraction',
-    configOverrides: {
-      trophicOpportunityAttraction: 1
-    }
-  },
-  {
     scenario: 'cladogenesisEcologyGate',
     label: 'Cladogenesis ecology gate',
     configOverrides: {

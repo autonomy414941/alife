@@ -9,7 +9,6 @@ export const BEST_SHORT_STACK_SIMULATION_CONFIG: RelabelNullSimulationConfig = {
   lineageEncounterRestraint: 1,
   lineageOffspringSettlementCrowdingPenalty: 0,
   offspringSettlementEcologyScoring: true,
-  encounterRiskAversion: 0,
   decompositionSpilloverFraction: 0
 };
 

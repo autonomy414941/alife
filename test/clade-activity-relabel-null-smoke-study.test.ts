@@ -10,13 +10,13 @@ describe('runCladeActivityRelabelNullSmokeStudy', () => {
 
     const generatedAt = '2026-03-12T00:00:00.000Z';
     const result = runCladeActivityRelabelNullSmokeStudy({
-      label: 'Encounter-risk smoke study',
+      label: 'Decomposition spillover smoke study',
       generatedAt,
       question: 'Q',
       prediction: 'P',
-      settingName: 'encounterRiskAversion',
-      valueConfigName: 'encounterRiskAversionValues',
-      values: [0, 1],
+      settingName: 'decompositionSpilloverFraction',
+      valueConfigName: 'decompositionSpilloverFractionValues',
+      values: [0, 0.5],
       fixedConfig: {
         lineageHarvestCrowdingPenalty: 1
       },
@@ -70,17 +70,17 @@ describe('runCladeActivityRelabelNullSmokeStudy', () => {
       lineageHarvestCrowdingPenalty: 1,
       width: 1,
       height: 1,
-      encounterRiskAversionValues: [0, 1]
+      decompositionSpilloverFractionValues: [0, 0.5]
     });
     expect(result.results).toHaveLength(2);
-    expect(result.results[0].encounterRiskAversion).toBe(0);
-    expect(result.results[1].encounterRiskAversion).toBe(1);
+    expect(result.results[0].decompositionSpilloverFraction).toBe(0);
+    expect(result.results[1].decompositionSpilloverFraction).toBe(0.5);
     expect(result.results[1].studyInput.generatedAt).toBe(generatedAt);
     expect(result.results[1].studyInput.simulation?.config).toMatchObject({
       width: 1,
       height: 1,
       lineageHarvestCrowdingPenalty: 1,
-      encounterRiskAversion: 1
+      decompositionSpilloverFraction: 0.5
     });
     expect(result.results[1].studyInput.simulation?.initialAgents).toHaveLength(1);
     expect(result.results[0].summary).toMatchObject({
