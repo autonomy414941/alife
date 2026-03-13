@@ -1,70 +1,70 @@
 # Session Plan — 2026-03-13
 
 ## Compact Context
-- `src/activity.ts` is still `2695` lines and `src/simulation.ts` is still `2456` lines, but recent helper extractions mean disturbance and reproduction seams now exist outside the monoliths.
-- The `2026-03-13` disturbance artifact now covers `off`, `localizedOpening`, and `localizedOpeningLineageAbsent`, so the prior plan's missing-artifact gap is closed.
-- In that artifact, `localizedOpening` improved `activeCladeDeltaVsNullMean` from `-36.75` to `-31.25`, but reduced `persistentActivityMeanDeltaVsNullMean` from `29.25` to `11.75`.
-- The new `localizedOpeningLineageAbsent` mode regressed both short-horizon signals versus generic openings: `activeCladeDeltaVsNullMean -35` and `persistentActivityMeanDeltaVsNullMean 7.89`.
-- The `2026-03-12` regression-diagnostics artifact still ranks the plain best short stack first; nearly every recent add-on still fails mainly as `activeCladeDeficit`.
-- The canonical `4000`-step best-short-stack validation from `2026-03-12` remains below matched null at every checked threshold window.
+- `src/activity.ts` is still `2695` lines and `src/simulation.ts` is still `2456` lines, although `src/disturbance.ts` and `src/reproduction.ts` now provide real seams outside the monoliths.
+- The new `2026-03-13` disturbance-opening horizon artifact shows `localizedOpening` improves persistent-activity deltas versus the best short stack, but every canonical `4000`-step panel is still negative versus the matched null.
+- In that same horizon artifact, `localizedOpening` still carries a large active-clade deficit where measured: `-37.5` at threshold `1/50` and `-40.75` at `1.2/50`.
+- The older `2026-03-11` clade-habitat coupling sweep is still the strongest underused positive signal: `cladeHabitatCoupling=0.75` reached `persistentActivityMeanDeltaVsNullMean -39.89` versus `-90.68` at `0`.
+- The `2026-03-12` regression-diagnostics artifact still ranks most recent add-ons below the best short stack; failure modes are still dominated by `activeCladeDeficit` or `persistenceFailure`.
+- The missing evidence is durable coexistence against the matched null, not another short-horizon founder burst.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Disturbance recolonization / openings | 4 | d0ed024 |
+| Disturbance openings / recolonization | 5 | d2d8fac |
 | Relabel-null diagnostics / study harness | 3 | cd697f0 |
-| Offspring settlement / reproduction seams | 2 | 344d4a3 |
-| Cladogenesis gating | 1 | 8e477ff |
-| Long-horizon validation | 0 | a843a91 |
+| Settlement / reproduction branch work | 2 | 344d4a3 |
+| Clade habitat / interaction coupling | 0 | — |
 | Activity / simulation file splits | 0 | — |
 
-Dominant axis: Disturbance recolonization / openings (4/10)
-Underexplored axes: long-horizon validation, activity / simulation file splits, cladogenesis gating
+Dominant axis: Disturbance openings / recolonization (5/10)
+Underexplored axes: clade habitat / interaction coupling, activity / simulation file splits
 
 ## Project State
-- The current workflow is a best-short-stack baseline plus small relabel-null smoke studies for each new knob.
-- Disturbance openings are the only recent knob that improved the short-horizon active-clade gap, but the stronger lineage-absent variant already looks worse than generic openings.
-- The main gap is still durable coexistence against the matched null, not short-run wiring success.
+- The current workflow is a best-short-stack baseline plus focused relabel-null smoke and horizon studies for one knob at a time.
+- Recent sessions kept pushing disturbance mechanics and diagnostics; the latest validation now shows disturbance openings are not enough by themselves.
+- An underused positive axis already exists in code and artifacts: clade-level habitat coupling has sweep support but no canonical horizon verdict.
+- The biggest structural gap is that study logic still accumulates inside `src/activity.ts`, making each new comparison slower to add safely.
 
 ## External Context
-- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): durable coexistence after founding matters more than founder count alone, which makes long-horizon validation of the best disturbance regime more urgent than another short smoke-study tweak.
+- [Goyal et al., 2024, "A universal niche geometry governs the response of ecosystems to environmental perturbations"](https://arxiv.org/abs/2403.01276): perturbations help only when they shift effective niche structure, which makes clade-level habitat coupling a better next axis than another vacancy-only opening tweak. This is an inference from the paper's framing.
 
 ## Research Gaps
-- Does `localizedOpening` still help on the canonical `4000`-step relabel-null panel, or is its short-horizon active-clade gain just a transient disturbance burst?
+- Does `bestShortStack + cladeHabitatCoupling=0.75` still beat the uncoupled baseline on the canonical `4000`-step relabel-null panel, or was the sweep gain just a shorter-horizon artifact?
 
 ## Current Anti-Evidence
-- The `2026-03-12` canonical best-short-stack validation is still negative versus matched null at all four checked panels: `-34.63`, `-111.78`, `-18.24`, and `-93.65` persistent-activity delta.
-- Recent short-horizon add-ons still leave actual final active clades below matched null, so the system is not yet sustaining concurrent lineages better than a relabeled null.
+- Even after the `2026-03-13` disturbance-opening validation, the matched-null persistent-activity deltas stay negative on every canonical panel: `-12.28`, `-69.22`, `-4.32`, and `-69.33`.
+- The system still does not sustain enough simultaneously active clades; the latest disturbance horizon keeps active-clade delta around `-38` to `-41` where measured.
 
 ## Candidate Bets
-- A: [validate] Add a dedicated `4000`-step disturbance-opening horizon comparison that measures `bestShortStack` versus `bestShortStack + localizedOpening`.
-  Why now: validation has been absent since `a843a91`, and generic localized opening is the only recent knob that improved the active-clade gap without obvious wiring problems.
+- A: [validate] Add a dedicated `4000`-step relabel-null horizon comparison for `bestShortStack` versus `bestShortStack + cladeHabitatCoupling=0.75`.
+  Why now: the `0.75` sweep point is the strongest underused positive signal in existing artifacts, and it targets niche differentiation instead of more vacancy creation.
   Est. low-context human time: 45m
-  Main risk: the long-horizon result may simply confirm that short-run disturbance gains do not persist.
-- B: [investigate] Extend relabel-null diagnostics with window-level active-clade and raw-to-persistent deltas for `bestShortStack`, `localizedOpening`, and `localizedOpeningLineageAbsent`.
-  Why now: three recent feat experiments underperformed the baseline, and the current `activeCladeDeficit` label is too coarse to tell whether disturbance fails early or late.
-  Est. low-context human time: 45m
-  Main risk: better diagnosis may still leave the next mechanism choice ambiguous.
-- C: [feat] Add a temporary post-disturbance fertility / regen rebound on affected cells so shocks create transient niches instead of pure vacancies.
-  Why now: the `2026-03-13` artifact suggests vacancy plus settlement bonus alone does not preserve more active clades over the short horizon.
+  Main risk: the sweep win may disappear at canonical horizon or improve persistence while still missing active clades.
+- B: [split] Extract the relabel-null comparison / pseudo-clade / diagnostics block from `src/activity.ts` into a dedicated module without changing outputs.
+  Why now: `src/activity.ts` is the largest `src/` file and every recent validate/investigate session keeps growing the same relabel-null cluster.
   Est. low-context human time: 60m
-  Main risk: it adds new per-cell state and tests, and could improve recovery speed without improving coexistence.
+  Main risk: it improves iteration speed but may not change the next mechanism choice immediately.
+- C: [revert] Remove `localizedOpeningLineageAbsent` from disturbance configs and study surfaces until it has a positive result.
+  Why now: the `2026-03-13` smoke artifact regressed versus plain `localizedOpening` while adding extra same-lineage occupancy logic.
+  Est. low-context human time: 20m
+  Main risk: the mode might be salvageable with better diagnosis, so removal could be slightly premature.
 
 ## Selected Bet
-Choose A. The new short-horizon artifact already ruled out `localizedOpeningLineageAbsent` as the likely lead, but generic `localizedOpening` still improved the active-clade gap enough to deserve one canonical long-horizon check. Validate that regime now before adding another disturbance mechanic or growing the diagnostics surface again.
+Choose A. It switches away from the now-dominant disturbance axis, uses an already-implemented but undervalidated coexistence mechanism, and can be answered with one thin horizon study instead of another broad refactor or another blind new knob.
 
 ## Why This Fits The Horizon
-- Existing best-short-stack comparison code and disturbance smoke-study config paths make this a narrow extension instead of a new analysis framework.
+- The repo already has clade-habitat coupling sweep code and a recent disturbance horizon-study pattern to copy, so this is a narrow comparison rather than a new analysis framework.
 - Success is autonomously verifiable from one focused test and one JSON artifact with matched-schedule status plus per-threshold delta comparisons.
 
 ## Success Evidence
-- A new `docs/clade_activity_relabel_null_disturbance_opening_horizon_2026-03-13.json` artifact exists and compares `bestShortStack` vs `localizedOpening` on the canonical `4000`-step panel.
-- `npm test -- --runInBand test/clade-activity-relabel-null-disturbance-opening-horizon-study.test.ts && npm run study:clade-activity-relabel-null-disturbance-opening-horizon > docs/clade_activity_relabel_null_disturbance_opening_horizon_2026-03-13.json`
+- A new `docs/clade_activity_relabel_null_clade_habitat_coupling_horizon_2026-03-13.json` artifact exists and compares baseline versus `cladeHabitatCoupling=0.75` on the canonical `4000`-step panel.
+- `npm test -- --runInBand test/clade-activity-relabel-null-clade-habitat-coupling-horizon-study.test.ts && npm run study:clade-activity-relabel-null-clade-habitat-coupling-horizon > docs/clade_activity_relabel_null_clade_habitat_coupling_horizon_2026-03-13.json`
 
 ## Stop Conditions
-- Stop once the new artifact makes the long-horizon sign clear; do not add lineage-absent or fertility-rebound mechanics in the same session.
-- If the new validation surface starts forcing broad `activity.ts` surgery, shrink to the thinnest wrapper around existing comparison helpers and record the result instead of thrashing.
+- Stop once the artifact makes the sign clear; do not combine habitat coupling with disturbance openings or extra new knobs in the same session.
+- If the comparison starts forcing a broad `activity.ts` refactor, shrink to the thinnest wrapper around existing relabel-null helpers and record the horizon result.
 
 ## Assumptions / Unknowns
-- Assumption: `localizedOpening` is the only disturbance mode still worth promoting from short smoke test to canonical horizon validation.
-- Unknown: even if `localizedOpening` narrows the active-clade deficit, it may still lose on persistent activity badly enough that disturbance should be abandoned or redesigned.
+- Assumption: `cladeHabitatCoupling=0.75` is the best existing coupling point worth promoting from sweep to canonical horizon.
+- Unknown: the sweep artifact tracked persistent-activity deltas, but canonical-horizon active-clade behavior may still be poor.

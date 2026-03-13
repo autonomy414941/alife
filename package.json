@@ -21,6 +21,7 @@
     "study:clade-activity-relabel-null-disturbance-opening-horizon": "tsx src/clade-activity-relabel-null-disturbance-opening-horizon-study.ts",
     "study:clade-activity-relabel-null-regression-diagnostics": "tsx src/clade-activity-relabel-null-regression-diagnostics-study.ts",
     "study:clade-activity-relabel-null-clade-habitat-coupling-sweep": "tsx src/clade-activity-relabel-null-clade-habitat-coupling-sweep-study.ts",
+    "study:clade-activity-relabel-null-clade-habitat-coupling-horizon": "tsx src/clade-activity-relabel-null-clade-habitat-coupling-horizon-study.ts",
     "study:clade-activity-relabel-null-clade-interaction-coupling-sweep": "tsx src/clade-activity-relabel-null-clade-interaction-coupling-sweep-study.ts"
   },
   "devDependencies": {
