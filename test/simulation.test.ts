@@ -849,6 +849,113 @@ describe('LifeSimulation', () => {
     expect(reproduceChild(2, new Set([1]))).toMatchObject({ x: 3, y: 0 });
   });
 
+  it('limits disturbed settlement openings to lineages that are locally absent', () => {
+    const buildSimulation = (initialAgents: Array<Omit<InternalTestAgent, 'id'>>) =>
+      new LifeSimulation({
+        seed: 32,
+        config: {
+          width: 5,
+          height: 1,
+          maxResource: 6,
+          resourceRegen: 0,
+          biomeBands: 1,
+          biomeContrast: 0,
+          decompositionBase: 0,
+          decompositionEnergyFraction: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          dispersalPressure: 0,
+          dispersalRadius: 1,
+          habitatPreferenceStrength: 0,
+          trophicForagingPenalty: 0,
+          defenseForagingPenalty: 0,
+          lineageHarvestCrowdingPenalty: 0,
+          lineageDispersalCrowdingPenalty: 0,
+          lineageOffspringSettlementCrowdingPenalty: 0,
+          offspringSettlementEcologyScoring: true,
+          disturbanceSettlementOpeningTicks: 2,
+          disturbanceSettlementOpeningBonus: 1,
+          disturbanceSettlementOpeningLineageAbsentOnly: true,
+          harvestCap: 0,
+          reproduceProbability: 0,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0,
+          speciationThreshold: 1,
+          maxAge: 100
+        },
+        initialAgents
+      });
+
+    const reproduceChild = (initialAgents: Array<Omit<InternalTestAgent, 'id'>>) => {
+      const sim = buildSimulation(initialAgents);
+      const internal = sim as unknown as {
+        agents: InternalTestAgent[];
+        tickCount: number;
+        buildOccupancyGrid: (agents?: Array<Pick<InternalTestAgent, 'x' | 'y'>>) => number[][];
+        buildLineageOccupancyGrid: (
+          agents?: Array<Pick<InternalTestAgent, 'lineage' | 'x' | 'y'>>
+        ) => Map<number, number[][]>;
+        markDisturbanceSettlementOpenings: (affectedCellIndices: ReadonlySet<number>, stepTick: number) => void;
+        reproduce: (
+          parent: InternalTestAgent,
+          occupancy: number[][],
+          lineageOccupancy: Map<number, number[][]> | undefined
+        ) => {
+          x: number;
+          y: number;
+        };
+      };
+
+      sim.setResource(0, 0, 0);
+      sim.setResource(1, 0, 1.2);
+      sim.setResource(2, 0, 0);
+      sim.setResource(3, 0, 1.6);
+      sim.setResource(4, 0, 0);
+      internal.tickCount = 0;
+      internal.markDisturbanceSettlementOpenings(new Set([1]), 1);
+
+      return internal.reproduce(
+        internal.agents[0],
+        internal.buildOccupancyGrid(internal.agents),
+        internal.buildLineageOccupancyGrid(internal.agents)
+      );
+    };
+
+    expect(
+      reproduceChild([
+        {
+          x: 2,
+          y: 0,
+          energy: 30,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ])
+    ).toMatchObject({ x: 1, y: 0 });
+
+    expect(
+      reproduceChild([
+        {
+          x: 2,
+          y: 0,
+          energy: 30,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        },
+        {
+          x: 1,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ])
+    ).toMatchObject({ x: 3, y: 0 });
+  });
+
   it('preserves clade founding when the cladogenesis ecology gate is disabled', () => {
     const sim = new LifeSimulation({
       seed: 3,

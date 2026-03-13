@@ -13,6 +13,7 @@ export interface DisturbanceFootprintConfig {
 export interface DisturbanceSettlementOpeningConfig {
   openingTicks: number;
   openingBonus: number;
+  lineageAbsentOnly: boolean;
   enabled: boolean;
 }
 
@@ -89,13 +90,15 @@ export function resolveDisturbanceFootprintConfig(
 }
 
 export function resolveDisturbanceSettlementOpeningConfig(
-  config: Pick<SimulationConfig, 'disturbanceSettlementOpeningTicks' | 'disturbanceSettlementOpeningBonus'>
+  config: Pick<SimulationConfig, 'disturbanceSettlementOpeningTicks' | 'disturbanceSettlementOpeningBonus'> &
+    Partial<Pick<SimulationConfig, 'disturbanceSettlementOpeningLineageAbsentOnly'>>
 ): DisturbanceSettlementOpeningConfig {
   const openingTicks = Math.max(0, Math.floor(config.disturbanceSettlementOpeningTicks));
   const openingBonus = Math.max(0, config.disturbanceSettlementOpeningBonus);
   return {
     openingTicks,
     openingBonus,
+    lineageAbsentOnly: config.disturbanceSettlementOpeningLineageAbsentOnly === true,
     enabled: openingTicks > 0 && openingBonus > 0
   };
 }

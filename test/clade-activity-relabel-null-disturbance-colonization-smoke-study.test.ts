@@ -5,7 +5,7 @@ import {
 } from '../src/clade-activity-relabel-null-disturbance-colonization-smoke-study';
 
 describe('runCladeActivityRelabelNullDisturbanceColonizationSmokeStudy', () => {
-  it('compares disturbance-off against a localized opening regime on top of the best short stack', () => {
+  it('compares disturbance-off, generic openings, and lineage-absent openings on top of the best short stack', () => {
     const generatedAt = '2026-03-12T00:00:00.000Z';
     const result = runCladeActivityRelabelNullDisturbanceColonizationSmokeStudy({
       generatedAt,
@@ -55,12 +55,13 @@ describe('runCladeActivityRelabelNullDisturbanceColonizationSmokeStudy', () => {
       lineageEncounterRestraint: 1,
       offspringSettlementEcologyScoring: true
     });
-    expect(result.results).toHaveLength(2);
+    expect(result.results).toHaveLength(3);
     expect(result.results[0].disturbanceMode).toBe('off');
     expect(result.results[0].studyInput.simulation?.config).toMatchObject({
       disturbanceInterval: 0,
       disturbanceSettlementOpeningTicks: 0,
-      disturbanceSettlementOpeningBonus: 0
+      disturbanceSettlementOpeningBonus: 0,
+      disturbanceSettlementOpeningLineageAbsentOnly: false
     });
     expect(result.results[1].disturbanceMode).toBe('localizedOpening');
     expect(result.results[1].studyInput.simulation?.config).toMatchObject({
@@ -69,9 +70,21 @@ describe('runCladeActivityRelabelNullDisturbanceColonizationSmokeStudy', () => {
       disturbanceRadius: 2,
       disturbanceRefugiaFraction: 0.5,
       disturbanceSettlementOpeningTicks: 10,
-      disturbanceSettlementOpeningBonus: 0.75
+      disturbanceSettlementOpeningBonus: 0.75,
+      disturbanceSettlementOpeningLineageAbsentOnly: false
+    });
+    expect(result.results[2].disturbanceMode).toBe('localizedOpeningLineageAbsent');
+    expect(result.results[2].studyInput.simulation?.config).toMatchObject({
+      disturbanceInterval: 50,
+      disturbanceEnergyLoss: 0.5,
+      disturbanceRadius: 2,
+      disturbanceRefugiaFraction: 0.5,
+      disturbanceSettlementOpeningTicks: 10,
+      disturbanceSettlementOpeningBonus: 0.75,
+      disturbanceSettlementOpeningLineageAbsentOnly: true
     });
     expect(result.results[0].summary.birthScheduleMatchedAllSeeds).toBe(true);
     expect(result.results[1].summary.birthScheduleMatchedAllSeeds).toBe(true);
+    expect(result.results[2].summary.birthScheduleMatchedAllSeeds).toBe(true);
   });
 });

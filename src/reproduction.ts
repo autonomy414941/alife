@@ -18,6 +18,7 @@ export interface OffspringSettlementContext {
 interface PickSettlementSiteOptions {
   parent: SettlementAgent;
   settlementContext: OffspringSettlementContext | undefined;
+  useSettlementEcologyScore: boolean;
   useDisturbanceOpeningBonus: boolean;
   currentStepTick: number;
   wrapX: (x: number) => number;
@@ -86,6 +87,7 @@ interface ShouldFoundCladeOptions {
 export function pickSettlementSite({
   parent,
   settlementContext,
+  useSettlementEcologyScore,
   useDisturbanceOpeningBonus,
   currentStepTick,
   wrapX,
@@ -103,7 +105,7 @@ export function pickSettlementSite({
     { x: parent.x, y: wrapY(parent.y - 1) }
   ];
 
-  if (!settlementContext && !useDisturbanceOpeningBonus) {
+  if (!useSettlementEcologyScore && !useDisturbanceOpeningBonus) {
     return pickRandomNeighbor(neighbors);
   }
 
@@ -111,7 +113,7 @@ export function pickSettlementSite({
   let bestScore = -Infinity;
   for (const option of neighbors) {
     const score =
-      (settlementContext
+      (useSettlementEcologyScore && settlementContext
         ? localEcologyScore(
             parent,
             option.x,

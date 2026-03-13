@@ -95,6 +95,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   offspringSettlementEcologyScoring: false,
   disturbanceSettlementOpeningTicks: 0,
   disturbanceSettlementOpeningBonus: 0,
+  disturbanceSettlementOpeningLineageAbsentOnly: false,
   cladogenesisTraitNoveltyThreshold: -1,
   cladogenesisEcologyAdvantageThreshold: -1,
   harvestCap: 2.5,
@@ -236,13 +237,13 @@ export class LifeSimulation {
     this.resolveEncounters();
 
     const useOffspringSettlementContext =
-      this.usesOffspringSettlementScoring() || this.usesCladogenesisEcologyGate();
+      this.usesOffspringSettlementContext() || this.usesCladogenesisEcologyGate();
     const reproductiveAgents = useOffspringSettlementContext
       ? this.agents.filter((agent) => agent.energy > 0)
       : undefined;
     const reproductionOccupancy = reproductiveAgents ? this.buildOccupancyGrid(reproductiveAgents) : undefined;
     const reproductionLineageOccupancy =
-      reproductiveAgents && Math.max(0, this.config.lineageOffspringSettlementCrowdingPenalty) > 0
+      reproductiveAgents && this.usesOffspringSettlementLineageOccupancy()
         ? this.buildLineageOccupancyGrid(reproductiveAgents)
         : undefined;
     const offspring: Agent[] = [];
@@ -1670,7 +1671,7 @@ export class LifeSimulation {
     const settlementContext = this.resolveOffspringSettlementContext(
       occupancy,
       lineageOccupancy,
-      this.usesOffspringSettlementScoring()
+      this.usesOffspringSettlementContext()
     );
     const childPos = this.pickOffspringSettlement(settlementAgent, settlementContext);
     const cladogenesisContext =
@@ -1709,6 +1710,7 @@ export class LifeSimulation {
     return pickSettlementSite({
       parent,
       settlementContext,
+      useSettlementEcologyScore: this.usesOffspringSettlementScoring(),
       useDisturbanceOpeningBonus: this.usesDisturbanceSettlementOpenings(),
       currentStepTick: this.tickCount + 1,
       wrapX: (x) => this.wrapX(x),
@@ -1736,7 +1738,7 @@ export class LifeSimulation {
           jitter
         ),
       disturbanceSettlementOpeningBonusAt: (x, y, currentStepTick) =>
-        this.disturbanceSettlementOpeningBonusAt(x, y, currentStepTick)
+        this.disturbanceSettlementOpeningBonusAt(parent, settlementContext, x, y, currentStepTick)
     });
   }
 
@@ -1793,6 +1795,10 @@ export class LifeSimulation {
     );
   }
 
+  private usesOffspringSettlementContext(): boolean {
+    return this.usesOffspringSettlementScoring() || this.usesDisturbanceSettlementOpeningLineageAbsence();
+  }
+
   private usesCladogenesisEcologyGate(): boolean {
     return (
       Number.isFinite(this.config.cladogenesisEcologyAdvantageThreshold) &&
@@ -1802,6 +1808,18 @@ export class LifeSimulation {
 
   private usesDisturbanceSettlementOpenings(): boolean {
     return resolveDisturbanceSettlementOpeningConfig(this.config).enabled;
+  }
+
+  private usesDisturbanceSettlementOpeningLineageAbsence(): boolean {
+    const opening = resolveDisturbanceSettlementOpeningConfig(this.config);
+    return opening.enabled && opening.lineageAbsentOnly;
+  }
+
+  private usesOffspringSettlementLineageOccupancy(): boolean {
+    return (
+      Math.max(0, this.config.lineageOffspringSettlementCrowdingPenalty) > 0 ||
+      this.usesDisturbanceSettlementOpeningLineageAbsence()
+    );
   }
 
   private resolveOffspringSettlementContext(
@@ -1814,12 +1832,13 @@ export class LifeSimulation {
     }
 
     const lineagePenalty = Math.max(0, this.config.lineageOffspringSettlementCrowdingPenalty);
+    const usesLineageOccupancy = this.usesOffspringSettlementLineageOccupancy();
     const aliveAgents = this.agents.filter((agent) => agent.energy > 0);
     return {
       occupancy: occupancy ?? this.buildOccupancyGrid(aliveAgents),
       lineageOccupancy:
         lineageOccupancy ??
-        (lineagePenalty > 0 ? this.buildLineageOccupancyGrid(aliveAgents) : undefined),
+        (usesLineageOccupancy ? this.buildLineageOccupancyGrid(aliveAgents) : undefined),
       lineagePenalty
     };
   }
@@ -2152,8 +2171,33 @@ export class LifeSimulation {
     );
   }
 
-  private disturbanceSettlementOpeningBonusAt(x: number, y: number, currentStepTick: number): number {
+  private disturbanceSettlementOpeningBonusAt(
+    parent: Pick<Agent, 'lineage' | 'x' | 'y'>,
+    settlementContext: OffspringSettlementContext | undefined,
+    x: number,
+    y: number,
+    currentStepTick: number
+  ): number {
     const opening = resolveDisturbanceSettlementOpeningConfig(this.config);
+    if (opening.lineageAbsentOnly) {
+      const lineageOccupancy = settlementContext?.lineageOccupancy;
+      if (!lineageOccupancy) {
+        return 0;
+      }
+
+      const parentOccupiesCandidate = this.wrapX(parent.x) === this.wrapX(x) && this.wrapY(parent.y) === this.wrapY(y);
+      const lineageCrowding = this.sameLineageNeighborhoodCrowdingAt(
+        parent.lineage,
+        x,
+        y,
+        lineageOccupancy,
+        parentOccupiesCandidate ? undefined : { x: parent.x, y: parent.y }
+      );
+      if (lineageCrowding > 0) {
+        return 0;
+      }
+    }
+
     return resolveDisturbanceSettlementOpeningBonus({
       enabled: opening.enabled,
       openUntilTick: disturbanceSettlementOpenUntilTickAt(this.disturbanceSettlementOpenUntilTick, x, y),

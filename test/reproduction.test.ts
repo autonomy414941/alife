@@ -44,6 +44,7 @@ describe('reproduction helpers', () => {
         lineageOccupancy: undefined,
         lineagePenalty: 0
       },
+      useSettlementEcologyScore: true,
       useDisturbanceOpeningBonus: true,
       currentStepTick: 1,
       wrapX: (x) => ((x % 3) + 3) % 3,

@@ -238,6 +238,7 @@ export interface SimulationConfig {
   offspringSettlementEcologyScoring: boolean;
   disturbanceSettlementOpeningTicks: number;
   disturbanceSettlementOpeningBonus: number;
+  disturbanceSettlementOpeningLineageAbsentOnly: boolean;
   cladogenesisTraitNoveltyThreshold: number;
   cladogenesisEcologyAdvantageThreshold: number;
   harvestCap: number;
