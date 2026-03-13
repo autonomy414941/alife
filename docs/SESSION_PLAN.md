@@ -1,69 +1,70 @@
 # Session Plan — 2026-03-13
 
 ## Compact Context
-- `src/disturbance.ts` and `src/reproduction.ts` now hold extracted helpers, but `LifeSimulation` in `src/simulation.ts` is still `2412` lines and still owns the step loop plus occupancy-driven movement and reproduction decisions.
-- `src/activity.ts` is still `2695` lines, and `10+` relabel-null study entrypoints share near-identical wrapper structure around the same smoke-study runner.
-- The current short relabel-null best stack still uses lineage crowding plus encounter restraint and reports `persistentActivityMeanDeltaVsNullMean=29.25`, but it also reports `activeCladeDeltaVsNullMean=-36.75` with `dominantLossMode=activeCladeDeficit`.
-- The localized disturbance opening smoke study kept birth schedules matched and improved `activeCladeDeltaVsNullMean` from `-36.75` to `-31.25`, but it reduced `persistentActivityMeanDeltaVsNullMean` from `29.25` to `11.75`.
-- The validated `4000`-step best-stack comparison is still below matched null at every checked threshold window, so short-horizon wins are not yet durable evidence.
+- `src/simulation.ts` is still `2456` lines and `src/activity.ts` is still `2695` lines, even after recent helper extractions into `src/disturbance.ts` and `src/reproduction.ts`.
+- The latest code now supports `disturbanceSettlementOpeningLineageAbsentOnly`, and deterministic coverage exists in `test/simulation.test.ts` plus the disturbance-colonization smoke-study test.
+- The saved disturbance colonization artifact under `docs/` still predates that new mode: it only compares `off` vs `localizedOpening`.
+- The best saved short disturbance result improved `activeCladeDeltaVsNullMean` from `-36.75` to `-31.25`, but also dropped `persistentActivityMeanDeltaVsNullMean` from `29.25` to `11.75`.
+- The canonical `4000`-step best-short-stack validation is still below matched null at every checked threshold window, so short-horizon wins remain anti-evidence until they survive longer horizons.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Relabel-null diagnostics / smoke harness | 3 | cd697f0 |
-| Disturbance recolonization mechanics | 2 | ecd5c97 |
-| Offspring settlement / reproduction seam | 2 | f1d8891 |
-| Cladogenesis gating | 2 | 8e477ff |
-| Ecology scoring experiments | 1 | 5003c4f |
-| Activity analysis split | 0 | — |
+| Disturbance recolonization mechanics | 3 | 5220e6d |
+| Relabel-null diagnostics / study infrastructure | 3 | cd697f0 |
+| Offspring settlement / reproduction seam | 2 | 344d4a3 |
+| Cladogenesis gating | 1 | 8e477ff |
+| Ecology-scored interaction mechanics | 1 | 5003c4f |
+| Long-horizon validation | 0 | a843a91 |
+| Activity / simulation file splits | 0 | — |
 
-Dominant axis: Relabel-null diagnostics / smoke harness (3/10)
-Underexplored axes: ecology scoring experiments, activity analysis split
+Dominant axis: Disturbance recolonization mechanics (3/10, tied)
+Underexplored axes: long-horizon validation, activity / simulation file splits, cladogenesis gating, ecology-scored interaction mechanics
 
 ## Project State
-- The repo has deterministic disturbance and reproduction tests, reusable relabel-null study scaffolding, and newly extracted disturbance and reproduction helpers.
-- Recent sessions moved from adding local coexistence heuristics to diagnosing failures, then started carving simulation seams out of `LifeSimulation`.
-- The main mechanism gap is that disturbance openings are still generic vacancy bonuses, so disturbed cells can still be reclaimed by the same local lineage that just lost the patch.
+- Recent sessions added disturbance openings, then narrowed them to lineage-absent recolonization while also improving disturbance and reproduction seams.
+- The evaluation layer is lagging the mechanics layer: the latest disturbance feature is tested in code but not yet represented in saved experiment artifacts.
+- The main strategic gap is still durable coexistence: current gains are short-horizon and the matched-null comparisons still show an `activeCladeDeficit` story.
 
 ## External Context
-- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): durable coexistence after founding matters more than founder count alone, which matches this project's persistent `activeCladeDeficit` failure mode.
+- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701): durable coexistence after founding matters more than founder count alone, which makes validating post-disturbance lineage turnover more urgent than adding another local heuristic.
 
 ## Research Gaps
-- Can disturbance openings reward local lineage turnover rather than generic recolonization, so disturbed patches preferentially admit lineages that were not already locally dominant?
+- Does `localizedOpeningLineageAbsent` beat both `off` and generic `localizedOpening` on short-horizon `activeCladeDeltaVsNullMean` and `persistentActivityMeanDeltaVsNullMean`, or is the new rule only a wiring success?
 
 ## Current Anti-Evidence
-- The `2026-03-12` best-stack horizon artifact still reports negative persistent activity delta versus matched null at every checked cell: `-34.63`, `-111.78`, `-18.24`, and `-93.65`.
-- Even the current short-horizon winner still trails matched null by `36.75` active clades on average, and the disturbance-opening variant still ends in `dominantLossMode=activeCladeDeficit`.
+- The `2026-03-12` canonical `4000`-step best-stack validation is still negative versus matched null at every checked panel: `-34.63`, `-111.78`, `-18.24`, and `-93.65` persistent-activity delta.
+- The latest saved disturbance artifact has no `localizedOpeningLineageAbsent` result, so there is still no experiment evidence that the newest disturbance rule improves the active-clade deficit at all.
 
 ## Candidate Bets
-- A: [feat] Add a lineage-absent disturbance recolonization mode so freshly disturbed cells get a settlement bonus only when the parent lineage is not already locally present.
-  Why now: localized disturbance openings are the one recent mechanic family that moved the active-clade deficit in the right direction, and the new helper seams make a tighter rule feasible without reviving the removed encounter-aware branch.
+- A: [validate] Run the updated disturbance-colonization smoke study and save the first artifact that includes `localizedOpeningLineageAbsent`.
+  Why now: the newest mechanic landed after the current artifact, so further disturbance work would otherwise be blind optimization.
+  Est. low-context human time: 20m
+  Main risk: a short-horizon win may still say little about the long-horizon anti-evidence.
+- B: [split] Split `src/activity.ts` into relabel-null analysis core plus study-definition modules while keeping the current CLI entrypoints stable.
+  Why now: `src/activity.ts` is past the split trigger and still mixes analytics, defaults, and study runners in one file.
   Est. low-context human time: 45m
-  Main risk: it may just duplicate existing lineage crowding penalties and lower settlement enough to hurt persistence again.
-- B: [split] Split `src/activity.ts` into relabel-null analysis core plus study-definition modules and remove wrapper duplication across the smoke-study entrypoints.
-  Why now: `src/activity.ts` still exceeds the split trigger and the repeated study wrappers are now a recurring maintenance cost on every experiment.
+  Main risk: it improves iteration speed but does not answer whether the latest mechanic actually helps.
+- C: [feat] Add a temporary post-disturbance resource rebound so opened patches become ecologically distinct instead of just vacant.
+  Why now: disturbance currently only subtracts energy/resources and opens cells, so the landscape after a shock is still too similar to the one before it.
   Est. low-context human time: 45m
-  Main risk: it improves leverage but does not change simulation behavior this session.
-- C: [revert] Remove or quarantine one failed short-stack knob family that is not in `BEST_SHORT_STACK_SIMULATION_CONFIG`, starting with the cladogenesis gate experiments that lowered short-horizon delta in their smoke runs.
-  Why now: the current code still carries experimental surface area that recent artifacts do not justify, which raises search-space and maintenance cost.
-  Est. low-context human time: 30m
-  Main risk: a mechanism that fails in the current stack could still matter in another regime, so reverting too aggressively may discard useful future combinations.
+  Main risk: it may increase population recovery without improving clade turnover.
 
 ## Selected Bet
-Choose A. The best current clue is that disturbance-created vacancies slightly reduce the active-clade deficit, but the effect is too blunt because incumbents can still recolonize their own openings. A lineage-absent recolonization rule is a direct mechanics change on that promising seam, is narrower than the removed encounter-aware settlement branch, and can be verified with deterministic settlement tests plus the existing disturbance-colonization smoke-study surface.
+Choose A. The current bottleneck is not another disturbance heuristic; it is that the just-landed lineage-absent recolonization rule has no saved evidence yet. Generate that missing artifact first, decide whether the new mode is actually a promising lead, and leave any follow-on mechanic change for a later session.
 
 ## Why This Fits The Horizon
-- It is bounded to one settlement-bias rule on top of the current disturbance opening path; it does not require a new analysis framework or a long benchmark run in the same session.
-- Success is verifiable autonomously with targeted tests and a build, and the existing smoke-study harness can prove the new mode is wired correctly.
+- The work is bounded to one existing study surface that already has code paths and tests for the new mode.
+- Success is autonomously verifiable from a new JSON artifact with three disturbance modes and from focused tests if the study surface has drifted.
 
 ## Success Evidence
-- A new disturbance recolonization mode or config path exists, and a deterministic simulation test shows disturbed cells are favored when the parent lineage is locally absent but not when the same lineage already occupies the opening.
-- Specific verification command or output: `npm test -- --runInBand test/simulation.test.ts test/clade-activity-relabel-null-disturbance-colonization-smoke-study.test.ts && npm run build`
+- A new `docs/clade_activity_relabel_null_disturbance_colonization_smoke_*.json` artifact exists and includes `off`, `localizedOpening`, and `localizedOpeningLineageAbsent` with matched birth-schedule status plus diagnostic deltas.
+- Specific verification command or output: `npm test -- --runInBand test/clade-activity-relabel-null-disturbance-colonization-smoke-study.test.ts && npm run study:clade-activity-relabel-null-disturbance-colonization-smoke > docs/clade_activity_relabel_null_disturbance_colonization_smoke_2026-03-13.json`
 
 ## Stop Conditions
-- Stop once one lineage-sensitive disturbance recolonization rule is implemented, covered by deterministic tests, and exposed through the existing disturbance-colonization smoke study; do not also run long-horizon sweeps or add unrelated settlement heuristics.
-- If expressing local lineage absence requires widening too many APIs, shrink scope to a single boolean or threshold mode that reuses the existing settlement context rather than inventing a broader occupancy abstraction.
+- Stop once the new artifact exists and the lineage-absent mode has been compared against both existing baselines; do not add another disturbance mechanic or a `4000`-step sweep in the same session.
+- If producing the artifact requires broader code repair than the smoke-study surface, shrink scope to the minimum fix needed for a trustworthy short-horizon result and document the blocker instead of thrashing.
 
 ## Assumptions / Unknowns
-- Assumption: local lineage occupancy near a disturbed patch is a good enough proxy for incumbent advantage to make recolonization more diversity-friendly.
-- Unknown: whether improving the short-horizon active-clade deficit on disturbed openings will translate into better `4000`-step persistence instead of repeating the current `29.25 -> 11.75` tradeoff.
+- Assumption: the short disturbance-colonization smoke study is still the right first filter before any longer rerun.
+- Unknown: even if the lineage-absent mode wins on the short smoke study, it may still fail to overturn the `4000`-step anti-evidence.
