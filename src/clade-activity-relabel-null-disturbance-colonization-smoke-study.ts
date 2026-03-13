@@ -1,17 +1,16 @@
 import {
-  BEST_SHORT_STACK_SIMULATION_CONFIG,
-  buildBestShortStackSimulationConfig
+  BEST_SHORT_STACK_SIMULATION_CONFIG
 } from './clade-activity-relabel-null-best-short-stack';
+import {
+  buildDisturbanceColonizationConfig,
+  DISTURBANCE_COLONIZATION_MODES,
+  DisturbanceColonizationMode
+} from './clade-activity-relabel-null-disturbance-colonization';
 import { RunCladeActivityRelabelNullStudyInput } from './activity';
 import { parseGeneratedAtCli, runCladeActivityRelabelNullSmokeStudy } from './clade-activity-relabel-null-smoke-study';
 
-export const DISTURBANCE_COLONIZATION_MODES = [
-  'off',
-  'localizedOpening',
-  'localizedOpeningLineageAbsent'
-] as const;
-
-export type DisturbanceColonizationMode = (typeof DISTURBANCE_COLONIZATION_MODES)[number];
+export { DISTURBANCE_COLONIZATION_MODES } from './clade-activity-relabel-null-disturbance-colonization';
+export type { DisturbanceColonizationMode } from './clade-activity-relabel-null-disturbance-colonization';
 
 export interface RunCladeActivityRelabelNullDisturbanceColonizationSmokeStudyInput {
   generatedAt?: string;
@@ -33,28 +32,7 @@ export function runCladeActivityRelabelNullDisturbanceColonizationSmokeStudy(
     values: DISTURBANCE_COLONIZATION_MODES,
     fixedConfig: BEST_SHORT_STACK_SIMULATION_CONFIG,
     studyInput: input.studyInput,
-    buildSettingConfig: (mode: DisturbanceColonizationMode) =>
-      mode === 'off'
-        ? {
-            disturbanceInterval: 0,
-            disturbanceEnergyLoss: 0,
-            disturbanceResourceLoss: 0,
-            disturbanceRadius: -1,
-            disturbanceRefugiaFraction: 0,
-            disturbanceSettlementOpeningTicks: 0,
-            disturbanceSettlementOpeningBonus: 0,
-            disturbanceSettlementOpeningLineageAbsentOnly: false
-          }
-        : buildBestShortStackSimulationConfig({
-            disturbanceInterval: 50,
-            disturbanceEnergyLoss: 0.5,
-            disturbanceResourceLoss: 0,
-            disturbanceRadius: 2,
-            disturbanceRefugiaFraction: 0.5,
-            disturbanceSettlementOpeningTicks: 10,
-            disturbanceSettlementOpeningBonus: 0.75,
-            disturbanceSettlementOpeningLineageAbsentOnly: mode === 'localizedOpeningLineageAbsent'
-          })
+    buildSettingConfig: (mode: DisturbanceColonizationMode) => buildDisturbanceColonizationConfig(mode)
   });
 }
 

@@ -18,6 +18,7 @@
     "study:clade-activity-relabel-null-cladogenesis-trait-novelty-smoke": "tsx src/clade-activity-relabel-null-cladogenesis-trait-novelty-smoke-study.ts",
     "study:clade-activity-relabel-null-best-short-stack": "tsx src/clade-activity-relabel-null-best-short-stack-study.ts",
     "study:clade-activity-relabel-null-disturbance-colonization-smoke": "tsx src/clade-activity-relabel-null-disturbance-colonization-smoke-study.ts",
+    "study:clade-activity-relabel-null-disturbance-opening-horizon": "tsx src/clade-activity-relabel-null-disturbance-opening-horizon-study.ts",
     "study:clade-activity-relabel-null-regression-diagnostics": "tsx src/clade-activity-relabel-null-regression-diagnostics-study.ts",
     "study:clade-activity-relabel-null-clade-habitat-coupling-sweep": "tsx src/clade-activity-relabel-null-clade-habitat-coupling-sweep-study.ts",
     "study:clade-activity-relabel-null-clade-interaction-coupling-sweep": "tsx src/clade-activity-relabel-null-clade-interaction-coupling-sweep-study.ts"
