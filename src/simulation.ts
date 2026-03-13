@@ -1,6 +1,16 @@
 import {
-  calculateDisturbanceAffectedCellCount,
-  collectWrappedCellIndicesWithinRadius
+  DisturbanceEventState,
+  buildDisturbanceCellSets,
+  countDisturbanceEventsInWindow,
+  createDisturbanceEvent,
+  disturbanceSettlementOpenUntilTickAt,
+  latestDisturbanceEvent,
+  markDisturbanceSettlementOpenings,
+  resolveDisturbanceFootprintConfig,
+  resolveDisturbanceSchedule,
+  resolveDisturbanceSettlementOpeningConfig,
+  shouldApplyDisturbance,
+  updateDisturbanceEventState
 } from './disturbance';
 import {
   LineageOccupancyGrid,
@@ -139,24 +149,6 @@ interface LocalityFrame {
   neighborhoodSpeciesRichnessByOccupiedCell: number[];
   neighborhoodCenterDominantAlignmentByOccupiedCell: number[];
   occupiedCells: number;
-}
-
-interface DisturbanceEventState {
-  tick: number;
-  populationBefore: number;
-  populationAfterShock: number;
-  activeSpeciesBefore: number;
-  activeSpeciesAfterShock: number;
-  totalResourcesBefore: number;
-  totalResourcesAfterShock: number;
-  targetedCells: number;
-  affectedCells: number;
-  totalCells: number;
-  minPopulationSinceEvent: number;
-  minPopulationTickSinceEvent: number;
-  minActiveSpeciesSinceEvent: number;
-  recoveryTick: number | null;
-  recoveryRelapses: number;
 }
 
 export class LifeSimulation {
@@ -306,7 +298,7 @@ export class LifeSimulation {
     this.extinctClades += cladeExtinctionDelta;
     this.extinctSpecies += speciesExtinctionDelta;
     this.recordLocalityFrame(this.tickCount);
-    this.updateDisturbanceEventState(this.tickCount, afterCount, diversity.activeSpecies);
+    updateDisturbanceEventState(this.disturbanceEvents, this.tickCount, afterCount, diversity.activeSpecies);
 
     return {
       tick: this.tickCount,
@@ -416,7 +408,9 @@ export class LifeSimulation {
   }
 
   private buildDisturbanceAnalytics(window: TurnoverWindow): DisturbanceAnalytics {
-    const latestEvent = this.latestDisturbanceEvent();
+    const latestEvent = latestDisturbanceEvent(this.disturbanceEvents);
+    const schedule = resolveDisturbanceSchedule(this.config);
+    const footprint = resolveDisturbanceFootprintConfig(this.config);
     const lastEventPopulationShock =
       latestEvent === null || latestEvent.populationBefore <= 0
         ? 0
@@ -443,13 +437,13 @@ export class LifeSimulation {
         : clamp((latestEvent.targetedCells - latestEvent.affectedCells) / latestEvent.targetedCells, 0, 1);
 
     return {
-      interval: this.normalizedDisturbanceInterval(),
-      phaseOffset: this.normalizedDisturbancePhaseOffset(),
+      interval: schedule.interval,
+      phaseOffset: schedule.phaseOffset,
       energyLoss: clamp(this.config.disturbanceEnergyLoss, 0, 1),
       resourceLoss: clamp(this.config.disturbanceResourceLoss, 0, 1),
-      radius: this.normalizedDisturbanceRadius(),
-      refugiaFraction: this.normalizedDisturbanceRefugiaFraction(),
-      eventsInWindow: this.countDisturbanceEventsInWindow(window),
+      radius: footprint.radius,
+      refugiaFraction: footprint.refugiaFraction,
+      eventsInWindow: countDisturbanceEventsInWindow(this.disturbanceEvents, window),
       lastEventTick: latestEvent?.tick ?? 0,
       lastEventPopulationShock,
       lastEventResourceShock,
@@ -459,7 +453,7 @@ export class LifeSimulation {
   }
 
   private buildResilienceAnalytics(): ResilienceAnalytics {
-    const latestEvent = this.latestDisturbanceEvent();
+    const latestEvent = latestDisturbanceEvent(this.disturbanceEvents);
     const currentPopulation = this.agents.length;
     const memoryEvents = this.disturbanceEvents.filter((event) => event.populationBefore > 0);
     const memoryPhaseStats = this.summarizeCircularPhase(
@@ -651,23 +645,6 @@ export class LifeSimulation {
     const sustained = Math.max(0, sustainedRecoveryTicks);
     const relapses = Math.max(0, recoveryRelapses);
     return (progress * (sustained + 1)) / (sustained + relapses + 1);
-  }
-
-  private countDisturbanceEventsInWindow(window: TurnoverWindow): number {
-    let events = 0;
-    for (const event of this.disturbanceEvents) {
-      if (event.tick >= window.startTick && event.tick <= window.endTick) {
-        events += 1;
-      }
-    }
-    return events;
-  }
-
-  private latestDisturbanceEvent(): DisturbanceEventState | null {
-    if (this.disturbanceEvents.length === 0) {
-      return null;
-    }
-    return this.disturbanceEvents[this.disturbanceEvents.length - 1];
   }
 
   private buildSpeciesTurnoverRatesBetween(startTick: number, endTick: number): {
@@ -1824,10 +1801,7 @@ export class LifeSimulation {
   }
 
   private usesDisturbanceSettlementOpenings(): boolean {
-    return (
-      this.normalizedDisturbanceSettlementOpeningTicks() > 0 &&
-      this.normalizedDisturbanceSettlementOpeningBonus() > 0
-    );
+    return resolveDisturbanceSettlementOpeningConfig(this.config).enabled;
   }
 
   private resolveOffspringSettlementContext(
@@ -2104,7 +2078,7 @@ export class LifeSimulation {
   }
 
   private applyDisturbanceIfScheduled(stepTick: number): void {
-    if (!this.shouldApplyDisturbance(stepTick)) {
+    if (!shouldApplyDisturbance(resolveDisturbanceSchedule(this.config), stepTick)) {
       return;
     }
 
@@ -2113,7 +2087,14 @@ export class LifeSimulation {
     if (energyLoss <= 0 && resourceLoss <= 0) {
       return;
     }
-    const { targetedCellIndices, affectedCellIndices } = this.buildDisturbanceCellSets();
+    const { targetedCellIndices, affectedCellIndices } = buildDisturbanceCellSets({
+      width: this.config.width,
+      height: this.config.height,
+      footprint: resolveDisturbanceFootprintConfig(this.config),
+      pickRandomX: (width) => this.rng.int(width),
+      pickRandomY: (height) => this.rng.int(height),
+      shuffle: (values) => this.rng.shuffle(values)
+    });
     if (affectedCellIndices.size === 0) {
       return;
     }
@@ -2147,7 +2128,7 @@ export class LifeSimulation {
     const activeSpeciesAfterShock = this.activeSpeciesCountFromLivingAgents();
     const totalResourcesAfterShock = this.totalResources();
 
-    this.disturbanceEvents.push({
+    this.disturbanceEvents.push(createDisturbanceEvent({
       tick: stepTick,
       populationBefore,
       populationAfterShock,
@@ -2157,117 +2138,29 @@ export class LifeSimulation {
       totalResourcesAfterShock,
       targetedCells: targetedCellIndices.length,
       affectedCells: affectedCellIndices.size,
-      totalCells: this.config.width * this.config.height,
-      minPopulationSinceEvent: populationAfterShock,
-      minPopulationTickSinceEvent: stepTick,
-      minActiveSpeciesSinceEvent: activeSpeciesAfterShock,
-      recoveryTick:
-        populationBefore <= 0 || populationAfterShock >= populationBefore ? stepTick : null,
-      recoveryRelapses: 0
-    });
-  }
-
-  private buildDisturbanceCellSets(): {
-    targetedCellIndices: number[];
-    affectedCellIndices: Set<number>;
-  } {
-    const totalCells = this.config.width * this.config.height;
-    if (totalCells <= 0) {
-      return { targetedCellIndices: [], affectedCellIndices: new Set<number>() };
-    }
-
-    const radius = this.normalizedDisturbanceRadius();
-    const targetedCellIndices =
-      radius < 0
-        ? Array.from({ length: totalCells }, (_, index) => index)
-        : collectWrappedCellIndicesWithinRadius(
-            this.config.width,
-            this.config.height,
-            this.rng.int(this.config.width),
-            this.rng.int(this.config.height),
-            radius
-          );
-    if (targetedCellIndices.length === 0) {
-      return { targetedCellIndices, affectedCellIndices: new Set<number>() };
-    }
-
-    const refugiaFraction = this.normalizedDisturbanceRefugiaFraction();
-    if (refugiaFraction <= 0) {
-      return { targetedCellIndices, affectedCellIndices: new Set<number>(targetedCellIndices) };
-    }
-
-    const affectedCount = calculateDisturbanceAffectedCellCount(
-      targetedCellIndices.length,
-      refugiaFraction
-    );
-    if (affectedCount <= 0) {
-      return { targetedCellIndices, affectedCellIndices: new Set<number>() };
-    }
-    if (affectedCount >= targetedCellIndices.length) {
-      return { targetedCellIndices, affectedCellIndices: new Set<number>(targetedCellIndices) };
-    }
-
-    return {
-      targetedCellIndices,
-      affectedCellIndices: new Set<number>(
-        this.rng.shuffle([...targetedCellIndices]).slice(0, affectedCount)
-      )
-    };
+      totalCells: this.config.width * this.config.height
+    }));
   }
 
   private markDisturbanceSettlementOpenings(affectedCellIndices: ReadonlySet<number>, stepTick: number): void {
-    if (!this.usesDisturbanceSettlementOpenings()) {
-      return;
-    }
-
-    const openingTicks = this.normalizedDisturbanceSettlementOpeningTicks();
-    const openUntilTick = stepTick + openingTicks - 1;
-    for (const index of affectedCellIndices) {
-      const x = index % this.config.width;
-      const y = Math.floor(index / this.config.width);
-      this.disturbanceSettlementOpenUntilTick[y][x] = Math.max(
-        this.disturbanceSettlementOpenUntilTick[y][x],
-        openUntilTick
-      );
-    }
+    markDisturbanceSettlementOpenings(
+      this.disturbanceSettlementOpenUntilTick,
+      this.config.width,
+      affectedCellIndices,
+      stepTick,
+      resolveDisturbanceSettlementOpeningConfig(this.config)
+    );
   }
 
   private disturbanceSettlementOpeningBonusAt(x: number, y: number, currentStepTick: number): number {
+    const opening = resolveDisturbanceSettlementOpeningConfig(this.config);
     return resolveDisturbanceSettlementOpeningBonus({
-      enabled: this.usesDisturbanceSettlementOpenings(),
-      openUntilTick: this.disturbanceSettlementOpenUntilTick[this.wrapY(y)][this.wrapX(x)],
+      enabled: opening.enabled,
+      openUntilTick: disturbanceSettlementOpenUntilTickAt(this.disturbanceSettlementOpenUntilTick, x, y),
       currentStepTick,
-      openingTicks: this.normalizedDisturbanceSettlementOpeningTicks(),
-      openingBonus: this.normalizedDisturbanceSettlementOpeningBonus()
+      openingTicks: opening.openingTicks,
+      openingBonus: opening.openingBonus
     });
-  }
-
-  private updateDisturbanceEventState(
-    currentTick: number,
-    currentPopulation: number,
-    currentActiveSpecies: number
-  ): void {
-    for (const event of this.disturbanceEvents) {
-      if (event.tick > currentTick) {
-        continue;
-      }
-      if (currentPopulation < event.minPopulationSinceEvent) {
-        event.minPopulationSinceEvent = currentPopulation;
-        event.minPopulationTickSinceEvent = currentTick;
-      }
-      event.minActiveSpeciesSinceEvent = Math.min(event.minActiveSpeciesSinceEvent, currentActiveSpecies);
-      if (event.populationBefore <= 0) {
-        continue;
-      }
-      if (currentPopulation < event.populationBefore) {
-        if (event.recoveryTick !== null) {
-          event.recoveryRelapses += 1;
-        }
-        event.recoveryTick = null;
-      } else if (event.recoveryTick === null) {
-        event.recoveryTick = currentTick;
-      }
-    }
   }
 
   private activeSpeciesCountFromLivingAgents(): number {
@@ -2367,49 +2260,6 @@ export class LifeSimulation {
 
   private normalizedSeasonalCycleLength(): number {
     return Math.max(0, Math.floor(this.config.seasonalCycleLength));
-  }
-
-  private shouldApplyDisturbance(stepTick: number): boolean {
-    const interval = this.normalizedDisturbanceInterval();
-    if (interval <= 0 || stepTick <= 0) {
-      return false;
-    }
-    return stepTick % interval === this.normalizedDisturbancePhaseOffsetTick(interval);
-  }
-
-  private normalizedDisturbanceInterval(): number {
-    return Math.max(0, Math.floor(this.config.disturbanceInterval));
-  }
-
-  private normalizedDisturbancePhaseOffset(): number {
-    if (!Number.isFinite(this.config.disturbancePhaseOffset)) {
-      return 0;
-    }
-    const wrapped = this.config.disturbancePhaseOffset % 1;
-    return wrapped < 0 ? wrapped + 1 : wrapped;
-  }
-
-  private normalizedDisturbancePhaseOffsetTick(interval: number): number {
-    if (interval <= 0) {
-      return 0;
-    }
-    return Math.floor(this.normalizedDisturbancePhaseOffset() * interval);
-  }
-
-  private normalizedDisturbanceRadius(): number {
-    return Math.max(-1, Math.floor(this.config.disturbanceRadius));
-  }
-
-  private normalizedDisturbanceRefugiaFraction(): number {
-    return clamp(this.config.disturbanceRefugiaFraction, 0, 1);
-  }
-
-  private normalizedDisturbanceSettlementOpeningTicks(): number {
-    return Math.max(0, Math.floor(this.config.disturbanceSettlementOpeningTicks));
-  }
-
-  private normalizedDisturbanceSettlementOpeningBonus(): number {
-    return Math.max(0, this.config.disturbanceSettlementOpeningBonus);
   }
 
   private countBy(agents: Agent[], selector: (agent: Agent) => number): Map<number, number> {
