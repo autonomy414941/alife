@@ -1,8 +1,8 @@
 # Backlog
 
-1. [validate] Horizon-validate founder grace plus a cladogenesis ecology gate on the static habitat baseline
-2. [split] Extract settlement / founding / early-competition logic from `src/simulation.ts`
-3. [investigate] Add clade-age-bucket diagnostics to relabel-null studies on the habitat baseline
-4. [revert] Retire `cladeInteractionCoupling` from the active experiment surface after its uniformly negative sweep
-5. [refactor] Replace one-off relabel-null smoke wrapper files with a table-driven harness
-6. [split] Carve relabel-null study runners out of `src/activity.ts`
+- [validate] Horizon-validate founder grace plus `cladogenesisEcologyAdvantageThreshold=0.1` on the static habitat baseline
+- [split] Extract relabel-null diagnostics and aggregate builders from `src/activity.ts`
+- [revert] Retire `cladeInteractionCoupling` from the active experiment surface and package scripts
+- [investigate] Add clade-age-bucket diagnostics to founder-grace relabel-null studies
+- [refactor] Replace one-off relabel-null study wrapper files with a table-driven harness
+- [split] Finish extracting offspring settlement / founding flow from `src/simulation.ts`
