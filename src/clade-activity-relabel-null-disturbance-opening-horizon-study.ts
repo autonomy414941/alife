@@ -6,7 +6,7 @@ import { buildDisturbanceColonizationConfig } from './clade-activity-relabel-nul
 import {
   compareCladeActivityRelabelNullStudies
 } from './clade-activity-relabel-null-best-short-stack-study';
-import { parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
+import { emitStudyJsonOutput, parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
 import {
   CladeActivityRelabelNullDiagnosticSnapshot,
   CladeActivityRelabelNullStudyExport,
@@ -195,10 +195,21 @@ function loadBaselineBestShortStackStudy(): CladeActivityRelabelNullStudyExport 
   return parsed.study;
 }
 
-if (require.main === module) {
-  const options = parseGeneratedAtCli(process.argv.slice(2));
-  const study = runCladeActivityRelabelNullDisturbanceOpeningHorizonStudy({
+export function runCladeActivityRelabelNullDisturbanceOpeningHorizonStudyCli(
+  args: string[],
+  dependencies: {
+    runStudy?: (input: { generatedAt?: string }) => unknown;
+    emitOutput?: typeof emitStudyJsonOutput;
+  } = {}
+): void {
+  const options = parseGeneratedAtCli(args);
+  const study = (dependencies.runStudy ?? runCladeActivityRelabelNullDisturbanceOpeningHorizonStudy)({
     generatedAt: options.generatedAt
   });
-  process.stdout.write(JSON.stringify(study, null, 2) + '\n');
+
+  (dependencies.emitOutput ?? emitStudyJsonOutput)(study, options);
+}
+
+if (require.main === module) {
+  runCladeActivityRelabelNullDisturbanceOpeningHorizonStudyCli(process.argv.slice(2));
 }

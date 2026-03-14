@@ -10,7 +10,7 @@ import {
   BASELINE_BEST_SHORT_STACK_ARTIFACT,
   CladeActivityRelabelNullCladeHabitatCouplingHorizonStudyExport
 } from './clade-activity-relabel-null-clade-habitat-coupling-horizon-study';
-import { parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
+import { emitStudyJsonOutput, parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
 import {
   CladeActivityRelabelNullDiagnosticSnapshot,
   CladeActivityRelabelNullStudyExport,
@@ -226,10 +226,23 @@ function loadHabitatCouplingBaselineStudy(): CladeActivityRelabelNullStudyExport
   return baselineStudy;
 }
 
-if (require.main === module) {
-  const options = parseGeneratedAtCli(process.argv.slice(2));
-  const study = runCladeActivityRelabelNullAdaptiveCladeHabitatMemoryHorizonStudy({
+export function runCladeActivityRelabelNullAdaptiveCladeHabitatMemoryHorizonStudyCli(
+  args: string[],
+  dependencies: {
+    runStudy?: (input: { generatedAt?: string }) => unknown;
+    emitOutput?: typeof emitStudyJsonOutput;
+  } = {}
+): void {
+  const options = parseGeneratedAtCli(args);
+  const study = (
+    dependencies.runStudy ?? runCladeActivityRelabelNullAdaptiveCladeHabitatMemoryHorizonStudy
+  )({
     generatedAt: options.generatedAt
   });
-  process.stdout.write(JSON.stringify(study, null, 2) + '\n');
+
+  (dependencies.emitOutput ?? emitStudyJsonOutput)(study, options);
+}
+
+if (require.main === module) {
+  runCladeActivityRelabelNullAdaptiveCladeHabitatMemoryHorizonStudyCli(process.argv.slice(2));
 }

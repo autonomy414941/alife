@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   CladeActivityRelabelNullSmokeStudyExport,
+  emitStudyJsonOutput,
   parseGeneratedAtCli
 } from './clade-activity-relabel-null-smoke-study';
 import {
@@ -470,10 +471,21 @@ function formatNullableSignedNumber(value: number | null): string {
   return value === null ? 'null' : formatSignedNumber(value);
 }
 
-if (require.main === module) {
-  const options = parseGeneratedAtCli(process.argv.slice(2));
-  const review = runCladeActivityRelabelNullNewCladeEncounterRestraintReview({
+export function runCladeActivityRelabelNullNewCladeEncounterRestraintReviewCli(
+  args: string[],
+  dependencies: {
+    runReview?: (input: { generatedAt?: string }) => unknown;
+    emitOutput?: typeof emitStudyJsonOutput;
+  } = {}
+): void {
+  const options = parseGeneratedAtCli(args);
+  const review = (dependencies.runReview ?? runCladeActivityRelabelNullNewCladeEncounterRestraintReview)({
     generatedAt: options.generatedAt
   });
-  process.stdout.write(JSON.stringify(review, null, 2) + '\n');
+
+  (dependencies.emitOutput ?? emitStudyJsonOutput)(review, options);
+}
+
+if (require.main === module) {
+  runCladeActivityRelabelNullNewCladeEncounterRestraintReviewCli(process.argv.slice(2));
 }
