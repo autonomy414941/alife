@@ -1,102 +1,75 @@
 # Session Plan — 2026-03-14
 
 ## Compact Context
-- `cladeHabitatCoupling=0.75` is still the only canonical 4000-step win; it lifts persistent activity versus the best short stack but leaves `activeCladeDeltaVsNullMean` negative on every canonical panel.
-- `adaptiveCladeHabitatMemoryRate=0.2` is not a safe new baseline: it helped at 1000 steps, then regressed on the 4000-step horizon and slightly worsened the active-clade deficit.
-- `newCladeSettlementCrowdingGraceTicks=36` is the newest positive signal: on the 1000-step smoke it improved `persistentActivityMeanDeltaVsNullMean` from `+24.25` to `+33.5` and `activeCladeDeltaVsNullMean` from `-32.75` to `-28.75`, with matched birth schedules.
-- `newCladeEncounterRestraintGraceBoost=2` is the first bounded post-founding competition win on the static habitat baseline: with `cladeHabitatCoupling=0.75`, `adaptiveCladeHabitatMemoryRate=0`, and `newCladeSettlementCrowdingGraceTicks=36`, it kept `birthScheduleMatchedAllSeeds=true`, kept `persistentActivityMeanDeltaVsNullMean=+18.64`, and improved `activeCladeDeltaVsNullMean` from `-28.5` to `-27.25`.
-- Disturbance openings remain weaker than the habitat axis and still produce large negative active-clade deltas at horizon.
-- `src/simulation.ts` (`2479` lines) and `src/activity.ts` (`2695` lines) are still the main structural bottlenecks; settlement/cladogenesis work keeps landing in the same `LifeSimulation` region.
+- `cladeHabitatCoupling=0.75` is still the only canonical 4000-step persistence win, but every canonical habitat-coupled panel still trails the matched null on active clades.
+- `adaptiveCladeHabitatMemoryRate=0.2` is not a safe baseline: on the 4000-step horizon it reduced persistent activity by `29.57` versus the static habitat baseline and slightly worsened the active-clade deficit.
+- `newCladeSettlementCrowdingGraceTicks=36` improved the canonical static-habitat active-clade delta from `-36.25` to `-23.75`, but it worsened the threshold-`1.0` / `50`-tick persistent delta by `16.30`.
+- `newCladeEncounterRestraintGraceBoost=2` gave a smaller short-run lift on the same static habitat + founder-grace stack, moving `activeCladeDeltaVsNullMean` from `-28.5` to `-27.25` while keeping matched birth schedules.
+- `cladogenesisEcologyAdvantageThreshold=0.1` remains the best older non-founder short-run active-clade result (`-26.5`), but it sharply reduced persistent activity versus the best short stack.
+- `src/simulation.ts` (`2473` lines) and `src/activity.ts` (`2695` lines) remain the main structural bottlenecks, and many relabel-null smoke-study files differ only in constants.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Habitat-coupled clade memory / helpers | 4 | 56c9e6c |
-| Disturbance openings / recolonization | 4 | d2d8fac |
-| Founder-support settlement grace | 1 | 82a07a8 |
+| Founder establishment / early competition | 4 | 956169d |
+| Habitat-coupled persistence / memory | 4 | 56c9e6c |
+| Disturbance openings | 1 | d2d8fac |
 | Repo hygiene | 1 | b831476 |
 
-Dominant axis: Habitat-coupled clade memory / helpers (4/10, tied with disturbance openings)
-Underexplored axes: founder support beyond settlement, cladogenesis quality gates, clade interaction coupling on the habitat baseline, settlement/cladogenesis module split
+Dominant axis: Founder establishment / early competition (4/10, tied with habitat-coupled persistence / memory)
+Underexplored axes: cladogenesis quality gates, clade-age diagnostics, dead-knob reverts, relabel-null harness refactors
 
 ## Project State
-- The repo now has a repeatable loop for short smoke studies, horizon validators, tests, and machine-readable JSON artifacts under `docs/`.
-- Recent sessions moved from disturbance recolonization into habitat-coupled clade persistence and then into the first founder-support mechanic.
-- The main gap is still concurrent diversification: even when persistence improves, the system keeps losing on active clades versus relabel-null controls.
+- The repo has repeatable smoke studies, horizon validators, tests, and JSON artifacts for matched relabel-null comparisons.
+- Recent sessions shifted from disturbance openings and habitat memory into founder grace and newborn-only early-competition relief.
+- The main gap is now selective coexistence: founder support can improve horizon active-clade counts, but no canonical run yet improves both persistence and concurrent active clades against the matched null.
 
 ## External Context
-- Inference from [Morita & Yamamichi, 2024, Proc. Royal Society B](https://pubmed.ncbi.nlm.nih.gov/39561793/): small arrival-time gaps can produce ecological character displacement and coexistence, while large timing gaps produce priority-effect monopolization. That maps directly onto the new-clade establishment window, so founder-timing mechanics are a better next bet than more habitat-memory tuning.
+- Inference from [Morita & Yamamichi, 2024, Proceedings of the Royal Society B](https://pubmed.ncbi.nlm.nih.gov/39561793/): arrival-time advantages can create priority effects unless niche differentiation also shifts, which supports pairing founder grace with a founder-quality filter instead of adding more unconditional shielding.
 
 ## Research Gaps
-- Does `newCladeSettlementCrowdingGraceTicks=36` stay positive on the canonical 4000-step panel when adaptive memory is removed, or is its current gain only a short-horizon stack artifact?
-- Is the remaining `activeCladeDeficit` mostly first-100-tick founder loss or later monopolization by already-established clades?
+- Does pairing `newCladeSettlementCrowdingGraceTicks=36` with `cladogenesisEcologyAdvantageThreshold=0.1` recover the threshold-`1.0` / `50`-tick persistence loss while keeping the improved active-clade delta on the static habitat baseline?
+- Does the short-run `newCladeEncounterRestraintGraceBoost=2` gain survive the canonical 4000-step horizon, or is it another smoke-only founder-support artifact?
 
 ## Current Anti-Evidence
-- No canonical-horizon run yet beats the matched relabel-null control on concurrent active clades; the best habitat-coupled panel still sits at `-36.25` / `-29.25` active clades versus null.
-- Adaptive memory looked promising in smoke and then regressed on the full horizon, so the system is still vulnerable to short-horizon wins that do not survive extension.
-
-## Candidate Bets
-- A: [validate] Add a 4000-step founder-grace horizon study comparing `newCladeSettlementCrowdingGraceTicks=0` vs `36` on `BEST_SHORT_STACK_SIMULATION_CONFIG + cladeHabitatCoupling=0.75`, with adaptive memory fixed at `0`.
-  Why now: the newest positive signal is founder support, and the prior adaptive-memory horizon failure makes long-horizon validation the fastest way to avoid another short-run false positive.
-  Est. low-context human time: 35m
-  Main risk: the short smoke gain may depend on the adaptive-memory stack or disappear over longer horizons.
-- B: [feat] Extend newborn-clade grace from settlement-only relief into early post-founding competition, then run one short relabel-null smoke study on the static habitat baseline.
-  Why now: settlement-only grace improved active clades but left a large deficit, which suggests founders may survive site choice yet still lose the first local competition window.
-  Est. low-context human time: 45m
-  Main risk: extra founder protection could inflate transient clades or break birth-schedule matching.
-- C: [synthesize] Run a narrow habitat-baseline smoke combining founder grace with `cladogenesisEcologyAdvantageThreshold=0.1`.
-  Why now: earlier diagnostics showed the ecology gate had the best active-clade delta among older knobs, and combining better founder quality with founder support is a cheap test before inventing a new mechanism.
-  Est. low-context human time: 35m
-  Main risk: reducing low-quality founders may erase the gross activity gain even if coexistence improves.
-- D: [investigate] Add clade-age-bucket diagnostics (`0-25`, `26-100`, `>100` ticks) to relabel-null studies on the habitat baseline.
-  Why now: `activeCladeDeficit`, `rawNewCladeActivityMeanDeltaVsNull`, and `persistencePenaltyVsRawDelta` are still too coarse to say whether the remaining loss is founder suppression or later monopolization.
-  Est. low-context human time: 40m
-  Main risk: it explains the bottleneck without improving dynamics by itself.
-- E: [split] Extract settlement, cladogenesis, and founder-support helpers from `src/simulation.ts` into a dedicated module with behavior-preserving tests.
-  Why now: every coexistence bet touches the same `LifeSimulation` seam around settlement context, grace logic, and clade founding, and `src/simulation.ts` is already `2479` lines.
-  Est. low-context human time: 45m
-  Main risk: the refactor can sprawl into unrelated disturbance or habitat logic.
-- F: [refactor] Replace the near-identical `src/clade-activity-relabel-null-*-smoke-study.ts` wrappers with a table-driven smoke-study factory.
-  Why now: the repo now has many one-off smoke CLI files, and each new coexistence bet is adding more surface area faster than the experiment harness is being consolidated.
-  Est. low-context human time: 40m
-  Main risk: harness cleanup is useful but lower immediate research leverage than a founder/coexistence study.
-- G: [synthesize] Re-test `cladeInteractionCoupling` with a two-point smoke (`0`, `0.25`) on the habitat baseline instead of the older uncoupled baseline.
-  Why now: the existing interaction sweep is underexplored and predates both habitat coupling and founder support, so a narrow re-check could uncover a dormant coexistence axis.
-  Est. low-context human time: 35m
-  Main risk: the earlier sweep was negative at every value, so this may still be a dead end.
+- The best current canonical founder-support panel still ends at `activeCladeDeltaVsNullMean=-23.75`, so the system still supports fewer concurrent active clades than a birth-matched relabeled null.
+- Recent wins are still tradeoff-shaped: founder grace improves horizon active clades, but it loses the threshold-`1.0` / `50`-tick persistent comparison, and adaptive memory collapsed at horizon.
 
 ## Bet Queue
+1. [synthesize] Combine founder grace with a cladogenesis ecology gate on the static habitat baseline
+2. [validate] Horizon-validate newborn encounter restraint on top of founder grace
+3. [split] Extract settlement / founding / early-competition logic from `src/simulation.ts`
 
-### Bet 1: [validate] Founder Grace Horizon On The Static Habitat Baseline
-Add a thin horizon wrapper that compares `newCladeSettlementCrowdingGraceTicks=0` vs `36` on top of `BEST_SHORT_STACK_SIMULATION_CONFIG + cladeHabitatCoupling=0.75`, with `adaptiveCladeHabitatMemoryRate=0`. The goal is to learn whether founder support survives the canonical 4000-step relabel-null panel without leaning on a mechanism that already failed at horizon.
-
-#### Success Evidence
-- A new artifact such as `docs/clade_activity_relabel_null_new_clade_establishment_horizon_2026-03-14.json` exists with all four canonical comparison rows, matched birth schedules, and an unambiguous founder-grace delta versus the static habitat baseline.
-
-#### Stop Conditions
-- Stop after one horizon comparison and its test; do not tune multiple grace durations or restack adaptive memory in the same session.
-- Stop if the work cannot stay a thin wrapper over the existing horizon-study pattern.
-
-### Bet 2: [feat] Extend Founder Support Into Early Post-Founding Competition
-Add one bounded founder-support mechanism that applies only to newborn clades after founding, such as temporarily softening same-lineage encounter or harvest crowding during the same early grace window, then verify it with one short relabel-null smoke study on the static habitat baseline. The point is to test whether the remaining deficit happens after site acquisition rather than during settlement itself.
+### Bet 1: [synthesize] Combine Founder Grace With A Cladogenesis Ecology Gate
+Run one bounded relabel-null smoke comparison on `cladeHabitatCoupling=0.75`, `adaptiveCladeHabitatMemoryRate=0`, and `newCladeSettlementCrowdingGraceTicks=36`, comparing `cladogenesisEcologyAdvantageThreshold=-1` versus `0.1`. The founder-grace horizon result says raw shielding helps active clades but can admit weak founders, so the next high-leverage test is whether a modest founder-quality gate repairs persistence without giving back the active-clade gain.
 
 #### Success Evidence
-- A new smoke artifact keeps `birthScheduleMatchedAllSeeds=true`, keeps `persistentActivityMeanDeltaVsNullMean` positive, and improves `activeCladeDeltaVsNullMean` versus the current founder-grace short-run mark of `-28.75`.
+- A new smoke artifact keeps `birthScheduleMatchedAllSeeds=true`, keeps `persistentActivityMeanDeltaVsNullMean` positive, and improves `activeCladeDeltaVsNullMean` versus the no-gate founder-grace short-run mark of `-28.5`.
 
 #### Stop Conditions
-- Stop after one new mechanic and one smoke artifact; do not chain multiple founder-support knobs together.
-- Stop if matched birth schedules fail or if persistent activity turns negative across the tested threshold.
+- Stop after one two-point smoke (`-1`, `0.1`); do not tune multiple ecology thresholds.
+- Stop if the comparison requires changing core simulation behavior rather than composing existing knobs.
 
-### Bet 3: [split] Extract Settlement / Cladogenesis Logic From `src/simulation.ts`
-Move settlement context construction, clade founding gates, and founder-grace helpers out of `LifeSimulation` into a dedicated module so the current coexistence axis stops accumulating more code inside the simulation monolith. Keep behavior identical and let existing reproduction and simulation tests carry verification.
+### Bet 2: [validate] Horizon-Validate Newborn Encounter Restraint On Top Of Founder Grace
+Add a canonical 4000-step comparison for `newCladeEncounterRestraintGraceBoost=0` versus `2` on the static habitat + founder-grace baseline. This is the newest post-founding competition mechanic, and validating it now is the fastest way to avoid spending more sessions tuning a smoke-only signal.
 
 #### Success Evidence
-- `src/simulation.ts` delegates the settlement/cladogenesis helper cluster to a new module, and the existing relevant tests still pass without artifact changes.
+- A new horizon artifact contains all canonical comparison rows, keeps matched birth schedules, and shows an explicit active-clade delta improvement versus the boost-`0` baseline.
 
 #### Stop Conditions
-- Stop if the extraction starts dragging disturbance or analytics code into scope.
+- Stop after one horizon comparison and its test.
+- Stop if the work expands beyond a thin wrapper over the existing horizon-study pattern.
+
+### Bet 3: [split] Extract Settlement / Founding / Early-Competition Logic From `src/simulation.ts`
+Move the settlement-context builder, founder-grace lookups, newborn encounter-restraint boost, and new-clade founding seam out of `LifeSimulation` into dedicated helpers while preserving behavior. Current feature bets keep landing in the same simulation region, so splitting that seam is the shortest path to faster iteration on the coexistence axis.
+
+#### Success Evidence
+- `src/simulation.ts` shrinks materially, the extracted seam lives outside `LifeSimulation`, and the existing settlement/simulation tests still pass without artifact changes.
+
+#### Stop Conditions
+- Stop if disturbance or analytics code needs to move too.
 - Stop if behavior changes are required to make the split compile; this bet is refactor-only.
 
 ## Assumptions / Unknowns
-- Assumption: the short-run founder-grace gain is not purely an artifact of stacking on adaptive memory, which already failed at horizon.
-- Unknown: the remaining active-clade deficit may be dominated by late coexistence collapse rather than founder loss, in which case more founder support will saturate quickly.
+- Assumption: the founder-grace horizon tradeoff is caused by low-quality founder retention rather than unrelated habitat-coupling drift.
+- Unknown: `cladeInteractionCoupling` may be genuinely dead or merely baseline-dependent; the only current evidence is a uniformly negative sweep on the older uncoupled stack.
