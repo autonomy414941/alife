@@ -1,0 +1,83 @@
+
+> alife-sim@0.1.0 study:clade-activity-relabel-null-new-clade-encounter-restraint-review
+> tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-review.ts --generated-at 2026-03-14T07:13:42.000Z
+
+{
+  "generatedAt": "2026-03-14T07:13:42.000Z",
+  "question": "Should newCladeEncounterRestraintGraceBoost=2 stay on the founder-grace experiment surface after the March 14 smoke and canonical-horizon relabel-null validations?",
+  "prediction": "If the newborn encounter-restraint boost is a keeper, its smoke active-clade gain should survive the canonical horizon instead of being overwhelmed by threshold-specific matched-null growth.",
+  "config": {
+    "smokeArtifact": "docs/clade_activity_relabel_null_new_clade_encounter_restraint_smoke_2026-03-14.json",
+    "horizonArtifact": "docs/clade_activity_relabel_null_new_clade_encounter_restraint_horizon_2026-03-14.json",
+    "baselineNewCladeEncounterRestraintGraceBoost": 0,
+    "encounterRestraintNewCladeEncounterRestraintGraceBoost": 2
+  },
+  "smokeSummary": {
+    "baselineNewCladeEncounterRestraintGraceBoost": 0,
+    "encounterRestraintNewCladeEncounterRestraintGraceBoost": 2,
+    "baselineActiveCladeDeltaVsNullMean": -28.5,
+    "encounterRestraintActiveCladeDeltaVsNullMean": -27.25,
+    "activeCladeDeltaImprovementVsBaseline": 1.25,
+    "baselinePersistentActivityMeanDeltaVsNullMean": 17.428571428571416,
+    "encounterRestraintPersistentActivityMeanDeltaVsNullMean": 18.642857142857125,
+    "persistentActivityMeanImprovementVsBaseline": 1.2142857142857082,
+    "baselineRawNewCladeActivityMeanDeltaVsNullMean": 11.75,
+    "encounterRestraintRawNewCladeActivityMeanDeltaVsNullMean": 14.9375,
+    "rawNewCladeActivityMeanImprovementVsBaseline": 3.1875,
+    "baselinePersistencePenaltyVsRawDeltaMean": -5.678571428571416,
+    "encounterRestraintPersistencePenaltyVsRawDeltaMean": -3.7053571428571246,
+    "persistencePenaltyChangeVsBaseline": 1.9732142857142918
+  },
+  "horizonSummary": {
+    "comparisonCount": 4,
+    "meanActiveCladeDeltaImprovementVsFounderGrace": -1.75,
+    "meanPersistentActivityMeanImprovementVsFounderGrace": 0.48986486486483827,
+    "meanRawNewCladeActivityMeanImprovementVsFounderGrace": 1.743421052631568,
+    "meanPersistencePenaltyChangeVsFounderGrace": 1.2535561877667298,
+    "thresholdSummaries": [
+      {
+        "cladogenesisThreshold": 1,
+        "comparisons": 2,
+        "minSurvivalTicks": [
+          50,
+          100
+        ],
+        "actualActiveCladeGainVsFounderGrace": 4,
+        "matchedNullActiveCladeGainVsFounderGrace": 8.25,
+        "activeCladeDeltaImprovementVsFounderGrace": -4.25,
+        "rawNewCladeActivityMeanImprovementVsFounderGrace": 6.355263157894726,
+        "persistentActivityMeanImprovementVsFounderGrace": 12.469594594594554,
+        "persistencePenaltyChangeVsFounderGrace": -6.114331436699828
+      },
+      {
+        "cladogenesisThreshold": 1.2,
+        "comparisons": 2,
+        "minSurvivalTicks": [
+          50,
+          100
+        ],
+        "actualActiveCladeGainVsFounderGrace": 1.75,
+        "matchedNullActiveCladeGainVsFounderGrace": 1,
+        "activeCladeDeltaImprovementVsFounderGrace": 0.75,
+        "rawNewCladeActivityMeanImprovementVsFounderGrace": -2.8684210526315894,
+        "persistentActivityMeanImprovementVsFounderGrace": -11.489864864864877,
+        "persistencePenaltyChangeVsFounderGrace": 8.621443812233288
+      }
+    ]
+  },
+  "decision": {
+    "verdict": "prune",
+    "canonicalAction": "retireFromFutureCanonicalStacks",
+    "smokeActiveCladeDeltaImprovementVsBaseline": 1.25,
+    "meanHorizonActiveCladeDeltaImprovementVsFounderGrace": -1.75,
+    "strongestSupportThreshold": 1.2,
+    "strongestRegressionThreshold": 1,
+    "explanation": "The smoke gain does not survive the canonical horizon, and the strongest threshold-specific regression is larger than the strongest rescue.",
+    "reasons": [
+      "Smoke active-clade delta improved by +1.25, but the mean horizon change reversed to -1.75.",
+      "Threshold 1 actual active clades rose by +4.00, but the matched null rose by +8.25, producing an active-clade delta regression of -4.25.",
+      "Threshold 1.2 only recovers +0.75, which is smaller than the threshold 1 regression.",
+      "The best active-clade rescue still loses persistent activity by -11.49."
+    ]
+  }
+}

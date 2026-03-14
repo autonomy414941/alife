@@ -3,6 +3,8 @@ import { BEST_SHORT_STACK_SIMULATION_CONFIG } from './clade-activity-relabel-nul
 import { parseGeneratedAtCli, runCladeActivityRelabelNullSmokeStudy } from './clade-activity-relabel-null-smoke-study';
 import { NEW_CLADE_ESTABLISHMENT_GRACE_TICKS } from './clade-activity-relabel-null-new-clade-establishment-smoke-study';
 
+export const NEW_CLADE_ENCOUNTER_RESTRAINT_SMOKE_ARTIFACT =
+  'docs/clade_activity_relabel_null_new_clade_encounter_restraint_smoke_2026-03-14.json';
 export const NEW_CLADE_ENCOUNTER_RESTRAINT_GRACE_BOOST_VALUES = [0, 2] as const;
 export const NEW_CLADE_ENCOUNTER_RESTRAINT_CLADE_HABITAT_COUPLING = 0.75;
 export const NEW_CLADE_ENCOUNTER_RESTRAINT_ADAPTIVE_CLADE_HABITAT_MEMORY_RATE = 0;

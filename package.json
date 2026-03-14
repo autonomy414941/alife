@@ -28,6 +28,7 @@
     "study:clade-activity-relabel-null-new-clade-establishment-horizon": "tsx src/clade-activity-relabel-null-new-clade-establishment-horizon-study.ts",
     "study:clade-activity-relabel-null-new-clade-encounter-restraint-smoke": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-smoke-study.ts",
     "study:clade-activity-relabel-null-new-clade-encounter-restraint-horizon": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-horizon-study.ts",
+    "study:clade-activity-relabel-null-new-clade-encounter-restraint-review": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-review.ts",
     "study:clade-activity-relabel-null-founder-grace-ecology-gate-smoke": "tsx src/clade-activity-relabel-null-founder-grace-ecology-gate-smoke-study.ts",
     "study:clade-activity-relabel-null-clade-interaction-coupling-sweep": "tsx src/clade-activity-relabel-null-clade-interaction-coupling-sweep-study.ts"
   },

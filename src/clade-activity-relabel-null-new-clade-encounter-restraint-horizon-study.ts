@@ -26,6 +26,8 @@ const PREDICTION =
 
 export const BASELINE_NEW_CLADE_ESTABLISHMENT_HORIZON_ARTIFACT =
   'docs/clade_activity_relabel_null_new_clade_establishment_horizon_2026-03-14.json';
+export const NEW_CLADE_ENCOUNTER_RESTRAINT_HORIZON_ARTIFACT =
+  'docs/clade_activity_relabel_null_new_clade_encounter_restraint_horizon_2026-03-14.json';
 export const HORIZON_BASELINE_NEW_CLADE_ENCOUNTER_RESTRAINT_GRACE_BOOST =
   NEW_CLADE_ENCOUNTER_RESTRAINT_GRACE_BOOST_VALUES[0];
 export const HORIZON_NEW_CLADE_ENCOUNTER_RESTRAINT_GRACE_BOOST =

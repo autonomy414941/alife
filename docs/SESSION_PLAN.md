@@ -4,7 +4,7 @@
 - `cladeHabitatCoupling=0.75` is still the only canonical 4000-step persistence win, but every canonical habitat-coupled panel still trails the matched null on active clades.
 - `adaptiveCladeHabitatMemoryRate=0.2` is not a safe baseline: on the 4000-step horizon it reduced persistent activity by `29.57` versus the static habitat baseline and slightly worsened the active-clade deficit.
 - `newCladeSettlementCrowdingGraceTicks=36` improved the canonical static-habitat active-clade delta from `-36.25` to `-23.75`, but it worsened the threshold-`1.0` / `50`-tick persistent delta by `16.30`.
-- `newCladeEncounterRestraintGraceBoost=2` did not generalize cleanly at horizon: on the founder-grace baseline it worsened the threshold-`1.0` active-clade delta from `-23.75` to `-28`, and only improved the threshold-`1.2` panel from `-23.75` to `-23` while keeping matched birth schedules.
+- `docs/clade_activity_relabel_null_new_clade_encounter_restraint_review_2026-03-14.json` now prunes `newCladeEncounterRestraintGraceBoost=2` from future canonical stacks: the short smoke gain (`+1.25` active clades versus founder grace) reversed to a mean horizon regression of `-1.75`, with threshold `1.0` actual active clades rising by `4` while the matched null rose by `8.25`.
 - `cladogenesisEcologyAdvantageThreshold=0.1` on top of founder grace improved the short-run active-clade delta from `-28.5` to `-25.25` while keeping `persistentActivityMeanDeltaVsNullMean` positive, making it the current best selective-coexistence smoke signal on the founder-grace stack.
 - `src/simulation.ts` (`2473` lines) and `src/activity.ts` (`2695` lines) remain the main structural bottlenecks, and many relabel-null smoke-study files differ only in constants.
 
@@ -21,7 +21,7 @@ Underexplored axes: cladogenesis quality gates, clade-age diagnostics, dead-knob
 
 ## Project State
 - The repo has repeatable smoke studies, horizon validators, tests, and JSON artifacts for matched relabel-null comparisons.
-- Recent sessions validated founder grace and newborn encounter restraint on the canonical horizon, and the newest evidence points more toward founder-quality gating than additional unconditional shielding.
+- Recent sessions validated founder grace on the canonical horizon, and the encounter-restraint review now points more toward founder-quality gating than additional unconditional shielding.
 - The main gap is still selective coexistence: founder support can improve horizon active-clade counts, but no canonical run yet shows a founder-selective mechanism that beats the `-23.75` active-clade mark while also preserving persistence.
 
 ## External Context
@@ -29,17 +29,17 @@ Underexplored axes: cladogenesis quality gates, clade-age diagnostics, dead-knob
 
 ## Research Gaps
 - Does pairing `newCladeSettlementCrowdingGraceTicks=36` with `cladogenesisEcologyAdvantageThreshold=0.1` recover the threshold-`1.0` / `50`-tick persistence loss while keeping the improved active-clade delta on the canonical 4000-step horizon?
-- Is `newCladeEncounterRestraintGraceBoost` a threshold-`1.2`-specific rescue, or does its threshold-`1.0` active-clade regression mean it should be pruned instead of tuned further?
+- Do clade-age-bucket diagnostics show whether the founder-grace threshold-`1.0` persistence loss is concentrated in rapidly churning young clades or in later crowding among established clades?
 
 ## Current Anti-Evidence
 - The best current canonical founder-support panel still ends at `activeCladeDeltaVsNullMean=-23.75`, so the system still supports fewer concurrent active clades than a birth-matched relabeled null.
-- Recent wins are still tradeoff-shaped: founder grace improves horizon active clades but loses the threshold-`1.0` / `50`-tick persistent comparison, and encounter restraint only helps the threshold-`1.2` panel while regressing threshold `1.0`.
+- Recent wins are still tradeoff-shaped: founder grace improves horizon active clades but loses the threshold-`1.0` / `50`-tick persistent comparison, and the encounter-restraint review showed a larger threshold-`1.0` regression (`-4.25`) than threshold-`1.2` rescue (`+0.75`).
 - The founder-grace ecology-gate result is still smoke-only, so the most selective short-run signal has not yet survived horizon validation.
 
 ## Bet Queue
 1. [validate] Horizon-validate founder grace plus a cladogenesis ecology gate
 2. [split] Continue extracting settlement / founding / early-competition logic from `src/simulation.ts`
-3. [review] Decide whether newborn encounter restraint is a keeper or a dead axis
+3. [investigate] Add clade-age-bucket diagnostics to relabel-null studies on the habitat baseline
 
 ### Bet 1: [validate] Horizon-Validate Founder Grace With A Cladogenesis Ecology Gate
 Add a canonical 4000-step comparison for `cladogenesisEcologyAdvantageThreshold=-1` versus `0.1` on the static habitat + founder-grace baseline. The smoke result improved `activeCladeDeltaVsNullMean` from `-28.5` to `-25.25` while staying positive on persistence, so the next high-leverage question is whether founder selectivity survives the full horizon where unconditional shielding traded away persistence.
@@ -61,17 +61,17 @@ Move the remaining settlement scoring, founder-grace lookups, newborn encounter-
 - Stop if disturbance or analytics code needs to move too.
 - Stop if behavior changes are required to make the split compile; this bet is refactor-only.
 
-### Bet 3: [review] Decide Whether Newborn Encounter Restraint Is A Keeper Or A Dead Axis
-Use the new smoke and horizon artifacts to decide whether `newCladeEncounterRestraintGraceBoost` should stay in the canonical stack. The horizon validator now shows threshold-specific behavior, so the next bounded decision is whether to narrow future work to threshold-`1.2` diagnostics or prune the knob and focus on founder-quality gating instead.
+### Bet 3: [investigate] Add Clade-Age-Bucket Diagnostics To The Founder-Grace Habitat Baseline
+Extend the relabel-null diagnostics with a coarse age-bucket split so the next horizon comparisons can tell whether the founder-grace threshold-`1.0` persistence loss comes from young clades failing immediately after establishment or from older clades collapsing later under crowding.
 
 #### Success Evidence
-- One bounded change lands: either a small diagnostic comparison that explains the threshold split, or a revert/prune that removes the knob from future canonical stacks.
+- One bounded diagnostic lands on the existing founder-grace habitat baseline, and at least one comparison or test shows the new age buckets separate early versus late clade loss without changing simulation behavior.
 
 #### Stop Conditions
-- Stop if the review expands into tuning multiple restraint values or mixed-mechanism stacks.
-- Stop if the existing artifacts are insufficient to support a clear keep/prune decision.
+- Stop if the diagnostic requires reworking the matched-null study shape across unrelated artifacts.
+- Stop if the buckets cannot be added without changing simulation outcomes.
 
 ## Assumptions / Unknowns
 - Assumption: the founder-grace horizon tradeoff is caused by low-quality founder retention rather than unrelated habitat-coupling drift.
 - Unknown: the founder-grace ecology gate may still collapse at horizon if short-run improvement was mostly suppressing noisy weak clades rather than stabilizing durable coexistence.
-- Unknown: `newCladeEncounterRestraintGraceBoost` may be genuinely threshold-specific or merely noisy; the current evidence is mixed rather than uniformly positive or negative.
+- Unknown: the founder-grace threshold-`1.0` persistence loss may be concentrated in young clades, but the current diagnostics only expose aggregate loss modes.
