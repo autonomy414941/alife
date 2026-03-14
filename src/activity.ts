@@ -14,6 +14,10 @@ import {
   buildCladeActivityRelabelNullThresholdSeedResult
 } from './clade-activity-relabel-null-thresholds';
 import {
+  buildFounderHabitatSchedule,
+  founderHabitatSchedulesEqual
+} from './clade-activity-relabel-null-founder-context';
+import {
   buildMatchedSchedulePseudoClades,
   buildTaxonBirthSchedule,
   countActiveTaxaAtTick,
@@ -61,6 +65,7 @@ import {
   CladeSpeciesActivityCouplingThresholdResult,
   CladeActivityWindow,
   EvolutionHistorySnapshot,
+  MatchedNullFounderContext,
   SpeciesActivityHorizonSweepExport,
   SpeciesActivityHorizonSweepPoint,
   SpeciesActivityPersistenceSummary,
@@ -290,7 +295,8 @@ export const DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY: CladeActivityRelabelNull
   seeds: [20260307, 20260308, 20260309, 20260310],
   stopWhenExtinct: true,
   minSurvivalTicks: [50, 100],
-  cladogenesisThresholds: [1, 1.2]
+  cladogenesisThresholds: [1, 1.2],
+  matchedNullFounderContext: 'none'
 };
 
 export { buildMatchedSchedulePseudoClades } from './clade-activity-relabel-null-matched-schedule';
@@ -494,6 +500,8 @@ export const CLADE_ACTIVITY_RELABEL_NULL_DEFINITION: CladeActivityRelabelNullDef
   matchedNull: CLADE_ACTIVITY_SEED_PANEL_DEFINITION,
   matchedSchedule:
     'For each seed and cladogenesis threshold, the pseudo-clade null preserves the observed clade birth count at every firstSeenTick.',
+  matchedFounderContext:
+    'matchedNullFounderContext=none matches birth ticks only. matchedNullFounderContext=founderHabitatBin also preserves, at each firstSeenTick, the count of founders in each habitat bin derived from founder habitat means.',
   relabeling:
     'Pseudo-clade founders are randomly selected from species born at each matched birth tick, and remaining species are randomly reassigned to pseudo-clades that were already active at the prior tick.',
   diagnostics:
@@ -1094,6 +1102,9 @@ export function runCladeActivityRelabelNullStudy(
     input.cladogenesisThresholds ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.cladogenesisThresholds
   );
   const stopWhenExtinct = input.stopWhenExtinct ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.stopWhenExtinct;
+  const matchedNullFounderContext = resolveMatchedNullFounderContext(
+    input.matchedNullFounderContext ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.matchedNullFounderContext
+  );
 
   const thresholdResults: CladeActivityRelabelNullThresholdResult[] = cladogenesisThresholds.map(
     (cladogenesisThreshold) => {
@@ -1113,7 +1124,8 @@ export function runCladeActivityRelabelNullStudy(
           history: simulation.history(),
           windowSize,
           burnIn,
-          minSurvivalTicks
+          minSurvivalTicks,
+          matchedNullFounderContext
         });
       });
 
@@ -1137,7 +1149,8 @@ export function runCladeActivityRelabelNullStudy(
       seeds,
       stopWhenExtinct,
       minSurvivalTicks,
-      cladogenesisThresholds
+      cladogenesisThresholds,
+      matchedNullFounderContext
     },
     thresholdResults
   };
@@ -1670,12 +1683,14 @@ function buildCladeActivityRelabelNullSeedResult(input: {
   windowSize: number;
   burnIn: number;
   minSurvivalTicks: number[];
+  matchedNullFounderContext: MatchedNullFounderContext;
 }): CladeActivityRelabelNullSeedResult {
   const matchedNullClades = buildMatchedSchedulePseudoClades({
     species: input.history.species,
     clades: input.history.clades,
     maxTick: input.finalSummary.tick,
-    relabelSeed: input.relabelSeed
+    relabelSeed: input.relabelSeed,
+    matchedNullFounderContext: input.matchedNullFounderContext
   });
   const actualRawSummary = analyzeCladeActivity({
     clades: input.history.clades,
@@ -1715,6 +1730,8 @@ function buildCladeActivityRelabelNullSeedResult(input: {
   );
   const actualBirthSchedule = buildTaxonBirthSchedule(input.history.clades);
   const matchedNullBirthSchedule = buildTaxonBirthSchedule(matchedNullClades);
+  const actualFounderHabitatSchedule = buildFounderHabitatSchedule(input.history.clades);
+  const matchedNullFounderHabitatSchedule = buildFounderHabitatSchedule(matchedNullClades);
   const actualActiveClades = input.finalSummary.activeClades;
   const matchedNullActiveClades = countActiveTaxaAtTick(matchedNullClades, input.finalSummary.tick);
 
@@ -1727,6 +1744,12 @@ function buildCladeActivityRelabelNullSeedResult(input: {
     actualBirthSchedule,
     matchedNullBirthSchedule,
     birthScheduleMatched: taxonBirthSchedulesEqual(actualBirthSchedule, matchedNullBirthSchedule),
+    actualFounderHabitatSchedule,
+    matchedNullFounderHabitatSchedule,
+    founderHabitatScheduleMatched:
+      input.matchedNullFounderContext === 'founderHabitatBin'
+        ? founderHabitatSchedulesEqual(actualFounderHabitatSchedule, matchedNullFounderHabitatSchedule)
+        : null,
     thresholds: input.minSurvivalTicks.map((minSurvivalTicks) =>
       buildCladeActivityRelabelNullThresholdSeedResult({
         minSurvivalTicks,
@@ -1771,10 +1794,21 @@ function truncateTaxonHistory(taxa: TaxonHistory[], maxTick: number): TaxonHisto
         totalBirths: timeline.reduce((total, point) => total + point.births, 0),
         totalDeaths: timeline.reduce((total, point) => total + point.deaths, 0),
         peakPopulation: max(timeline.map((point) => point.population)),
+        founderContext: taxon.founderContext === undefined ? undefined : { ...taxon.founderContext },
         timeline
       }
     ];
   });
+}
+
+function resolveMatchedNullFounderContext(value: MatchedNullFounderContext | string): MatchedNullFounderContext {
+  if (value === 'none' || value === 'founderHabitatBin') {
+    return value;
+  }
+
+  throw new Error(
+    `matchedNullFounderContext must be one of "none" or "founderHabitatBin"; received ${String(value)}`
+  );
 }
 
 function buildTaxonActivitySummary(

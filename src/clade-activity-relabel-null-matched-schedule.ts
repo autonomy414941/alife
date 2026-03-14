@@ -1,5 +1,10 @@
+import {
+  buildFounderHabitatSchedule,
+  founderHabitatSchedulesEqual,
+  requiresFounderHabitatMatch
+} from './clade-activity-relabel-null-founder-context';
 import { Rng } from './rng';
-import { TaxonBirthSchedulePoint, TaxonHistory } from './types';
+import { MatchedNullFounderContext, TaxonBirthSchedulePoint, TaxonHistory } from './types';
 
 interface PseudoCladeAccumulator {
   id: number;
@@ -10,6 +15,7 @@ interface PseudoCladeAccumulator {
   totalBirths: number;
   totalDeaths: number;
   peakPopulation: number;
+  founderContext?: TaxonHistory['founderContext'];
 }
 
 export function buildMatchedSchedulePseudoClades(input: {
@@ -17,8 +23,10 @@ export function buildMatchedSchedulePseudoClades(input: {
   clades: TaxonHistory[];
   maxTick: number;
   relabelSeed: number;
+  matchedNullFounderContext?: MatchedNullFounderContext;
 }): TaxonHistory[] {
   const rng = new Rng(input.relabelSeed);
+  const matchedNullFounderContext = input.matchedNullFounderContext ?? 'none';
   const speciesByTick = new Map<number, TaxonHistory[]>();
   for (const taxon of input.species) {
     const speciesAtTick = speciesByTick.get(taxon.firstSeenTick);
@@ -45,14 +53,23 @@ export function buildMatchedSchedulePseudoClades(input: {
       throw new Error(`Pseudo-clade null requires at least ${birthsRequired} species at tick ${tick}`);
     }
 
-    for (let founderIndex = 0; founderIndex < birthsRequired; founderIndex += 1) {
+    const founderSpecies = pickFounderSpeciesAtTick({
+      tick,
+      birthsRequired,
+      speciesBornAtTick,
+      clades: input.clades,
+      matchedNullFounderContext
+    });
+    const founderSpeciesIds = new Set(founderSpecies.map((species) => species.id));
+    for (const founder of founderSpecies) {
       const pseudoClade = createPseudoCladeAccumulator(nextPseudoCladeId, tick, input.maxTick);
       nextPseudoCladeId += 1;
-      assignSpeciesToPseudoClade(pseudoClade, speciesBornAtTick[founderIndex], input.maxTick);
+      pseudoClade.founderContext = founder.founderContext === undefined ? undefined : { ...founder.founderContext };
+      assignSpeciesToPseudoClade(pseudoClade, founder, input.maxTick);
       pseudoClades.push(pseudoClade);
     }
 
-    const remainingSpecies = speciesBornAtTick.slice(birthsRequired);
+    const remainingSpecies = speciesBornAtTick.filter((species) => !founderSpeciesIds.has(species.id));
     if (remainingSpecies.length === 0) {
       continue;
     }
@@ -75,6 +92,13 @@ export function buildMatchedSchedulePseudoClades(input: {
   const pseudoBirthSchedule = buildTaxonBirthSchedule(pseudoHistory);
   if (!taxonBirthSchedulesEqual(actualBirthSchedule, pseudoBirthSchedule)) {
     throw new Error('Pseudo-clade null failed to preserve the clade birth schedule');
+  }
+  if (requiresFounderHabitatMatch(matchedNullFounderContext)) {
+    const actualFounderHabitatSchedule = buildFounderHabitatSchedule(input.clades);
+    const pseudoFounderHabitatSchedule = buildFounderHabitatSchedule(pseudoHistory);
+    if (!founderHabitatSchedulesEqual(actualFounderHabitatSchedule, pseudoFounderHabitatSchedule)) {
+      throw new Error('Pseudo-clade null failed to preserve the founder habitat schedule');
+    }
   }
 
   return pseudoHistory;
@@ -171,6 +195,53 @@ function finalizePseudoCladeAccumulator(pseudoClade: PseudoCladeAccumulator, max
     totalBirths: pseudoClade.totalBirths,
     totalDeaths: pseudoClade.totalDeaths,
     peakPopulation: pseudoClade.peakPopulation,
+    founderContext: pseudoClade.founderContext === undefined ? undefined : { ...pseudoClade.founderContext },
     timeline
   };
+}
+
+function pickFounderSpeciesAtTick(input: {
+  tick: number;
+  birthsRequired: number;
+  speciesBornAtTick: TaxonHistory[];
+  clades: TaxonHistory[];
+  matchedNullFounderContext: MatchedNullFounderContext;
+}): TaxonHistory[] {
+  if (!requiresFounderHabitatMatch(input.matchedNullFounderContext)) {
+    return input.speciesBornAtTick.slice(0, input.birthsRequired);
+  }
+
+  const requiredCountsByHabitatBin = new Map<number, number>();
+  for (const clade of input.clades) {
+    if (clade.firstSeenTick !== input.tick) {
+      continue;
+    }
+    const habitatBin = clade.founderContext?.habitatBin;
+    if (habitatBin === undefined) {
+      throw new Error(`Clade ${clade.id} is missing founder habitat context at tick ${input.tick}`);
+    }
+    requiredCountsByHabitatBin.set(habitatBin, (requiredCountsByHabitatBin.get(habitatBin) ?? 0) + 1);
+  }
+
+  const selected = new Set<number>();
+  for (const [habitatBin, births] of [...requiredCountsByHabitatBin.entries()].sort((left, right) => left[0] - right[0])) {
+    const candidates = input.speciesBornAtTick.filter(
+      (species) => species.founderContext?.habitatBin === habitatBin && !selected.has(species.id)
+    );
+    if (candidates.length < births) {
+      throw new Error(
+        `Pseudo-clade null requires at least ${births} species in habitat bin ${habitatBin} at tick ${input.tick}`
+      );
+    }
+    for (const species of candidates.slice(0, births)) {
+      selected.add(species.id);
+    }
+  }
+
+  const founders = input.speciesBornAtTick.filter((species) => selected.has(species.id));
+  if (founders.length !== input.birthsRequired) {
+    throw new Error(`Pseudo-clade null failed to select ${input.birthsRequired} founders at tick ${input.tick}`);
+  }
+
+  return founders;
 }

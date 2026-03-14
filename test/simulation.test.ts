@@ -75,6 +75,61 @@ describe('LifeSimulation', () => {
     expect(delta).toBeGreaterThan(0);
   });
 
+  it('records founder habitat context for initial and newly founded taxa in history exports', () => {
+    const sim = new LifeSimulation({
+      seed: 7,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0.2,
+        speciationThreshold: 0,
+        cladogenesisThreshold: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 100,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    });
+
+    sim.step();
+    const history = sim.history();
+
+    expect(history.clades).toHaveLength(2);
+    expect(history.species).toHaveLength(2);
+    expect(history.clades.every((clade) => clade.founderContext !== undefined)).toBe(true);
+    expect(history.species.every((species) => species.founderContext !== undefined)).toBe(true);
+    expect(history.clades[0]?.founderContext).toMatchObject({
+      habitatMean: 1,
+      habitatBin: 1,
+      founderCount: 1
+    });
+    expect(history.clades[1]?.firstSeenTick).toBe(1);
+    expect(history.clades[1]?.founderContext).toMatchObject({
+      habitatMean: 1,
+      habitatBin: 1,
+      founderCount: 1
+    });
+    expect(history.species[1]?.firstSeenTick).toBe(1);
+    expect(history.species[1]?.founderContext).toMatchObject({
+      habitatMean: 1,
+      habitatBin: 1,
+      founderCount: 1
+    });
+  });
+
   it('can found a new clade from a speciation event when cladogenesis is enabled', () => {
     const sim = new LifeSimulation({
       seed: 7,

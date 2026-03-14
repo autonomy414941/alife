@@ -86,6 +86,57 @@ export interface RunCladeActivityRelabelNullNewCladeEstablishmentHorizonStudyInp
   founderGraceStudy?: CladeActivityRelabelNullStudyExport;
 }
 
+export interface CladeActivityRelabelNullNewCladeEstablishmentFounderHabitatValidationComparison {
+  cladogenesisThreshold: number;
+  minSurvivalTicks: number;
+  currentNullStaticHabitatBirthScheduleMatchedAllSeeds: boolean;
+  currentNullFounderGraceBirthScheduleMatchedAllSeeds: boolean;
+  habitatMatchedNullStaticHabitatBirthScheduleMatchedAllSeeds: boolean;
+  habitatMatchedNullFounderGraceBirthScheduleMatchedAllSeeds: boolean;
+  habitatMatchedNullStaticHabitatFounderHabitatScheduleMatchedAllSeeds: boolean;
+  habitatMatchedNullFounderGraceFounderHabitatScheduleMatchedAllSeeds: boolean;
+  currentNullStaticHabitatActiveCladeDeltaVsNullMean: number;
+  currentNullFounderGraceActiveCladeDeltaVsNullMean: number;
+  currentNullFounderGraceImprovementVsStaticHabitat: number;
+  habitatMatchedNullStaticHabitatActiveCladeDeltaVsNullMean: number;
+  habitatMatchedNullFounderGraceActiveCladeDeltaVsNullMean: number;
+  habitatMatchedNullFounderGraceImprovementVsStaticHabitat: number;
+  activeCladeImprovementShiftVsCurrentNull: number;
+  founderGraceStillImprovesVsStaticHabitatUnderCurrentNull: boolean;
+  founderGraceStillImprovesVsStaticHabitatUnderHabitatMatchedNull: boolean;
+}
+
+export interface CladeActivityRelabelNullNewCladeEstablishmentFounderHabitatValidationStudyExport {
+  generatedAt: string;
+  question: string;
+  prediction: string;
+  config: {
+    steps: number;
+    windowSize: number;
+    burnIn: number;
+    seeds: number[];
+    stopWhenExtinct: boolean;
+    minSurvivalTicks: number[];
+    cladogenesisThresholds: number[];
+    currentNullMatchedNullFounderContext: 'none';
+    habitatMatchedNullFounderContext: 'founderHabitatBin';
+    staticHabitatSimulationConfig: Partial<SimulationConfig>;
+    founderGraceSimulationConfig: Partial<SimulationConfig>;
+  };
+  comparison: CladeActivityRelabelNullNewCladeEstablishmentFounderHabitatValidationComparison[];
+  currentNullStudy: CladeActivityRelabelNullNewCladeEstablishmentHorizonStudyExport;
+  habitatMatchedNullStudy: CladeActivityRelabelNullNewCladeEstablishmentHorizonStudyExport;
+}
+
+export interface RunCladeActivityRelabelNullNewCladeEstablishmentFounderHabitatValidationStudyInput {
+  generatedAt?: string;
+  studyInput?: RunCladeActivityRelabelNullStudyInput;
+  currentNullBaselineStudy?: CladeActivityRelabelNullStudyExport;
+  currentNullFounderGraceStudy?: CladeActivityRelabelNullStudyExport;
+  habitatMatchedNullBaselineStudy?: CladeActivityRelabelNullStudyExport;
+  habitatMatchedNullFounderGraceStudy?: CladeActivityRelabelNullStudyExport;
+}
+
 export function runCladeActivityRelabelNullNewCladeEstablishmentHorizonStudy(
   input: RunCladeActivityRelabelNullNewCladeEstablishmentHorizonStudyInput = {}
 ): CladeActivityRelabelNullNewCladeEstablishmentHorizonStudyExport {
@@ -139,6 +190,104 @@ export function runCladeActivityRelabelNullNewCladeEstablishmentHorizonStudy(
   };
 }
 
+export function runCladeActivityRelabelNullNewCladeEstablishmentFounderHabitatValidationStudy(
+  input: RunCladeActivityRelabelNullNewCladeEstablishmentFounderHabitatValidationStudyInput = {}
+): CladeActivityRelabelNullNewCladeEstablishmentFounderHabitatValidationStudyExport {
+  const generatedAt = input.generatedAt ?? new Date().toISOString();
+  const currentNullStudyInput: RunCladeActivityRelabelNullStudyInput = {
+    ...input.studyInput,
+    matchedNullFounderContext: 'none'
+  };
+  const habitatMatchedNullStudyInput: RunCladeActivityRelabelNullStudyInput = {
+    ...input.studyInput,
+    matchedNullFounderContext: 'founderHabitatBin'
+  };
+
+  const staticHabitatCurrentNullStudyInput = buildConfiguredFounderEstablishmentStudyInput(
+    NEW_CLADE_ESTABLISHMENT_SWEEP_DEFINITION,
+    STATIC_HABITAT_FOUNDER_ESTABLISHMENT_FIXED_CONFIG,
+    currentNullStudyInput,
+    generatedAt,
+    HORIZON_BASELINE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS
+  );
+  const founderGraceCurrentNullStudyInput = buildConfiguredFounderEstablishmentStudyInput(
+    NEW_CLADE_ESTABLISHMENT_SWEEP_DEFINITION,
+    STATIC_HABITAT_FOUNDER_ESTABLISHMENT_FIXED_CONFIG,
+    currentNullStudyInput,
+    generatedAt,
+    HORIZON_FOUNDER_GRACE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS
+  );
+  const staticHabitatHabitatMatchedStudyInput = buildConfiguredFounderEstablishmentStudyInput(
+    NEW_CLADE_ESTABLISHMENT_SWEEP_DEFINITION,
+    STATIC_HABITAT_FOUNDER_ESTABLISHMENT_FIXED_CONFIG,
+    habitatMatchedNullStudyInput,
+    generatedAt,
+    HORIZON_BASELINE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS
+  );
+  const founderGraceHabitatMatchedStudyInput = buildConfiguredFounderEstablishmentStudyInput(
+    NEW_CLADE_ESTABLISHMENT_SWEEP_DEFINITION,
+    STATIC_HABITAT_FOUNDER_ESTABLISHMENT_FIXED_CONFIG,
+    habitatMatchedNullStudyInput,
+    generatedAt,
+    HORIZON_FOUNDER_GRACE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS
+  );
+  const resolvedStudyConfig = requireResolvedStudyConfig(
+    founderGraceCurrentNullStudyInput,
+    'New-clade establishment founder habitat validation study'
+  );
+
+  const currentNullBaselineStudy =
+    input.currentNullBaselineStudy ?? runCladeActivityRelabelNullStudy(staticHabitatCurrentNullStudyInput);
+  const currentNullFounderGraceStudy =
+    input.currentNullFounderGraceStudy ?? runCladeActivityRelabelNullStudy(founderGraceCurrentNullStudyInput);
+  const habitatMatchedNullBaselineStudy =
+    input.habitatMatchedNullBaselineStudy ?? runCladeActivityRelabelNullStudy(staticHabitatHabitatMatchedStudyInput);
+  const habitatMatchedNullFounderGraceStudy =
+    input.habitatMatchedNullFounderGraceStudy ?? runCladeActivityRelabelNullStudy(founderGraceHabitatMatchedStudyInput);
+
+  const currentNullStudy = runCladeActivityRelabelNullNewCladeEstablishmentHorizonStudy({
+    generatedAt,
+    studyInput: currentNullStudyInput,
+    baselineStudy: currentNullBaselineStudy,
+    founderGraceStudy: currentNullFounderGraceStudy
+  });
+  const habitatMatchedNullStudy = runCladeActivityRelabelNullNewCladeEstablishmentHorizonStudy({
+    generatedAt,
+    studyInput: habitatMatchedNullStudyInput,
+    baselineStudy: habitatMatchedNullBaselineStudy,
+    founderGraceStudy: habitatMatchedNullFounderGraceStudy
+  });
+
+  return {
+    generatedAt,
+    question:
+      'Does founder grace still improve activeCladeDeltaVsNullMean versus the static habitat baseline when the relabel-null also matches founder habitat bins at birth?',
+    prediction:
+      'If the founder-grace gain is not only selecting easy founder habitats, the founder-grace run should still improve activeCladeDeltaVsNullMean versus the static habitat baseline under the founderHabitatBin-matched null, even if absolute deltas shrink.',
+    config: {
+      steps: resolvedStudyConfig.steps,
+      windowSize: resolvedStudyConfig.windowSize,
+      burnIn: resolvedStudyConfig.burnIn,
+      seeds: resolvedStudyConfig.seeds,
+      stopWhenExtinct: resolvedStudyConfig.stopWhenExtinct,
+      minSurvivalTicks: resolvedStudyConfig.minSurvivalTicks,
+      cladogenesisThresholds: resolvedStudyConfig.cladogenesisThresholds,
+      currentNullMatchedNullFounderContext: 'none',
+      habitatMatchedNullFounderContext: 'founderHabitatBin',
+      staticHabitatSimulationConfig: staticHabitatCurrentNullStudyInput.simulation?.config ?? {},
+      founderGraceSimulationConfig: founderGraceCurrentNullStudyInput.simulation?.config ?? {}
+    },
+    comparison: compareNewCladeEstablishmentFounderHabitatValidation(
+      currentNullStudy,
+      habitatMatchedNullStudy,
+      habitatMatchedNullBaselineStudy,
+      habitatMatchedNullFounderGraceStudy
+    ),
+    currentNullStudy,
+    habitatMatchedNullStudy
+  };
+}
+
 export function compareNewCladeEstablishmentHorizonStudies(
   founderGraceStudy: CladeActivityRelabelNullStudyExport,
   baselineStudy: CladeActivityRelabelNullStudyExport
@@ -183,6 +332,109 @@ function loadStaticHabitatBaselineStudy(): CladeActivityRelabelNullStudyExport {
     'habitatCoupledStudy',
     'a habitat-coupling horizon study export'
   );
+}
+
+function compareNewCladeEstablishmentFounderHabitatValidation(
+  currentNullStudy: CladeActivityRelabelNullNewCladeEstablishmentHorizonStudyExport,
+  habitatMatchedNullStudy: CladeActivityRelabelNullNewCladeEstablishmentHorizonStudyExport,
+  habitatMatchedNullBaselineStudy: CladeActivityRelabelNullStudyExport,
+  habitatMatchedNullFounderGraceStudy: CladeActivityRelabelNullStudyExport
+): CladeActivityRelabelNullNewCladeEstablishmentFounderHabitatValidationComparison[] {
+  return currentNullStudy.comparison.map((currentComparison) => {
+    const habitatMatchedComparison = habitatMatchedNullStudy.comparison.find(
+      (candidate) =>
+        candidate.cladogenesisThreshold === currentComparison.cladogenesisThreshold &&
+        candidate.minSurvivalTicks === currentComparison.minSurvivalTicks
+    );
+    if (!habitatMatchedComparison) {
+      throw new Error(
+        `Habitat-matched validation study is missing threshold ${currentComparison.cladogenesisThreshold} / minSurvivalTicks=${currentComparison.minSurvivalTicks}`
+      );
+    }
+
+    const currentNullStaticHabitatActiveCladeDeltaVsNullMean = requireActiveCladeDeltaVsNullMean(
+      'Current-null static habitat diagnostics',
+      currentComparison.staticHabitatDiagnostics
+    );
+    const currentNullFounderGraceActiveCladeDeltaVsNullMean = requireActiveCladeDeltaVsNullMean(
+      'Current-null founder-grace diagnostics',
+      currentComparison.founderGraceDiagnostics
+    );
+    const habitatMatchedNullStaticHabitatActiveCladeDeltaVsNullMean = requireActiveCladeDeltaVsNullMean(
+      'Habitat-matched static habitat diagnostics',
+      habitatMatchedComparison.staticHabitatDiagnostics
+    );
+    const habitatMatchedNullFounderGraceActiveCladeDeltaVsNullMean = requireActiveCladeDeltaVsNullMean(
+      'Habitat-matched founder-grace diagnostics',
+      habitatMatchedComparison.founderGraceDiagnostics
+    );
+    const currentNullFounderGraceImprovementVsStaticHabitat =
+      currentNullFounderGraceActiveCladeDeltaVsNullMean - currentNullStaticHabitatActiveCladeDeltaVsNullMean;
+    const habitatMatchedNullFounderGraceImprovementVsStaticHabitat =
+      habitatMatchedNullFounderGraceActiveCladeDeltaVsNullMean -
+      habitatMatchedNullStaticHabitatActiveCladeDeltaVsNullMean;
+
+    return {
+      cladogenesisThreshold: currentComparison.cladogenesisThreshold,
+      minSurvivalTicks: currentComparison.minSurvivalTicks,
+      currentNullStaticHabitatBirthScheduleMatchedAllSeeds:
+        currentComparison.staticHabitatBirthScheduleMatchedAllSeeds,
+      currentNullFounderGraceBirthScheduleMatchedAllSeeds:
+        currentComparison.founderGraceBirthScheduleMatchedAllSeeds,
+      habitatMatchedNullStaticHabitatBirthScheduleMatchedAllSeeds:
+        habitatMatchedComparison.staticHabitatBirthScheduleMatchedAllSeeds,
+      habitatMatchedNullFounderGraceBirthScheduleMatchedAllSeeds:
+        habitatMatchedComparison.founderGraceBirthScheduleMatchedAllSeeds,
+      habitatMatchedNullStaticHabitatFounderHabitatScheduleMatchedAllSeeds:
+        founderHabitatScheduleMatchedAllSeeds(
+          habitatMatchedNullBaselineStudy,
+          currentComparison.cladogenesisThreshold
+        ),
+      habitatMatchedNullFounderGraceFounderHabitatScheduleMatchedAllSeeds:
+        founderHabitatScheduleMatchedAllSeeds(
+          habitatMatchedNullFounderGraceStudy,
+          currentComparison.cladogenesisThreshold
+        ),
+      currentNullStaticHabitatActiveCladeDeltaVsNullMean,
+      currentNullFounderGraceActiveCladeDeltaVsNullMean,
+      currentNullFounderGraceImprovementVsStaticHabitat,
+      habitatMatchedNullStaticHabitatActiveCladeDeltaVsNullMean,
+      habitatMatchedNullFounderGraceActiveCladeDeltaVsNullMean,
+      habitatMatchedNullFounderGraceImprovementVsStaticHabitat,
+      activeCladeImprovementShiftVsCurrentNull:
+        habitatMatchedNullFounderGraceImprovementVsStaticHabitat -
+        currentNullFounderGraceImprovementVsStaticHabitat,
+      founderGraceStillImprovesVsStaticHabitatUnderCurrentNull:
+        currentNullFounderGraceImprovementVsStaticHabitat > 0,
+      founderGraceStillImprovesVsStaticHabitatUnderHabitatMatchedNull:
+        habitatMatchedNullFounderGraceImprovementVsStaticHabitat > 0
+    };
+  });
+}
+
+function founderHabitatScheduleMatchedAllSeeds(
+  study: CladeActivityRelabelNullStudyExport,
+  cladogenesisThreshold: number
+): boolean {
+  const thresholdResult = study.thresholdResults.find(
+    (candidate) => candidate.cladogenesisThreshold === cladogenesisThreshold
+  );
+  if (!thresholdResult) {
+    throw new Error(`Study is missing cladogenesis threshold ${cladogenesisThreshold}`);
+  }
+
+  return thresholdResult.seedResults.every((seedResult) => seedResult.founderHabitatScheduleMatched === true);
+}
+
+function requireActiveCladeDeltaVsNullMean(
+  label: string,
+  diagnostics: CladeActivityRelabelNullDiagnosticSnapshot
+): number {
+  if (diagnostics.activeCladeDeltaVsNullMean === null) {
+    throw new Error(`${label} is missing activeCladeDeltaVsNullMean diagnostics`);
+  }
+
+  return diagnostics.activeCladeDeltaVsNullMean;
 }
 
 if (require.main === module) {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { buildFounderHabitatSchedule } from '../src/clade-activity-relabel-null-founder-context';
 import {
   buildMatchedSchedulePseudoClades,
   buildTaxonBirthSchedule,
@@ -71,9 +72,38 @@ describe('clade-activity-relabel-null-matched-schedule', () => {
       )
     ).toBe(false);
   });
+
+  it('preserves founder habitat bins when the stricter founder-habitat null is enabled', () => {
+    const species = [
+      buildTaxonHistory(1, 0, [1, 1, 1], { habitatMean: 0.3, habitatBin: 0, founderCount: 1 }),
+      buildTaxonHistory(2, 0, [1, 1, 0], { habitatMean: 1.7, habitatBin: 3, founderCount: 1 }),
+      buildTaxonHistory(3, 2, [1, 1, 1], { habitatMean: 0.5, habitatBin: 0, founderCount: 1 }),
+      buildTaxonHistory(4, 2, [1, 1, 1], { habitatMean: 1.4, habitatBin: 2, founderCount: 1 })
+    ];
+    const clades = [
+      buildTaxonHistory(101, 0, [2, 2, 1], { habitatMean: 1.7, habitatBin: 3, founderCount: 1 }),
+      buildTaxonHistory(102, 2, [2, 2, 2], { habitatMean: 0.5, habitatBin: 0, founderCount: 1 })
+    ];
+
+    const pseudoClades = buildMatchedSchedulePseudoClades({
+      species,
+      clades,
+      maxTick: 4,
+      relabelSeed: 17,
+      matchedNullFounderContext: 'founderHabitatBin'
+    });
+
+    expect(buildTaxonBirthSchedule(pseudoClades)).toEqual(buildTaxonBirthSchedule(clades));
+    expect(buildFounderHabitatSchedule(pseudoClades)).toEqual(buildFounderHabitatSchedule(clades));
+  });
 });
 
-function buildTaxonHistory(id: number, firstSeenTick: number, populations: number[]): TaxonHistory {
+function buildTaxonHistory(
+  id: number,
+  firstSeenTick: number,
+  populations: number[],
+  founderContext?: TaxonHistory['founderContext']
+): TaxonHistory {
   const lastPopulation = populations[populations.length - 1] ?? 0;
   let totalBirths = 0;
   let totalDeaths = 0;
@@ -101,6 +131,7 @@ function buildTaxonHistory(id: number, firstSeenTick: number, populations: numbe
     totalBirths,
     totalDeaths,
     peakPopulation: Math.max(...populations),
+    founderContext,
     timeline
   };
 }

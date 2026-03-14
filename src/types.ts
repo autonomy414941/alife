@@ -11,6 +11,12 @@ export interface TaxonTimelinePoint {
   deaths: number;
 }
 
+export interface TaxonFounderContext {
+  habitatMean: number;
+  habitatBin: number;
+  founderCount: number;
+}
+
 export interface TaxonHistory {
   id: number;
   firstSeenTick: number;
@@ -18,6 +24,7 @@ export interface TaxonHistory {
   totalBirths: number;
   totalDeaths: number;
   peakPopulation: number;
+  founderContext?: TaxonFounderContext;
   timeline: TaxonTimelinePoint[];
 }
 
@@ -977,10 +984,19 @@ export interface TaxonBirthSchedulePoint {
   births: number;
 }
 
+export interface TaxonFounderHabitatSchedulePoint {
+  tick: number;
+  habitatBin: number;
+  births: number;
+}
+
+export type MatchedNullFounderContext = 'none' | 'founderHabitatBin';
+
 export interface CladeActivityRelabelNullDefinition {
   actual: CladeActivitySeedPanelDefinition;
   matchedNull: CladeActivitySeedPanelDefinition;
   matchedSchedule: string;
+  matchedFounderContext: string;
   relabeling: string;
   diagnostics: string;
   dominantLossMode: string;
@@ -998,6 +1014,7 @@ export interface CladeActivityRelabelNullStudyConfig {
   stopWhenExtinct: boolean;
   minSurvivalTicks: number[];
   cladogenesisThresholds: number[];
+  matchedNullFounderContext: MatchedNullFounderContext;
 }
 
 export type CladeActivityRelabelNullLossMode =
@@ -1066,6 +1083,9 @@ export interface CladeActivityRelabelNullSeedResult {
   actualBirthSchedule: TaxonBirthSchedulePoint[];
   matchedNullBirthSchedule: TaxonBirthSchedulePoint[];
   birthScheduleMatched: boolean;
+  actualFounderHabitatSchedule: TaxonFounderHabitatSchedulePoint[];
+  matchedNullFounderHabitatSchedule: TaxonFounderHabitatSchedulePoint[];
+  founderHabitatScheduleMatched: boolean | null;
   thresholds: CladeActivityRelabelNullThresholdSeedResult[];
 }
 

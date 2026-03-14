@@ -97,6 +97,9 @@ function createSeedResult(input: {
     actualBirthSchedule: [{ tick: 1, births: 1 }],
     matchedNullBirthSchedule: [{ tick: 1, births: 1 }],
     birthScheduleMatched: true,
+    actualFounderHabitatSchedule: [],
+    matchedNullFounderHabitatSchedule: [],
+    founderHabitatScheduleMatched: null,
     thresholds: [
       buildCladeActivityRelabelNullThresholdSeedResult({
         minSurvivalTicks: 50,

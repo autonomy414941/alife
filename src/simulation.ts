@@ -8,6 +8,7 @@ import {
   resolveMutatedSpeciesHabitatPreference,
   setFoundCladeHabitatPreference
 } from './clade-habitat';
+import { founderHabitatBin } from './clade-activity-relabel-null-founder-context';
 import {
   DisturbanceEventState,
   buildDisturbanceCellSets,
@@ -157,6 +158,8 @@ interface TaxonHistoryState {
   totalBirths: number;
   totalDeaths: number;
   peakPopulation: number;
+  founderHabitatSum: number;
+  founderCount: number;
   lastPopulation: number;
   timeline: TaxonTimelinePoint[];
 }
@@ -302,19 +305,31 @@ export class LifeSimulation {
     const meanGenome = this.meanGenome();
     const diversity = this.diversityMetrics();
     this.tickCount += 1;
+    const cladeFounderHabitatSamples = this.collectFounderHabitatSamples(
+      offspring,
+      (agent) => agent.lineage,
+      this.tickCount
+    );
+    const speciesFounderHabitatSamples = this.collectFounderHabitatSamples(
+      offspring,
+      (agent) => agent.species,
+      this.tickCount
+    );
     const cladeExtinctionDelta = this.updateTaxonHistory(
       this.cladeHistory,
       this.tickCount,
       this.countBy(this.agents, (agent) => agent.lineage),
       this.countBy(offspring, (agent) => agent.lineage),
-      this.countBy(deadAgents, (agent) => agent.lineage)
+      this.countBy(deadAgents, (agent) => agent.lineage),
+      cladeFounderHabitatSamples
     );
     const speciesExtinctionDelta = this.updateTaxonHistory(
       this.speciesHistory,
       this.tickCount,
       this.countBy(this.agents, (agent) => agent.species),
       this.countBy(offspring, (agent) => agent.species),
-      this.countBy(deadAgents, (agent) => agent.species)
+      this.countBy(deadAgents, (agent) => agent.species),
+      speciesFounderHabitatSamples
     );
     this.extinctClades += cladeExtinctionDelta;
     this.extinctSpecies += speciesExtinctionDelta;
@@ -1100,8 +1115,8 @@ export class LifeSimulation {
   }
 
   private initializeEvolutionHistory(): void {
-    this.seedTaxonHistory(this.cladeHistory, this.countBy(this.agents, (agent) => agent.lineage));
-    this.seedTaxonHistory(this.speciesHistory, this.countBy(this.agents, (agent) => agent.species));
+    this.seedTaxonHistory(this.cladeHistory, (agent) => agent.lineage);
+    this.seedTaxonHistory(this.speciesHistory, (agent) => agent.species);
   }
 
   private initializeCladeFounderGenomes(): void {
@@ -1169,11 +1184,17 @@ export class LifeSimulation {
     return clamp((1 - genome.aggression) * 0.65 + metabolismNormalized * 0.35, 0, 1);
   }
 
-  private seedTaxonHistory(
-    history: Map<number, TaxonHistoryState>,
-    counts: Map<number, number>
-  ): void {
-    for (const [id, population] of counts) {
+  private seedTaxonHistory(history: Map<number, TaxonHistoryState>, idOf: (agent: Agent) => number): void {
+    const seeded = new Map<number, { population: number; habitatSamples: number[] }>();
+    for (const agent of this.agents) {
+      const id = idOf(agent);
+      const current = seeded.get(id) ?? { population: 0, habitatSamples: [] };
+      current.population += 1;
+      current.habitatSamples.push(this.effectiveBiomeFertilityAt(agent.x, agent.y, 0));
+      seeded.set(id, current);
+    }
+
+    for (const [id, { population, habitatSamples }] of seeded) {
       history.set(id, {
         id,
         firstSeenTick: 0,
@@ -1181,6 +1202,8 @@ export class LifeSimulation {
         totalBirths: population,
         totalDeaths: 0,
         peakPopulation: population,
+        founderHabitatSum: habitatSamples.reduce((total, sample) => total + sample, 0),
+        founderCount: habitatSamples.length,
         lastPopulation: population,
         timeline: [{ tick: 0, population, births: population, deaths: 0 }]
       });
@@ -1192,7 +1215,8 @@ export class LifeSimulation {
     tick: number,
     populationCounts: Map<number, number>,
     birthsCounts: Map<number, number>,
-    deathsCounts: Map<number, number>
+    deathsCounts: Map<number, number>,
+    founderHabitatSamples: Map<number, number[]>
   ): number {
     const idsToRecord = new Set<number>();
     for (const id of populationCounts.keys()) {
@@ -1219,6 +1243,7 @@ export class LifeSimulation {
 
       let state = history.get(id);
       if (!state) {
+        const habitatSamples = founderHabitatSamples.get(id) ?? [];
         state = {
           id,
           firstSeenTick: tick,
@@ -1226,6 +1251,8 @@ export class LifeSimulation {
           totalBirths: 0,
           totalDeaths: 0,
           peakPopulation: 0,
+          founderHabitatSum: habitatSamples.reduce((total, sample) => total + sample, 0),
+          founderCount: habitatSamples.length,
           lastPopulation: 0,
           timeline: []
         };
@@ -1266,8 +1293,31 @@ export class LifeSimulation {
         totalBirths: entry.totalBirths,
         totalDeaths: entry.totalDeaths,
         peakPopulation: entry.peakPopulation,
+        founderContext:
+          entry.founderCount === 0
+            ? undefined
+            : {
+                habitatMean: entry.founderHabitatSum / entry.founderCount,
+                habitatBin: founderHabitatBin(entry.founderHabitatSum / entry.founderCount),
+                founderCount: entry.founderCount
+              },
         timeline: entry.timeline.map((point) => ({ ...point }))
       }));
+  }
+
+  private collectFounderHabitatSamples(
+    agents: ReadonlyArray<Pick<Agent, 'species' | 'lineage' | 'x' | 'y'>>,
+    idOf: (agent: Pick<Agent, 'species' | 'lineage' | 'x' | 'y'>) => number,
+    tick: number
+  ): Map<number, number[]> {
+    const samples = new Map<number, number[]>();
+    for (const agent of agents) {
+      const id = idOf(agent);
+      const current = samples.get(id) ?? [];
+      current.push(this.effectiveBiomeFertilityAt(agent.x, agent.y, tick));
+      samples.set(id, current);
+    }
+    return samples;
   }
 
   private buildInitialResources(): number[][] {

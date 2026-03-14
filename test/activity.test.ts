@@ -1553,11 +1553,13 @@ describe('runCladeActivityRelabelNullStudy', () => {
     expect(DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.steps).toBe(4000);
     expect(DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.minSurvivalTicks).toEqual([50, 100]);
     expect(DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.cladogenesisThresholds).toEqual([1, 1.2]);
+    expect(DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.matchedNullFounderContext).toBe('none');
     expect(result.config.stopWhenExtinct).toBe(DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.stopWhenExtinct);
     expect(result.config.minSurvivalTicks).toEqual(DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.minSurvivalTicks);
     expect(result.config.cladogenesisThresholds).toEqual(
       DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.cladogenesisThresholds
     );
+    expect(result.config.matchedNullFounderContext).toBe('none');
     expect(result.thresholdResults).toHaveLength(2);
   });
 });

@@ -62,6 +62,8 @@ function buildCladeActivityRelabelNullStudyInput(
     stopWhenExtinct: overrides.stopWhenExtinct ?? defaults.stopWhenExtinct,
     minSurvivalTicks: overrides.minSurvivalTicks ?? defaults.minSurvivalTicks,
     cladogenesisThresholds: overrides.cladogenesisThresholds ?? defaults.cladogenesisThresholds,
+    matchedNullFounderContext:
+      overrides.matchedNullFounderContext ?? defaults.matchedNullFounderContext,
     simulation: mergeSimulationOptions(defaults.simulation, overrides.simulation),
     generatedAt: generatedAt ?? overrides.generatedAt
   };
