@@ -2566,6 +2566,135 @@ describe('LifeSimulation', () => {
     expect(coupledLineage2.energy).toBeGreaterThan(neutralLineage2.energy);
   });
 
+  it('updates clade habitat memory toward successful settlement habitats when adaptation is enabled', () => {
+    const baseConfig = {
+      width: 6,
+      height: 6,
+      maxResource: 6,
+      resourceRegen: 0,
+      biomeBands: 3,
+      biomeContrast: 0.8,
+      decompositionBase: 0,
+      decompositionEnergyFraction: 0,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      dispersalPressure: 0,
+      harvestCap: 0,
+      reproduceProbability: 0,
+      offspringEnergyFraction: 0.5,
+      mutationAmount: 0,
+      speciationThreshold: 0,
+      cladogenesisThreshold: -1,
+      habitatPreferenceStrength: 0,
+      lineageHarvestCrowdingPenalty: 0,
+      lineageDispersalCrowdingPenalty: 0,
+      lineageOffspringSettlementCrowdingPenalty: 0,
+      offspringSettlementEcologyScoring: true,
+      maxAge: 100
+    };
+    const probe = new LifeSimulation({
+      seed: 53,
+      config: {
+        ...baseConfig,
+        initialAgents: 0
+      }
+    });
+    const fertilityPair = findFertilityGradientNeighborPair(probe, baseConfig.width, baseConfig.height);
+
+    const reproduceChild = (adaptiveCladeHabitatMemoryRate: number) => {
+      const sim = new LifeSimulation({
+        seed: 53,
+        config: {
+          ...baseConfig,
+          adaptiveCladeHabitatMemoryRate
+        },
+        initialAgents: [
+          {
+            x: fertilityPair.parent.x,
+            y: fertilityPair.parent.y,
+            energy: 30,
+            lineage: 1,
+            species: 1,
+            genome: { metabolism: 1, harvest: 1, aggression: 0 }
+          }
+        ]
+      });
+      const internal = sim as unknown as {
+        agents: Array<{
+          id: number;
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+          energy: number;
+          genome: { metabolism: number; harvest: number; aggression: number };
+        }>;
+        cladeHabitatPreference: Map<number, number>;
+        buildOccupancyGrid: (agents?: Array<{ x: number; y: number }>) => number[][];
+        buildLineageOccupancyGrid: (
+          agents?: Array<{ lineage: number; x: number; y: number }>
+        ) => Map<number, number[][]>;
+        reproduce: (
+          parent: {
+            id: number;
+            lineage: number;
+            species: number;
+            x: number;
+            y: number;
+            energy: number;
+            genome: { metabolism: number; harvest: number; aggression: number };
+          },
+          occupancy: number[][],
+          lineageOccupancy: Map<number, number[][]>
+        ) => {
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+        };
+      };
+
+      for (let y = 0; y < baseConfig.height; y += 1) {
+        for (let x = 0; x < baseConfig.width; x += 1) {
+          sim.setResource(x, y, 0);
+        }
+      }
+      sim.setResource(fertilityPair.child.x, fertilityPair.child.y, baseConfig.maxResource);
+
+      const parent = internal.agents[0]!;
+      const before = internal.cladeHabitatPreference.get(parent.lineage)!;
+      const occupancy = internal.buildOccupancyGrid(internal.agents);
+      const lineageOccupancy = internal.buildLineageOccupancyGrid(internal.agents);
+      const child = internal.reproduce(parent, occupancy, lineageOccupancy);
+      const after = internal.cladeHabitatPreference.get(parent.lineage)!;
+
+      return { before, after, child };
+    };
+
+    const staticResult = reproduceChild(0);
+    const adaptiveResult = reproduceChild(0.2);
+
+    expect(staticResult.child).toMatchObject({
+      lineage: 1,
+      species: 2,
+      x: fertilityPair.child.x,
+      y: fertilityPair.child.y
+    });
+    expect(adaptiveResult.child).toMatchObject({
+      lineage: 1,
+      species: 2,
+      x: fertilityPair.child.x,
+      y: fertilityPair.child.y
+    });
+    expect(staticResult.before).toBeCloseTo(fertilityPair.parent.fertility, 10);
+    expect(staticResult.after).toBeCloseTo(staticResult.before, 10);
+    expect(adaptiveResult.after).toBeCloseTo(
+      adaptiveResult.before + (fertilityPair.child.fertility - adaptiveResult.before) * 0.2,
+      10
+    );
+    expect(adaptiveResult.after).toBeGreaterThan(adaptiveResult.before);
+  });
+
   it('charges additional metabolic upkeep to species with extreme habitat preference', () => {
     const baseConfig = {
       width: 6,
@@ -3253,4 +3382,40 @@ function listCellsByFertility(
   }
   cells.sort((a, b) => a.fertility - b.fertility);
   return cells;
+}
+
+function findFertilityGradientNeighborPair(
+  sim: LifeSimulation,
+  width: number,
+  height: number
+): {
+  parent: { x: number; y: number; fertility: number };
+  child: { x: number; y: number; fertility: number };
+} {
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const fertility = sim.getBiomeFertility(x, y);
+      const neighbors = [
+        { x: (x + 1) % width, y },
+        { x: (x + width - 1) % width, y },
+        { x, y: (y + 1) % height },
+        { x, y: (y + height - 1) % height }
+      ]
+        .map((neighbor) => ({
+          ...neighbor,
+          fertility: sim.getBiomeFertility(neighbor.x, neighbor.y)
+        }))
+        .filter((neighbor) => neighbor.fertility > fertility + 1e-12)
+        .sort((a, b) => b.fertility - a.fertility);
+
+      if (neighbors.length > 0) {
+        return {
+          parent: { x, y, fertility },
+          child: neighbors[0]!
+        };
+      }
+    }
+  }
+
+  throw new Error('Expected to find a fertility gradient neighbor pair');
 }

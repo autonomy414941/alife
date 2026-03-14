@@ -223,6 +223,7 @@ export interface SimulationConfig {
   habitatPreferenceStrength: number;
   habitatPreferenceMutation: number;
   cladeHabitatCoupling: number;
+  adaptiveCladeHabitatMemoryRate: number;
   cladeInteractionCoupling: number;
   specializationMetabolicCost: number;
   predationPressure: number;

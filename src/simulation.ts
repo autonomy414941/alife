@@ -80,6 +80,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   habitatPreferenceStrength: 1.4,
   habitatPreferenceMutation: 0.2,
   cladeHabitatCoupling: 0,
+  adaptiveCladeHabitatMemoryRate: 0,
   cladeInteractionCoupling: 0,
   specializationMetabolicCost: 0.08,
   predationPressure: 0.35,
@@ -1690,6 +1691,7 @@ export class LifeSimulation {
       cladogenesisContext
     );
     const nextLineage = foundNewClade ? this.foundClade(childGenome, childPos.x, childPos.y) : parent.lineage;
+    this.adaptCladeHabitatPreference(nextLineage, childPos.x, childPos.y);
 
     return {
       id: this.nextAgentId++,
@@ -1906,6 +1908,20 @@ export class LifeSimulation {
       clamp(this.effectiveBiomeFertilityAt(founderX, founderY, this.tickCount + 1), 0.1, 2)
     );
     return lineage;
+  }
+
+  private adaptCladeHabitatPreference(lineage: number, x: number, y: number): void {
+    const rate = clamp(this.config.adaptiveCladeHabitatMemoryRate, 0, 1);
+    if (rate === 0) {
+      return;
+    }
+
+    const currentPreference = this.getCladeHabitatPreference(lineage);
+    const targetPreference = clamp(this.effectiveBiomeFertilityAt(x, y, this.tickCount + 1), 0.1, 2);
+    this.cladeHabitatPreference.set(
+      lineage,
+      clamp(currentPreference + (targetPreference - currentPreference) * rate, 0.1, 2)
+    );
   }
 
   private getCladeFounderGenome(lineage: number): Genome {
