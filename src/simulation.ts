@@ -93,6 +93,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   lineageDispersalCrowdingPenalty: 0,
   lineageHarvestCrowdingPenalty: 0,
   lineageOffspringSettlementCrowdingPenalty: 0,
+  newCladeSettlementCrowdingGraceTicks: 0,
   offspringSettlementEcologyScoring: false,
   disturbanceSettlementOpeningTicks: 0,
   disturbanceSettlementOpeningBonus: 0,
@@ -1546,9 +1547,19 @@ export class LifeSimulation {
     lineageOccupancy: LineageOccupancyGrid,
     excludedPosition?: { x: number; y: number }
   ): number {
+    return this.sameLineageNeighborhoodStatsAt(lineage, x, y, lineageOccupancy, excludedPosition).weightedCount;
+  }
+
+  private sameLineageNeighborhoodStatsAt(
+    lineage: number,
+    x: number,
+    y: number,
+    lineageOccupancy: LineageOccupancyGrid,
+    excludedPosition?: { x: number; y: number }
+  ): { weightedCount: number; totalWeight: number } {
     const grid = lineageOccupancy.get(lineage);
     if (!grid) {
-      return 0;
+      return { weightedCount: 0, totalWeight: 0 };
     }
 
     const width = this.config.width;
@@ -1557,19 +1568,23 @@ export class LifeSimulation {
         ? -1
         : this.cellIndex(excludedPosition.x, excludedPosition.y);
 
-    let crowding = 0;
+    let weightedCount = 0;
+    let totalWeight = 0;
     for (const [index, distance] of this.neighborhoodCellDistances(x, y)) {
       const cellX = index % width;
       const cellY = Math.floor(index / width);
       const rawCount = grid[cellY][cellX];
       const count = index === excludedIndex ? Math.max(0, rawCount - 1) : rawCount;
       if (count <= 0) {
+        totalWeight += 1 / (distance + 1);
         continue;
       }
-      crowding += count / (distance + 1);
+      const weight = 1 / (distance + 1);
+      weightedCount += count * weight;
+      totalWeight += weight;
     }
 
-    return crowding;
+    return { weightedCount, totalWeight };
   }
 
   private neighborhoodCellDistances(x: number, y: number): Map<number, number> {
@@ -1757,15 +1772,19 @@ export class LifeSimulation {
     const food =
       this.resources[this.wrapY(y)][this.wrapX(x)] * this.habitatMatchEfficiency(agent, this.wrapX(x), this.wrapY(y));
     const crowding = this.neighborhoodCrowding(x, y, occupancy);
+    const establishmentRelief =
+      lineageOccupancy === undefined ? 0 : this.newCladeSettlementCrowdingRelief(agent.lineage);
     const lineageCrowding =
       lineagePenalty > 0 && lineageOccupancy
         ? this.sameLineageNeighborhoodCrowdingAt(agent.lineage, x, y, lineageOccupancy, excludedPosition)
         : 0;
+    const effectiveCrowding = Math.max(0, crowding * (1 - establishmentRelief));
+    const effectiveLineagePenalty = Math.max(0, lineagePenalty * (1 - establishmentRelief));
 
     return (
       food -
-      this.config.dispersalPressure * crowding -
-      lineagePenalty * lineageCrowding +
+      this.config.dispersalPressure * effectiveCrowding -
+      effectiveLineagePenalty * lineageCrowding +
       jitter
     );
   }
@@ -1793,7 +1812,8 @@ export class LifeSimulation {
   private usesOffspringSettlementScoring(): boolean {
     return (
       this.config.offspringSettlementEcologyScoring ||
-      this.config.lineageOffspringSettlementCrowdingPenalty > 0
+      this.config.lineageOffspringSettlementCrowdingPenalty > 0 ||
+      this.usesNewCladeSettlementGrace()
     );
   }
 
@@ -1820,8 +1840,28 @@ export class LifeSimulation {
   private usesOffspringSettlementLineageOccupancy(): boolean {
     return (
       Math.max(0, this.config.lineageOffspringSettlementCrowdingPenalty) > 0 ||
+      this.usesNewCladeSettlementGrace() ||
       this.usesDisturbanceSettlementOpeningLineageAbsence()
     );
+  }
+
+  private usesNewCladeSettlementGrace(): boolean {
+    return Math.max(0, this.config.newCladeSettlementCrowdingGraceTicks) > 0;
+  }
+
+  private newCladeSettlementCrowdingRelief(lineage: number): number {
+    const graceTicks = Math.max(0, this.config.newCladeSettlementCrowdingGraceTicks);
+    if (graceTicks <= 0) {
+      return 0;
+    }
+
+    const state = this.cladeHistory.get(lineage);
+    if (!state || state.firstSeenTick <= 0) {
+      return 0;
+    }
+
+    const age = Math.max(0, this.tickCount - state.firstSeenTick);
+    return clamp((graceTicks - age) / graceTicks, 0, 1);
   }
 
   private resolveOffspringSettlementContext(

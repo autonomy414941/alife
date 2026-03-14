@@ -769,6 +769,117 @@ describe('LifeSimulation', () => {
     });
   });
 
+  it('only relaxes same-lineage settlement crowding for just-founded clades', () => {
+    const reproduceChild = (newCladeSettlementCrowdingGraceTicks: number, firstSeenTick: number) => {
+      const sim = new LifeSimulation({
+        seed: 41,
+        config: {
+          width: 5,
+          height: 1,
+          maxResource: 6,
+          resourceRegen: 0,
+          biomeBands: 1,
+          biomeContrast: 0,
+          decompositionBase: 0,
+          decompositionEnergyFraction: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          dispersalPressure: 2,
+          dispersalRadius: 1,
+          habitatPreferenceStrength: 0,
+          trophicForagingPenalty: 0,
+          defenseForagingPenalty: 0,
+          lineageHarvestCrowdingPenalty: 0,
+          lineageDispersalCrowdingPenalty: 0,
+          lineageOffspringSettlementCrowdingPenalty: 0,
+          newCladeSettlementCrowdingGraceTicks,
+          offspringSettlementEcologyScoring: true,
+          harvestCap: 0,
+          reproduceProbability: 0,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0,
+          speciationThreshold: 1,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 2,
+            y: 0,
+            energy: 30,
+            lineage: 2,
+            species: 2,
+            genome: { metabolism: 1, harvest: 1, aggression: 0 }
+          },
+          {
+            x: 3,
+            y: 0,
+            energy: 10,
+            lineage: 2,
+            species: 2,
+            genome: { metabolism: 1, harvest: 1, aggression: 0 }
+          }
+        ]
+      });
+
+      const internal = sim as unknown as {
+        agents: InternalTestAgent[];
+        tickCount: number;
+        cladeHistory: Map<
+          number,
+          {
+            id: number;
+            firstSeenTick: number;
+            extinctTick: number | null;
+            totalBirths: number;
+            totalDeaths: number;
+            peakPopulation: number;
+            lastPopulation: number;
+            timeline: Array<{ tick: number; population: number; births: number; deaths: number }>;
+          }
+        >;
+        buildOccupancyGrid: (agents?: Array<Pick<InternalTestAgent, 'x' | 'y'>>) => number[][];
+        buildLineageOccupancyGrid: (
+          agents?: Array<Pick<InternalTestAgent, 'lineage' | 'x' | 'y'>>
+        ) => Map<number, number[][]>;
+        reproduce: (
+          parent: InternalTestAgent,
+          occupancy: number[][],
+          lineageOccupancy: Map<number, number[][]>
+        ) => {
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+        };
+      };
+
+      sim.setResource(1, 0, 1.4);
+      sim.setResource(2, 0, 0);
+      sim.setResource(3, 0, 1.8);
+      internal.tickCount = 1;
+      internal.cladeHistory.set(2, {
+        id: 2,
+        firstSeenTick,
+        extinctTick: null,
+        totalBirths: 2,
+        totalDeaths: 0,
+        peakPopulation: 2,
+        lastPopulation: 2,
+        timeline: [{ tick: Math.max(0, firstSeenTick), population: 2, births: 2, deaths: 0 }]
+      });
+
+      return internal.reproduce(
+        internal.agents[0]!,
+        internal.buildOccupancyGrid(internal.agents),
+        internal.buildLineageOccupancyGrid(internal.agents)
+      );
+    };
+
+    expect(reproduceChild(0, 1)).toMatchObject({ lineage: 2, species: 2, x: 1, y: 0 });
+    expect(reproduceChild(3, 0)).toMatchObject({ lineage: 2, species: 2, x: 1, y: 0 });
+    expect(reproduceChild(3, 1)).toMatchObject({ lineage: 2, species: 2, x: 3, y: 0 });
+  });
+
   it('temporarily boosts offspring settlement into freshly disturbed cells', () => {
     const buildSimulation = () =>
       new LifeSimulation({
