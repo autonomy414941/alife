@@ -27,13 +27,19 @@ import {
   OffspringSettlementContext,
   SettlementAgent,
   SettlementPosition,
-  passesCladogenesisEcologyGate,
-  passesCladogenesisTraitNoveltyGate,
   pickSettlementSite,
-  resolveDisturbanceSettlementOpeningBonus,
-  shouldFoundClade
+  resolveDisturbanceSettlementOpeningBonus
 } from './reproduction';
 import { Rng } from './rng';
+import {
+  resolveNewCladeEncounterRestraintGraceBoost,
+  resolveNewCladeSettlementCrowdingRelief,
+  resolveOffspringSettlementContext as buildOffspringSettlementContext,
+  shouldFoundNewClade as evaluateNewCladeFounding,
+  usesCladogenesisEcologyGate as hasCladogenesisEcologyGate,
+  usesNewCladeSettlementGrace as hasNewCladeSettlementGrace,
+  usesOffspringSettlementScoring as hasOffspringSettlementScoring
+} from './settlement-cladogenesis';
 import {
   Agent,
   AgentSeed,
@@ -1816,11 +1822,7 @@ export class LifeSimulation {
   }
 
   private usesOffspringSettlementScoring(): boolean {
-    return (
-      this.config.offspringSettlementEcologyScoring ||
-      this.config.lineageOffspringSettlementCrowdingPenalty > 0 ||
-      this.usesNewCladeSettlementGrace()
-    );
+    return hasOffspringSettlementScoring(this.config);
   }
 
   private usesOffspringSettlementContext(): boolean {
@@ -1828,10 +1830,7 @@ export class LifeSimulation {
   }
 
   private usesCladogenesisEcologyGate(): boolean {
-    return (
-      Number.isFinite(this.config.cladogenesisEcologyAdvantageThreshold) &&
-      this.config.cladogenesisEcologyAdvantageThreshold >= 0
-    );
+    return hasCladogenesisEcologyGate(this.config);
   }
 
   private usesDisturbanceSettlementOpenings(): boolean {
@@ -1852,31 +1851,25 @@ export class LifeSimulation {
   }
 
   private usesNewCladeSettlementGrace(): boolean {
-    return Math.max(0, this.config.newCladeSettlementCrowdingGraceTicks) > 0;
+    return hasNewCladeSettlementGrace(this.config);
   }
 
   private newCladeSettlementCrowdingRelief(lineage: number): number {
-    const graceTicks = Math.max(0, this.config.newCladeSettlementCrowdingGraceTicks);
-    if (graceTicks <= 0) {
-      return 0;
-    }
-
-    const state = this.cladeHistory.get(lineage);
-    if (!state || state.firstSeenTick <= 0) {
-      return 0;
-    }
-
-    const age = Math.max(0, this.tickCount - state.firstSeenTick);
-    return clamp((graceTicks - age) / graceTicks, 0, 1);
+    return resolveNewCladeSettlementCrowdingRelief({
+      config: this.config,
+      tickCount: this.tickCount,
+      lineage,
+      cladeHistory: this.cladeHistory
+    });
   }
 
   private newCladeEncounterRestraintGraceBoost(lineage: number): number {
-    const boost = Math.max(0, this.config.newCladeEncounterRestraintGraceBoost);
-    if (boost <= 0) {
-      return 0;
-    }
-
-    return boost * this.newCladeSettlementCrowdingRelief(lineage);
+    return resolveNewCladeEncounterRestraintGraceBoost({
+      config: this.config,
+      tickCount: this.tickCount,
+      lineage,
+      cladeHistory: this.cladeHistory
+    });
   }
 
   private resolveOffspringSettlementContext(
@@ -1884,20 +1877,16 @@ export class LifeSimulation {
     lineageOccupancy?: LineageOccupancyGrid,
     required = true
   ): OffspringSettlementContext | undefined {
-    if (!required) {
-      return undefined;
-    }
-
-    const lineagePenalty = Math.max(0, this.config.lineageOffspringSettlementCrowdingPenalty);
-    const usesLineageOccupancy = this.usesOffspringSettlementLineageOccupancy();
-    const aliveAgents = this.agents.filter((agent) => agent.energy > 0);
-    return {
-      occupancy: occupancy ?? this.buildOccupancyGrid(aliveAgents),
-      lineageOccupancy:
-        lineageOccupancy ??
-        (usesLineageOccupancy ? this.buildLineageOccupancyGrid(aliveAgents) : undefined),
-      lineagePenalty
-    };
+    return buildOffspringSettlementContext({
+      config: this.config,
+      agents: this.agents,
+      occupancy,
+      lineageOccupancy,
+      required,
+      usesLineageOccupancy: this.usesOffspringSettlementLineageOccupancy(),
+      buildOccupancyGrid: (agents) => this.buildOccupancyGrid(agents),
+      buildLineageOccupancyGrid: (agents) => this.buildLineageOccupancyGrid(agents)
+    });
   }
 
   private shouldFoundNewClade(
@@ -1908,50 +1897,43 @@ export class LifeSimulation {
     childPos: SettlementPosition,
     settlementContext: OffspringSettlementContext | undefined
   ): boolean {
-    return shouldFoundClade({
+    return evaluateNewCladeFounding({
+      config: this.config,
+      parentLineage,
       diverged,
-      threshold: this.config.cladogenesisThreshold,
       childGenome,
-      founderGenome: this.getCladeFounderGenome(parentLineage),
+      settlementAgent,
+      childPos,
+      settlementContext,
       genomeDistance,
-      passesTraitNoveltyGate: () =>
-        passesCladogenesisTraitNoveltyGate({
-          threshold: this.config.cladogenesisTraitNoveltyThreshold,
-          speciesHabitatPreference: this.getSpeciesHabitatPreference(settlementAgent.species),
-          cladeHabitatPreference: this.getCladeHabitatPreference(parentLineage),
-          speciesTrophicLevel: this.getSpeciesTrophicLevel(settlementAgent.species),
-          cladeTrophicLevel: this.getCladeTrophicLevel(parentLineage),
-          speciesDefenseLevel: this.getSpeciesDefenseLevel(settlementAgent.species),
-          cladeDefenseLevel: this.getCladeDefenseLevel(parentLineage)
-        }),
-      passesEcologyGate: () =>
-        passesCladogenesisEcologyGate({
-          threshold: this.config.cladogenesisEcologyAdvantageThreshold,
-          settlementAgent,
-          childPos,
-          settlementContext,
-          resolveSettlementContext: () => this.resolveOffspringSettlementContext(),
-          localEcologyScore: (
-            agent,
-            x,
-            y,
-            occupancy,
-            lineageOccupancy,
-            lineagePenalty,
-            excludedPosition,
-            jitter
-          ) =>
-            this.localEcologyScore(
-              agent,
-              x,
-              y,
-              occupancy,
-              lineageOccupancy,
-              lineagePenalty,
-              excludedPosition,
-              jitter
-            )
-        })
+      getCladeFounderGenome: (lineage) => this.getCladeFounderGenome(lineage),
+      getSpeciesHabitatPreference: (species) => this.getSpeciesHabitatPreference(species),
+      getCladeHabitatPreference: (lineage) => this.getCladeHabitatPreference(lineage),
+      getSpeciesTrophicLevel: (species) => this.getSpeciesTrophicLevel(species),
+      getCladeTrophicLevel: (lineage) => this.getCladeTrophicLevel(lineage),
+      getSpeciesDefenseLevel: (species) => this.getSpeciesDefenseLevel(species),
+      getCladeDefenseLevel: (lineage) => this.getCladeDefenseLevel(lineage),
+      resolveSettlementContext: () => this.resolveOffspringSettlementContext(),
+      localEcologyScore: (
+        agent,
+        x,
+        y,
+        occupancy,
+        lineageOccupancy,
+        lineagePenalty,
+        excludedPosition,
+        jitter
+      ) =>
+        this.localEcologyScore(
+          agent,
+          x,
+          y,
+          occupancy,
+          lineageOccupancy,
+          lineagePenalty,
+          excludedPosition,
+          jitter
+        )
     });
   }
 
