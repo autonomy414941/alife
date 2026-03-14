@@ -5,9 +5,10 @@ import {
 } from './clade-activity-relabel-null-best-short-stack';
 import {
   CladeActivityRelabelNullSmokeSummary,
-  parseGeneratedAtCli,
+  runGeneratedAtStudyCli,
   runCladeActivityRelabelNullSmokeStudy
 } from './clade-activity-relabel-null-smoke-study';
+import type { RunGeneratedAtStudyCliDependencies } from './clade-activity-relabel-null-smoke-study';
 import { CladeActivityRelabelNullLossMode, SimulationConfig } from './types';
 
 export const CLADE_ACTIVITY_RELABEL_NULL_REGRESSION_DIAGNOSTIC_SCENARIOS = [
@@ -394,10 +395,20 @@ function subtractNullableMetric(left: number | null, right: number | null): numb
   return left - right;
 }
 
+export function runCladeActivityRelabelNullRegressionDiagnosticsStudyCli(
+  args: string[],
+  dependencies: RunGeneratedAtStudyCliDependencies = {}
+): void {
+  runGeneratedAtStudyCli(
+    args,
+    ({ generatedAt }) =>
+      runCladeActivityRelabelNullRegressionDiagnosticsStudy({
+        generatedAt
+      }),
+    dependencies
+  );
+}
+
 if (require.main === module) {
-  const options = parseGeneratedAtCli(process.argv.slice(2));
-  const study = runCladeActivityRelabelNullRegressionDiagnosticsStudy({
-    generatedAt: options.generatedAt
-  });
-  process.stdout.write(JSON.stringify(study, null, 2) + '\n');
+  runCladeActivityRelabelNullRegressionDiagnosticsStudyCli(process.argv.slice(2));
 }

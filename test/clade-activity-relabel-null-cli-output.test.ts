@@ -2,6 +2,9 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { runCladeActivityRelabelNullLineageCrowdingSmokeStudyCli } from '../src/clade-activity-relabel-null-lineage-crowding-smoke-study';
+import { runCladeActivityRelabelNullRegressionDiagnosticsStudyCli } from '../src/clade-activity-relabel-null-regression-diagnostics-study';
+import { runCladeActivityRelabelNullStudyCli } from '../src/clade-activity-relabel-null-study';
 import {
   runCladeActivityRelabelNullAdaptiveCladeHabitatMemoryHorizonStudyCli
 } from '../src/clade-activity-relabel-null-adaptive-clade-habitat-memory-horizon-study';
@@ -12,9 +15,66 @@ import {
   runCladeActivityRelabelNullNewCladeEncounterRestraintReviewCli
 } from '../src/clade-activity-relabel-null-new-clade-encounter-restraint-review';
 
-describe('relabel-null horizon and review CLI output', () => {
+describe('relabel-null CLI output', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it('writes a smoke study output to --output', () => {
+    const generatedAt = '2026-03-14T00:00:00.000Z';
+    const expected = {
+      generatedAt,
+      label: 'lineage-crowding-smoke'
+    };
+
+    expectCliOutputFile(generatedAt, expected, (outputPath, cliGeneratedAt) => {
+      runCladeActivityRelabelNullLineageCrowdingSmokeStudyCli(
+        ['--generated-at', cliGeneratedAt, '--output', outputPath],
+        {
+          runStudy: ({ generatedAt: stubGeneratedAt }) => ({
+            generatedAt: stubGeneratedAt,
+            label: 'lineage-crowding-smoke'
+          })
+        }
+      );
+    });
+  });
+
+  it('writes the base study output to --output', () => {
+    const generatedAt = '2026-03-14T00:00:00.000Z';
+    const expected = {
+      generatedAt,
+      label: 'relabel-null-study'
+    };
+
+    expectCliOutputFile(generatedAt, expected, (outputPath, cliGeneratedAt) => {
+      runCladeActivityRelabelNullStudyCli(['--generated-at', cliGeneratedAt, '--output', outputPath], {
+        runStudy: ({ generatedAt: stubGeneratedAt }) => ({
+          generatedAt: stubGeneratedAt,
+          label: 'relabel-null-study'
+        })
+      });
+    });
+  });
+
+  it('writes regression diagnostics output to --output', () => {
+    const generatedAt = '2026-03-14T00:00:00.000Z';
+    const expected = {
+      generatedAt,
+      label: 'regression-diagnostics'
+    };
+
+    expectCliOutputFile(generatedAt, expected, (outputPath, cliGeneratedAt) => {
+      runCladeActivityRelabelNullRegressionDiagnosticsStudyCli(
+        ['--generated-at', cliGeneratedAt, '--output', outputPath],
+        {
+          runStudy: ({ generatedAt: stubGeneratedAt }) => ({
+            generatedAt: stubGeneratedAt,
+            label: 'regression-diagnostics'
+          })
+        }
+      );
+    });
   });
 
   it('writes adaptive clade habitat memory horizon output to --output', () => {

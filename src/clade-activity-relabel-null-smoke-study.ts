@@ -99,6 +99,23 @@ export function emitStudyJsonOutput(study: unknown, options: Pick<GeneratedAtCli
   writeAtomicOutputFile(options.output, content);
 }
 
+export interface RunGeneratedAtStudyCliDependencies<TStudy = unknown> {
+  runStudy?: (input: { generatedAt?: string }) => TStudy;
+  emitOutput?: typeof emitStudyJsonOutput;
+}
+
+export function runGeneratedAtStudyCli<TStudy>(
+  args: string[],
+  runStudy: (input: { generatedAt?: string }) => TStudy,
+  dependencies: RunGeneratedAtStudyCliDependencies<TStudy> = {}
+): void {
+  const options = parseGeneratedAtCli(args);
+  const study = (dependencies.runStudy ?? runStudy)({
+    generatedAt: options.generatedAt
+  });
+  (dependencies.emitOutput ?? emitStudyJsonOutput)(study, options);
+}
+
 export function runCladeActivityRelabelNullSmokeStudy<TSettingName extends string, TValue extends SmokeSettingValue>(
   input: RunCladeActivityRelabelNullSmokeStudyOptions<TSettingName, TValue>
 ): CladeActivityRelabelNullSmokeStudyExport<TSettingName, TValue> {

@@ -7,7 +7,11 @@ import {
   DisturbanceColonizationMode
 } from './clade-activity-relabel-null-disturbance-colonization';
 import { RunCladeActivityRelabelNullStudyInput } from './activity';
-import { parseGeneratedAtCli, runCladeActivityRelabelNullSmokeStudy } from './clade-activity-relabel-null-smoke-study';
+import {
+  runGeneratedAtStudyCli,
+  runCladeActivityRelabelNullSmokeStudy,
+  type RunGeneratedAtStudyCliDependencies
+} from './clade-activity-relabel-null-smoke-study';
 
 export { DISTURBANCE_COLONIZATION_MODES } from './clade-activity-relabel-null-disturbance-colonization';
 export type { DisturbanceColonizationMode } from './clade-activity-relabel-null-disturbance-colonization';
@@ -36,10 +40,20 @@ export function runCladeActivityRelabelNullDisturbanceColonizationSmokeStudy(
   });
 }
 
+export function runCladeActivityRelabelNullDisturbanceColonizationSmokeStudyCli(
+  args: string[],
+  dependencies: RunGeneratedAtStudyCliDependencies = {}
+): void {
+  runGeneratedAtStudyCli(
+    args,
+    ({ generatedAt }) =>
+      runCladeActivityRelabelNullDisturbanceColonizationSmokeStudy({
+        generatedAt
+      }),
+    dependencies
+  );
+}
+
 if (require.main === module) {
-  const options = parseGeneratedAtCli(process.argv.slice(2));
-  const study = runCladeActivityRelabelNullDisturbanceColonizationSmokeStudy({
-    generatedAt: options.generatedAt
-  });
-  process.stdout.write(JSON.stringify(study, null, 2) + '\n');
+  runCladeActivityRelabelNullDisturbanceColonizationSmokeStudyCli(process.argv.slice(2));
 }
