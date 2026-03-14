@@ -1,12 +1,12 @@
 # Backlog
 
-- [validate] Compare founder-grace deficits against a stricter relabel-null that also matches founder habitat or local crowding at birth
-- [cleanup] Standardize the remaining 11 direct-stdout relabel-null entry points onto `emitStudyJsonOutput`
-- [revert] Remove pruned new-clade encounter-restraint commands from the active `study:` surface
-- [validate] Re-run the disturbance-opening horizon study through the standardized emitter and commit a parseable artifact
-- [split] Extract relabel-null study definition / comparison helpers from `src/activity.ts`
+- [validate] Extend matched-null founder context beyond `founderHabitatBin` by matching one extra birth-context signal such as local crowding at birth, then replay the canonical founder-grace panel
+- [split] Extract relabel-null seed-result and matched-null comparison helpers out of `src/activity.ts`
+- [split] Extract taxon-history / founder-context recording and export helpers out of `src/simulation.ts`
+- [validate] Reproduce the disturbance-opening horizon CLI output and explain whether the zero-byte `2026-03-14` artifact is a stale local file or a remaining emitter bug
 - [split] Continue extracting the reproduction / founding loop from `src/simulation.ts`
 - [strategize] Sketch composable settlement / encounter mechanism slots so future sessions can compare operator families instead of only numeric knobs
+- [revert] Archive additional default-off scalar add-on study wrappers that still have no positive horizon evidence after regression diagnostics
 - [critic] [Representational Capacity] Agents only have three mutable genome axes (`metabolism`, `harvest`, `aggression`), while habitat, trophic, and defense traits are derived scalars; no parameter tuning can produce evolvable body plans, sensors, effectors, or additional ecological roles. Intervention: replace the fixed `Genome` schema with extensible heritable loci or modules, and promote habitat / trophic / defense traits from derived summaries to first-class evolvable state.
 - [critic] [Interaction Richness] The interaction alphabet is compile-time fixed to movement, harvest, same-cell energy theft, reproduction, and thresholded clade founding, so lineages cannot evolve new interaction types such as signaling, cooperation, public goods, or alternative predation / resource-conversion modes. Intervention: generalize encounters and foraging into evolvable action channels over multiple resource or field layers instead of a single hard-coded transfer equation.
 - [critic] [Environmental Complexity] The world is a static fertility map plus one fungible resource pool with exogenous disturbance; agents can deplete and recycle resources but cannot persistently construct, poison, shelter, or otherwise rewrite habitat. Intervention: add persistent per-cell state layers that agents deposit, erode, and sense over many ticks, then feed those layers back into movement, harvest, and survival.

@@ -14,6 +14,8 @@ export interface TaxonTimelinePoint {
 export interface TaxonFounderContext {
   habitatMean: number;
   habitatBin: number;
+  localCrowdingMean: number;
+  localCrowdingBin: number;
   founderCount: number;
 }
 
@@ -990,7 +992,14 @@ export interface TaxonFounderHabitatSchedulePoint {
   births: number;
 }
 
-export type MatchedNullFounderContext = 'none' | 'founderHabitatBin';
+export interface TaxonFounderHabitatCrowdingSchedulePoint {
+  tick: number;
+  habitatBin: number;
+  localCrowdingBin: number;
+  births: number;
+}
+
+export type MatchedNullFounderContext = 'none' | 'founderHabitatBin' | 'founderHabitatAndCrowdingBin';
 
 export interface CladeActivityRelabelNullDefinition {
   actual: CladeActivitySeedPanelDefinition;
@@ -1086,6 +1095,9 @@ export interface CladeActivityRelabelNullSeedResult {
   actualFounderHabitatSchedule: TaxonFounderHabitatSchedulePoint[];
   matchedNullFounderHabitatSchedule: TaxonFounderHabitatSchedulePoint[];
   founderHabitatScheduleMatched: boolean | null;
+  actualFounderHabitatCrowdingSchedule: TaxonFounderHabitatCrowdingSchedulePoint[];
+  matchedNullFounderHabitatCrowdingSchedule: TaxonFounderHabitatCrowdingSchedulePoint[];
+  founderHabitatCrowdingScheduleMatched: boolean | null;
   thresholds: CladeActivityRelabelNullThresholdSeedResult[];
 }
 

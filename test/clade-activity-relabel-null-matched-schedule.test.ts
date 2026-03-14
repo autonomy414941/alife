@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { buildFounderHabitatSchedule } from '../src/clade-activity-relabel-null-founder-context';
+import {
+  buildFounderHabitatCrowdingSchedule,
+  buildFounderHabitatSchedule
+} from '../src/clade-activity-relabel-null-founder-context';
 import {
   buildMatchedSchedulePseudoClades,
   buildTaxonBirthSchedule,
@@ -75,14 +78,50 @@ describe('clade-activity-relabel-null-matched-schedule', () => {
 
   it('preserves founder habitat bins when the stricter founder-habitat null is enabled', () => {
     const species = [
-      buildTaxonHistory(1, 0, [1, 1, 1], { habitatMean: 0.3, habitatBin: 0, founderCount: 1 }),
-      buildTaxonHistory(2, 0, [1, 1, 0], { habitatMean: 1.7, habitatBin: 3, founderCount: 1 }),
-      buildTaxonHistory(3, 2, [1, 1, 1], { habitatMean: 0.5, habitatBin: 0, founderCount: 1 }),
-      buildTaxonHistory(4, 2, [1, 1, 1], { habitatMean: 1.4, habitatBin: 2, founderCount: 1 })
+      buildTaxonHistory(1, 0, [1, 1, 1], {
+        habitatMean: 0.3,
+        habitatBin: 0,
+        localCrowdingMean: 0.5,
+        localCrowdingBin: 0,
+        founderCount: 1
+      }),
+      buildTaxonHistory(2, 0, [1, 1, 0], {
+        habitatMean: 1.7,
+        habitatBin: 3,
+        localCrowdingMean: 2.2,
+        localCrowdingBin: 2,
+        founderCount: 1
+      }),
+      buildTaxonHistory(3, 2, [1, 1, 1], {
+        habitatMean: 0.5,
+        habitatBin: 0,
+        localCrowdingMean: 0.5,
+        localCrowdingBin: 0,
+        founderCount: 1
+      }),
+      buildTaxonHistory(4, 2, [1, 1, 1], {
+        habitatMean: 1.4,
+        habitatBin: 2,
+        localCrowdingMean: 1.4,
+        localCrowdingBin: 1,
+        founderCount: 1
+      })
     ];
     const clades = [
-      buildTaxonHistory(101, 0, [2, 2, 1], { habitatMean: 1.7, habitatBin: 3, founderCount: 1 }),
-      buildTaxonHistory(102, 2, [2, 2, 2], { habitatMean: 0.5, habitatBin: 0, founderCount: 1 })
+      buildTaxonHistory(101, 0, [2, 2, 1], {
+        habitatMean: 1.7,
+        habitatBin: 3,
+        localCrowdingMean: 2.2,
+        localCrowdingBin: 2,
+        founderCount: 1
+      }),
+      buildTaxonHistory(102, 2, [2, 2, 2], {
+        habitatMean: 0.5,
+        habitatBin: 0,
+        localCrowdingMean: 0.5,
+        localCrowdingBin: 0,
+        founderCount: 1
+      })
     ];
 
     const pseudoClades = buildMatchedSchedulePseudoClades({
@@ -95,6 +134,66 @@ describe('clade-activity-relabel-null-matched-schedule', () => {
 
     expect(buildTaxonBirthSchedule(pseudoClades)).toEqual(buildTaxonBirthSchedule(clades));
     expect(buildFounderHabitatSchedule(pseudoClades)).toEqual(buildFounderHabitatSchedule(clades));
+  });
+
+  it('preserves founder habitat/crowding bins when the stricter joint founder-context null is enabled', () => {
+    const species = [
+      buildTaxonHistory(1, 0, [1, 1, 1], {
+        habitatMean: 0.3,
+        habitatBin: 0,
+        localCrowdingMean: 0.4,
+        localCrowdingBin: 0,
+        founderCount: 1
+      }),
+      buildTaxonHistory(2, 0, [1, 1, 1], {
+        habitatMean: 0.4,
+        habitatBin: 0,
+        localCrowdingMean: 2.4,
+        localCrowdingBin: 2,
+        founderCount: 1
+      }),
+      buildTaxonHistory(3, 2, [1, 1, 1], {
+        habitatMean: 1.5,
+        habitatBin: 2,
+        localCrowdingMean: 1.2,
+        localCrowdingBin: 1,
+        founderCount: 1
+      }),
+      buildTaxonHistory(4, 2, [1, 1, 1], {
+        habitatMean: 1.6,
+        habitatBin: 3,
+        localCrowdingMean: 1.2,
+        localCrowdingBin: 1,
+        founderCount: 1
+      })
+    ];
+    const clades = [
+      buildTaxonHistory(101, 0, [2, 2, 1], {
+        habitatMean: 0.4,
+        habitatBin: 0,
+        localCrowdingMean: 2.4,
+        localCrowdingBin: 2,
+        founderCount: 1
+      }),
+      buildTaxonHistory(102, 2, [2, 2, 2], {
+        habitatMean: 1.5,
+        habitatBin: 2,
+        localCrowdingMean: 1.2,
+        localCrowdingBin: 1,
+        founderCount: 1
+      })
+    ];
+
+    const pseudoClades = buildMatchedSchedulePseudoClades({
+      species,
+      clades,
+      maxTick: 4,
+      relabelSeed: 17,
+      matchedNullFounderContext: 'founderHabitatAndCrowdingBin'
+    });
+
+    expect(buildTaxonBirthSchedule(pseudoClades)).toEqual(buildTaxonBirthSchedule(clades));
+    expect(buildFounderHabitatCrowdingSchedule(pseudoClades)).toEqual(buildFounderHabitatCrowdingSchedule(clades));
   });
 });
 

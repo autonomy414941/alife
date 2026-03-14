@@ -114,18 +114,24 @@ describe('LifeSimulation', () => {
     expect(history.clades[0]?.founderContext).toMatchObject({
       habitatMean: 1,
       habitatBin: 1,
+      localCrowdingMean: 1,
+      localCrowdingBin: 1,
       founderCount: 1
     });
     expect(history.clades[1]?.firstSeenTick).toBe(1);
     expect(history.clades[1]?.founderContext).toMatchObject({
       habitatMean: 1,
       habitatBin: 1,
+      localCrowdingMean: 2,
+      localCrowdingBin: 2,
       founderCount: 1
     });
     expect(history.species[1]?.firstSeenTick).toBe(1);
     expect(history.species[1]?.founderContext).toMatchObject({
       habitatMean: 1,
       habitatBin: 1,
+      localCrowdingMean: 2,
+      localCrowdingBin: 2,
       founderCount: 1
     });
   });

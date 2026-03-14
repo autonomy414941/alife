@@ -8,7 +8,7 @@ import {
   resolveMutatedSpeciesHabitatPreference,
   setFoundCladeHabitatPreference
 } from './clade-habitat';
-import { founderHabitatBin } from './clade-activity-relabel-null-founder-context';
+import { buildFounderContextFromSums } from './clade-activity-relabel-null-founder-context';
 import {
   DisturbanceEventState,
   buildDisturbanceCellSets,
@@ -159,9 +159,15 @@ interface TaxonHistoryState {
   totalDeaths: number;
   peakPopulation: number;
   founderHabitatSum: number;
+  founderLocalCrowdingSum: number;
   founderCount: number;
   lastPopulation: number;
   timeline: TaxonTimelinePoint[];
+}
+
+interface FounderContextSamples {
+  habitatSamples: number[];
+  localCrowdingSamples: number[];
 }
 
 interface LocalityFrame {
@@ -287,6 +293,8 @@ export class LifeSimulation {
     }
     const births = offspring.length;
     this.agents.push(...offspring);
+    const nextTick = this.tickCount + 1;
+    const founderOccupancy = births === 0 ? undefined : this.buildOccupancyGrid(this.agents);
 
     const survivors: Agent[] = [];
     const deadAgents: Agent[] = [];
@@ -304,24 +312,22 @@ export class LifeSimulation {
     const meanEnergy = this.meanEnergy();
     const meanGenome = this.meanGenome();
     const diversity = this.diversityMetrics();
-    this.tickCount += 1;
-    const cladeFounderHabitatSamples = this.collectFounderHabitatSamples(
-      offspring,
-      (agent) => agent.lineage,
-      this.tickCount
-    );
-    const speciesFounderHabitatSamples = this.collectFounderHabitatSamples(
-      offspring,
-      (agent) => agent.species,
-      this.tickCount
-    );
+    const cladeFounderContextSamples =
+      founderOccupancy === undefined
+        ? new Map<number, FounderContextSamples>()
+        : this.collectFounderContextSamples(offspring, (agent) => agent.lineage, nextTick, founderOccupancy);
+    const speciesFounderContextSamples =
+      founderOccupancy === undefined
+        ? new Map<number, FounderContextSamples>()
+        : this.collectFounderContextSamples(offspring, (agent) => agent.species, nextTick, founderOccupancy);
+    this.tickCount = nextTick;
     const cladeExtinctionDelta = this.updateTaxonHistory(
       this.cladeHistory,
       this.tickCount,
       this.countBy(this.agents, (agent) => agent.lineage),
       this.countBy(offspring, (agent) => agent.lineage),
       this.countBy(deadAgents, (agent) => agent.lineage),
-      cladeFounderHabitatSamples
+      cladeFounderContextSamples
     );
     const speciesExtinctionDelta = this.updateTaxonHistory(
       this.speciesHistory,
@@ -329,7 +335,7 @@ export class LifeSimulation {
       this.countBy(this.agents, (agent) => agent.species),
       this.countBy(offspring, (agent) => agent.species),
       this.countBy(deadAgents, (agent) => agent.species),
-      speciesFounderHabitatSamples
+      speciesFounderContextSamples
     );
     this.extinctClades += cladeExtinctionDelta;
     this.extinctSpecies += speciesExtinctionDelta;
@@ -1184,28 +1190,26 @@ export class LifeSimulation {
     return clamp((1 - genome.aggression) * 0.65 + metabolismNormalized * 0.35, 0, 1);
   }
 
-  private seedTaxonHistory(history: Map<number, TaxonHistoryState>, idOf: (agent: Agent) => number): void {
-    const seeded = new Map<number, { population: number; habitatSamples: number[] }>();
-    for (const agent of this.agents) {
-      const id = idOf(agent);
-      const current = seeded.get(id) ?? { population: 0, habitatSamples: [] };
-      current.population += 1;
-      current.habitatSamples.push(this.effectiveBiomeFertilityAt(agent.x, agent.y, 0));
-      seeded.set(id, current);
-    }
+  private seedTaxonHistory(
+    history: Map<number, TaxonHistoryState>,
+    idOf: (agent: Pick<Agent, 'species' | 'lineage' | 'x' | 'y'>) => number
+  ): void {
+    const seeded = this.collectFounderContextSamples(this.agents, idOf, 0, this.buildOccupancyGrid(this.agents));
 
-    for (const [id, { population, habitatSamples }] of seeded) {
+    for (const [id, samples] of seeded) {
+      const founderCount = samples.habitatSamples.length;
       history.set(id, {
         id,
         firstSeenTick: 0,
         extinctTick: null,
-        totalBirths: population,
+        totalBirths: founderCount,
         totalDeaths: 0,
-        peakPopulation: population,
-        founderHabitatSum: habitatSamples.reduce((total, sample) => total + sample, 0),
-        founderCount: habitatSamples.length,
-        lastPopulation: population,
-        timeline: [{ tick: 0, population, births: population, deaths: 0 }]
+        peakPopulation: founderCount,
+        founderHabitatSum: samples.habitatSamples.reduce((total, sample) => total + sample, 0),
+        founderLocalCrowdingSum: samples.localCrowdingSamples.reduce((total, sample) => total + sample, 0),
+        founderCount,
+        lastPopulation: founderCount,
+        timeline: [{ tick: 0, population: founderCount, births: founderCount, deaths: 0 }]
       });
     }
   }
@@ -1216,7 +1220,7 @@ export class LifeSimulation {
     populationCounts: Map<number, number>,
     birthsCounts: Map<number, number>,
     deathsCounts: Map<number, number>,
-    founderHabitatSamples: Map<number, number[]>
+    founderContextSamples: Map<number, FounderContextSamples>
   ): number {
     const idsToRecord = new Set<number>();
     for (const id of populationCounts.keys()) {
@@ -1243,7 +1247,7 @@ export class LifeSimulation {
 
       let state = history.get(id);
       if (!state) {
-        const habitatSamples = founderHabitatSamples.get(id) ?? [];
+        const samples = founderContextSamples.get(id) ?? { habitatSamples: [], localCrowdingSamples: [] };
         state = {
           id,
           firstSeenTick: tick,
@@ -1251,8 +1255,9 @@ export class LifeSimulation {
           totalBirths: 0,
           totalDeaths: 0,
           peakPopulation: 0,
-          founderHabitatSum: habitatSamples.reduce((total, sample) => total + sample, 0),
-          founderCount: habitatSamples.length,
+          founderHabitatSum: samples.habitatSamples.reduce((total, sample) => total + sample, 0),
+          founderLocalCrowdingSum: samples.localCrowdingSamples.reduce((total, sample) => total + sample, 0),
+          founderCount: samples.habitatSamples.length,
           lastPopulation: 0,
           timeline: []
         };
@@ -1293,28 +1298,27 @@ export class LifeSimulation {
         totalBirths: entry.totalBirths,
         totalDeaths: entry.totalDeaths,
         peakPopulation: entry.peakPopulation,
-        founderContext:
-          entry.founderCount === 0
-            ? undefined
-            : {
-                habitatMean: entry.founderHabitatSum / entry.founderCount,
-                habitatBin: founderHabitatBin(entry.founderHabitatSum / entry.founderCount),
-                founderCount: entry.founderCount
-              },
+        founderContext: buildFounderContextFromSums({
+          founderHabitatSum: entry.founderHabitatSum,
+          founderLocalCrowdingSum: entry.founderLocalCrowdingSum,
+          founderCount: entry.founderCount
+        }),
         timeline: entry.timeline.map((point) => ({ ...point }))
       }));
   }
 
-  private collectFounderHabitatSamples(
+  private collectFounderContextSamples(
     agents: ReadonlyArray<Pick<Agent, 'species' | 'lineage' | 'x' | 'y'>>,
     idOf: (agent: Pick<Agent, 'species' | 'lineage' | 'x' | 'y'>) => number,
-    tick: number
-  ): Map<number, number[]> {
-    const samples = new Map<number, number[]>();
+    tick: number,
+    occupancy: number[][]
+  ): Map<number, FounderContextSamples> {
+    const samples = new Map<number, FounderContextSamples>();
     for (const agent of agents) {
       const id = idOf(agent);
-      const current = samples.get(id) ?? [];
-      current.push(this.effectiveBiomeFertilityAt(agent.x, agent.y, tick));
+      const current = samples.get(id) ?? { habitatSamples: [], localCrowdingSamples: [] };
+      current.habitatSamples.push(this.effectiveBiomeFertilityAt(agent.x, agent.y, tick));
+      current.localCrowdingSamples.push(this.neighborhoodCrowding(agent.x, agent.y, occupancy));
       samples.set(id, current);
     }
     return samples;

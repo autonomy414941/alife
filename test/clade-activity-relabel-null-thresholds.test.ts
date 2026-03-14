@@ -100,6 +100,9 @@ function createSeedResult(input: {
     actualFounderHabitatSchedule: [],
     matchedNullFounderHabitatSchedule: [],
     founderHabitatScheduleMatched: null,
+    actualFounderHabitatCrowdingSchedule: [],
+    matchedNullFounderHabitatCrowdingSchedule: [],
+    founderHabitatCrowdingScheduleMatched: null,
     thresholds: [
       buildCladeActivityRelabelNullThresholdSeedResult({
         minSurvivalTicks: 50,

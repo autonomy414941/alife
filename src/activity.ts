@@ -14,8 +14,12 @@ import {
   buildCladeActivityRelabelNullThresholdSeedResult
 } from './clade-activity-relabel-null-thresholds';
 import {
+  buildFounderHabitatCrowdingSchedule,
   buildFounderHabitatSchedule,
-  founderHabitatSchedulesEqual
+  founderHabitatCrowdingSchedulesEqual,
+  founderHabitatSchedulesEqual,
+  requiresFounderHabitatCrowdingMatch,
+  requiresFounderHabitatMatch
 } from './clade-activity-relabel-null-founder-context';
 import {
   buildMatchedSchedulePseudoClades,
@@ -501,7 +505,7 @@ export const CLADE_ACTIVITY_RELABEL_NULL_DEFINITION: CladeActivityRelabelNullDef
   matchedSchedule:
     'For each seed and cladogenesis threshold, the pseudo-clade null preserves the observed clade birth count at every firstSeenTick.',
   matchedFounderContext:
-    'matchedNullFounderContext=none matches birth ticks only. matchedNullFounderContext=founderHabitatBin also preserves, at each firstSeenTick, the count of founders in each habitat bin derived from founder habitat means.',
+    'matchedNullFounderContext=none matches birth ticks only. matchedNullFounderContext=founderHabitatBin also preserves, at each firstSeenTick, the count of founders in each habitat bin derived from founder habitat means. matchedNullFounderContext=founderHabitatAndCrowdingBin additionally preserves the joint founder habitat-bin and local-crowding-bin schedule.',
   relabeling:
     'Pseudo-clade founders are randomly selected from species born at each matched birth tick, and remaining species are randomly reassigned to pseudo-clades that were already active at the prior tick.',
   diagnostics:
@@ -1732,6 +1736,8 @@ function buildCladeActivityRelabelNullSeedResult(input: {
   const matchedNullBirthSchedule = buildTaxonBirthSchedule(matchedNullClades);
   const actualFounderHabitatSchedule = buildFounderHabitatSchedule(input.history.clades);
   const matchedNullFounderHabitatSchedule = buildFounderHabitatSchedule(matchedNullClades);
+  const actualFounderHabitatCrowdingSchedule = buildFounderHabitatCrowdingSchedule(input.history.clades);
+  const matchedNullFounderHabitatCrowdingSchedule = buildFounderHabitatCrowdingSchedule(matchedNullClades);
   const actualActiveClades = input.finalSummary.activeClades;
   const matchedNullActiveClades = countActiveTaxaAtTick(matchedNullClades, input.finalSummary.tick);
 
@@ -1746,10 +1752,17 @@ function buildCladeActivityRelabelNullSeedResult(input: {
     birthScheduleMatched: taxonBirthSchedulesEqual(actualBirthSchedule, matchedNullBirthSchedule),
     actualFounderHabitatSchedule,
     matchedNullFounderHabitatSchedule,
-    founderHabitatScheduleMatched:
-      input.matchedNullFounderContext === 'founderHabitatBin'
+    founderHabitatScheduleMatched: requiresFounderHabitatMatch(input.matchedNullFounderContext)
         ? founderHabitatSchedulesEqual(actualFounderHabitatSchedule, matchedNullFounderHabitatSchedule)
         : null,
+    actualFounderHabitatCrowdingSchedule,
+    matchedNullFounderHabitatCrowdingSchedule,
+    founderHabitatCrowdingScheduleMatched: requiresFounderHabitatCrowdingMatch(input.matchedNullFounderContext)
+      ? founderHabitatCrowdingSchedulesEqual(
+          actualFounderHabitatCrowdingSchedule,
+          matchedNullFounderHabitatCrowdingSchedule
+        )
+      : null,
     thresholds: input.minSurvivalTicks.map((minSurvivalTicks) =>
       buildCladeActivityRelabelNullThresholdSeedResult({
         minSurvivalTicks,
@@ -1802,12 +1815,12 @@ function truncateTaxonHistory(taxa: TaxonHistory[], maxTick: number): TaxonHisto
 }
 
 function resolveMatchedNullFounderContext(value: MatchedNullFounderContext | string): MatchedNullFounderContext {
-  if (value === 'none' || value === 'founderHabitatBin') {
+  if (value === 'none' || value === 'founderHabitatBin' || value === 'founderHabitatAndCrowdingBin') {
     return value;
   }
 
   throw new Error(
-    `matchedNullFounderContext must be one of "none" or "founderHabitatBin"; received ${String(value)}`
+    `matchedNullFounderContext must be one of "none", "founderHabitatBin", or "founderHabitatAndCrowdingBin"; received ${String(value)}`
   );
 }
 
