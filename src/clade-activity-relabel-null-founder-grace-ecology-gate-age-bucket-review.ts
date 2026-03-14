@@ -1,10 +1,10 @@
 import {
-  buildMatchedSchedulePseudoClades,
   DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY,
   deriveRelabelSeed,
   RunCladeActivityRelabelNullStudyInput
 } from './activity';
 import { mean } from './activity-thresholds';
+import { buildMatchedSchedulePseudoClades } from './clade-activity-relabel-null-matched-schedule';
 import {
   buildConfiguredFounderEstablishmentStudyInput,
   FOUNDER_GRACE_ECOLOGY_GATE_SWEEP_DEFINITION,
