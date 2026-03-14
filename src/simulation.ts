@@ -1,4 +1,14 @@
 import {
+  adaptCladeHabitatPreference as updateCladeHabitatPreference,
+  getCladeHabitatPreference as lookupCladeHabitatPreference,
+  getSpeciesHabitatPreference as lookupSpeciesHabitatPreference,
+  habitatMatchEfficiency as calculateHabitatMatchEfficiency,
+  initializeCladeHabitatPreferences as seedInitialCladeHabitatPreferences,
+  initializeSpeciesHabitatPreferences as seedInitialSpeciesHabitatPreferences,
+  resolveMutatedSpeciesHabitatPreference,
+  setFoundCladeHabitatPreference
+} from './clade-habitat';
+import {
   DisturbanceEventState,
   buildDisturbanceCellSets,
   countDisturbanceEventsInWindow,
@@ -1096,33 +1106,19 @@ export class LifeSimulation {
   }
 
   private initializeSpeciesHabitatPreferences(): void {
-    const sums = new Map<number, { total: number; count: number }>();
-    for (const agent of this.agents) {
-      const fertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, 0);
-      const current = sums.get(agent.species) ?? { total: 0, count: 0 };
-      current.total += fertility;
-      current.count += 1;
-      sums.set(agent.species, current);
-    }
-    for (const [species, { total, count }] of sums) {
-      const preference = count === 0 ? 1 : total / count;
-      this.speciesHabitatPreference.set(species, clamp(preference, 0.1, 2));
-    }
+    seedInitialSpeciesHabitatPreferences(
+      this.agents,
+      this.speciesHabitatPreference,
+      (agent) => this.effectiveBiomeFertilityAt(agent.x, agent.y, 0)
+    );
   }
 
   private initializeCladeHabitatPreferences(): void {
-    const sums = new Map<number, { total: number; count: number }>();
-    for (const agent of this.agents) {
-      const fertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, 0);
-      const current = sums.get(agent.lineage) ?? { total: 0, count: 0 };
-      current.total += fertility;
-      current.count += 1;
-      sums.set(agent.lineage, current);
-    }
-    for (const [lineage, { total, count }] of sums) {
-      const preference = count === 0 ? 1 : total / count;
-      this.cladeHabitatPreference.set(lineage, clamp(preference, 0.1, 2));
-    }
+    seedInitialCladeHabitatPreferences(
+      this.agents,
+      this.cladeHabitatPreference,
+      (agent) => this.effectiveBiomeFertilityAt(agent.x, agent.y, 0)
+    );
   }
 
   private initializeSpeciesTrophicLevels(): void {
@@ -1669,9 +1665,16 @@ export class LifeSimulation {
     const diverged = genomeDistance(parent.genome, childGenome) >= this.config.speciationThreshold;
     const childSpecies = diverged ? this.nextSpeciesId++ : parent.species;
     if (diverged) {
-      const parentPreference = this.getSpeciesHabitatPreference(parent.species);
-      const delta = this.habitatPreferenceDeltaFromMutation(parent.genome, childGenome);
-      this.speciesHabitatPreference.set(childSpecies, clamp(parentPreference + delta, 0.1, 2));
+      this.speciesHabitatPreference.set(
+        childSpecies,
+        resolveMutatedSpeciesHabitatPreference({
+          parentSpecies: parent.species,
+          parentGenome: parent.genome,
+          childGenome,
+          speciesHabitatPreference: this.speciesHabitatPreference,
+          config: this.config
+        })
+      );
       const parentTrophic = this.getSpeciesTrophicLevel(parent.species);
       const trophicDelta = this.trophicDeltaFromMutation(parent.genome, childGenome);
       this.speciesTrophicLevel.set(childSpecies, clamp(parentTrophic + trophicDelta, 0, 1));
@@ -1943,25 +1946,21 @@ export class LifeSimulation {
   private foundClade(founderGenome: Genome, founderX: number, founderY: number): number {
     const lineage = this.nextLineageId++;
     this.cladeFounderGenome.set(lineage, copyGenome(founderGenome));
-    this.cladeHabitatPreference.set(
+    setFoundCladeHabitatPreference({
+      cladeHabitatPreference: this.cladeHabitatPreference,
       lineage,
-      clamp(this.effectiveBiomeFertilityAt(founderX, founderY, this.tickCount + 1), 0.1, 2)
-    );
+      fertility: this.effectiveBiomeFertilityAt(founderX, founderY, this.tickCount + 1)
+    });
     return lineage;
   }
 
   private adaptCladeHabitatPreference(lineage: number, x: number, y: number): void {
-    const rate = clamp(this.config.adaptiveCladeHabitatMemoryRate, 0, 1);
-    if (rate === 0) {
-      return;
-    }
-
-    const currentPreference = this.getCladeHabitatPreference(lineage);
-    const targetPreference = clamp(this.effectiveBiomeFertilityAt(x, y, this.tickCount + 1), 0.1, 2);
-    this.cladeHabitatPreference.set(
+    updateCladeHabitatPreference({
+      cladeHabitatPreference: this.cladeHabitatPreference,
       lineage,
-      clamp(currentPreference + (targetPreference - currentPreference) * rate, 0.1, 2)
-    );
+      fertility: this.effectiveBiomeFertilityAt(x, y, this.tickCount + 1),
+      config: this.config
+    });
   }
 
   private getCladeFounderGenome(lineage: number): Genome {
@@ -1994,42 +1993,21 @@ export class LifeSimulation {
   }
 
   private habitatMatchEfficiency(agent: Pick<Agent, 'species' | 'lineage'>, x: number, y: number): number {
-    const strength = Math.max(0, this.config.habitatPreferenceStrength);
-    if (strength === 0) {
-      return 1;
-    }
-    const preference = this.blendedHabitatPreference(agent.species, agent.lineage);
-    const fertility = this.effectiveBiomeFertilityAt(x, y, this.tickCount + 1);
-    const mismatch = fertility - preference;
-    return Math.max(0.05, Math.exp(-strength * mismatch * mismatch));
-  }
-
-  private blendedHabitatPreference(species: number, lineage: number): number {
-    const speciesPreference = this.getSpeciesHabitatPreference(species);
-    const coupling = clamp(this.config.cladeHabitatCoupling, 0, 1);
-    if (coupling === 0) {
-      return speciesPreference;
-    }
-    const cladePreference = this.getCladeHabitatPreference(lineage);
-    return clamp(speciesPreference * (1 - coupling) + cladePreference * coupling, 0.1, 2);
+    return calculateHabitatMatchEfficiency({
+      agent,
+      fertility: this.effectiveBiomeFertilityAt(x, y, this.tickCount + 1),
+      speciesHabitatPreference: this.speciesHabitatPreference,
+      cladeHabitatPreference: this.cladeHabitatPreference,
+      config: this.config
+    });
   }
 
   private getSpeciesHabitatPreference(species: number): number {
-    const existing = this.speciesHabitatPreference.get(species);
-    if (existing !== undefined) {
-      return existing;
-    }
-    this.speciesHabitatPreference.set(species, 1);
-    return 1;
+    return lookupSpeciesHabitatPreference(this.speciesHabitatPreference, species);
   }
 
   private getCladeHabitatPreference(lineage: number): number {
-    const existing = this.cladeHabitatPreference.get(lineage);
-    if (existing !== undefined) {
-      return existing;
-    }
-    this.cladeHabitatPreference.set(lineage, 1);
-    return 1;
+    return lookupCladeHabitatPreference(this.cladeHabitatPreference, lineage);
   }
 
   private trophicForagingEfficiency(species: number, lineage: number): number {
@@ -2086,17 +2064,6 @@ export class LifeSimulation {
     }
     this.speciesDefenseLevel.set(species, 0);
     return 0;
-  }
-
-  private habitatPreferenceDeltaFromMutation(parent: Genome, child: Genome): number {
-    const mutationScale = Math.max(0, this.config.habitatPreferenceMutation);
-    if (mutationScale === 0) {
-      return 0;
-    }
-    const harvestShift = child.harvest - parent.harvest;
-    const metabolismShift = parent.metabolism - child.metabolism;
-    const signal = harvestShift * 0.65 + metabolismShift * 0.35;
-    return clamp(signal, -1, 1) * mutationScale;
   }
 
   private trophicDeltaFromMutation(parent: Genome, child: Genome): number {
