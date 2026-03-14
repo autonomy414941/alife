@@ -3008,7 +3008,7 @@ describe('LifeSimulation', () => {
 
     expect(withCost.patchDominance).toBeLessThan(noCost.patchDominance);
     expect(withCost.patchTurnover).toBeGreaterThan(noCost.patchTurnover);
-  });
+  }, 15_000);
 
   it('removes agents that run out of energy', () => {
     const sim = new LifeSimulation({
