@@ -1,14 +1,18 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { RunCladeActivityRelabelNullStudyInput, runCladeActivityRelabelNullStudy } from './activity';
-import { buildCladeActivityRelabelNullBestShortStackStudyInput } from './clade-activity-relabel-null-best-short-stack';
-import { compareCladeActivityRelabelNullStudies } from './clade-activity-relabel-null-best-short-stack-study';
 import {
   FOUNDER_GRACE_ECOLOGY_GATE_ADAPTIVE_CLADE_HABITAT_MEMORY_RATE,
   FOUNDER_GRACE_ECOLOGY_GATE_CLADE_HABITAT_COUPLING,
   FOUNDER_GRACE_ECOLOGY_GATE_SETTLEMENT_GRACE_TICKS,
   FOUNDER_GRACE_ECOLOGY_GATE_THRESHOLD_VALUES
 } from './clade-activity-relabel-null-founder-grace-ecology-gate-smoke-study';
+import {
+  FOUNDER_GRACE_ECOLOGY_GATE_SWEEP_DEFINITION,
+  FOUNDER_GRACE_FOLLOWUP_FIXED_CONFIG,
+  compareFounderGraceFollowupStudies,
+  buildConfiguredFounderEstablishmentStudyInput,
+  loadEmbeddedStudyFromArtifact,
+  requireResolvedStudyConfig
+} from './clade-activity-relabel-null-founder-establishment-study-helpers';
 import { emitStudyJsonOutput, parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
 import {
   BASELINE_CLADE_HABITAT_COUPLING_HORIZON_ARTIFACT as STATIC_HABITAT_BASELINE_ARTIFACT
@@ -88,17 +92,24 @@ export function runCladeActivityRelabelNullFounderGraceEcologyGateHorizonStudy(
   input: RunCladeActivityRelabelNullFounderGraceEcologyGateHorizonStudyInput = {}
 ): CladeActivityRelabelNullFounderGraceEcologyGateHorizonStudyExport {
   const generatedAt = input.generatedAt ?? new Date().toISOString();
-  const founderGraceStudyInput = buildFounderGraceEcologyGateHorizonStudyInput(
+  const founderGraceStudyInput = buildConfiguredFounderEstablishmentStudyInput(
+    FOUNDER_GRACE_ECOLOGY_GATE_SWEEP_DEFINITION,
+    FOUNDER_GRACE_FOLLOWUP_FIXED_CONFIG,
     input.studyInput,
     generatedAt,
     HORIZON_BASELINE_CLADEGENESIS_ECOLOGY_ADVANTAGE_THRESHOLD
   );
-  const ecologyGateStudyInput = buildFounderGraceEcologyGateHorizonStudyInput(
+  const ecologyGateStudyInput = buildConfiguredFounderEstablishmentStudyInput(
+    FOUNDER_GRACE_ECOLOGY_GATE_SWEEP_DEFINITION,
+    FOUNDER_GRACE_FOLLOWUP_FIXED_CONFIG,
     input.studyInput,
     generatedAt,
     HORIZON_ECOLOGY_GATE_CLADEGENESIS_ECOLOGY_ADVANTAGE_THRESHOLD
   );
-  const resolvedStudyConfig = requireResolvedStudyConfig(ecologyGateStudyInput);
+  const resolvedStudyConfig = requireResolvedStudyConfig(
+    ecologyGateStudyInput,
+    'Founder-grace ecology-gate horizon study'
+  );
   const baselineStudy = input.baselineStudy ?? loadFounderGraceBaselineStudy();
   const ecologyGateStudy = input.ecologyGateStudy ?? runCladeActivityRelabelNullStudy(ecologyGateStudyInput);
 
@@ -135,137 +146,40 @@ export function compareFounderGraceEcologyGateHorizonStudies(
   ecologyGateStudy: CladeActivityRelabelNullStudyExport,
   baselineStudy: CladeActivityRelabelNullStudyExport
 ): CladeActivityRelabelNullFounderGraceEcologyGateHorizonComparison[] {
-  return compareCladeActivityRelabelNullStudies(ecologyGateStudy, baselineStudy).map((comparison) => {
-    const baselineThresholdResult = baselineStudy.thresholdResults.find(
-      (thresholdResult) => thresholdResult.cladogenesisThreshold === comparison.cladogenesisThreshold
-    );
-    if (!baselineThresholdResult) {
-      throw new Error(
-        `Baseline study is missing cladogenesis threshold ${comparison.cladogenesisThreshold}`
-      );
-    }
-
-    const founderGraceActiveCladeDeltaVsNullMean = requireActiveCladeDeltaVsNullMean(
-      'Founder-grace baseline',
-      comparison.baselineDiagnostics
-    );
-    const ecologyGateActiveCladeDeltaVsNullMean = requireActiveCladeDeltaVsNullMean(
-      'Ecology-gate study',
-      comparison.currentDiagnostics
-    );
-
-    return {
+  return compareFounderGraceFollowupStudies(ecologyGateStudy, baselineStudy, 'Ecology-gate study').map(
+    (comparison) => ({
       cladogenesisThreshold: comparison.cladogenesisThreshold,
       minSurvivalTicks: comparison.minSurvivalTicks,
-      founderGraceBirthScheduleMatchedAllSeeds: baselineThresholdResult.seedResults.every(
-        (seedResult) => seedResult.birthScheduleMatched
-      ),
-      ecologyGateBirthScheduleMatchedAllSeeds: comparison.birthScheduleMatchedAllSeeds,
+      founderGraceBirthScheduleMatchedAllSeeds: comparison.founderGraceBirthScheduleMatchedAllSeeds,
+      ecologyGateBirthScheduleMatchedAllSeeds: comparison.currentBirthScheduleMatchedAllSeeds,
       founderGracePersistentWindowFractionDeltaVsNullMean:
-        comparison.baselinePersistentWindowFractionDeltaVsNullMean,
+        comparison.founderGracePersistentWindowFractionDeltaVsNullMean,
       ecologyGatePersistentWindowFractionDeltaVsNullMean:
         comparison.currentPersistentWindowFractionDeltaVsNullMean,
       persistentWindowFractionDeltaImprovementVsFounderGrace:
-        comparison.persistentWindowFractionDeltaImprovementVsBaseline,
+        comparison.persistentWindowFractionDeltaImprovementVsFounderGrace,
       founderGracePersistentActivityMeanDeltaVsNullMean:
-        comparison.baselinePersistentActivityMeanDeltaVsNullMean,
+        comparison.founderGracePersistentActivityMeanDeltaVsNullMean,
       ecologyGatePersistentActivityMeanDeltaVsNullMean:
         comparison.currentPersistentActivityMeanDeltaVsNullMean,
       persistentActivityMeanImprovementVsFounderGrace:
-        comparison.persistentActivityMeanImprovementVsBaseline,
-      founderGraceActiveCladeDeltaVsNullMean,
-      ecologyGateActiveCladeDeltaVsNullMean,
+        comparison.persistentActivityMeanImprovementVsFounderGrace,
+      founderGraceActiveCladeDeltaVsNullMean: comparison.founderGraceActiveCladeDeltaVsNullMean,
+      ecologyGateActiveCladeDeltaVsNullMean: comparison.currentActiveCladeDeltaVsNullMean,
       activeCladeDeltaImprovementVsFounderGrace:
-        ecologyGateActiveCladeDeltaVsNullMean - founderGraceActiveCladeDeltaVsNullMean,
-      founderGraceDiagnostics: comparison.baselineDiagnostics,
+        comparison.activeCladeDeltaImprovementVsFounderGrace,
+      founderGraceDiagnostics: comparison.founderGraceDiagnostics,
       ecologyGateDiagnostics: comparison.currentDiagnostics
-    };
-  });
-}
-
-function buildFounderGraceEcologyGateHorizonStudyInput(
-  studyInput: RunCladeActivityRelabelNullStudyInput | undefined,
-  generatedAt: string,
-  cladogenesisEcologyAdvantageThreshold: number
-): RunCladeActivityRelabelNullStudyInput {
-  return buildCladeActivityRelabelNullBestShortStackStudyInput(
-    {
-      ...studyInput,
-      simulation: {
-        ...studyInput?.simulation,
-        config: {
-          ...(studyInput?.simulation?.config ?? {}),
-          cladeHabitatCoupling: FOUNDER_GRACE_ECOLOGY_GATE_CLADE_HABITAT_COUPLING,
-          adaptiveCladeHabitatMemoryRate: FOUNDER_GRACE_ECOLOGY_GATE_ADAPTIVE_CLADE_HABITAT_MEMORY_RATE,
-          newCladeSettlementCrowdingGraceTicks: FOUNDER_GRACE_ECOLOGY_GATE_SETTLEMENT_GRACE_TICKS,
-          cladogenesisEcologyAdvantageThreshold
-        }
-      }
-    },
-    generatedAt
+    })
   );
 }
 
-function requireResolvedStudyConfig(studyInput: RunCladeActivityRelabelNullStudyInput): {
-  steps: number;
-  windowSize: number;
-  burnIn: number;
-  seeds: number[];
-  stopWhenExtinct: boolean;
-  minSurvivalTicks: number[];
-  cladogenesisThresholds: number[];
-} {
-  if (
-    studyInput.steps === undefined ||
-    studyInput.windowSize === undefined ||
-    studyInput.burnIn === undefined ||
-    studyInput.seeds === undefined ||
-    studyInput.stopWhenExtinct === undefined ||
-    studyInput.minSurvivalTicks === undefined ||
-    studyInput.cladogenesisThresholds === undefined
-  ) {
-    throw new Error('Founder-grace ecology-gate horizon study requires a fully resolved study input');
-  }
-
-  return {
-    steps: studyInput.steps,
-    windowSize: studyInput.windowSize,
-    burnIn: studyInput.burnIn,
-    seeds: studyInput.seeds,
-    stopWhenExtinct: studyInput.stopWhenExtinct,
-    minSurvivalTicks: studyInput.minSurvivalTicks,
-    cladogenesisThresholds: studyInput.cladogenesisThresholds
-  };
-}
-
 function loadFounderGraceBaselineStudy(): CladeActivityRelabelNullStudyExport {
-  const baselineArtifactPath = resolve(__dirname, '..', BASELINE_NEW_CLADE_ESTABLISHMENT_HORIZON_ARTIFACT);
-  const parsed = JSON.parse(readFileSync(baselineArtifactPath, 'utf8')) as {
-    founderGraceStudy?: CladeActivityRelabelNullStudyExport;
-  };
-
-  if (
-    !parsed.founderGraceStudy ||
-    !Array.isArray(parsed.founderGraceStudy.thresholdResults) ||
-    parsed.founderGraceStudy.thresholdResults.length === 0
-  ) {
-    throw new Error(
-      `Baseline artifact ${BASELINE_NEW_CLADE_ESTABLISHMENT_HORIZON_ARTIFACT} is not a new-clade establishment horizon study export`
-    );
-  }
-
-  return parsed.founderGraceStudy;
-}
-
-function requireActiveCladeDeltaVsNullMean(
-  label: string,
-  diagnostics: CladeActivityRelabelNullDiagnosticSnapshot
-): number {
-  if (diagnostics.activeCladeDeltaVsNullMean === null) {
-    throw new Error(`${label} is missing activeCladeDeltaVsNullMean diagnostics`);
-  }
-
-  return diagnostics.activeCladeDeltaVsNullMean;
+  return loadEmbeddedStudyFromArtifact(
+    BASELINE_NEW_CLADE_ESTABLISHMENT_HORIZON_ARTIFACT,
+    'founderGraceStudy',
+    'a new-clade establishment horizon study export'
+  );
 }
 
 if (require.main === module) {

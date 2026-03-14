@@ -1,15 +1,22 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { RunCladeActivityRelabelNullStudyInput, runCladeActivityRelabelNullStudy } from './activity';
 import { buildCladeActivityRelabelNullBestShortStackStudyInput } from './clade-activity-relabel-null-best-short-stack';
 import { compareCladeActivityRelabelNullStudies } from './clade-activity-relabel-null-best-short-stack-study';
 import {
   BASELINE_BEST_SHORT_STACK_ARTIFACT,
-  CladeActivityRelabelNullCladeHabitatCouplingHorizonStudyExport
 } from './clade-activity-relabel-null-clade-habitat-coupling-horizon-study';
 import {
-  NEW_CLADE_ESTABLISHMENT_CLADE_HABITAT_COUPLING,
-  NEW_CLADE_ESTABLISHMENT_GRACE_TICKS
+  FOUNDER_ESTABLISHMENT_CLADE_HABITAT_COUPLING,
+  FOUNDER_GRACE_SETTLEMENT_GRACE_TICKS,
+  NEW_CLADE_ESTABLISHMENT_GRACE_TICKS,
+  NEW_CLADE_ESTABLISHMENT_SWEEP_DEFINITION,
+  STATIC_HABITAT_ADAPTIVE_CLADE_HABITAT_MEMORY_RATE,
+  STATIC_HABITAT_FOUNDER_ESTABLISHMENT_FIXED_CONFIG,
+  buildConfiguredFounderEstablishmentStudyInput,
+  loadEmbeddedStudyFromArtifact,
+  requireResolvedStudyConfig
+} from './clade-activity-relabel-null-founder-establishment-study-helpers';
+import {
+  NEW_CLADE_ESTABLISHMENT_CLADE_HABITAT_COUPLING
 } from './clade-activity-relabel-null-new-clade-establishment-smoke-study';
 import { emitStudyJsonOutput, parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
 import {
@@ -24,14 +31,13 @@ const PREDICTION =
   'If the settlement-grace gain is not just an adaptive-memory stack artifact, the founder-grace run should improve persistentActivityMeanDeltaVsNullMean and activeCladeDeltaVsNullMean versus the static habitat baseline at cladogenesis thresholds 1.0 and 1.2 without breaking matched birth schedules.';
 
 export const HORIZON_NEW_CLADE_ESTABLISHMENT_CLADE_HABITAT_COUPLING =
-  NEW_CLADE_ESTABLISHMENT_CLADE_HABITAT_COUPLING;
+  FOUNDER_ESTABLISHMENT_CLADE_HABITAT_COUPLING;
 export const BASELINE_CLADE_HABITAT_COUPLING_HORIZON_ARTIFACT =
   'docs/clade_activity_relabel_null_clade_habitat_coupling_horizon_2026-03-13.json';
-export const HORIZON_STATIC_CLADE_HABITAT_MEMORY_RATE = 0;
+export const HORIZON_STATIC_CLADE_HABITAT_MEMORY_RATE = STATIC_HABITAT_ADAPTIVE_CLADE_HABITAT_MEMORY_RATE;
 export const HORIZON_BASELINE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS =
   NEW_CLADE_ESTABLISHMENT_GRACE_TICKS[0];
-export const HORIZON_FOUNDER_GRACE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS =
-  NEW_CLADE_ESTABLISHMENT_GRACE_TICKS[1];
+export const HORIZON_FOUNDER_GRACE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS = FOUNDER_GRACE_SETTLEMENT_GRACE_TICKS;
 
 export interface CladeActivityRelabelNullNewCladeEstablishmentHorizonComparison {
   cladogenesisThreshold: number;
@@ -84,17 +90,24 @@ export function runCladeActivityRelabelNullNewCladeEstablishmentHorizonStudy(
   input: RunCladeActivityRelabelNullNewCladeEstablishmentHorizonStudyInput = {}
 ): CladeActivityRelabelNullNewCladeEstablishmentHorizonStudyExport {
   const generatedAt = input.generatedAt ?? new Date().toISOString();
-  const staticHabitatStudyInput = buildNewCladeEstablishmentHorizonStudyInput(
+  const staticHabitatStudyInput = buildConfiguredFounderEstablishmentStudyInput(
+    NEW_CLADE_ESTABLISHMENT_SWEEP_DEFINITION,
+    STATIC_HABITAT_FOUNDER_ESTABLISHMENT_FIXED_CONFIG,
     input.studyInput,
     generatedAt,
     HORIZON_BASELINE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS
   );
-  const founderGraceStudyInput = buildNewCladeEstablishmentHorizonStudyInput(
+  const founderGraceStudyInput = buildConfiguredFounderEstablishmentStudyInput(
+    NEW_CLADE_ESTABLISHMENT_SWEEP_DEFINITION,
+    STATIC_HABITAT_FOUNDER_ESTABLISHMENT_FIXED_CONFIG,
     input.studyInput,
     generatedAt,
     HORIZON_FOUNDER_GRACE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS
   );
-  const resolvedStudyConfig = requireResolvedStudyConfig(founderGraceStudyInput);
+  const resolvedStudyConfig = requireResolvedStudyConfig(
+    founderGraceStudyInput,
+    'New-clade establishment horizon study'
+  );
   const baselineStudy = input.baselineStudy ?? loadStaticHabitatBaselineStudy();
   const founderGraceStudy = input.founderGraceStudy ?? runCladeActivityRelabelNullStudy(founderGraceStudyInput);
 
@@ -164,78 +177,12 @@ export function compareNewCladeEstablishmentHorizonStudies(
   });
 }
 
-function buildNewCladeEstablishmentHorizonStudyInput(
-  studyInput: RunCladeActivityRelabelNullStudyInput | undefined,
-  generatedAt: string,
-  newCladeSettlementCrowdingGraceTicks: number
-): RunCladeActivityRelabelNullStudyInput {
-  return buildCladeActivityRelabelNullBestShortStackStudyInput(
-    {
-      ...studyInput,
-      simulation: {
-        ...studyInput?.simulation,
-        config: {
-          ...(studyInput?.simulation?.config ?? {}),
-          cladeHabitatCoupling: HORIZON_NEW_CLADE_ESTABLISHMENT_CLADE_HABITAT_COUPLING,
-          adaptiveCladeHabitatMemoryRate: HORIZON_STATIC_CLADE_HABITAT_MEMORY_RATE,
-          newCladeSettlementCrowdingGraceTicks
-        }
-      }
-    },
-    generatedAt
-  );
-}
-
-function requireResolvedStudyConfig(studyInput: RunCladeActivityRelabelNullStudyInput): {
-  steps: number;
-  windowSize: number;
-  burnIn: number;
-  seeds: number[];
-  stopWhenExtinct: boolean;
-  minSurvivalTicks: number[];
-  cladogenesisThresholds: number[];
-} {
-  if (
-    studyInput.steps === undefined ||
-    studyInput.windowSize === undefined ||
-    studyInput.burnIn === undefined ||
-    studyInput.seeds === undefined ||
-    studyInput.stopWhenExtinct === undefined ||
-    studyInput.minSurvivalTicks === undefined ||
-    studyInput.cladogenesisThresholds === undefined
-  ) {
-    throw new Error('New-clade establishment horizon study requires a fully resolved study input');
-  }
-
-  return {
-    steps: studyInput.steps,
-    windowSize: studyInput.windowSize,
-    burnIn: studyInput.burnIn,
-    seeds: studyInput.seeds,
-    stopWhenExtinct: studyInput.stopWhenExtinct,
-    minSurvivalTicks: studyInput.minSurvivalTicks,
-    cladogenesisThresholds: studyInput.cladogenesisThresholds
-  };
-}
-
 function loadStaticHabitatBaselineStudy(): CladeActivityRelabelNullStudyExport {
-  const baselineArtifactPath = resolve(__dirname, '..', BASELINE_CLADE_HABITAT_COUPLING_HORIZON_ARTIFACT);
-  const parsed = JSON.parse(readFileSync(baselineArtifactPath, 'utf8')) as
-    | CladeActivityRelabelNullCladeHabitatCouplingHorizonStudyExport
-    | { habitatCoupledStudy?: CladeActivityRelabelNullStudyExport };
-  const baselineStudy = 'habitatCoupledStudy' in parsed ? parsed.habitatCoupledStudy : undefined;
-
-  if (
-    !baselineStudy ||
-    !Array.isArray(baselineStudy.thresholdResults) ||
-    baselineStudy.thresholdResults.length === 0
-  ) {
-    throw new Error(
-      `Baseline artifact ${BASELINE_CLADE_HABITAT_COUPLING_HORIZON_ARTIFACT} is not a habitat-coupling horizon study export`
-    );
-  }
-
-  return baselineStudy;
+  return loadEmbeddedStudyFromArtifact(
+    BASELINE_CLADE_HABITAT_COUPLING_HORIZON_ARTIFACT,
+    'habitatCoupledStudy',
+    'a habitat-coupling horizon study export'
+  );
 }
 
 if (require.main === module) {

@@ -1,8 +1,4 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { RunCladeActivityRelabelNullStudyInput, runCladeActivityRelabelNullStudy } from './activity';
-import { buildCladeActivityRelabelNullBestShortStackStudyInput } from './clade-activity-relabel-null-best-short-stack';
-import { compareCladeActivityRelabelNullStudies } from './clade-activity-relabel-null-best-short-stack-study';
 import {
   BASELINE_CLADE_HABITAT_COUPLING_HORIZON_ARTIFACT as STATIC_HABITAT_BASELINE_ARTIFACT,
   HORIZON_FOUNDER_GRACE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS,
@@ -12,7 +8,15 @@ import {
 import {
   NEW_CLADE_ENCOUNTER_RESTRAINT_GRACE_BOOST_VALUES
 } from './clade-activity-relabel-null-new-clade-encounter-restraint-smoke-study';
-import { parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
+import {
+  FOUNDER_GRACE_FOLLOWUP_FIXED_CONFIG,
+  NEW_CLADE_ENCOUNTER_RESTRAINT_SWEEP_DEFINITION,
+  buildConfiguredFounderEstablishmentStudyInput,
+  compareFounderGraceFollowupStudies,
+  loadEmbeddedStudyFromArtifact,
+  requireResolvedStudyConfig
+} from './clade-activity-relabel-null-founder-establishment-study-helpers';
+import { emitStudyJsonOutput, parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
 import {
   CladeActivityRelabelNullDiagnosticSnapshot,
   CladeActivityRelabelNullStudyExport,
@@ -88,17 +92,24 @@ export function runCladeActivityRelabelNullNewCladeEncounterRestraintHorizonStud
   input: RunCladeActivityRelabelNullNewCladeEncounterRestraintHorizonStudyInput = {}
 ): CladeActivityRelabelNullNewCladeEncounterRestraintHorizonStudyExport {
   const generatedAt = input.generatedAt ?? new Date().toISOString();
-  const founderGraceStudyInput = buildNewCladeEncounterRestraintHorizonStudyInput(
+  const founderGraceStudyInput = buildConfiguredFounderEstablishmentStudyInput(
+    NEW_CLADE_ENCOUNTER_RESTRAINT_SWEEP_DEFINITION,
+    FOUNDER_GRACE_FOLLOWUP_FIXED_CONFIG,
     input.studyInput,
     generatedAt,
     HORIZON_BASELINE_NEW_CLADE_ENCOUNTER_RESTRAINT_GRACE_BOOST
   );
-  const encounterRestraintStudyInput = buildNewCladeEncounterRestraintHorizonStudyInput(
+  const encounterRestraintStudyInput = buildConfiguredFounderEstablishmentStudyInput(
+    NEW_CLADE_ENCOUNTER_RESTRAINT_SWEEP_DEFINITION,
+    FOUNDER_GRACE_FOLLOWUP_FIXED_CONFIG,
     input.studyInput,
     generatedAt,
     HORIZON_NEW_CLADE_ENCOUNTER_RESTRAINT_GRACE_BOOST
   );
-  const resolvedStudyConfig = requireResolvedStudyConfig(encounterRestraintStudyInput);
+  const resolvedStudyConfig = requireResolvedStudyConfig(
+    encounterRestraintStudyInput,
+    'New-clade encounter-restraint horizon study'
+  );
   const baselineStudy = input.baselineStudy ?? loadFounderGraceBaselineStudy();
   const encounterRestraintStudy =
     input.encounterRestraintStudy ?? runCladeActivityRelabelNullStudy(encounterRestraintStudyInput);
@@ -136,140 +147,42 @@ export function compareNewCladeEncounterRestraintHorizonStudies(
   encounterRestraintStudy: CladeActivityRelabelNullStudyExport,
   baselineStudy: CladeActivityRelabelNullStudyExport
 ): CladeActivityRelabelNullNewCladeEncounterRestraintHorizonComparison[] {
-  return compareCladeActivityRelabelNullStudies(encounterRestraintStudy, baselineStudy).map((comparison) => {
-    const baselineThresholdResult = baselineStudy.thresholdResults.find(
-      (thresholdResult) => thresholdResult.cladogenesisThreshold === comparison.cladogenesisThreshold
-    );
-    if (!baselineThresholdResult) {
-      throw new Error(
-        `Baseline study is missing cladogenesis threshold ${comparison.cladogenesisThreshold}`
-      );
-    }
-
-    const founderGraceActiveCladeDeltaVsNullMean = requireActiveCladeDeltaVsNullMean(
-      'Founder-grace baseline',
-      comparison.baselineDiagnostics
-    );
-    const encounterRestraintActiveCladeDeltaVsNullMean = requireActiveCladeDeltaVsNullMean(
-      'Encounter-restraint study',
-      comparison.currentDiagnostics
-    );
-
-    return {
-      cladogenesisThreshold: comparison.cladogenesisThreshold,
-      minSurvivalTicks: comparison.minSurvivalTicks,
-      founderGraceBirthScheduleMatchedAllSeeds: baselineThresholdResult.seedResults.every(
-        (seedResult) => seedResult.birthScheduleMatched
-      ),
-      encounterRestraintBirthScheduleMatchedAllSeeds: comparison.birthScheduleMatchedAllSeeds,
-      founderGracePersistentWindowFractionDeltaVsNullMean:
-        comparison.baselinePersistentWindowFractionDeltaVsNullMean,
-      encounterRestraintPersistentWindowFractionDeltaVsNullMean:
-        comparison.currentPersistentWindowFractionDeltaVsNullMean,
-      persistentWindowFractionDeltaImprovementVsFounderGrace:
-        comparison.persistentWindowFractionDeltaImprovementVsBaseline,
-      founderGracePersistentActivityMeanDeltaVsNullMean:
-        comparison.baselinePersistentActivityMeanDeltaVsNullMean,
-      encounterRestraintPersistentActivityMeanDeltaVsNullMean:
-        comparison.currentPersistentActivityMeanDeltaVsNullMean,
-      persistentActivityMeanImprovementVsFounderGrace:
-        comparison.persistentActivityMeanImprovementVsBaseline,
-      founderGraceActiveCladeDeltaVsNullMean,
-      encounterRestraintActiveCladeDeltaVsNullMean,
-      activeCladeDeltaImprovementVsFounderGrace:
-        encounterRestraintActiveCladeDeltaVsNullMean - founderGraceActiveCladeDeltaVsNullMean,
-      founderGraceDiagnostics: comparison.baselineDiagnostics,
-      encounterRestraintDiagnostics: comparison.currentDiagnostics
-    };
-  });
-}
-
-function buildNewCladeEncounterRestraintHorizonStudyInput(
-  studyInput: RunCladeActivityRelabelNullStudyInput | undefined,
-  generatedAt: string,
-  newCladeEncounterRestraintGraceBoost: number
-): RunCladeActivityRelabelNullStudyInput {
-  return buildCladeActivityRelabelNullBestShortStackStudyInput(
-    {
-      ...studyInput,
-      simulation: {
-        ...studyInput?.simulation,
-        config: {
-          ...(studyInput?.simulation?.config ?? {}),
-          cladeHabitatCoupling: HORIZON_NEW_CLADE_ESTABLISHMENT_CLADE_HABITAT_COUPLING,
-          adaptiveCladeHabitatMemoryRate: HORIZON_STATIC_CLADE_HABITAT_MEMORY_RATE,
-          newCladeSettlementCrowdingGraceTicks:
-            HORIZON_FOUNDER_GRACE_NEW_CLADE_SETTLEMENT_CROWDING_GRACE_TICKS,
-          newCladeEncounterRestraintGraceBoost
-        }
-      }
-    },
-    generatedAt
-  );
-}
-
-function requireResolvedStudyConfig(studyInput: RunCladeActivityRelabelNullStudyInput): {
-  steps: number;
-  windowSize: number;
-  burnIn: number;
-  seeds: number[];
-  stopWhenExtinct: boolean;
-  minSurvivalTicks: number[];
-  cladogenesisThresholds: number[];
-} {
-  if (
-    studyInput.steps === undefined ||
-    studyInput.windowSize === undefined ||
-    studyInput.burnIn === undefined ||
-    studyInput.seeds === undefined ||
-    studyInput.stopWhenExtinct === undefined ||
-    studyInput.minSurvivalTicks === undefined ||
-    studyInput.cladogenesisThresholds === undefined
-  ) {
-    throw new Error(
-      'New-clade encounter-restraint horizon study requires a fully resolved study input'
-    );
-  }
-
-  return {
-    steps: studyInput.steps,
-    windowSize: studyInput.windowSize,
-    burnIn: studyInput.burnIn,
-    seeds: studyInput.seeds,
-    stopWhenExtinct: studyInput.stopWhenExtinct,
-    minSurvivalTicks: studyInput.minSurvivalTicks,
-    cladogenesisThresholds: studyInput.cladogenesisThresholds
-  };
+  return compareFounderGraceFollowupStudies(
+    encounterRestraintStudy,
+    baselineStudy,
+    'Encounter-restraint study'
+  ).map((comparison) => ({
+    cladogenesisThreshold: comparison.cladogenesisThreshold,
+    minSurvivalTicks: comparison.minSurvivalTicks,
+    founderGraceBirthScheduleMatchedAllSeeds: comparison.founderGraceBirthScheduleMatchedAllSeeds,
+    encounterRestraintBirthScheduleMatchedAllSeeds: comparison.currentBirthScheduleMatchedAllSeeds,
+    founderGracePersistentWindowFractionDeltaVsNullMean:
+      comparison.founderGracePersistentWindowFractionDeltaVsNullMean,
+    encounterRestraintPersistentWindowFractionDeltaVsNullMean:
+      comparison.currentPersistentWindowFractionDeltaVsNullMean,
+    persistentWindowFractionDeltaImprovementVsFounderGrace:
+      comparison.persistentWindowFractionDeltaImprovementVsFounderGrace,
+    founderGracePersistentActivityMeanDeltaVsNullMean:
+      comparison.founderGracePersistentActivityMeanDeltaVsNullMean,
+    encounterRestraintPersistentActivityMeanDeltaVsNullMean:
+      comparison.currentPersistentActivityMeanDeltaVsNullMean,
+    persistentActivityMeanImprovementVsFounderGrace:
+      comparison.persistentActivityMeanImprovementVsFounderGrace,
+    founderGraceActiveCladeDeltaVsNullMean: comparison.founderGraceActiveCladeDeltaVsNullMean,
+    encounterRestraintActiveCladeDeltaVsNullMean: comparison.currentActiveCladeDeltaVsNullMean,
+    activeCladeDeltaImprovementVsFounderGrace:
+      comparison.activeCladeDeltaImprovementVsFounderGrace,
+    founderGraceDiagnostics: comparison.founderGraceDiagnostics,
+    encounterRestraintDiagnostics: comparison.currentDiagnostics
+  }));
 }
 
 function loadFounderGraceBaselineStudy(): CladeActivityRelabelNullStudyExport {
-  const baselineArtifactPath = resolve(__dirname, '..', BASELINE_NEW_CLADE_ESTABLISHMENT_HORIZON_ARTIFACT);
-  const parsed = JSON.parse(readFileSync(baselineArtifactPath, 'utf8')) as {
-    founderGraceStudy?: CladeActivityRelabelNullStudyExport;
-  };
-
-  if (
-    !parsed.founderGraceStudy ||
-    !Array.isArray(parsed.founderGraceStudy.thresholdResults) ||
-    parsed.founderGraceStudy.thresholdResults.length === 0
-  ) {
-    throw new Error(
-      `Baseline artifact ${BASELINE_NEW_CLADE_ESTABLISHMENT_HORIZON_ARTIFACT} is not a new-clade establishment horizon study export`
-    );
-  }
-
-  return parsed.founderGraceStudy;
-}
-
-function requireActiveCladeDeltaVsNullMean(
-  label: string,
-  diagnostics: CladeActivityRelabelNullDiagnosticSnapshot
-): number {
-  if (diagnostics.activeCladeDeltaVsNullMean === null) {
-    throw new Error(`${label} is missing activeCladeDeltaVsNullMean diagnostics`);
-  }
-
-  return diagnostics.activeCladeDeltaVsNullMean;
+  return loadEmbeddedStudyFromArtifact(
+    BASELINE_NEW_CLADE_ESTABLISHMENT_HORIZON_ARTIFACT,
+    'founderGraceStudy',
+    'a new-clade establishment horizon study export'
+  );
 }
 
 if (require.main === module) {
@@ -277,5 +190,5 @@ if (require.main === module) {
   const study = runCladeActivityRelabelNullNewCladeEncounterRestraintHorizonStudy({
     generatedAt: options.generatedAt
   });
-  process.stdout.write(JSON.stringify(study, null, 2) + '\n');
+  emitStudyJsonOutput(study, options);
 }
