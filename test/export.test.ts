@@ -951,7 +951,7 @@ describe('run export', () => {
     expect(parsed.results[0].aggregate.actualToNullPersistentWindowFractionRatio.definedSeeds).toBe(2);
   });
 
-  it('renders clade interaction coupling relabel-null sweeps to JSON', () => {
+  it('renders archived clade interaction coupling relabel-null sweeps to JSON', () => {
     const study = runCladeActivityRelabelNullCladeInteractionCouplingSweep({
       steps: 6,
       windowSize: 1,

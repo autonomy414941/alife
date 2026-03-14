@@ -1,5 +1,5 @@
-import { runCladeActivityRelabelNullCladeInteractionCouplingSweep } from './activity';
-import { cladeActivityRelabelNullCladeInteractionCouplingSweepToJson } from './export';
+import { runCladeActivityRelabelNullCladeInteractionCouplingSweep } from '../activity';
+import { cladeActivityRelabelNullCladeInteractionCouplingSweepToJson } from '../export';
 
 interface CliOptions {
   generatedAt?: string;

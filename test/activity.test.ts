@@ -1732,7 +1732,7 @@ describe('runCladeActivityRelabelNullCladeHabitatCouplingSweep', () => {
   }, 30_000);
 });
 
-describe('runCladeActivityRelabelNullCladeInteractionCouplingSweep', () => {
+describe('runCladeActivityRelabelNullCladeInteractionCouplingSweep archival compatibility', () => {
   it('is deterministic for a fixed coupling sweep configuration', () => {
     const simulation = {
       config: {
@@ -1846,7 +1846,7 @@ describe('runCladeActivityRelabelNullCladeInteractionCouplingSweep', () => {
     expect(Math.abs(coupledResult!.persistentActivityMeanDeltaVsNullMean)).toBeGreaterThan(0.1);
   }, 60_000);
 
-  it('preserves the March 11 short-panel defaults for the coupling sweep', () => {
+  it('preserves the archived March 11 short-panel defaults for the coupling sweep', () => {
     const result = runCladeActivityRelabelNullCladeInteractionCouplingSweep({
       steps: 6,
       windowSize: 1,
