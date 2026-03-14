@@ -7,6 +7,7 @@ import {
   passesCladogenesisTraitNoveltyGate,
   shouldFoundClade
 } from './reproduction';
+import { resolveDisturbanceSettlementOpeningConfig } from './disturbance';
 import { Agent, Genome, SimulationConfig } from './types';
 
 type SettlementScoringConfig = Pick<
@@ -23,6 +24,24 @@ type NewCladeGraceConfig = Pick<
   SimulationConfig,
   'newCladeSettlementCrowdingGraceTicks' | 'newCladeEncounterRestraintGraceBoost'
 >;
+
+type DisturbanceSettlementOpeningUsageConfig = Pick<
+  SimulationConfig,
+  'disturbanceSettlementOpeningTicks' | 'disturbanceSettlementOpeningBonus'
+> &
+  Partial<Pick<SimulationConfig, 'disturbanceSettlementOpeningLineageAbsentOnly'>>;
+
+type OffspringSettlementUsageConfig = SettlementScoringConfig & DisturbanceSettlementOpeningUsageConfig;
+
+type OffspringSettlementLineageOccupancyConfig = Pick<
+  SimulationConfig,
+  'lineageOffspringSettlementCrowdingPenalty' | 'newCladeSettlementCrowdingGraceTicks'
+> &
+  DisturbanceSettlementOpeningUsageConfig;
+
+type EncounterLineageTransferConfig = Pick<SimulationConfig, 'lineageEncounterRestraint'> & NewCladeGraceConfig;
+
+type LocalEcologyConfig = Pick<SimulationConfig, 'dispersalPressure' | 'newCladeSettlementCrowdingGraceTicks'>;
 
 type SettlementContextAgent = Pick<Agent, 'energy' | 'lineage' | 'x' | 'y'>;
 
@@ -44,6 +63,14 @@ interface ResolveNewCladeEncounterRestraintGraceBoostOptions {
   cladeHistory: ReadonlyMap<number, CladeAgeState>;
 }
 
+interface ResolveEncounterLineageTransferMultiplierOptions {
+  config: EncounterLineageTransferConfig;
+  tickCount: number;
+  dominantLineage: number;
+  targetLineage: number;
+  cladeHistory: ReadonlyMap<number, CladeAgeState>;
+}
+
 interface ResolveOffspringSettlementContextOptions {
   config: Pick<SimulationConfig, 'lineageOffspringSettlementCrowdingPenalty'>;
   agents: SettlementContextAgent[];
@@ -55,6 +82,30 @@ interface ResolveOffspringSettlementContextOptions {
   buildLineageOccupancyGrid: (
     agents: Array<Pick<SettlementContextAgent, 'lineage' | 'x' | 'y'>>
   ) => LineageOccupancyGrid;
+}
+
+interface ResolveSettlementEcologyScoreOptions {
+  config: LocalEcologyConfig;
+  tickCount: number;
+  cladeHistory: ReadonlyMap<number, CladeAgeState>;
+  agent: SettlementAgent;
+  x: number;
+  y: number;
+  occupancy: number[][];
+  lineageOccupancy: LineageOccupancyGrid | undefined;
+  lineagePenalty: number;
+  excludedPosition: SettlementPosition | undefined;
+  jitter: number;
+  resourceAt: (x: number, y: number) => number;
+  habitatMatchEfficiencyAt: (agent: SettlementAgent, x: number, y: number) => number;
+  neighborhoodCrowdingAt: (x: number, y: number, occupancy: number[][]) => number;
+  sameLineageNeighborhoodCrowdingAt: (
+    lineage: number,
+    x: number,
+    y: number,
+    lineageOccupancy: LineageOccupancyGrid,
+    excludedPosition: SettlementPosition | undefined
+  ) => number;
 }
 
 type LocalEcologyScore = (
@@ -99,6 +150,20 @@ export function usesOffspringSettlementScoring(config: SettlementScoringConfig):
     config.offspringSettlementEcologyScoring ||
     config.lineageOffspringSettlementCrowdingPenalty > 0 ||
     usesNewCladeSettlementGrace(config)
+  );
+}
+
+export function usesOffspringSettlementContext(config: OffspringSettlementUsageConfig): boolean {
+  return usesOffspringSettlementScoring(config) || usesDisturbanceSettlementOpeningLineageAbsence(config);
+}
+
+export function usesOffspringSettlementLineageOccupancy(
+  config: OffspringSettlementLineageOccupancyConfig
+): boolean {
+  return (
+    Math.max(0, config.lineageOffspringSettlementCrowdingPenalty) > 0 ||
+    usesNewCladeSettlementGrace(config) ||
+    usesDisturbanceSettlementOpeningLineageAbsence(config)
   );
 }
 
@@ -153,6 +218,32 @@ export function resolveNewCladeEncounterRestraintGraceBoost({
   );
 }
 
+export function resolveEncounterLineageTransferMultiplier({
+  config,
+  tickCount,
+  dominantLineage,
+  targetLineage,
+  cladeHistory
+}: ResolveEncounterLineageTransferMultiplierOptions): number {
+  if (dominantLineage !== targetLineage) {
+    return 1;
+  }
+
+  const restraint =
+    Math.max(0, config.lineageEncounterRestraint) +
+    resolveNewCladeEncounterRestraintGraceBoost({
+      config,
+      tickCount,
+      lineage: dominantLineage,
+      cladeHistory
+    });
+  if (restraint === 0) {
+    return 1;
+  }
+
+  return 1 / (1 + restraint);
+}
+
 export function resolveOffspringSettlementContext({
   config,
   agents,
@@ -174,6 +265,49 @@ export function resolveOffspringSettlementContext({
       lineageOccupancy ?? (usesLineageOccupancy ? buildLineageOccupancyGrid(aliveAgents) : undefined),
     lineagePenalty: Math.max(0, config.lineageOffspringSettlementCrowdingPenalty)
   };
+}
+
+export function resolveSettlementEcologyScore({
+  config,
+  tickCount,
+  cladeHistory,
+  agent,
+  x,
+  y,
+  occupancy,
+  lineageOccupancy,
+  lineagePenalty,
+  excludedPosition,
+  jitter,
+  resourceAt,
+  habitatMatchEfficiencyAt,
+  neighborhoodCrowdingAt,
+  sameLineageNeighborhoodCrowdingAt
+}: ResolveSettlementEcologyScoreOptions): number {
+  const food = resourceAt(x, y) * habitatMatchEfficiencyAt(agent, x, y);
+  const crowding = neighborhoodCrowdingAt(x, y, occupancy);
+  const establishmentRelief =
+    lineageOccupancy === undefined
+      ? 0
+      : resolveNewCladeSettlementCrowdingRelief({
+          config,
+          tickCount,
+          lineage: agent.lineage,
+          cladeHistory
+        });
+  const lineageCrowding =
+    lineagePenalty > 0 && lineageOccupancy
+      ? sameLineageNeighborhoodCrowdingAt(agent.lineage, x, y, lineageOccupancy, excludedPosition)
+      : 0;
+  const effectiveCrowding = Math.max(0, crowding * (1 - establishmentRelief));
+  const effectiveLineagePenalty = Math.max(0, lineagePenalty * (1 - establishmentRelief));
+
+  return (
+    food -
+    config.dispersalPressure * effectiveCrowding -
+    effectiveLineagePenalty * lineageCrowding +
+    jitter
+  );
 }
 
 export function shouldFoundNewClade({
@@ -221,6 +355,11 @@ export function shouldFoundNewClade({
         localEcologyScore
       })
   });
+}
+
+function usesDisturbanceSettlementOpeningLineageAbsence(config: DisturbanceSettlementOpeningUsageConfig): boolean {
+  const opening = resolveDisturbanceSettlementOpeningConfig(config);
+  return opening.enabled && opening.lineageAbsentOnly;
 }
 
 function clamp(value: number, min: number, max: number): number {

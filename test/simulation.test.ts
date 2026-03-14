@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { shouldFoundNewClade } from '../src/settlement-cladogenesis';
 import { LifeSimulation } from '../src/simulation';
 
 type InternalTestAgent = {
@@ -1400,25 +1401,18 @@ describe('LifeSimulation', () => {
 
     const canFoundClade = (sim: LifeSimulation) => {
       const internal = sim as unknown as {
-        shouldFoundNewClade: (
-          parentLineage: number,
-          diverged: boolean,
-          childGenome: { metabolism: number; harvest: number; aggression: number },
-          settlementAgent: {
-            lineage: number;
-            species: number;
-            x: number;
-            y: number;
-            genome: { metabolism: number; harvest: number; aggression: number };
-          },
-          childPos: { x: number; y: number },
-          settlementContext: undefined
-        ) => boolean;
+        config: {
+          cladogenesisThreshold: number;
+          cladogenesisTraitNoveltyThreshold: number;
+          cladogenesisEcologyAdvantageThreshold: number;
+        };
         cladeFounderGenome: Map<number, { metabolism: number; harvest: number; aggression: number }>;
         cladeHabitatPreference: Map<number, number>;
         speciesHabitatPreference: Map<number, number>;
         speciesTrophicLevel: Map<number, number>;
         speciesDefenseLevel: Map<number, number>;
+        getCladeTrophicLevel: (lineage: number) => number;
+        getCladeDefenseLevel: (lineage: number) => number;
       };
 
       const founderGenome = { metabolism: 0.3, harvest: 2.8, aggression: 1 };
@@ -1428,20 +1422,31 @@ describe('LifeSimulation', () => {
       internal.speciesTrophicLevel.set(2, 1);
       internal.speciesDefenseLevel.set(2, 0.3);
 
-      return internal.shouldFoundNewClade(
-        1,
-        true,
-        founderGenome,
-        {
+      return shouldFoundNewClade({
+        config: internal.config,
+        parentLineage: 1,
+        diverged: true,
+        childGenome: founderGenome,
+        settlementAgent: {
           lineage: 1,
           species: 2,
           x: 0,
           y: 0,
           genome: founderGenome
         },
-        { x: 0, y: 0 },
-        undefined
-      );
+        childPos: { x: 0, y: 0 },
+        settlementContext: undefined,
+        genomeDistance: () => 1,
+        getCladeFounderGenome: (lineage) => internal.cladeFounderGenome.get(lineage)!,
+        getSpeciesHabitatPreference: (species) => internal.speciesHabitatPreference.get(species) ?? 1,
+        getCladeHabitatPreference: (lineage) => internal.cladeHabitatPreference.get(lineage) ?? 1,
+        getSpeciesTrophicLevel: (species) => internal.speciesTrophicLevel.get(species) ?? 0,
+        getCladeTrophicLevel: (lineage) => internal.getCladeTrophicLevel(lineage),
+        getSpeciesDefenseLevel: (species) => internal.speciesDefenseLevel.get(species) ?? 0,
+        getCladeDefenseLevel: (lineage) => internal.getCladeDefenseLevel(lineage),
+        resolveSettlementContext: () => undefined,
+        localEcologyScore: () => 0
+      });
     };
 
     expect(canFoundClade(buildSimulation(0.31))).toBe(false);
