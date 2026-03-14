@@ -1,9 +1,23 @@
+import {
+  buildActivitySeedPanelThresholdAggregate,
+  buildActivitySeedPanelThresholdSeedResult,
+  buildNullableNumericAggregate,
+  buildNumericAggregate,
+  divideOrNull,
+  findThresholdResult,
+  max,
+  mean,
+  min
+} from './activity-thresholds';
+import {
+  buildCladeActivityRelabelNullThresholdAggregate,
+  buildCladeActivityRelabelNullThresholdSeedResult
+} from './clade-activity-relabel-null-thresholds';
 import { LifeSimulation, LifeSimulationOptions } from './simulation';
 import { Rng } from './rng';
 import {
   CladeActivityCladogenesisHorizonSweepExport,
   CladeActivityCladogenesisHorizonSweepPoint,
-  CladeActivityRelabelNullAggregateDiagnostics,
   CladeActivityRelabelNullCladeHabitatCouplingSweepDefinition,
   CladeActivityRelabelNullCladeHabitatCouplingSweepExport,
   CladeActivityRelabelNullCladeHabitatCouplingSweepResult,
@@ -11,14 +25,11 @@ import {
   CladeActivityRelabelNullCladeInteractionCouplingSweepExport,
   CladeActivityRelabelNullCladeInteractionCouplingSweepResult,
   CladeActivityRelabelNullDefinition,
-  CladeActivityRelabelNullLossMode,
   CladeActivityRelabelNullSeedResult,
-  CladeActivityRelabelNullSeedDiagnostics,
   CladeActivityRelabelNullStudyConfig,
   CladeActivityRelabelNullStudyExport,
   CladeActivityRelabelNullThresholdAggregate,
   CladeActivityRelabelNullThresholdResult,
-  CladeActivityRelabelNullThresholdSeedResult,
   CladeActivityCladogenesisSweepDefinition,
   CladeActivityCladogenesisSweepExport,
   CladeActivityCladogenesisSweepSeedResult,
@@ -39,14 +50,12 @@ import {
   CladeSpeciesCountSummary,
   CladeSpeciesActivityCouplingDefinition,
   CladeSpeciesActivityCouplingExport,
-  CladeSpeciesActivityCouplingRatioAggregate,
   CladeSpeciesActivityCouplingSeedResult,
   CladeSpeciesActivityCouplingThresholdAggregate,
   CladeSpeciesActivityCouplingThresholdSeedResult,
   CladeSpeciesActivityCouplingThresholdResult,
   CladeActivityWindow,
   EvolutionHistorySnapshot,
-  NumericAggregate,
   SpeciesActivityHorizonSweepExport,
   SpeciesActivityHorizonSweepPoint,
   SpeciesActivityPersistenceSummary,
@@ -395,31 +404,6 @@ interface TaxonActivityPersistenceSummaryData {
   postBurnInPersistentNewActivityMax: number;
   finalPersistentNewActivity: number | null;
   finalWindowCensored: boolean;
-}
-
-interface ActivityThresholdSummaryLike {
-  evaluablePostBurnInWindows: number;
-  postBurnInWindowsWithPersistentNewActivity: number;
-  postBurnInPersistentNewActivityMean: number;
-}
-
-interface ActivityThresholdLike<TSummary extends ActivityThresholdSummaryLike> {
-  minSurvivalTicks: number;
-  summary: TSummary;
-}
-
-interface ActivitySeedThresholdLike<TSummary extends ActivityThresholdSummaryLike>
-  extends ActivityThresholdLike<TSummary> {
-  persistentWindowFraction: number;
-  allEvaluableWindowsPositive: boolean;
-}
-
-interface ActivitySeedResultLike<
-  TSummary extends ActivityThresholdSummaryLike,
-  TThreshold extends ActivitySeedThresholdLike<TSummary>
-> {
-  seed: number;
-  thresholds: TThreshold[];
 }
 
 interface PseudoCladeAccumulator {
@@ -1763,198 +1747,6 @@ function buildCladeActivityRelabelNullSeedResult(input: {
   };
 }
 
-function buildCladeActivityRelabelNullThresholdSeedResult(input: {
-  minSurvivalTicks: number;
-  actual: CladeActivitySeedPanelThresholdSeedResult;
-  matchedNull: CladeActivitySeedPanelThresholdSeedResult;
-  finalPopulation: number;
-  actualActiveClades: number;
-  matchedNullActiveClades: number;
-  actualRawSummary: CladeActivityProbeSummary;
-  matchedNullRawSummary: CladeActivityProbeSummary;
-}): CladeActivityRelabelNullThresholdSeedResult {
-  const rawNewCladeActivityMeanDeltaVsNull =
-    input.actualRawSummary.postBurnInNewActivityMean - input.matchedNullRawSummary.postBurnInNewActivityMean;
-  const persistentActivityMeanDeltaVsNull =
-    input.actual.summary.postBurnInPersistentNewActivityMean -
-    input.matchedNull.summary.postBurnInPersistentNewActivityMean;
-  const diagnostics = buildCladeActivityRelabelNullSeedDiagnostics({
-    finalPopulation: input.finalPopulation,
-    actualActiveClades: input.actualActiveClades,
-    matchedNullActiveClades: input.matchedNullActiveClades,
-    actualRawNewCladeActivityMean: input.actualRawSummary.postBurnInNewActivityMean,
-    matchedNullRawNewCladeActivityMean: input.matchedNullRawSummary.postBurnInNewActivityMean,
-    actualPersistentActivityMean: input.actual.summary.postBurnInPersistentNewActivityMean,
-    matchedNullPersistentActivityMean: input.matchedNull.summary.postBurnInPersistentNewActivityMean
-  });
-
-  return {
-    minSurvivalTicks: input.minSurvivalTicks,
-    actual: input.actual,
-    matchedNull: input.matchedNull,
-    actualToNullPersistentWindowFractionRatio: divideOrNull(
-      input.actual.persistentWindowFraction,
-      input.matchedNull.persistentWindowFraction
-    ),
-    persistentWindowFractionDeltaVsNull:
-      input.actual.persistentWindowFraction - input.matchedNull.persistentWindowFraction,
-    actualToNullPersistentActivityMeanRatio: divideOrNull(
-      input.actual.summary.postBurnInPersistentNewActivityMean,
-      input.matchedNull.summary.postBurnInPersistentNewActivityMean
-    ),
-    persistentActivityMeanDeltaVsNull,
-    diagnostics: {
-      ...diagnostics,
-      rawNewCladeActivityMeanDeltaVsNull,
-      persistentActivityMeanDeltaVsNull
-    }
-  };
-}
-
-function buildCladeActivityRelabelNullThresholdAggregate(
-  minSurvivalTicks: number,
-  seedResults: CladeActivityRelabelNullSeedResult[]
-): CladeActivityRelabelNullThresholdAggregate {
-  const thresholdResults = seedResults.map((seedResult) =>
-    findThresholdResult(seedResult.seed, minSurvivalTicks, seedResult.thresholds)
-  );
-  const actualSeedResults = seedResults.map((seedResult) => ({
-    seed: seedResult.seed,
-    thresholds: seedResult.thresholds.map((threshold) => threshold.actual)
-  }));
-  const matchedNullSeedResults = seedResults.map((seedResult) => ({
-    seed: seedResult.seed,
-    thresholds: seedResult.thresholds.map((threshold) => threshold.matchedNull)
-  }));
-
-  return {
-    minSurvivalTicks,
-    actual: buildActivitySeedPanelThresholdAggregate(minSurvivalTicks, actualSeedResults),
-    matchedNull: buildActivitySeedPanelThresholdAggregate(minSurvivalTicks, matchedNullSeedResults),
-    actualToNullPersistentWindowFractionRatio: buildNullableNumericAggregate(
-      thresholdResults.flatMap((threshold) =>
-        threshold.actualToNullPersistentWindowFractionRatio === null
-          ? []
-          : [threshold.actualToNullPersistentWindowFractionRatio]
-      )
-    ),
-    persistentWindowFractionDeltaVsNull: buildNumericAggregate(
-      thresholdResults.map((threshold) => threshold.persistentWindowFractionDeltaVsNull)
-    ),
-    actualToNullPersistentActivityMeanRatio: buildNullableNumericAggregate(
-      thresholdResults.flatMap((threshold) =>
-        threshold.actualToNullPersistentActivityMeanRatio === null
-          ? []
-          : [threshold.actualToNullPersistentActivityMeanRatio]
-      )
-    ),
-    persistentActivityMeanDeltaVsNull: buildNumericAggregate(
-      thresholdResults.map((threshold) => threshold.persistentActivityMeanDeltaVsNull)
-    ),
-    diagnostics: buildCladeActivityRelabelNullThresholdAggregateDiagnostics(thresholdResults)
-  };
-}
-
-function buildCladeActivityRelabelNullSeedDiagnostics(input: {
-  finalPopulation: number;
-  actualActiveClades: number;
-  matchedNullActiveClades: number;
-  actualRawNewCladeActivityMean: number;
-  matchedNullRawNewCladeActivityMean: number;
-  actualPersistentActivityMean: number;
-  matchedNullPersistentActivityMean: number;
-}): Omit<
-  CladeActivityRelabelNullSeedDiagnostics,
-  'rawNewCladeActivityMeanDeltaVsNull' | 'persistentActivityMeanDeltaVsNull'
-> {
-  const activeCladeDeltaVsNull = input.actualActiveClades - input.matchedNullActiveClades;
-  const rawNewCladeActivityMeanDeltaVsNull =
-    input.actualRawNewCladeActivityMean - input.matchedNullRawNewCladeActivityMean;
-  const persistentActivityMeanDeltaVsNull =
-    input.actualPersistentActivityMean - input.matchedNullPersistentActivityMean;
-  const persistencePenaltyVsRawDelta = rawNewCladeActivityMeanDeltaVsNull - persistentActivityMeanDeltaVsNull;
-
-  return {
-    finalPopulation: input.finalPopulation,
-    actualActiveClades: input.actualActiveClades,
-    matchedNullActiveClades: input.matchedNullActiveClades,
-    activeCladeDeltaVsNull,
-    actualRawNewCladeActivityMean: input.actualRawNewCladeActivityMean,
-    matchedNullRawNewCladeActivityMean: input.matchedNullRawNewCladeActivityMean,
-    actualPersistentActivityMean: input.actualPersistentActivityMean,
-    matchedNullPersistentActivityMean: input.matchedNullPersistentActivityMean,
-    persistencePenaltyVsRawDelta,
-    dominantLossMode: inferCladeActivityRelabelNullLossMode({
-      activeCladeDeltaVsNull,
-      rawNewCladeActivityMeanDeltaVsNull,
-      persistencePenaltyVsRawDelta
-    })
-  };
-}
-
-function buildCladeActivityRelabelNullThresholdAggregateDiagnostics(
-  thresholdResults: CladeActivityRelabelNullThresholdSeedResult[]
-): CladeActivityRelabelNullAggregateDiagnostics {
-  const diagnostics = thresholdResults.map((threshold) => threshold.diagnostics);
-
-  return {
-    finalPopulation: buildNumericAggregate(diagnostics.map((diagnostic) => diagnostic.finalPopulation)),
-    actualActiveClades: buildNumericAggregate(diagnostics.map((diagnostic) => diagnostic.actualActiveClades)),
-    matchedNullActiveClades: buildNumericAggregate(diagnostics.map((diagnostic) => diagnostic.matchedNullActiveClades)),
-    activeCladeDeltaVsNull: buildNumericAggregate(diagnostics.map((diagnostic) => diagnostic.activeCladeDeltaVsNull)),
-    actualRawNewCladeActivityMean: buildNumericAggregate(
-      diagnostics.map((diagnostic) => diagnostic.actualRawNewCladeActivityMean)
-    ),
-    matchedNullRawNewCladeActivityMean: buildNumericAggregate(
-      diagnostics.map((diagnostic) => diagnostic.matchedNullRawNewCladeActivityMean)
-    ),
-    rawNewCladeActivityMeanDeltaVsNull: buildNumericAggregate(
-      diagnostics.map((diagnostic) => diagnostic.rawNewCladeActivityMeanDeltaVsNull)
-    ),
-    actualPersistentActivityMean: buildNumericAggregate(
-      diagnostics.map((diagnostic) => diagnostic.actualPersistentActivityMean)
-    ),
-    matchedNullPersistentActivityMean: buildNumericAggregate(
-      diagnostics.map((diagnostic) => diagnostic.matchedNullPersistentActivityMean)
-    ),
-    persistentActivityMeanDeltaVsNull: buildNumericAggregate(
-      diagnostics.map((diagnostic) => diagnostic.persistentActivityMeanDeltaVsNull)
-    ),
-    persistencePenaltyVsRawDelta: buildNumericAggregate(
-      diagnostics.map((diagnostic) => diagnostic.persistencePenaltyVsRawDelta)
-    ),
-    dominantLossMode: inferCladeActivityRelabelNullLossMode({
-      activeCladeDeltaVsNull: mean(diagnostics.map((diagnostic) => diagnostic.activeCladeDeltaVsNull)),
-      rawNewCladeActivityMeanDeltaVsNull: mean(
-        diagnostics.map((diagnostic) => diagnostic.rawNewCladeActivityMeanDeltaVsNull)
-      ),
-      persistencePenaltyVsRawDelta: mean(diagnostics.map((diagnostic) => diagnostic.persistencePenaltyVsRawDelta))
-    })
-  };
-}
-
-function inferCladeActivityRelabelNullLossMode(input: {
-  activeCladeDeltaVsNull: number;
-  rawNewCladeActivityMeanDeltaVsNull: number;
-  persistencePenaltyVsRawDelta: number;
-}): CladeActivityRelabelNullLossMode {
-  const founderSuppression = Math.max(0, -input.rawNewCladeActivityMeanDeltaVsNull);
-  const persistenceFailure = Math.max(0, input.persistencePenaltyVsRawDelta);
-  const activeCladeDeficit = Math.max(0, -input.activeCladeDeltaVsNull);
-  const largestDeficit = Math.max(founderSuppression, persistenceFailure, activeCladeDeficit);
-
-  if (largestDeficit === 0) {
-    return 'matchedOrBetter';
-  }
-  if (activeCladeDeficit === largestDeficit) {
-    return 'activeCladeDeficit';
-  }
-  if (persistenceFailure === largestDeficit) {
-    return 'persistenceFailure';
-  }
-  return 'founderSuppression';
-}
-
 function buildMatchedSchedulePseudoClades(input: {
   species: TaxonHistory[];
   clades: TaxonHistory[];
@@ -2243,78 +2035,6 @@ function toCladeActivityPersistenceSummary(
   };
 }
 
-function buildActivitySeedPanelThresholdSeedResult<TSummary extends ActivityThresholdSummaryLike>(
-  threshold: ActivityThresholdLike<TSummary>
-): ActivitySeedThresholdLike<TSummary> {
-  const evaluableWindows = threshold.summary.evaluablePostBurnInWindows;
-
-  return {
-    minSurvivalTicks: threshold.minSurvivalTicks,
-    summary: threshold.summary,
-    persistentWindowFraction:
-      evaluableWindows === 0 ? 0 : threshold.summary.postBurnInWindowsWithPersistentNewActivity / evaluableWindows,
-    allEvaluableWindowsPositive:
-      evaluableWindows > 0 &&
-      threshold.summary.postBurnInWindowsWithPersistentNewActivity === threshold.summary.evaluablePostBurnInWindows
-  };
-}
-
-function buildActivitySeedPanelThresholdAggregate<
-  TSummary extends ActivityThresholdSummaryLike,
-  TThreshold extends ActivitySeedThresholdLike<TSummary>,
-  TSeedResult extends ActivitySeedResultLike<TSummary, TThreshold>
->(minSurvivalTicks: number, seedResults: TSeedResult[]): {
-  minSurvivalTicks: number;
-  seeds: number;
-  seedsWithEvaluableWindows: number;
-  seedsWithAllEvaluableWindowsPositive: number;
-  minPersistentWindowFraction: number;
-  meanPersistentWindowFraction: number;
-  maxPersistentWindowFraction: number;
-  minPersistentActivityMean: number;
-  meanPersistentActivityMean: number;
-  maxPersistentActivityMean: number;
-} {
-  const thresholdResults = seedResults.map((seedResult) => {
-    const threshold = seedResult.thresholds.find((result) => result.minSurvivalTicks === minSurvivalTicks);
-    if (!threshold) {
-      throw new Error(`Missing threshold ${minSurvivalTicks} for seed ${seedResult.seed}`);
-    }
-    return threshold;
-  });
-  const persistentWindowFractions = thresholdResults.map((threshold) => threshold.persistentWindowFraction);
-  const persistentActivityMeans = thresholdResults.map(
-    (threshold) => threshold.summary.postBurnInPersistentNewActivityMean
-  );
-
-  return {
-    minSurvivalTicks,
-    seeds: thresholdResults.length,
-    seedsWithEvaluableWindows: thresholdResults.filter((threshold) => threshold.summary.evaluablePostBurnInWindows > 0)
-      .length,
-    seedsWithAllEvaluableWindowsPositive: thresholdResults.filter((threshold) => threshold.allEvaluableWindowsPositive)
-      .length,
-    minPersistentWindowFraction: min(persistentWindowFractions),
-    meanPersistentWindowFraction: mean(persistentWindowFractions),
-    maxPersistentWindowFraction: max(persistentWindowFractions),
-    minPersistentActivityMean: min(persistentActivityMeans),
-    meanPersistentActivityMean: mean(persistentActivityMeans),
-    maxPersistentActivityMean: max(persistentActivityMeans)
-  };
-}
-
-function findThresholdResult<TThreshold extends { minSurvivalTicks: number }>(
-  seed: number,
-  minSurvivalTicks: number,
-  thresholds: TThreshold[]
-): TThreshold {
-  const threshold = thresholds.find((result) => result.minSurvivalTicks === minSurvivalTicks);
-  if (!threshold) {
-    throw new Error(`Missing threshold ${minSurvivalTicks} for seed ${seed}`);
-  }
-  return threshold;
-}
-
 function withCladogenesisThreshold(
   simulation: Omit<LifeSimulationOptions, 'seed'> | undefined,
   cladogenesisThreshold: number
@@ -2390,32 +2110,6 @@ function buildCladeSpeciesCountAggregate(
     totalCladeToSpeciesRatio: buildNumericAggregate(
       seedResults.map((seedResult) => seedResult.counts.totalCladeToSpeciesRatio)
     )
-  };
-}
-
-function buildNumericAggregate(values: number[]): NumericAggregate {
-  return {
-    mean: mean(values),
-    min: min(values),
-    max: max(values)
-  };
-}
-
-function buildNullableNumericAggregate(values: number[]): CladeSpeciesActivityCouplingRatioAggregate {
-  if (values.length === 0) {
-    return {
-      definedSeeds: 0,
-      mean: null,
-      min: null,
-      max: null
-    };
-  }
-
-  return {
-    definedSeeds: values.length,
-    mean: mean(values),
-    min: min(values),
-    max: max(values)
   };
 }
 
@@ -2562,37 +2256,9 @@ function observedLifetime(taxon: TaxonHistory, maxTick: number): number {
   return Math.max(0, lastObservedTick - taxon.firstSeenTick);
 }
 
-function mean(values: number[]): number {
-  if (values.length === 0) {
-    return 0;
-  }
-  return values.reduce((total, value) => total + value, 0) / values.length;
-}
-
-function min(values: number[]): number {
-  if (values.length === 0) {
-    return 0;
-  }
-  return values.reduce((lowest, value) => Math.min(lowest, value), values[0]);
-}
-
-function max(values: number[]): number {
-  if (values.length === 0) {
-    return 0;
-  }
-  return values.reduce((highest, value) => Math.max(highest, value), values[0]);
-}
-
 function divideOrZero(numerator: number, denominator: number): number {
   if (denominator === 0) {
     return 0;
-  }
-  return numerator / denominator;
-}
-
-function divideOrNull(numerator: number, denominator: number): number | null {
-  if (denominator === 0) {
-    return null;
   }
   return numerator / denominator;
 }
