@@ -10,23 +10,16 @@ import {
   min
 } from './activity-thresholds';
 import {
-  buildCladeActivityRelabelNullThresholdAggregate,
-  buildCladeActivityRelabelNullThresholdSeedResult
+  buildCladeActivityRelabelNullThresholdAggregate
 } from './clade-activity-relabel-null-thresholds';
 import {
-  buildFounderHabitatCrowdingSchedule,
-  buildFounderHabitatSchedule,
-  founderHabitatCrowdingSchedulesEqual,
-  founderHabitatSchedulesEqual,
-  requiresFounderHabitatCrowdingMatch,
-  requiresFounderHabitatMatch
-} from './clade-activity-relabel-null-founder-context';
-import {
-  buildMatchedSchedulePseudoClades,
-  buildTaxonBirthSchedule,
-  countActiveTaxaAtTick,
-  taxonBirthSchedulesEqual
-} from './clade-activity-relabel-null-matched-schedule';
+  buildCladeActivityRelabelNullCladeHabitatCouplingSweepResult,
+  buildCladeActivityRelabelNullCladeInteractionCouplingSweepResult,
+  buildCladeActivityRelabelNullSeedResult,
+  deriveRelabelSeed,
+  resolveMatchedNullFounderContext
+} from './clade-activity-relabel-null-study-helpers';
+import { buildMatchedSchedulePseudoClades } from './clade-activity-relabel-null-matched-schedule';
 import { LifeSimulation, LifeSimulationOptions } from './simulation';
 import {
   CladeActivityCladogenesisHorizonSweepExport,
@@ -38,7 +31,6 @@ import {
   CladeActivityRelabelNullCladeInteractionCouplingSweepExport,
   CladeActivityRelabelNullCladeInteractionCouplingSweepResult,
   CladeActivityRelabelNullDefinition,
-  CladeActivityRelabelNullSeedResult,
   CladeActivityRelabelNullStudyConfig,
   CladeActivityRelabelNullStudyExport,
   CladeActivityRelabelNullThresholdAggregate,
@@ -69,7 +61,6 @@ import {
   CladeSpeciesActivityCouplingThresholdResult,
   CladeActivityWindow,
   EvolutionHistorySnapshot,
-  MatchedNullFounderContext,
   SpeciesActivityHorizonSweepExport,
   SpeciesActivityHorizonSweepPoint,
   SpeciesActivityPersistenceSummary,
@@ -304,6 +295,7 @@ export const DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY: CladeActivityRelabelNull
 };
 
 export { buildMatchedSchedulePseudoClades } from './clade-activity-relabel-null-matched-schedule';
+export { deriveRelabelSeed, resolveMatchedNullFounderContext } from './clade-activity-relabel-null-study-helpers';
 
 export const DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP: CladeActivityRelabelNullCladeHabitatCouplingSweepConfig =
   {
@@ -1120,14 +1112,62 @@ export function runCladeActivityRelabelNullStudy(
           simulation: withCladogenesisThreshold(input.simulation, cladogenesisThreshold),
           emptyRunError: 'Clade activity relabel null study produced no step data'
         });
+        const history = simulation.history();
+        const relabelSeed = deriveRelabelSeed(seed, cladogenesisThreshold);
+        const matchedNullClades = buildMatchedSchedulePseudoClades({
+          species: history.species,
+          clades: history.clades,
+          maxTick: finalSummary.tick,
+          relabelSeed,
+          matchedNullFounderContext
+        });
+        const actualRawSummary = analyzeCladeActivity({
+          clades: history.clades,
+          windowSize,
+          burnIn,
+          maxTick: finalSummary.tick
+        }).summary;
+        const matchedNullRawSummary = analyzeCladeActivity({
+          clades: matchedNullClades,
+          windowSize,
+          burnIn,
+          maxTick: finalSummary.tick
+        }).summary;
+        const actualThresholds = minSurvivalTicks.map((threshold) =>
+          buildActivitySeedPanelThresholdSeedResult({
+            minSurvivalTicks: threshold,
+            summary: analyzePersistentCladeActivity({
+              clades: history.clades,
+              windowSize,
+              burnIn,
+              maxTick: finalSummary.tick,
+              minSurvivalTicks: threshold
+            }).summary
+          })
+        );
+        const matchedNullThresholds = minSurvivalTicks.map((threshold) =>
+          buildActivitySeedPanelThresholdSeedResult({
+            minSurvivalTicks: threshold,
+            summary: analyzePersistentCladeActivity({
+              clades: matchedNullClades,
+              windowSize,
+              burnIn,
+              maxTick: finalSummary.tick,
+              minSurvivalTicks: threshold
+            }).summary
+          })
+        );
 
         return buildCladeActivityRelabelNullSeedResult({
           seed,
-          relabelSeed: deriveRelabelSeed(seed, cladogenesisThreshold),
+          relabelSeed,
           finalSummary,
-          history: simulation.history(),
-          windowSize,
-          burnIn,
+          actualClades: history.clades,
+          matchedNullClades,
+          actualRawSummary,
+          matchedNullRawSummary,
+          actualThresholds,
+          matchedNullThresholds,
           minSurvivalTicks,
           matchedNullFounderContext
         });
@@ -1197,38 +1237,21 @@ export function runCladeActivityRelabelNullCladeHabitatCouplingSweep(
   );
 
   const results: CladeActivityRelabelNullCladeHabitatCouplingSweepResult[] = cladeHabitatCouplingValues.map(
-    (cladeHabitatCoupling) => {
-      const study = runCladeActivityRelabelNullStudy({
-        steps,
-        windowSize,
-        burnIn,
-        seeds,
-        stopWhenExtinct,
-        minSurvivalTicks: [minSurvivalTicks],
-        cladogenesisThresholds: [cladogenesisThreshold],
-        simulation: withCladeHabitatCoupling(input.simulation, cladeHabitatCoupling),
-        generatedAt: input.generatedAt
-      });
-      const thresholdResult = study.thresholdResults[0];
-      if (!thresholdResult) {
-        throw new Error('Clade habitat coupling sweep produced no threshold results');
-      }
-      const aggregate = thresholdResult.aggregates[0];
-      if (!aggregate) {
-        throw new Error('Clade habitat coupling sweep produced no aggregate results');
-      }
-
-      return {
+    (cladeHabitatCoupling) =>
+      buildCladeActivityRelabelNullCladeHabitatCouplingSweepResult({
         cladeHabitatCoupling,
-        seedResults: thresholdResult.seedResults,
-        aggregate,
-        birthScheduleMatchedAllSeeds: thresholdResult.seedResults.every((seedResult) => seedResult.birthScheduleMatched),
-        actualToNullPersistentWindowFractionRatioMean: aggregate.actualToNullPersistentWindowFractionRatio.mean,
-        persistentWindowFractionDeltaVsNullMean: aggregate.persistentWindowFractionDeltaVsNull.mean,
-        actualToNullPersistentActivityMeanRatioMean: aggregate.actualToNullPersistentActivityMeanRatio.mean,
-        persistentActivityMeanDeltaVsNullMean: aggregate.persistentActivityMeanDeltaVsNull.mean
-      };
-    }
+        thresholdResults: runCladeActivityRelabelNullStudy({
+          steps,
+          windowSize,
+          burnIn,
+          seeds,
+          stopWhenExtinct,
+          minSurvivalTicks: [minSurvivalTicks],
+          cladogenesisThresholds: [cladogenesisThreshold],
+          simulation: withCladeHabitatCoupling(input.simulation, cladeHabitatCoupling),
+          generatedAt: input.generatedAt
+        }).thresholdResults
+      })
   );
 
   return {
@@ -1285,38 +1308,21 @@ export function runCladeActivityRelabelNullCladeInteractionCouplingSweep(
   );
 
   const results: CladeActivityRelabelNullCladeInteractionCouplingSweepResult[] = cladeInteractionCouplingValues.map(
-    (cladeInteractionCoupling) => {
-      const study = runCladeActivityRelabelNullStudy({
-        steps,
-        windowSize,
-        burnIn,
-        seeds,
-        stopWhenExtinct,
-        minSurvivalTicks: [minSurvivalTicks],
-        cladogenesisThresholds: [cladogenesisThreshold],
-        simulation: withCladeInteractionCoupling(input.simulation, cladeInteractionCoupling),
-        generatedAt: input.generatedAt
-      });
-      const thresholdResult = study.thresholdResults[0];
-      if (!thresholdResult) {
-        throw new Error('Clade interaction coupling sweep produced no threshold results');
-      }
-      const aggregate = thresholdResult.aggregates[0];
-      if (!aggregate) {
-        throw new Error('Clade interaction coupling sweep produced no aggregate results');
-      }
-
-      return {
+    (cladeInteractionCoupling) =>
+      buildCladeActivityRelabelNullCladeInteractionCouplingSweepResult({
         cladeInteractionCoupling,
-        seedResults: thresholdResult.seedResults,
-        aggregate,
-        birthScheduleMatchedAllSeeds: thresholdResult.seedResults.every((seedResult) => seedResult.birthScheduleMatched),
-        actualToNullPersistentWindowFractionRatioMean: aggregate.actualToNullPersistentWindowFractionRatio.mean,
-        persistentWindowFractionDeltaVsNullMean: aggregate.persistentWindowFractionDeltaVsNull.mean,
-        actualToNullPersistentActivityMeanRatioMean: aggregate.actualToNullPersistentActivityMeanRatio.mean,
-        persistentActivityMeanDeltaVsNullMean: aggregate.persistentActivityMeanDeltaVsNull.mean
-      };
-    }
+        thresholdResults: runCladeActivityRelabelNullStudy({
+          steps,
+          windowSize,
+          burnIn,
+          seeds,
+          stopWhenExtinct,
+          minSurvivalTicks: [minSurvivalTicks],
+          cladogenesisThresholds: [cladogenesisThreshold],
+          simulation: withCladeInteractionCoupling(input.simulation, cladeInteractionCoupling),
+          generatedAt: input.generatedAt
+        }).thresholdResults
+      })
   );
 
   return {
@@ -1679,105 +1685,6 @@ function buildCladeSpeciesActivityCouplingThresholdAggregate(
   };
 }
 
-function buildCladeActivityRelabelNullSeedResult(input: {
-  seed: number;
-  relabelSeed: number;
-  finalSummary: StepSummary;
-  history: EvolutionHistorySnapshot;
-  windowSize: number;
-  burnIn: number;
-  minSurvivalTicks: number[];
-  matchedNullFounderContext: MatchedNullFounderContext;
-}): CladeActivityRelabelNullSeedResult {
-  const matchedNullClades = buildMatchedSchedulePseudoClades({
-    species: input.history.species,
-    clades: input.history.clades,
-    maxTick: input.finalSummary.tick,
-    relabelSeed: input.relabelSeed,
-    matchedNullFounderContext: input.matchedNullFounderContext
-  });
-  const actualRawSummary = analyzeCladeActivity({
-    clades: input.history.clades,
-    windowSize: input.windowSize,
-    burnIn: input.burnIn,
-    maxTick: input.finalSummary.tick
-  }).summary;
-  const matchedNullRawSummary = analyzeCladeActivity({
-    clades: matchedNullClades,
-    windowSize: input.windowSize,
-    burnIn: input.burnIn,
-    maxTick: input.finalSummary.tick
-  }).summary;
-  const actualThresholds = input.minSurvivalTicks.map((threshold) =>
-    buildActivitySeedPanelThresholdSeedResult({
-      minSurvivalTicks: threshold,
-      summary: analyzePersistentCladeActivity({
-        clades: input.history.clades,
-        windowSize: input.windowSize,
-        burnIn: input.burnIn,
-        maxTick: input.finalSummary.tick,
-        minSurvivalTicks: threshold
-      }).summary
-    })
-  );
-  const matchedNullThresholds = input.minSurvivalTicks.map((threshold) =>
-    buildActivitySeedPanelThresholdSeedResult({
-      minSurvivalTicks: threshold,
-      summary: analyzePersistentCladeActivity({
-        clades: matchedNullClades,
-        windowSize: input.windowSize,
-        burnIn: input.burnIn,
-        maxTick: input.finalSummary.tick,
-        minSurvivalTicks: threshold
-      }).summary
-    })
-  );
-  const actualBirthSchedule = buildTaxonBirthSchedule(input.history.clades);
-  const matchedNullBirthSchedule = buildTaxonBirthSchedule(matchedNullClades);
-  const actualFounderHabitatSchedule = buildFounderHabitatSchedule(input.history.clades);
-  const matchedNullFounderHabitatSchedule = buildFounderHabitatSchedule(matchedNullClades);
-  const actualFounderHabitatCrowdingSchedule = buildFounderHabitatCrowdingSchedule(input.history.clades);
-  const matchedNullFounderHabitatCrowdingSchedule = buildFounderHabitatCrowdingSchedule(matchedNullClades);
-  const actualActiveClades = input.finalSummary.activeClades;
-  const matchedNullActiveClades = countActiveTaxaAtTick(matchedNullClades, input.finalSummary.tick);
-
-  return {
-    seed: input.seed,
-    relabelSeed: input.relabelSeed,
-    finalSummary: input.finalSummary,
-    actualRawSummary,
-    matchedNullRawSummary,
-    actualBirthSchedule,
-    matchedNullBirthSchedule,
-    birthScheduleMatched: taxonBirthSchedulesEqual(actualBirthSchedule, matchedNullBirthSchedule),
-    actualFounderHabitatSchedule,
-    matchedNullFounderHabitatSchedule,
-    founderHabitatScheduleMatched: requiresFounderHabitatMatch(input.matchedNullFounderContext)
-        ? founderHabitatSchedulesEqual(actualFounderHabitatSchedule, matchedNullFounderHabitatSchedule)
-        : null,
-    actualFounderHabitatCrowdingSchedule,
-    matchedNullFounderHabitatCrowdingSchedule,
-    founderHabitatCrowdingScheduleMatched: requiresFounderHabitatCrowdingMatch(input.matchedNullFounderContext)
-      ? founderHabitatCrowdingSchedulesEqual(
-          actualFounderHabitatCrowdingSchedule,
-          matchedNullFounderHabitatCrowdingSchedule
-        )
-      : null,
-    thresholds: input.minSurvivalTicks.map((minSurvivalTicks) =>
-      buildCladeActivityRelabelNullThresholdSeedResult({
-        minSurvivalTicks,
-        actual: findThresholdResult(input.seed, minSurvivalTicks, actualThresholds),
-        matchedNull: findThresholdResult(input.seed, minSurvivalTicks, matchedNullThresholds),
-        finalPopulation: input.finalSummary.population,
-        actualActiveClades,
-        matchedNullActiveClades,
-        actualRawSummary,
-        matchedNullRawSummary
-      })
-    )
-  };
-}
-
 function truncateEvolutionHistory(history: EvolutionHistorySnapshot, maxTick: number): EvolutionHistorySnapshot {
   return {
     clades: truncateTaxonHistory(history.clades, maxTick),
@@ -1812,16 +1719,6 @@ function truncateTaxonHistory(taxa: TaxonHistory[], maxTick: number): TaxonHisto
       }
     ];
   });
-}
-
-function resolveMatchedNullFounderContext(value: MatchedNullFounderContext | string): MatchedNullFounderContext {
-  if (value === 'none' || value === 'founderHabitatBin' || value === 'founderHabitatAndCrowdingBin') {
-    return value;
-  }
-
-  throw new Error(
-    `matchedNullFounderContext must be one of "none", "founderHabitatBin", or "founderHabitatAndCrowdingBin"; received ${String(value)}`
-  );
 }
 
 function buildTaxonActivitySummary(
@@ -2139,11 +2036,6 @@ function divideOrZero(numerator: number, denominator: number): number {
     return 0;
   }
   return numerator / denominator;
-}
-
-export function deriveRelabelSeed(seed: number, cladogenesisThreshold: number): number {
-  const thresholdSalt = Math.round(cladogenesisThreshold * 1000);
-  return ((seed * 1664525 + 1013904223) ^ thresholdSalt ^ 0x9e3779b9) >>> 0 || 1;
 }
 
 function toPositiveInt(name: string, value: number): number {
