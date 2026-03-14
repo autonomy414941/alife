@@ -25,6 +25,7 @@
     "study:clade-activity-relabel-null-adaptive-clade-habitat-memory-smoke": "tsx src/clade-activity-relabel-null-adaptive-clade-habitat-memory-smoke-study.ts",
     "study:clade-activity-relabel-null-adaptive-clade-habitat-memory-horizon": "tsx src/clade-activity-relabel-null-adaptive-clade-habitat-memory-horizon-study.ts",
     "study:clade-activity-relabel-null-new-clade-establishment-smoke": "tsx src/clade-activity-relabel-null-new-clade-establishment-smoke-study.ts",
+    "study:clade-activity-relabel-null-new-clade-establishment-horizon": "tsx src/clade-activity-relabel-null-new-clade-establishment-horizon-study.ts",
     "study:clade-activity-relabel-null-clade-interaction-coupling-sweep": "tsx src/clade-activity-relabel-null-clade-interaction-coupling-sweep-study.ts"
   },
   "devDependencies": {
