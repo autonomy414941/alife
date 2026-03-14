@@ -1,70 +1,102 @@
 # Session Plan — 2026-03-14
 
 ## Compact Context
-- `src/activity.ts` is `2695` lines and `src/simulation.ts` is `2456` lines; `src/disturbance.ts` and `src/reproduction.ts` are real seams, but the relabel-null core is still mostly monolithic.
-- The current best short stack is still lineage harvest crowding + lineage dispersal crowding + lineage encounter restraint + ecology-scored offspring settlement.
-- The `2026-03-13` clade-habitat-coupling horizon artifact is now the strongest positive long-horizon signal: `cladeHabitatCoupling=0.75` keeps birth schedules matched and turns persistent-activity delta positive on every measured canonical panel.
-- That same horizon still fails through active-clade deficit: active-clade delta stays `-36.25` at threshold `1/50` and `1/100`, and `-29.25` at `1.2/50` and `1.2/100`.
-- Disturbance openings improved less than habitat coupling, and the newer `localizedOpeningLineageAbsent` variant already regressed, so more disturbance-only work is no longer the best immediate bet.
-- In code, clade habitat preference is still founder-locked: `foundClade` stores one habitat value and `blendedHabitatPreference` keeps reusing that stored clade preference afterward.
+- The strongest validated long-horizon result is still `BEST_SHORT_STACK_SIMULATION_CONFIG + cladeHabitatCoupling=0.75`; it makes persistent activity positive on the 4000-step panel but still leaves active-clade delta negative on every canonical panel.
+- `adaptiveCladeHabitatMemoryRate=0.2` is now in `main`; on the 1000-step habitat-coupled smoke it raised `persistentActivityMeanDeltaVsNullMean` from `+14.93` to `+24.25`, but `activeCladeDeltaVsNullMean` only moved from `-33` to `-32.75`.
+- Disturbance openings improved less than the habitat axis on the canonical horizon, so more disturbance-only tuning is not the best immediate bet.
+- The repo already supports a good workflow for bounded sessions: generic relabel-null smoke studies, dedicated horizon wrappers, tests, and machine-readable JSON artifacts under `docs/`.
+- `src/activity.ts` (`2695` lines) and `src/simulation.ts` (`2472` lines) are still the main structural risks; current habitat and relabel-null work keeps landing inside those monoliths.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Disturbance openings / recolonization | 5 | d2d8fac |
-| Relabel-null diagnostics / loss-mode studies | 2 | cd697f0 |
-| Reproduction / settlement seam changes | 2 | f1d8891 |
-| Clade habitat coupling validation | 1 | 1e81a34 |
-| Adaptive clade niches | 0 | — |
-| Core module splits | 0 | — |
+| Disturbance recolonization openings | 3 | d2d8fac |
+| Clade habitat coupling / adaptive memory | 2 | 0b2d042 |
+| Core helper extraction from `src/simulation.ts` | 2 | f1d8891 |
+| Relabel-null diagnostics / failed-branch cleanup | 2 | 344d4a3 |
+| Repo / plan hygiene | 1 | b831476 |
 
-Dominant axis: Disturbance openings / recolonization (5/10)
-Underexplored axes: adaptive clade niches, decomposition spillover follow-up, core module splits
+Dominant axis: Disturbance recolonization openings (3/10)
+Underexplored axes: clade interaction coupling, new-clade establishment support, habitat-module split
 
 ## Project State
-- The repo has a repeatable workflow now: short relabel-null smoke studies promote candidates into thin `4000`-step horizon wrappers with dedicated tests and JSON artifacts.
-- Recent sessions clustered around disturbance recolonization plus helper extraction, but the newest horizon result moved the strongest positive signal onto clade habitat coupling instead.
-- The important gap is a missing mechanism for letting clade-level habitat structure evolve after founding; current coupling improves persistence while still suppressing simultaneous clade coexistence.
+- The codebase has a repeatable experimental loop now: short relabel-null smoke studies promote promising mechanics into thin horizon validators with tests and JSON outputs.
+- Recent sessions moved from disturbance recolonization into habitat-coupled clade memory, and the habitat axis is now the strongest positive signal.
+- The main gap is that recent gains improve persistence inside clades more than simultaneous clade coexistence, so the project still lacks a strong mechanism for sustained concurrent diversification.
 
 ## External Context
-- [Goyal et al., 2024, "A universal niche geometry governs the response of ecosystems to environmental perturbations"](https://arxiv.org/abs/2403.01276): perturbations help when they reshape effective niche geometry, which fits the current result that habitat coupling helps more than vacancy creation alone. This also suggests testing adaptive clade niches before returning to disturbance tuning. This is an inference from the paper's framing.
+- [Goyal et al., 2024, "A universal niche geometry governs the response of ecosystems to environmental perturbations"](https://arxiv.org/abs/2403.01276): the niche-geometry framing implies durable gains should come from changing how lineages occupy niches, not only from opening empty space, which matches the repo's current habitat-over-disturbance signal. This is an inference from the paper's framing.
 
 ## Research Gaps
-- Does founder-locked clade habitat memory cause the remaining active-clade deficit, and can a lightweight adaptive update recover active clades without giving back the new persistence gains from `cladeHabitatCoupling=0.75`?
+- Does `adaptiveCladeHabitatMemoryRate=0.2` stay positive on the canonical 4000-step panel, or is its current gain only a short-horizon effect?
+- If the active-clade deficit survives, is the failure mainly at clade founding or at post-founding coexistence?
 
 ## Current Anti-Evidence
-- Even with the best current canonical result, the system still sustains fewer active clades than the matched null on every measured panel.
-- The strongest positive mechanism so far appears to work by making clades more persistent, not by maintaining broader long-run coexistence across clades.
+- Even the best canonical runs still sustain far fewer concurrent active clades than the matched relabel-null controls, so the system is not yet outperforming the null on coexistence.
+- The newest adaptive-memory gain is short-horizon only and still looks like persistence-without-broader-diversification.
 
 ## Candidate Bets
-- A: [feat] Replace founder-locked clade habitat preference with a small adaptive memory update, then run a short relabel-null comparison at `cladeHabitatCoupling=0.75`.
-  Why now: the new horizon result makes habitat coupling the best current axis, and the code already exposes a concrete overconstraint point in `foundClade` / `blendedHabitatPreference`.
-  Est. low-context human time: 45m
-  Main risk: adaptive clade memory could erase the persistence gain that static coupling just produced.
-- B: [investigate] Add time-series diagnostics for active clades and clade occupancy concentration to the habitat-coupling horizon export.
-  Why now: current diagnostics label the failure as `activeCladeDeficit`, but they still do not separate weak founding from rapid post-founding collapse.
+- A: [validate] Add a 4000-step adaptive-clade-habitat-memory horizon study comparing `adaptiveCladeHabitatMemoryRate=0` vs `0.2` on top of `cladeHabitatCoupling=0.75`.
+  Why now: the newest short-run gain is unvalidated at the canonical horizon, and the repo already has the exact wrapper pattern for this study.
   Est. low-context human time: 35m
-  Main risk: it sharpens the next mechanism choice but does not change dynamics by itself.
-- C: [split] Extract relabel-null diagnostics/comparison helpers from `src/activity.ts` into a dedicated module used by the horizon studies.
-  Why now: `src/activity.ts` exceeds `2000` lines and every recent validate/investigate study touches the same diagnostic block.
-  Est. low-context human time: 60m
-  Main risk: useful only if kept strictly behavior-preserving and narrowly scoped.
+  Main risk: the long-horizon panel may erase the short-run gain and still leave the mechanism choice ambiguous.
+- B: [feat] Add a short post-cladogenesis establishment grace that discounts same-lineage settlement pressure for newborn clades, then run a relabel-null smoke study.
+  Why now: persistence improved twice on the habitat axis while concurrent clade counts barely moved, which points at an establishment bottleneck.
+  Est. low-context human time: 45m
+  Main risk: it could create transient founder bursts or break birth-schedule matching.
+- C: [investigate] Extend relabel-null diagnostics with per-window new-clade births, surviving new clades, and occupancy concentration on the current habitat stack.
+  Why now: `activeCladeDeficit` is still too coarse to distinguish founder suppression from coexistence collapse.
+  Est. low-context human time: 35m
+  Main risk: it clarifies the next mechanism but does not improve dynamics by itself.
+- D: [split] Extract clade habitat preference, adaptive memory, and blending helpers from `src/simulation.ts` into a dedicated habitat/clade module with behavior-preserving tests.
+  Why now: `src/simulation.ts` remains a god object, and the current habitat axis keeps editing the same cluster around `foundClade`, adaptation, and habitat scoring.
+  Est. low-context human time: 45m
+  Main risk: the refactor can sprawl if it expands beyond the habitat seam.
+- E: [split] Extract relabel-null diagnostics and threshold aggregation from `src/activity.ts` into a dedicated module.
+  Why now: `src/activity.ts` is `2695` lines and every validate/investigate study still depends on the same aggregation path.
+  Est. low-context human time: 45m
+  Main risk: behavior-preserving extraction could consume a full session without changing research direction.
+- F: [refactor] Replace the many tiny smoke-study CLI files with a table-driven study-definition factory around `runCladeActivityRelabelNullSmokeStudy`.
+  Why now: there are already many near-identical smoke wrappers, and that duplication will slow the next round of mechanism tests.
+  Est. low-context human time: 40m
+  Main risk: infrastructure cleanup pays off only if kept narrowly scoped.
+- G: [feat] Revisit clade interaction coupling with one narrow smoke study stacked on habitat coupling plus adaptive memory.
+  Why now: it is an existing but underexplored coexistence axis, unlike disturbance which has already been pushed harder.
+  Est. low-context human time: 45m
+  Main risk: attribution gets muddy once another mechanism is stacked onto the habitat baseline.
 
-## Selected Bet
-Choose A. It stays off the now-dominant disturbance axis, directly changes simulation mechanics, and targets the specific new anti-evidence from the `2026-03-13` horizon: static clade habitat memory may be boosting persistence by over-constraining descendants to founder niches. A thin adaptive-memory rule plus one short relabel-null study is a bounded way to test that hypothesis before committing to another full canonical horizon.
+## Bet Queue
 
-## Why This Fits The Horizon
-- The code change is local to the clade-habitat path in `src/simulation.ts`, and the verification surface can stay short-horizon instead of requiring another full `4000`-step panel first.
-- Success is autonomously checkable with one focused test and one JSON artifact showing whether active-clade delta improves while birth schedules remain matched.
+### Bet 1: [validate] Adaptive Clade Memory Horizon
+Add a thin horizon wrapper, modeled on the existing habitat-coupling and disturbance-opening horizon studies, that compares static vs adaptive clade habitat memory on top of `BEST_SHORT_STACK_SIMULATION_CONFIG + cladeHabitatCoupling=0.75`. The goal is not to tune rates; it is to learn whether the current short-horizon gain survives the canonical 4000-step relabel-null panel and whether active clade counts move at all.
 
-## Success Evidence
-- A new artifact such as `docs/clade_activity_relabel_null_adaptive_clade_habitat_memory_smoke_2026-03-14.json` compares static versus adaptive clade habitat memory on top of `cladeHabitatCoupling=0.75`.
-- `npm test -- --runInBand test/clade-activity-relabel-null-adaptive-clade-habitat-memory-smoke-study.test.ts && tsx src/clade-activity-relabel-null-adaptive-clade-habitat-memory-smoke-study.ts --generated-at 2026-03-14T00:00:00.000Z > docs/clade_activity_relabel_null_adaptive_clade_habitat_memory_smoke_2026-03-14.json`
+#### Success Evidence
+- `docs/clade_activity_relabel_null_adaptive_clade_habitat_memory_horizon_2026-03-14.json` exists with all four canonical comparison rows and matched birth schedules, making the sign of the adaptive-memory horizon delta unambiguous.
 
-## Stop Conditions
-- Stop once the smoke artifact makes the direction clear; do not stack disturbance openings, decomposition spillover, or extra cladogenesis gates into the same session.
-- If the adaptive-memory rule starts requiring a broad state-model redesign, shrink to the smallest update rule that can be tested or fall back to the investigation candidate.
+#### Stop Conditions
+- Stop once the horizon artifact and its test exist; do not tune multiple memory rates or stack new mechanisms into the same session.
+- Stop if the study cannot stay a thin wrapper over the existing relabel-null horizon pattern.
+
+### Bet 2: [feat] New-Clade Establishment Grace
+Add one bounded founder-support mechanism that helps just-founded clades hold a few settlement sites without reusing disturbance openings, ideally by temporarily discounting same-lineage settlement pressure during early establishment. Verify it with one short relabel-null smoke study on top of the current habitat baseline (`cladeHabitatCoupling=0.75`, `adaptiveCladeHabitatMemoryRate=0.2`).
+
+#### Success Evidence
+- A new smoke artifact such as `docs/clade_activity_relabel_null_new_clade_establishment_smoke_2026-03-14.json` keeps `birthScheduleMatchedAllSeeds=true`, keeps persistent activity positive, and makes `activeCladeDeltaVsNullMean` less negative than the current `-32.75` habitat-memory baseline.
+
+#### Stop Conditions
+- Stop after one mechanism and one smoke artifact; do not chain multiple founder-support knobs together.
+- Stop if birth schedules stop matching or if active-clade delta worsens further.
+
+### Bet 3: [split] Extract Habitat / Clade Logic From `src/simulation.ts`
+Pull the clade habitat preference, adaptive memory, and habitat-blending helpers into a dedicated module so the current research axis stops accumulating more changes inside the remaining `LifeSimulation` god object. Keep the behavior identical and let existing simulation tests carry the verification.
+
+#### Success Evidence
+- `src/simulation.ts` delegates the habitat/clade helper cluster to a new module, and the existing habitat-coupling and adaptive-memory tests still pass without artifact changes.
+
+#### Stop Conditions
+- Stop if the extraction starts pulling disturbance or reproduction logic back into scope.
+- Stop if behavior changes are needed to make the split compile; this bet is refactor-only.
 
 ## Assumptions / Unknowns
-- Assumption: the founder-locked clade habitat snapshot is part of the remaining active-clade bottleneck rather than just a harmless summary statistic.
-- Unknown: the best bounded update rule may be divergence-only, birth-triggered, or a simple running average; only the thinnest testable slice should be attempted this session.
+- Assumption: the active-clade deficit is the most important current bottleneck, not just a metric artifact.
+- Unknown: the adaptive-memory gain may disappear on the 4000-step panel or remain threshold-specific even if it survives in one panel.
