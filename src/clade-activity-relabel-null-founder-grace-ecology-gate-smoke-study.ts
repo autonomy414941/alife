@@ -1,7 +1,11 @@
 import { RunCladeActivityRelabelNullStudyInput } from './activity';
 import { BEST_SHORT_STACK_SIMULATION_CONFIG } from './clade-activity-relabel-null-best-short-stack';
 import { NEW_CLADE_ESTABLISHMENT_GRACE_TICKS } from './clade-activity-relabel-null-new-clade-establishment-smoke-study';
-import { parseGeneratedAtCli, runCladeActivityRelabelNullSmokeStudy } from './clade-activity-relabel-null-smoke-study';
+import {
+  emitStudyJsonOutput,
+  parseGeneratedAtCli,
+  runCladeActivityRelabelNullSmokeStudy
+} from './clade-activity-relabel-null-smoke-study';
 
 export const FOUNDER_GRACE_ECOLOGY_GATE_THRESHOLD_VALUES = [-1, 0.1] as const;
 export const FOUNDER_GRACE_ECOLOGY_GATE_CLADE_HABITAT_COUPLING = 0.75;
@@ -41,5 +45,5 @@ if (require.main === module) {
   const study = runCladeActivityRelabelNullFounderGraceEcologyGateSmokeStudy({
     generatedAt: options.generatedAt
   });
-  process.stdout.write(JSON.stringify(study, null, 2) + '\n');
+  emitStudyJsonOutput(study, options);
 }

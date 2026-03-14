@@ -11,7 +11,7 @@ import {
   NEW_CLADE_ESTABLISHMENT_CLADE_HABITAT_COUPLING,
   NEW_CLADE_ESTABLISHMENT_GRACE_TICKS
 } from './clade-activity-relabel-null-new-clade-establishment-smoke-study';
-import { parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
+import { emitStudyJsonOutput, parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
 import {
   CladeActivityRelabelNullDiagnosticSnapshot,
   CladeActivityRelabelNullStudyExport,
@@ -243,5 +243,5 @@ if (require.main === module) {
   const study = runCladeActivityRelabelNullNewCladeEstablishmentHorizonStudy({
     generatedAt: options.generatedAt
   });
-  process.stdout.write(JSON.stringify(study, null, 2) + '\n');
+  emitStudyJsonOutput(study, options);
 }

@@ -9,7 +9,7 @@ import {
   FOUNDER_GRACE_ECOLOGY_GATE_SETTLEMENT_GRACE_TICKS,
   FOUNDER_GRACE_ECOLOGY_GATE_THRESHOLD_VALUES
 } from './clade-activity-relabel-null-founder-grace-ecology-gate-smoke-study';
-import { parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
+import { emitStudyJsonOutput, parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
 import {
   BASELINE_CLADE_HABITAT_COUPLING_HORIZON_ARTIFACT as STATIC_HABITAT_BASELINE_ARTIFACT
 } from './clade-activity-relabel-null-new-clade-establishment-horizon-study';
@@ -273,5 +273,5 @@ if (require.main === module) {
   const study = runCladeActivityRelabelNullFounderGraceEcologyGateHorizonStudy({
     generatedAt: options.generatedAt
   });
-  process.stdout.write(JSON.stringify(study, null, 2) + '\n');
+  emitStudyJsonOutput(study, options);
 }

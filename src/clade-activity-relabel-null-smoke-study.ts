@@ -1,3 +1,5 @@
+import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { RunCladeActivityRelabelNullStudyInput, runCladeActivityRelabelNullStudy } from './activity';
 import { buildCladeActivityRelabelNullShortSmokeStudyInput } from './clade-activity-relabel-null-best-short-stack';
 import {
@@ -8,6 +10,7 @@ import {
 
 export interface GeneratedAtCliOptions {
   generatedAt?: string;
+  output?: string;
 }
 
 type SmokeSettingValue = boolean | number | string;
@@ -69,11 +72,31 @@ export function parseGeneratedAtCli(args: string[]): GeneratedAtCliOptions {
       index += 1;
       continue;
     }
+    if (arg === '--output') {
+      const value = args[index + 1];
+      if (!value) {
+        throw new Error('--output requires a value');
+      }
+      options.output = value;
+      index += 1;
+      continue;
+    }
 
     throw new Error(`Unknown argument: ${arg}`);
   }
 
   return options;
+}
+
+export function emitStudyJsonOutput(study: unknown, options: Pick<GeneratedAtCliOptions, 'output'>): void {
+  const content = JSON.stringify(study, null, 2) + '\n';
+
+  if (!options.output) {
+    process.stdout.write(content);
+    return;
+  }
+
+  writeAtomicOutputFile(options.output, content);
 }
 
 export function runCladeActivityRelabelNullSmokeStudy<TSettingName extends string, TValue extends SmokeSettingValue>(
@@ -185,4 +208,13 @@ function summarizeCladeActivityRelabelNullSmokeStudy(
 
 function omitConfigKey(config: Partial<SimulationConfig>, key: string): Record<string, unknown> {
   return Object.fromEntries(Object.entries(config).filter(([configKey]) => configKey !== key));
+}
+
+function writeAtomicOutputFile(outputPath: string, content: string): void {
+  const absolutePath = resolve(process.cwd(), outputPath);
+  const temporaryPath = `${absolutePath}.tmp-${process.pid}-${Date.now()}`;
+
+  mkdirSync(dirname(absolutePath), { recursive: true });
+  writeFileSync(temporaryPath, content, 'utf8');
+  renameSync(temporaryPath, absolutePath);
 }

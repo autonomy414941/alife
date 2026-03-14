@@ -5,6 +5,7 @@ import {
   DEFAULT_BEST_SHORT_STACK_STUDY_INPUT,
   buildCladeActivityRelabelNullBestShortStackStudyInput
 } from './clade-activity-relabel-null-best-short-stack';
+import { emitStudyJsonOutput, parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
 import {
   CladeActivityRelabelNullDiagnosticSnapshot,
   CladeActivityRelabelNullLossMode,
@@ -16,10 +17,6 @@ export {
   DEFAULT_BEST_SHORT_STACK_STUDY_INPUT,
   buildCladeActivityRelabelNullBestShortStackStudyInput
 } from './clade-activity-relabel-null-best-short-stack';
-
-interface CliOptions {
-  generatedAt?: string;
-}
 
 export interface CladeActivityRelabelNullBestShortStackComparison {
   cladogenesisThreshold: number;
@@ -219,31 +216,10 @@ function loadBaselineStudy(): CladeActivityRelabelNullStudyExport {
   return parsed;
 }
 
-function parseCli(args: string[]): CliOptions {
-  const options: CliOptions = {};
-
-  for (let index = 0; index < args.length; index += 1) {
-    const arg = args[index];
-    if (arg === '--generated-at') {
-      const value = args[index + 1];
-      if (!value) {
-        throw new Error('--generated-at requires a value');
-      }
-      options.generatedAt = value;
-      index += 1;
-      continue;
-    }
-
-    throw new Error(`Unknown argument: ${arg}`);
-  }
-
-  return options;
-}
-
 if (require.main === module) {
-  const options = parseCli(process.argv.slice(2));
+  const options = parseGeneratedAtCli(process.argv.slice(2));
   const study = runCladeActivityRelabelNullBestShortStackStudy({
     generatedAt: options.generatedAt
   });
-  process.stdout.write(JSON.stringify(study, null, 2) + '\n');
+  emitStudyJsonOutput(study, options);
 }

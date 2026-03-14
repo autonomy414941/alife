@@ -1,6 +1,13 @@
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_RELABEL_NULL_SMOKE_STUDY_INPUT } from '../src/clade-activity-relabel-null-best-short-stack';
-import { parseGeneratedAtCli, runCladeActivityRelabelNullSmokeStudy } from '../src/clade-activity-relabel-null-smoke-study';
+import {
+  emitStudyJsonOutput,
+  parseGeneratedAtCli,
+  runCladeActivityRelabelNullSmokeStudy
+} from '../src/clade-activity-relabel-null-smoke-study';
 
 describe('runCladeActivityRelabelNullSmokeStudy', () => {
   it('reuses the shared short-run defaults and emits setting-keyed results', () => {
@@ -101,10 +108,29 @@ describe('runCladeActivityRelabelNullSmokeStudy', () => {
   });
 
   it('parses the shared generated-at flag', () => {
-    expect(parseGeneratedAtCli(['--generated-at', '2026-03-12T00:00:00.000Z'])).toEqual({
-      generatedAt: '2026-03-12T00:00:00.000Z'
-    });
+    expect(parseGeneratedAtCli(['--generated-at', '2026-03-12T00:00:00.000Z', '--output', 'docs/test.json'])).toEqual(
+      {
+        generatedAt: '2026-03-12T00:00:00.000Z',
+        output: 'docs/test.json'
+      }
+    );
     expect(() => parseGeneratedAtCli(['--generated-at'])).toThrow('--generated-at requires a value');
+    expect(() => parseGeneratedAtCli(['--output'])).toThrow('--output requires a value');
     expect(() => parseGeneratedAtCli(['--unknown'])).toThrow('Unknown argument: --unknown');
+  });
+
+  it('writes study output atomically when an output path is provided', () => {
+    const tempDir = mkdtempSync(join(tmpdir(), 'alife-study-output-'));
+    const outputPath = join(tempDir, 'study.json');
+
+    try {
+      emitStudyJsonOutput({ ok: true, values: [1, 2, 3] }, { output: outputPath });
+      expect(JSON.parse(readFileSync(outputPath, 'utf8'))).toEqual({
+        ok: true,
+        values: [1, 2, 3]
+      });
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 });

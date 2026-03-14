@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { RunCladeActivityRelabelNullStudyInput, runCladeActivityRelabelNullStudy } from './activity';
 import { buildCladeActivityRelabelNullBestShortStackStudyInput } from './clade-activity-relabel-null-best-short-stack';
 import { compareCladeActivityRelabelNullStudies } from './clade-activity-relabel-null-best-short-stack-study';
-import { parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
+import { emitStudyJsonOutput, parseGeneratedAtCli } from './clade-activity-relabel-null-smoke-study';
 import {
   CladeActivityRelabelNullDiagnosticSnapshot,
   CladeActivityRelabelNullStudyExport,
@@ -206,5 +206,5 @@ if (require.main === module) {
   const study = runCladeActivityRelabelNullCladeHabitatCouplingHorizonStudy({
     generatedAt: options.generatedAt
   });
-  process.stdout.write(JSON.stringify(study, null, 2) + '\n');
+  emitStudyJsonOutput(study, options);
 }
