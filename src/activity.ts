@@ -1747,7 +1747,7 @@ function buildCladeActivityRelabelNullSeedResult(input: {
   };
 }
 
-function buildMatchedSchedulePseudoClades(input: {
+export function buildMatchedSchedulePseudoClades(input: {
   species: TaxonHistory[];
   clades: TaxonHistory[];
   maxTick: number;
@@ -2263,7 +2263,7 @@ function divideOrZero(numerator: number, denominator: number): number {
   return numerator / denominator;
 }
 
-function deriveRelabelSeed(seed: number, cladogenesisThreshold: number): number {
+export function deriveRelabelSeed(seed: number, cladogenesisThreshold: number): number {
   const thresholdSalt = Math.round(cladogenesisThreshold * 1000);
   return ((seed * 1664525 + 1013904223) ^ thresholdSalt ^ 0x9e3779b9) >>> 0 || 1;
 }

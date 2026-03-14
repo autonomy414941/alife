@@ -31,6 +31,7 @@
     "study:clade-activity-relabel-null-new-clade-encounter-restraint-review": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-review.ts",
     "study:clade-activity-relabel-null-founder-grace-ecology-gate-smoke": "tsx src/clade-activity-relabel-null-founder-grace-ecology-gate-smoke-study.ts",
     "study:clade-activity-relabel-null-founder-grace-ecology-gate-horizon": "tsx src/clade-activity-relabel-null-founder-grace-ecology-gate-horizon-study.ts",
+    "study:clade-activity-relabel-null-founder-grace-ecology-gate-age-bucket-review": "tsx src/clade-activity-relabel-null-founder-grace-ecology-gate-age-bucket-review.ts",
     "archive:clade-activity-relabel-null-clade-interaction-coupling-sweep": "tsx src/archive/clade-activity-relabel-null-clade-interaction-coupling-sweep-study.ts"
   },
   "devDependencies": {

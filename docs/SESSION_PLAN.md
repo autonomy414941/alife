@@ -1,77 +1,77 @@
 # Session Plan — 2026-03-14
 
 ## Compact Context
-- `cladeHabitatCoupling=0.75`, `adaptiveCladeHabitatMemoryRate=0`, and `newCladeSettlementCrowdingGraceTicks=36` remain the current founder-support baseline.
-- On the canonical 4000-step panel, founder grace improved `activeCladeDeltaVsNullMean` at cladogenesis threshold `1.0` from `-36.25` to `-23.75`, but it did not dominate persistence across thresholds.
-- The best selective follow-up signal is still smoke-only: raising `cladogenesisEcologyAdvantageThreshold` from `-1` to `0.1` moved `activeCladeDeltaVsNullMean` from `-28.5` to `-25.25` while keeping `persistentActivityMeanDeltaVsNullMean` positive.
-- `newCladeEncounterRestraintGraceBoost=2` is pruned; its `+1.25` smoke gain reversed to a mean horizon regression of `-1.75`.
-- `cladeInteractionCoupling` is already archived, and the committed disturbance-opening horizon comparison still showed large active-clade deficits despite persistence improvement.
-- `src/activity.ts` (2361 lines), `src/simulation.ts` (2386 lines), 23 relabel-null wrapper files, and 24 `study:` scripts are the main code-health drag on new mechanism work.
+- The current static-habitat founder baseline is `cladeHabitatCoupling=0.75`, `adaptiveCladeHabitatMemoryRate=0`, and `newCladeSettlementCrowdingGraceTicks=36`.
+- On the canonical 4000-step panel, founder grace improved `activeCladeDeltaVsNullMean` from `-36.25` to `-23.75`, but actual active clades still trail matched-null active clades heavily.
+- Raising `cladogenesisEcologyAdvantageThreshold` from `-1` to `0.1` improved the active-clade deficit to `-17` at cladogenesis threshold `1.0`, but it reduced persistent-activity deltas by `28.93` to `48.36` versus founder grace across the March 14 horizon comparisons.
+- `newCladeEncounterRestraintGraceBoost=2` is pruned: its `+1.25` smoke gain reversed to a mean horizon regression of `-1.75`.
+- `src/activity.ts` (2361 lines) still owns pseudo-clade null construction and study assembly, and `src/simulation.ts` (2386 lines) still owns most of the runtime loop.
+- The relabel-null study surface still has 26 entry points, and 17 of them still bypass `emitStudyJsonOutput`, which is why March 14 produced malformed review / horizon artifacts.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Founder-selective coexistence | 4 | f7fd21d |
-| Simulation seam extraction | 2 | aa3baae |
-| Experiment surface pruning / archival | 1 | 1c36a23 |
-| Relabel-null threshold extraction | 1 | 15998c4 |
-| Verification stability | 1 | 87a3d46 |
-| Structural critique / planning | 1 | 011ba42 |
+| Structural critique / planning | 3 | ae0bb60 |
+| Study harness consolidation | 2 | 8af57d0 |
+| Founder-selective validation | 2 | f6a495f |
+| Artifact hygiene | 1 | ba0975e |
+| Dead-axis archival | 1 | 1c36a23 |
+| Activity-threshold extraction | 1 | 15998c4 |
 
-Dominant axis: Founder-selective coexistence (4/10)
-Underexplored axes: wrapper consolidation, artifact hygiene, disturbance-mediated recolonization, evolvable trait-space expansion
+Dominant axis: Structural critique / planning (3/10)
+Underexplored axes: matched-null fidelity / founder-age diagnostics, simulation seam extraction, disturbance-mediated recolonization, trait-space expansion
 
 ## Project State
-- The repo has repeatable smoke, horizon, review, and matched relabel-null studies with tests covering the recent founder-grace and encounter-restraint work.
-- Recent sessions mostly explored founder-support axes and their pruning; settlement helpers and relabel-null thresholds were extracted, but the core file bottlenecks remain.
-- The important gap is still a canonical verdict on ecology-gated founder selectivity, plus enough study-surface cleanup to make the next mechanism branch cheaper than the last one.
+- Canonical horizon artifacts now exist for static habitat, founder grace, founder grace plus ecology gate, and encounter-restraint review; founder grace remains the best committed active-clade improvement.
+- Recent sessions concentrated on founder-establishment follow-ups and wrapper consolidation, but the next decision bottleneck is causal visibility: current exports do not say whether losses happen during founding, early crowding, or later maintenance.
+- The important gap is a bounded diagnostic and cleanup pass that makes the next mechanism change less blind and less expensive than the last one.
 
 ## External Context
-- Inference from [Morita & Yamamichi, 2024, Proceedings of the Royal Society B](https://pubmed.ncbi.nlm.nih.gov/39561793/): arrival-time advantages can entrench priority effects unless niche differentiation also shifts, which supports testing founder grace with ecology gating rather than adding more unconditional shielding.
+- Inference from [Morita & Yamamichi, 2024, Proceedings of the Royal Society B](https://pubmed.ncbi.nlm.nih.gov/39561793/): arrival-time advantages can stabilize incumbents unless niche differences also shift, which fits the founder-grace result and explains why a simple ecology gate may trade persistence for fewer, more selective founders.
 
 ## Research Gaps
-- Does `cladogenesisEcologyAdvantageThreshold=0.1` on top of founder grace still beat the `-23.75` threshold-`1.0` active-clade delta on the 4000-step panel without sacrificing the better threshold-`1.2` persistence cases?
-- Can one table-driven study harness preserve artifact shape and test coverage while removing the most duplicated wrapper family?
+- At what clade ages does founder grace still lose to the matched null, and does the ecology gate help by improving true early establishment or only by shrinking later matched-null expansion?
+- Can the matched-null and output seams be isolated enough that the next establishment mechanism can be swapped in without touching `src/activity.ts` or hand-writing JSON emitters?
 
 ## Current Anti-Evidence
-- Even the best canonical founder-support stack still ends below the matched null on concurrent active clades (`activeCladeDeltaVsNullMean=-23.75` at threshold `1.0`), so the system still supports fewer coexisting clades than relabeled births.
-- The representational ceiling is still low: genomes mutate only `metabolism`, `harvest`, and `aggression` in a mostly static single-resource environment, so coexistence gains may plateau before richer ecological novelty appears.
+- Even after the best March 14 follow-up, actual active clades are still below the matched null by `17` to `23.75` on the canonical panel, so the system still fails its own coexistence baseline.
+- The current instrumentation cannot attribute losses by founder age, habitat context, or cause, and the relabel-null baseline still ignores founder habitat and crowding, so the present loop can overfit proxy gains without explaining them.
 
 ## Bet Queue
-- [validate] Run the canonical 4000-step founder-grace vs founder-grace-plus-ecology-gate comparison on the static habitat baseline
-- [refactor] Collapse the founder-establishment relabel-null smoke / horizon wrappers into a table-driven harness
-- [split] Extract matched-null pseudo-clade construction and relabel-null seed builders from `src/activity.ts`
+- [validate] Replay the canonical founder-grace vs ecology-gate horizon comparison through clade-age loss buckets
+- [split] Extract matched-null pseudo-clade builders and birth-schedule helpers from `src/activity.ts`
+- [cleanup] Normalize the remaining relabel-null horizon / review entry points onto `emitStudyJsonOutput`
 
-### Bet 1: [validate] Horizon-Validate Founder Grace Plus An Ecology Gate
-Run one canonical 4000-step comparison for `cladogenesisEcologyAdvantageThreshold=-1` versus `0.1` on the static habitat + founder-grace baseline. This is the decisive mechanism bet because the smoke gain is the last promising founder-selective signal that has not yet faced the full matched-null horizon panel.
-
-#### Success Evidence
-- A new horizon artifact or test captures both points with matched birth schedules and shows whether `0.1` improves `activeCladeDeltaVsNullMean` versus the founder-grace `-23.75` baseline and whether threshold-`1.0` persistence recovers.
-
-#### Stop Conditions
-- Stop after one two-point horizon comparison (`-1`, `0.1`) on the current founder-grace baseline.
-- Stop if the comparison requires stacking extra knobs or changing core simulation semantics.
-
-### Bet 2: [refactor] Table-Drive The Founder-Establishment Wrapper Family
-Collapse the most duplicated relabel-null study family into shared definitions instead of keeping separate smoke / horizon wrappers for each nearby founder-establishment variant. This is the smallest refactor that materially reduces the 23-wrapper surface without depending on new mechanism results.
+### Bet 1: [validate] Replay Founder Grace Through Clade-Age Loss Buckets
+Add a bounded review that consumes the existing canonical founder-grace and ecology-gate horizon surface and breaks clade outcomes into age buckets such as founder phase versus later maintenance. This is the next decision point because the ecology gate improved active-clade delta while crushing persistent activity, and the current summaries cannot say where that tradeoff happens.
 
 #### Success Evidence
-- At least one duplicated wrapper family is replaced by shared harness code, artifact names stay stable, and the relevant existing tests still pass.
+- A deterministic review artifact or test reports founder-grace vs ecology-gate deltas by clade-age bucket on the canonical horizon inputs.
 
 #### Stop Conditions
-- Stop once one coherent wrapper family is table-driven; do not rewrite every historical study in one session.
-- Stop if preserving current artifact filenames or exports becomes unclear.
+- Stop after comparing the existing founder-grace and ecology-gate horizon surface only.
+- Stop if the work requires changing simulation semantics or introducing a new experimental axis.
 
-### Bet 3: [split] Extract Relabel-Null Matched-Schedule Builders From `src/activity.ts`
-Move the pseudo-clade construction and relabel-null seed-building seam out of `src/activity.ts`. This directly reduces the file that every new validation or diagnostic bet still edits, while staying independent of the mechanism outcome of Bet 1.
+### Bet 2: [split] Isolate Matched-Null Builders From `src/activity.ts`
+Move the pseudo-clade relabel-null construction and birth-schedule helpers into a dedicated module. This directly attacks the file that every relabel-null validation still edits and makes stricter-null or diagnostic follow-ups cheaper without changing study semantics.
 
 #### Success Evidence
-- `src/activity.ts` shrinks materially, the matched-null builders live in a dedicated module, and existing relabel-null tests still pass without schema changes.
+- `buildMatchedSchedulePseudoClades` and its birth-schedule helpers move out of `src/activity.ts`, the file shrinks materially, and relabel-null tests still pass.
 
 #### Stop Conditions
-- Stop after one coherent seam is isolated; do not redesign metrics or export schemas.
-- Stop if the extraction starts pulling unrelated activity-analysis code into the same change.
+- Stop after one coherent matched-null seam is isolated; do not redesign the null family in the same session.
+- Stop if the extraction starts pulling unrelated activity aggregation code into the same change.
+
+### Bet 3: [cleanup] Standardize Horizon / Review JSON Emission
+Normalize the remaining relabel-null horizon and review entry points that still write directly to stdout onto the shared JSON-output helper. This closes the concrete artifact-fidelity gap behind the malformed March 14 files without depending on mechanism results.
+
+#### Success Evidence
+- The remaining horizon / review entry points accept `--output` and use atomic JSON emission, and a CLI-oriented test or smoke verification prevents npm-preamble or truncation regressions.
+
+#### Stop Conditions
+- Stop after the active horizon / review scripts are standardized; do not rewrite archived exporters or rename public script commands in the same session.
+- Stop if the change starts altering artifact schemas instead of only the emission path.
 
 ## Assumptions / Unknowns
-- Assumption: the smoke-scale ecology-gate gain is not just a short-horizon artifact from suppressing weak founders.
-- Unknown: the current study tooling can leave non-machine-readable artifacts; `docs/clade_activity_relabel_null_new_clade_encounter_restraint_review_2026-03-14.json` includes an npm log preamble and the untracked `docs/clade_activity_relabel_null_disturbance_opening_horizon_2026-03-14.json` is truncated.
+- Assumption: clade-age buckets are enough to separate early establishment failure from later maintenance collapse without adding full cause-of-death ledgers first.
+- Unknown: the malformed March 14 review and disturbance artifacts may hide additional output-path bugs outside the relabel-null horizon / review scripts.
