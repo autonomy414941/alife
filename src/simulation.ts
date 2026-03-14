@@ -104,6 +104,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   lineageHarvestCrowdingPenalty: 0,
   lineageOffspringSettlementCrowdingPenalty: 0,
   newCladeSettlementCrowdingGraceTicks: 0,
+  newCladeEncounterRestraintGraceBoost: 0,
   offspringSettlementEcologyScoring: false,
   disturbanceSettlementOpeningTicks: 0,
   disturbanceSettlementOpeningBonus: 0,
@@ -1800,7 +1801,9 @@ export class LifeSimulation {
       return 1;
     }
 
-    const restraint = Math.max(0, this.config.lineageEncounterRestraint);
+    const restraint =
+      Math.max(0, this.config.lineageEncounterRestraint) +
+      this.newCladeEncounterRestraintGraceBoost(dominant.lineage);
     if (restraint === 0) {
       return 1;
     }
@@ -1865,6 +1868,15 @@ export class LifeSimulation {
 
     const age = Math.max(0, this.tickCount - state.firstSeenTick);
     return clamp((graceTicks - age) / graceTicks, 0, 1);
+  }
+
+  private newCladeEncounterRestraintGraceBoost(lineage: number): number {
+    const boost = Math.max(0, this.config.newCladeEncounterRestraintGraceBoost);
+    if (boost <= 0) {
+      return 0;
+    }
+
+    return boost * this.newCladeSettlementCrowdingRelief(lineage);
   }
 
   private resolveOffspringSettlementContext(

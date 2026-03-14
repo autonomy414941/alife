@@ -8,7 +8,7 @@ Over the next month, shift from habitat-memory tuning to founder establishment a
 
 ## Milestones
 - [ ] Validate `newCladeSettlementCrowdingGraceTicks=36` on the 4000-step habitat-coupled horizon with adaptive memory disabled.
-- [ ] Add one bounded post-founding coexistence mechanic and verify it with a relabel-null smoke study.
+- [x] Add one bounded post-founding coexistence mechanic and verify it with a relabel-null smoke study.
 - [ ] Split settlement/cladogenesis/founder-support logic out of `src/simulation.ts`.
 - [x] Validate `cladeHabitatCoupling=0.75` on the canonical relabel-null horizon.
 - [x] Add and smoke-test new-clade settlement grace with matched birth schedules.
@@ -18,3 +18,4 @@ Over the next month, shift from habitat-memory tuning to founder establishment a
 
 ## Revision History
 - 2026-03-14: Created the agenda around founder establishment and coexistence retention after habitat coupling became the only durable horizon win, adaptive memory failed at horizon, and settlement grace showed the newest positive short-run signal.
+- 2026-03-14: Marked the bounded post-founding coexistence milestone complete after a newborn-only encounter-restraint boost improved active clades on the static habitat baseline smoke while keeping matched birth schedules and positive persistent activity.

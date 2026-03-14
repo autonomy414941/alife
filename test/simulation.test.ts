@@ -464,6 +464,98 @@ describe('LifeSimulation', () => {
     expect(splitTotalEnergy).toBeCloseTo(22, 10);
   });
 
+  it('temporarily boosts same-lineage encounter restraint for just-founded clades', () => {
+    const buildSimulation = (newCladeEncounterRestraintGraceBoost: number, firstSeenTick: number) => {
+      const sim = new LifeSimulation({
+        seed: 212,
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 0,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceProbability: 0,
+          newCladeSettlementCrowdingGraceTicks: 4,
+          newCladeEncounterRestraintGraceBoost,
+          lineageEncounterRestraint: 1,
+          predationPressure: 0,
+          defenseMitigation: 0,
+          trophicForagingPenalty: 0,
+          defenseForagingPenalty: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 10,
+            lineage: 2,
+            species: 2,
+            genome: { metabolism: 1, harvest: 1, aggression: 1 }
+          },
+          {
+            x: 0,
+            y: 0,
+            energy: 10,
+            lineage: 2,
+            species: 2,
+            genome: { metabolism: 1, harvest: 1, aggression: 0 }
+          }
+        ]
+      });
+
+      const internal = sim as unknown as {
+        tickCount: number;
+        cladeHistory: Map<
+          number,
+          {
+            id: number;
+            firstSeenTick: number;
+            extinctTick: number | null;
+            totalBirths: number;
+            totalDeaths: number;
+            peakPopulation: number;
+            lastPopulation: number;
+            timeline: Array<{ tick: number; population: number; births: number; deaths: number }>;
+          }
+        >;
+      };
+
+      internal.tickCount = 1;
+      internal.cladeHistory.set(2, {
+        id: 2,
+        firstSeenTick,
+        extinctTick: null,
+        totalBirths: 2,
+        totalDeaths: 0,
+        peakPopulation: 2,
+        lastPopulation: 2,
+        timeline: [{ tick: Math.max(0, firstSeenTick), population: 2, births: 2, deaths: 0 }]
+      });
+      return sim;
+    };
+
+    const withoutRelief = buildSimulation(0, 1);
+    const expiredRelief = buildSimulation(1, 0);
+    const withRelief = buildSimulation(2, 1);
+
+    withoutRelief.step();
+    expiredRelief.step();
+    withRelief.step();
+
+    const withoutReliefDominant = withoutRelief.snapshot().agents.find((agent) => agent.genome.aggression === 1);
+    const expiredReliefDominant = expiredRelief.snapshot().agents.find((agent) => agent.genome.aggression === 1);
+    const withReliefDominant = withRelief.snapshot().agents.find((agent) => agent.genome.aggression === 1);
+    const withReliefTarget = withRelief.snapshot().agents.find((agent) => agent.genome.aggression === 0);
+
+    expect(withoutReliefDominant?.energy).toBeCloseTo(11.375, 10);
+    expect(expiredReliefDominant?.energy).toBeCloseTo(11.375, 10);
+    expect(withReliefDominant?.energy).toBeCloseTo(10.6875, 10);
+    expect(withReliefTarget?.energy).toBeCloseTo(9.3125, 10);
+  });
+
   it('steers dispersal away from same-lineage crowding when the penalty is enabled', () => {
     const sharedConfig = {
       width: 5,

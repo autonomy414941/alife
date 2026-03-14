@@ -4,6 +4,7 @@
 - `cladeHabitatCoupling=0.75` is still the only canonical 4000-step win; it lifts persistent activity versus the best short stack but leaves `activeCladeDeltaVsNullMean` negative on every canonical panel.
 - `adaptiveCladeHabitatMemoryRate=0.2` is not a safe new baseline: it helped at 1000 steps, then regressed on the 4000-step horizon and slightly worsened the active-clade deficit.
 - `newCladeSettlementCrowdingGraceTicks=36` is the newest positive signal: on the 1000-step smoke it improved `persistentActivityMeanDeltaVsNullMean` from `+24.25` to `+33.5` and `activeCladeDeltaVsNullMean` from `-32.75` to `-28.75`, with matched birth schedules.
+- `newCladeEncounterRestraintGraceBoost=2` is the first bounded post-founding competition win on the static habitat baseline: with `cladeHabitatCoupling=0.75`, `adaptiveCladeHabitatMemoryRate=0`, and `newCladeSettlementCrowdingGraceTicks=36`, it kept `birthScheduleMatchedAllSeeds=true`, kept `persistentActivityMeanDeltaVsNullMean=+18.64`, and improved `activeCladeDeltaVsNullMean` from `-28.5` to `-27.25`.
 - Disturbance openings remain weaker than the habitat axis and still produce large negative active-clade deltas at horizon.
 - `src/simulation.ts` (`2479` lines) and `src/activity.ts` (`2695` lines) are still the main structural bottlenecks; settlement/cladogenesis work keeps landing in the same `LifeSimulation` region.
 

@@ -237,6 +237,7 @@ export interface SimulationConfig {
   lineageHarvestCrowdingPenalty: number;
   lineageOffspringSettlementCrowdingPenalty: number;
   newCladeSettlementCrowdingGraceTicks: number;
+  newCladeEncounterRestraintGraceBoost: number;
   offspringSettlementEcologyScoring: boolean;
   disturbanceSettlementOpeningTicks: number;
   disturbanceSettlementOpeningBonus: number;
