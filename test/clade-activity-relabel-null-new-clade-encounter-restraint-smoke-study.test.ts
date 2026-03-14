@@ -7,8 +7,8 @@ import {
   runCladeActivityRelabelNullNewCladeEncounterRestraintSmokeStudy
 } from '../src/clade-activity-relabel-null-new-clade-encounter-restraint-smoke-study';
 
-describe('runCladeActivityRelabelNullNewCladeEncounterRestraintSmokeStudy', () => {
-  it('compares newborn encounter restraint on the static habitat baseline', () => {
+describe('archived new-clade encounter-restraint smoke study', () => {
+  it('keeps the historical smoke comparison replayable on the static habitat baseline', () => {
     const generatedAt = '2026-03-14T00:00:00.000Z';
     const result = runCladeActivityRelabelNullNewCladeEncounterRestraintSmokeStudy({
       generatedAt,

@@ -117,7 +117,7 @@ describe('relabel-null CLI output', () => {
     });
   });
 
-  it('writes encounter-restraint review output to --output', () => {
+  it('writes archived encounter-restraint review output to --output', () => {
     const generatedAt = '2026-03-14T00:00:00.000Z';
     const expected = {
       generatedAt,

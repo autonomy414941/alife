@@ -15,7 +15,7 @@ type EncounterRestraintSmokeStudyExport = CladeActivityRelabelNullSmokeStudyExpo
   number
 >;
 
-describe('runCladeActivityRelabelNullNewCladeEncounterRestraintReview', () => {
+describe('archived new-clade encounter-restraint review', () => {
   it('prunes the encounter-restraint axis when the threshold-1.0 regression dominates the threshold-1.2 rescue', () => {
     const generatedAt = '2026-03-14T00:00:00.000Z';
     const smokeStudy = buildSmokeStudy({

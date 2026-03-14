@@ -13,8 +13,8 @@ import {
   runCladeActivityRelabelNullNewCladeEncounterRestraintHorizonStudy
 } from '../src/clade-activity-relabel-null-new-clade-encounter-restraint-horizon-study';
 
-describe('runCladeActivityRelabelNullNewCladeEncounterRestraintHorizonStudy', () => {
-  it('compares founder grace against newborn encounter restraint on the canonical horizon surface', () => {
+describe('archived new-clade encounter-restraint horizon study', () => {
+  it('keeps the historical founder-grace comparison replayable on the canonical horizon surface', () => {
     const generatedAt = '2026-03-14T00:00:00.000Z';
     const studyInput = {
       steps: 6,
