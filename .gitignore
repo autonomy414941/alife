@@ -5,3 +5,4 @@ coverage/
 *.log.err
 AGENTS.override.md
 CLAUDE.local.md
+docs/SESSION_BET.md
