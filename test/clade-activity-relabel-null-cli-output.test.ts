@@ -12,6 +12,9 @@ import {
   runCladeActivityRelabelNullDisturbanceOpeningHorizonStudyCli
 } from '../src/clade-activity-relabel-null-disturbance-opening-horizon-study';
 import {
+  runCladeActivityRelabelNullNewCladeEstablishmentFounderCrowdingValidationStudyCli
+} from '../src/clade-activity-relabel-null-new-clade-establishment-founder-crowding-validation-study';
+import {
   runCladeActivityRelabelNullNewCladeEncounterRestraintReviewCli
 } from '../src/clade-activity-relabel-null-new-clade-encounter-restraint-review';
 
@@ -111,6 +114,26 @@ describe('relabel-null CLI output', () => {
           runStudy: ({ generatedAt: stubGeneratedAt }) => ({
             generatedAt: stubGeneratedAt,
             label: 'disturbance-opening-horizon'
+          })
+        }
+      );
+    });
+  });
+
+  it('writes founder crowding validation output to --output', () => {
+    const generatedAt = '2026-03-14T00:00:00.000Z';
+    const expected = {
+      generatedAt,
+      label: 'new-clade-establishment-founder-crowding-validation'
+    };
+
+    expectCliOutputFile(generatedAt, expected, (outputPath, cliGeneratedAt) => {
+      runCladeActivityRelabelNullNewCladeEstablishmentFounderCrowdingValidationStudyCli(
+        ['--generated-at', cliGeneratedAt, '--output', outputPath],
+        {
+          runStudy: ({ generatedAt: stubGeneratedAt }) => ({
+            generatedAt: stubGeneratedAt,
+            label: 'new-clade-establishment-founder-crowding-validation'
           })
         }
       );
