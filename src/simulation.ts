@@ -22,6 +22,11 @@ import {
   LineageOccupancyGrid,
   SettlementAgent
 } from './reproduction';
+import {
+  EncounterOperator,
+  EncounterOperatorContext,
+  dominantEncounterOperator
+} from './encounter';
 import { Rng } from './rng';
 import {
   countExtinctionsInWindow,
@@ -136,6 +141,7 @@ export interface LifeSimulationOptions {
   seed?: number;
   config?: Partial<SimulationConfig>;
   initialAgents?: AgentSeed[];
+  encounterOperator?: EncounterOperator;
 }
 
 interface LocalityFrame {
@@ -153,6 +159,8 @@ export class LifeSimulation {
   private readonly rng: Rng;
 
   private readonly config: SimulationConfig;
+
+  private readonly encounterOperator: EncounterOperator;
 
   private readonly biomeFertility: number[][];
 
@@ -188,6 +196,7 @@ export class LifeSimulation {
 
   constructor(options: LifeSimulationOptions = {}) {
     this.config = resolveSimulationConfig(options.config);
+    this.encounterOperator = options.encounterOperator ?? dominantEncounterOperator;
     this.rng = new Rng(options.seed ?? 1);
     this.biomeFertility = this.buildBiomeFertility();
     this.resources = this.buildInitialResources();
@@ -1394,6 +1403,7 @@ export class LifeSimulation {
 
   private resolveEncounters(): void {
     const byCell = new Map<string, Agent[]>();
+    const context = this.buildEncounterOperatorContext();
 
     for (const agent of this.agents) {
       if (agent.energy <= 0) {
@@ -1411,32 +1421,18 @@ export class LifeSimulation {
         continue;
       }
 
-      agentsInCell.sort((a, b) => b.genome.aggression - a.genome.aggression || b.energy - a.energy);
-      const dominant = agentsInCell[0];
-
-      for (const target of agentsInCell.slice(1)) {
-        const pressure = Math.max(0, dominant.genome.aggression - target.genome.aggression + 0.1);
-        const trophicGap =
-          this.blendedTrophicLevel(dominant.species, dominant.lineage) -
-          this.blendedTrophicLevel(target.species, target.lineage);
-        const predationMultiplier = 1 + Math.max(0, this.config.predationPressure) * Math.max(0, trophicGap);
-        const mitigation = clamp(this.config.defenseMitigation, 0, 0.95);
-        const defenseMultiplier = Math.max(
-          0.05,
-          1 - mitigation * this.blendedDefenseLevel(target.species, target.lineage)
-        );
-        const lineageMultiplier = this.encounterLineageTransferMultiplier(dominant, target);
-        const stolen = Math.min(
-          target.energy,
-          target.energy * pressure * 0.25 * predationMultiplier * defenseMultiplier * lineageMultiplier
-        );
-        if (stolen <= 0) {
-          continue;
-        }
-        target.energy -= stolen;
-        dominant.energy += stolen;
-      }
+      this.encounterOperator(agentsInCell, context);
     }
+  }
+
+  private buildEncounterOperatorContext(): EncounterOperatorContext {
+    return {
+      config: this.config,
+      blendedTrophicLevel: (species, lineage) => this.blendedTrophicLevel(species, lineage),
+      blendedDefenseLevel: (species, lineage) => this.blendedDefenseLevel(species, lineage),
+      lineageTransferMultiplier: (dominant, target) =>
+        this.encounterLineageTransferMultiplier(dominant, target)
+    };
   }
 
   private reproduce(

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { EncounterOperator } from '../src/encounter';
 import { shouldFoundNewClade } from '../src/settlement-cladogenesis';
 import { LifeSimulation } from '../src/simulation';
 
@@ -347,6 +348,72 @@ describe('LifeSimulation', () => {
     expect(restrainedTarget!.energy).toBeCloseTo(8.625, 10);
     expect(splitAggressor!.energy).toBeCloseTo(12.75, 10);
     expect(splitTarget!.energy).toBeCloseTo(7.25, 10);
+  });
+
+  it('allows the encounter operator to be replaced without changing simulation config', () => {
+    const sharedConfig = {
+      width: 1,
+      height: 1,
+      maxResource: 0,
+      resourceRegen: 0,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      harvestCap: 0,
+      reproduceProbability: 0,
+      maxAge: 100,
+      predationPressure: 0,
+      defenseMitigation: 0,
+      trophicForagingPenalty: 0,
+      defenseForagingPenalty: 0
+    };
+    const initialAgents = [
+      {
+        x: 0,
+        y: 0,
+        energy: 10,
+        lineage: 1,
+        species: 1,
+        genome: { metabolism: 1, harvest: 1, aggression: 1 }
+      },
+      {
+        x: 0,
+        y: 0,
+        energy: 10,
+        lineage: 2,
+        species: 2,
+        genome: { metabolism: 1, harvest: 1, aggression: 0 }
+      }
+    ];
+    const visitedCellSizes: number[] = [];
+    const noOpEncounterOperator: EncounterOperator = (agentsInCell) => {
+      visitedCellSizes.push(agentsInCell.length);
+    };
+
+    const defaultSim = new LifeSimulation({
+      seed: 24,
+      config: sharedConfig,
+      initialAgents
+    });
+    const customSim = new LifeSimulation({
+      seed: 24,
+      config: sharedConfig,
+      initialAgents,
+      encounterOperator: noOpEncounterOperator
+    });
+
+    defaultSim.step();
+    customSim.step();
+
+    const defaultAggressor = defaultSim.snapshot().agents.find((agent) => agent.genome.aggression === 1);
+    const defaultTarget = defaultSim.snapshot().agents.find((agent) => agent.genome.aggression === 0);
+    const customAggressor = customSim.snapshot().agents.find((agent) => agent.genome.aggression === 1);
+    const customTarget = customSim.snapshot().agents.find((agent) => agent.genome.aggression === 0);
+
+    expect(visitedCellSizes).toEqual([2]);
+    expect(defaultAggressor?.energy).toBeGreaterThan(10);
+    expect(defaultTarget?.energy).toBeLessThan(10);
+    expect(customAggressor?.energy).toBe(10);
+    expect(customTarget?.energy).toBe(10);
   });
 
   it('reduces abiotic harvest for high-trophic species', () => {
