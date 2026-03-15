@@ -1,6 +1,6 @@
 # Backlog
 
-- [validate] Refresh the canonical founder-grace / ecology-gate horizon artifact so the already-landed decomposition and abundance-aware summaries feed back into planning
+- [validate] Promote absolute active-clade outcomes and abundance-aware viability floors on the founder-grace / ecology-gate surface now that the refreshed canonical artifact exposes both null families
 - [split] Continue extracting the reproduction / founding loop from `src/simulation.ts`
 - [benchmark] Measure how `TaxonHistory.timeline` and `localityFrames` memory/runtime cost scale at longer horizons so streaming-history work can be scoped against real pressure
 - [validate] Add trajectory quality metrics (area under active-clade diversity, innovation survival curves, regime-switch counts) alongside final-state summaries

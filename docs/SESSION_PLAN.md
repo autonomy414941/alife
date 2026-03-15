@@ -2,8 +2,9 @@
 
 ## Compact Context
 - `a70776b` added the non-species-conditioned relabel null and species-versus-clade decomposition helpers; `test/clade-activity-relabel-null-founder-grace-ecology-gate-horizon-study.test.ts` now asserts `nonSpeciesConditionedNull`.
-- `662767d` added abundance-weighted activity metrics, but the canonical March 14 founder-grace / ecology-gate horizon artifact predates decomposition reporting and still drives planner conclusions.
+- `662767d` added abundance-weighted activity metrics, and the canonical founder-grace / ecology-gate horizon artifact has now been refreshed at `docs/clade_activity_relabel_null_founder_grace_ecology_gate_horizon_2026-03-15.json` with `decomposition`, `nonSpeciesConditionedNull`, and abundance-aware summaries surfaced from current code.
 - The strongest current anti-evidence is absolute: under stricter habitat-plus-crowding matching, founder grace gained `+9` versus static habitat at cladogenesis threshold `1.0` but still sat at `-25.75` active clades versus null, while the best ecology gate only improved to `-17` and gave back large persistent-activity gains.
+- The refreshed canonical founder-grace / ecology-gate artifact did not rescue the story: at cladogenesis threshold `1.0` and survival `50`, ecology gating improved species-conditioned active-clade delta only from `-23.75` to `-20.25` while persistent activity delta collapsed from `35.49` to `3.79`; the non-species-conditioned null stayed positive for both arms (`+6` founder grace, `+10.75` ecology gate).
 - `src/simulation.ts` (1989 lines), `src/activity.ts` (1967 lines), and `src/types.ts` (1280 lines) remain the main leverage points; encounter resolution is still a dominant-versus-all collapse.
 - `TaxonHistory.timeline` and per-tick `localityFrames` are still always-on full histories, so every long-horizon study pays both simulation and replay cost.
 - Package manager is npm (`package-lock.json`).
@@ -31,11 +32,11 @@ Underexplored axes: mechanism-surface expansion, scalability measurement
 - [Ecology, Spatial Structure, and Selection Pressure Induce Strong Signatures in Phylogenetic Structure](https://direct.mit.edu/artl/article/doi/10.1162/artl_a_00470/128541/Ecology-Spatial-Structure-and-Selection-Pressure) (Artificial Life, 2025): spatial interaction structure leaves measurable phylogenetic signatures, which is directly relevant because this simulator still collapses encounters to one dominant occupant per cell.
 
 ## Research Gaps
-- If the canonical founder-grace / ecology-gate horizon panel is rerun with the already-landed non-species-conditioned decomposition and abundance-aware summaries surfaced, do the headline conclusions materially change?
+- How should planning weigh the split exposed by `docs/clade_activity_relabel_null_founder_grace_ecology_gate_horizon_2026-03-15.json`, where the species-conditioned matched null stays negative in absolute active clades but the non-species-conditioned null is positive for both founder grace and ecology gating?
 - Does extracting encounter resolution behind a pluggable matchup kernel create a practical seam for richer coexistence mechanisms without first rewriting the whole simulator?
 
 ## Current Anti-Evidence
-- No tested stack beats its null in absolute active clades on the canonical horizon surface: founder grace remains `-23.75` to `-25.75` depending on matching strictness, and the best ecology gate only improves to `-17` while sacrificing persistent activity.
+- No tested stack beats its species-conditioned null in absolute active clades on the canonical horizon surface: founder grace remains `-23.75` to `-25.75` depending on matching strictness, and the refreshed ecology gate only improves to `-20.25` at threshold `1.0` / survival `50` and `-19.25` at threshold `1.2` while sacrificing persistent activity.
 - The simulator is still locked to a one-resource, dominant-only, clonal, one-step local decision architecture, so the current positive results are limited to scalar retuning inside a mechanism family that may be unable to express the coexistence structures the project is claiming to pursue.
 
 ## Bet Queue
@@ -86,6 +87,6 @@ Refactor `resolveEncounters()` so the existing dominant-only rule becomes one im
 
 ## Assumptions / Unknowns
 - Assumption: encounter topology is the smallest high-leverage mechanism seam because it sits directly on the current dominant-only coexistence ceiling without requiring an immediate physiology or inheritance rewrite.
-- Unknown: whether the refreshed canonical horizon artifact will materially narrow or widen the current founder-grace / ecology-gate story once the non-species-conditioned decomposition is surfaced from current code.
+- Observation: the refreshed canonical horizon artifact narrowed ambiguity but not the anti-evidence. It surfaced a real evaluation split between species-conditioned and non-species-conditioned nulls, but the core species-conditioned coexistence story stayed negative.
 - Assumption: promoting absolute and abundance-aware viability criteria will prevent the planner from over-crediting relative improvements that still lose to null.
 - Unknown: whether the cleanest mechanism-slot seam should be runtime pluggability, static interface implementations, or a hybrid that keeps the current config surface stable while opening one alternate operator family.
