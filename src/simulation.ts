@@ -32,13 +32,11 @@ import {
 } from './reproduction';
 import { Rng } from './rng';
 import {
-  collectFounderContextSamples,
-  exportTaxonHistory,
-  FounderContextSamples,
-  seedTaxonHistory,
-  TaxonHistoryState,
-  updateTaxonHistory
-} from './simulation-history';
+  countExtinctionsInWindow,
+  countOriginationsInWindow,
+  SimulationEvolutionHistory
+} from './simulation-evolution-history';
+import { TaxonHistoryState } from './simulation-history';
 import {
   resolveEncounterLineageTransferMultiplier,
   resolveOffspringSettlementContext,
@@ -53,7 +51,6 @@ import {
   Agent,
   AgentSeed,
   DisturbanceAnalytics,
-  DurationStats,
   EvolutionAnalyticsSnapshot,
   ForcingAnalytics,
   EvolutionHistorySnapshot,
@@ -68,9 +65,7 @@ import {
   SimulationSnapshot,
   StrategyAnalytics,
   StrategyAxisAnalytics,
-  SpeciesTurnoverAnalytics,
   StepSummary,
-  TaxonTurnoverAnalytics,
   TurnoverWindow
 } from './types';
 
@@ -186,9 +181,7 @@ export class LifeSimulation {
 
   private nextLineageId = 1;
 
-  private readonly cladeHistory = new Map<number, TaxonHistoryState>();
-
-  private readonly speciesHistory = new Map<number, TaxonHistoryState>();
+  private readonly evolutionHistory = new SimulationEvolutionHistory();
 
   private readonly cladeFounderGenome = new Map<number, Genome>();
 
@@ -205,10 +198,6 @@ export class LifeSimulation {
   private readonly disturbanceEvents: DisturbanceEventState[] = [];
 
   private readonly disturbanceSettlementOpenUntilTick: number[][];
-
-  private extinctClades = 0;
-
-  private extinctSpecies = 0;
 
   constructor(options: LifeSimulationOptions = {}) {
     this.config = resolveSimulationConfig(options.config);
@@ -298,47 +287,16 @@ export class LifeSimulation {
     const meanEnergy = this.meanEnergy();
     const meanGenome = this.meanGenome();
     const diversity = this.diversityMetrics();
-    const cladeFounderContextSamples =
-      founderOccupancy === undefined
-        ? new Map<number, FounderContextSamples>()
-        : collectFounderContextSamples(
-            offspring,
-            (agent) => agent.lineage,
-            nextTick,
-            founderOccupancy,
-            (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
-            (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
-          );
-    const speciesFounderContextSamples =
-      founderOccupancy === undefined
-        ? new Map<number, FounderContextSamples>()
-        : collectFounderContextSamples(
-            offspring,
-            (agent) => agent.species,
-            nextTick,
-            founderOccupancy,
-            (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
-            (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
-          );
     this.tickCount = nextTick;
-    const cladeExtinctionDelta = updateTaxonHistory(
-      this.cladeHistory,
-      this.tickCount,
-      this.countBy(this.agents, (agent) => agent.lineage),
-      this.countBy(offspring, (agent) => agent.lineage),
-      this.countBy(deadAgents, (agent) => agent.lineage),
-      cladeFounderContextSamples
-    );
-    const speciesExtinctionDelta = updateTaxonHistory(
-      this.speciesHistory,
-      this.tickCount,
-      this.countBy(this.agents, (agent) => agent.species),
-      this.countBy(offspring, (agent) => agent.species),
-      this.countBy(deadAgents, (agent) => agent.species),
-      speciesFounderContextSamples
-    );
-    this.extinctClades += cladeExtinctionDelta;
-    this.extinctSpecies += speciesExtinctionDelta;
+    const { cladeExtinctionDelta, speciesExtinctionDelta } = this.evolutionHistory.recordStep({
+      tick: this.tickCount,
+      agents: this.agents,
+      offspring,
+      deadAgents,
+      founderOccupancy,
+      effectiveBiomeFertilityAt: (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
+      neighborhoodCrowdingAt: (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
+    });
     this.recordLocalityFrame(this.tickCount);
     updateDisturbanceEventState(this.disturbanceEvents, this.tickCount, afterCount, diversity.activeSpecies);
 
@@ -355,8 +313,8 @@ export class LifeSimulation {
       selectionDifferential: this.selectionDifferential(meanGenome),
       cladeExtinctions: Math.max(0, cladeExtinctionDelta),
       speciesExtinctions: Math.max(0, speciesExtinctionDelta),
-      cumulativeExtinctClades: this.extinctClades,
-      cumulativeExtinctSpecies: this.extinctSpecies
+      cumulativeExtinctClades: this.evolutionHistory.getExtinctClades(),
+      cumulativeExtinctSpecies: this.evolutionHistory.getExtinctSpecies()
     };
   }
 
@@ -391,8 +349,8 @@ export class LifeSimulation {
       activeClades: diversity.activeClades,
       activeSpecies: diversity.activeSpecies,
       dominantSpeciesShare: diversity.dominantSpeciesShare,
-      extinctClades: this.extinctClades,
-      extinctSpecies: this.extinctSpecies,
+      extinctClades: this.evolutionHistory.getExtinctClades(),
+      extinctSpecies: this.evolutionHistory.getExtinctSpecies(),
       agents: this.agents.map((agent) => ({
         ...agent,
         genome: { ...agent.genome }
@@ -401,12 +359,7 @@ export class LifeSimulation {
   }
 
   history(): EvolutionHistorySnapshot {
-    return {
-      clades: exportTaxonHistory(this.cladeHistory),
-      species: exportTaxonHistory(this.speciesHistory),
-      extinctClades: this.extinctClades,
-      extinctSpecies: this.extinctSpecies
-    };
+    return this.evolutionHistory.snapshot();
   }
 
   analytics(windowSize = 25): EvolutionAnalyticsSnapshot {
@@ -414,8 +367,8 @@ export class LifeSimulation {
     return {
       tick: this.tickCount,
       window,
-      species: this.buildSpeciesTurnover(window),
-      clades: this.buildTaxonTurnover(this.cladeHistory, window),
+      species: this.evolutionHistory.buildSpeciesTurnover(window, this.tickCount),
+      clades: this.evolutionHistory.buildCladeTurnover(window, this.tickCount),
       strategy: this.buildStrategyAnalytics(),
       forcing: this.buildForcingAnalytics(),
       disturbance: this.buildDisturbanceAnalytics(window),
@@ -964,41 +917,6 @@ export class LifeSimulation {
     return counts;
   }
 
-  private buildSpeciesTurnover(window: TurnoverWindow): SpeciesTurnoverAnalytics {
-    const speciationsInWindow = this.countOriginationsInWindow(this.speciesHistory, window);
-    const extinctionsInWindow = this.countExtinctionsInWindow(this.speciesHistory, window);
-    const denominator = window.size;
-    return {
-      speciationsInWindow,
-      extinctionsInWindow,
-      speciationRate: denominator === 0 ? 0 : speciationsInWindow / denominator,
-      extinctionRate: denominator === 0 ? 0 : extinctionsInWindow / denominator,
-      turnoverRate: denominator === 0 ? 0 : (speciationsInWindow + extinctionsInWindow) / denominator,
-      netDiversificationRate: denominator === 0 ? 0 : (speciationsInWindow - extinctionsInWindow) / denominator,
-      extinctLifespan: this.summarizeDurations(this.extinctDurations(this.speciesHistory)),
-      activeAge: this.summarizeDurations(this.activeDurations(this.speciesHistory))
-    };
-  }
-
-  private buildTaxonTurnover(
-    history: Map<number, TaxonHistoryState>,
-    window: TurnoverWindow
-  ): TaxonTurnoverAnalytics {
-    const originationsInWindow = this.countOriginationsInWindow(history, window);
-    const extinctionsInWindow = this.countExtinctionsInWindow(history, window);
-    const denominator = window.size;
-    return {
-      originationsInWindow,
-      extinctionsInWindow,
-      originationRate: denominator === 0 ? 0 : originationsInWindow / denominator,
-      extinctionRate: denominator === 0 ? 0 : extinctionsInWindow / denominator,
-      turnoverRate: denominator === 0 ? 0 : (originationsInWindow + extinctionsInWindow) / denominator,
-      netDiversificationRate: denominator === 0 ? 0 : (originationsInWindow - extinctionsInWindow) / denominator,
-      extinctLifespan: this.summarizeDurations(this.extinctDurations(history)),
-      activeAge: this.summarizeDurations(this.activeDurations(history))
-    };
-  }
-
   private buildStrategyAnalytics(): StrategyAnalytics {
     const speciesCounts = this.countBy(this.agents, (agent) => agent.species);
     const habitatValues: number[] = [];
@@ -1067,85 +985,30 @@ export class LifeSimulation {
     };
   }
 
+  private get cladeHistory(): Map<number, TaxonHistoryState> {
+    return this.evolutionHistory.getCladeHistory();
+  }
+
+  private get speciesHistory(): Map<number, TaxonHistoryState> {
+    return this.evolutionHistory.getSpeciesHistory();
+  }
+
   private countOriginationsInWindow(history: Map<number, TaxonHistoryState>, window: TurnoverWindow): number {
-    let count = 0;
-    for (const state of history.values()) {
-      if (state.firstSeenTick > 0 && state.firstSeenTick >= window.startTick && state.firstSeenTick <= window.endTick) {
-        count += 1;
-      }
-    }
-    return count;
+    return countOriginationsInWindow(history, window);
   }
 
   private countExtinctionsInWindow(history: Map<number, TaxonHistoryState>, window: TurnoverWindow): number {
-    let count = 0;
-    for (const state of history.values()) {
-      if (state.extinctTick !== null && state.extinctTick >= window.startTick && state.extinctTick <= window.endTick) {
-        count += 1;
-      }
-    }
-    return count;
-  }
-
-  private extinctDurations(history: Map<number, TaxonHistoryState>): number[] {
-    const values: number[] = [];
-    for (const state of history.values()) {
-      if (state.extinctTick !== null) {
-        values.push(state.extinctTick - state.firstSeenTick);
-      }
-    }
-    return values;
-  }
-
-  private activeDurations(history: Map<number, TaxonHistoryState>): number[] {
-    const values: number[] = [];
-    for (const state of history.values()) {
-      if (state.extinctTick === null) {
-        values.push(this.tickCount - state.firstSeenTick);
-      }
-    }
-    return values;
-  }
-
-  private summarizeDurations(values: number[]): DurationStats {
-    if (values.length === 0) {
-      return { count: 0, mean: 0, max: 0 };
-    }
-    const total = values.reduce((sum, value) => sum + value, 0);
-    const max = Math.max(...values);
-    return {
-      count: values.length,
-      mean: total / values.length,
-      max
-    };
+    return countExtinctionsInWindow(history, window);
   }
 
   private initializeEvolutionHistory(): void {
     const initialOccupancy = this.buildOccupancyGrid(this.agents);
-    seedTaxonHistory(
-      this.cladeHistory,
-      collectFounderContextSamples(
-        this.agents,
-        (agent) => agent.lineage,
-        0,
-        initialOccupancy,
-        (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
-        (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
-      ),
-      0
-    );
-    seedTaxonHistory(
-      this.speciesHistory,
-      collectFounderContextSamples(
-        this.agents,
-        (agent) => agent.species,
-        0,
-        initialOccupancy,
-        (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
-        (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
-      ),
-      0
-    );
+    this.evolutionHistory.initialize(this.agents, {
+      tick: 0,
+      occupancy: initialOccupancy,
+      effectiveBiomeFertilityAt: (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
+      neighborhoodCrowdingAt: (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
+    });
   }
 
   private initializeCladeFounderGenomes(): void {
