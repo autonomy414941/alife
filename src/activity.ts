@@ -1,14 +1,18 @@
 import {
   buildActivitySeedPanelThresholdAggregate,
-  buildActivitySeedPanelThresholdSeedResult,
-  buildNullableNumericAggregate,
-  buildNumericAggregate,
-  divideOrNull,
-  findThresholdResult,
   max,
   mean,
   min
 } from './activity-thresholds';
+import {
+  buildCladeActivityCladogenesisSeedResult,
+  buildCladeActivitySeedPanelSeedResult,
+  buildCladeSpeciesActivityCouplingSeedResult,
+  buildCladeSpeciesActivityCouplingThresholdAggregate,
+  buildCladeSpeciesCountAggregate,
+  buildSpeciesActivitySeedPanelSeedResult,
+  truncateEvolutionHistory
+} from './activity-study-results';
 import {
   buildCladeActivityRelabelNullCladeHabitatCouplingSweepResult,
   buildCladeActivityRelabelNullCladeInteractionCouplingSweepResult,
@@ -767,6 +771,10 @@ export function runSpeciesActivitySeedPanel(input: RunSpeciesActivitySeedPanelIn
       windowSize,
       burnIn,
       minSurvivalTicks
+    }, {
+      analyzeSpeciesActivitySummary: (analysisInput) => analyzeSpeciesActivity(analysisInput).summary,
+      analyzePersistentSpeciesActivitySummary: (analysisInput) =>
+        analyzePersistentSpeciesActivity(analysisInput).summary
     });
   });
 
@@ -810,6 +818,10 @@ export function runCladeActivitySeedPanel(input: RunCladeActivitySeedPanelInput)
       windowSize,
       burnIn,
       minSurvivalTicks
+    }, {
+      analyzeCladeActivitySummary: (analysisInput) => analyzeCladeActivity(analysisInput).summary,
+      analyzePersistentCladeActivitySummary: (analysisInput) =>
+        analyzePersistentCladeActivity(analysisInput).summary
     });
   });
 
@@ -857,6 +869,10 @@ export function runCladeActivityCladogenesisSweep(
           windowSize,
           burnIn,
           minSurvivalTicks
+        }, {
+          analyzeCladeActivitySummary: (analysisInput) => analyzeCladeActivity(analysisInput).summary,
+          analyzePersistentCladeActivitySummary: (analysisInput) =>
+            analyzePersistentCladeActivity(analysisInput).summary
         });
       });
 
@@ -935,6 +951,10 @@ export function runCladeActivityCladogenesisHorizonSweep(
           windowSize,
           burnIn,
           minSurvivalTicks
+        }, {
+          analyzeCladeActivitySummary: (analysisInput) => analyzeCladeActivity(analysisInput).summary,
+          analyzePersistentCladeActivitySummary: (analysisInput) =>
+            analyzePersistentCladeActivity(analysisInput).summary
         });
       });
 
@@ -1045,6 +1065,13 @@ export function runCladeSpeciesActivityCouplingStudy(
           windowSize,
           burnIn,
           minSurvivalTicks
+        }, {
+          analyzeSpeciesActivitySummary: (analysisInput) => analyzeSpeciesActivity(analysisInput).summary,
+          analyzePersistentSpeciesActivitySummary: (analysisInput) =>
+            analyzePersistentSpeciesActivity(analysisInput).summary,
+          analyzeCladeActivitySummary: (analysisInput) => analyzeCladeActivity(analysisInput).summary,
+          analyzePersistentCladeActivitySummary: (analysisInput) =>
+            analyzePersistentCladeActivity(analysisInput).summary
         });
       });
 
@@ -1455,219 +1482,6 @@ function executeActivitySimulation(input: RunActivitySimulationInput): {
   };
 }
 
-function buildSpeciesActivitySeedPanelSeedResult(input: {
-  seed: number;
-  finalSummary: StepSummary;
-  history: EvolutionHistorySnapshot;
-  windowSize: number;
-  burnIn: number;
-  minSurvivalTicks: number[];
-}): SpeciesActivitySeedPanelSeedResult {
-  const rawSummary = analyzeSpeciesActivity({
-    species: input.history.species,
-    windowSize: input.windowSize,
-    burnIn: input.burnIn,
-    maxTick: input.finalSummary.tick
-  }).summary;
-
-  return {
-    seed: input.seed,
-    finalSummary: input.finalSummary,
-    rawSummary,
-    thresholds: input.minSurvivalTicks.map((threshold) =>
-      buildActivitySeedPanelThresholdSeedResult({
-        minSurvivalTicks: threshold,
-        summary: analyzePersistentSpeciesActivity({
-          species: input.history.species,
-          windowSize: input.windowSize,
-          burnIn: input.burnIn,
-          maxTick: input.finalSummary.tick,
-          minSurvivalTicks: threshold
-        }).summary
-      })
-    )
-  };
-}
-
-function buildCladeActivitySeedPanelSeedResult(input: {
-  seed: number;
-  finalSummary: StepSummary;
-  history: EvolutionHistorySnapshot;
-  windowSize: number;
-  burnIn: number;
-  minSurvivalTicks: number[];
-}): CladeActivitySeedPanelSeedResult {
-  const rawSummary = analyzeCladeActivity({
-    clades: input.history.clades,
-    windowSize: input.windowSize,
-    burnIn: input.burnIn,
-    maxTick: input.finalSummary.tick
-  }).summary;
-
-  return {
-    seed: input.seed,
-    finalSummary: input.finalSummary,
-    rawSummary,
-    thresholds: input.minSurvivalTicks.map((threshold) =>
-      buildActivitySeedPanelThresholdSeedResult({
-        minSurvivalTicks: threshold,
-        summary: analyzePersistentCladeActivity({
-          clades: input.history.clades,
-          windowSize: input.windowSize,
-          burnIn: input.burnIn,
-          maxTick: input.finalSummary.tick,
-          minSurvivalTicks: threshold
-        }).summary
-      })
-    ),
-  };
-}
-
-function buildCladeActivityCladogenesisSeedResult(input: {
-  seed: number;
-  finalSummary: StepSummary;
-  history: EvolutionHistorySnapshot;
-  windowSize: number;
-  burnIn: number;
-  minSurvivalTicks: number[];
-}): CladeActivityCladogenesisSweepSeedResult {
-  const activity = buildCladeActivitySeedPanelSeedResult(input);
-
-  return {
-    ...activity,
-    counts: buildCladeSpeciesCountSummary(input.finalSummary, input.history.clades.length, input.history.species.length)
-  };
-}
-
-function buildCladeSpeciesActivityCouplingSeedResult(input: {
-  seed: number;
-  finalSummary: StepSummary;
-  history: EvolutionHistorySnapshot;
-  windowSize: number;
-  burnIn: number;
-  minSurvivalTicks: number[];
-}): CladeSpeciesActivityCouplingSeedResult {
-  const species = buildSpeciesActivitySeedPanelSeedResult(input);
-  const clade = buildCladeActivitySeedPanelSeedResult(input);
-
-  return {
-    seed: input.seed,
-    finalSummary: input.finalSummary,
-    speciesRawSummary: species.rawSummary,
-    cladeRawSummary: clade.rawSummary,
-    thresholds: input.minSurvivalTicks.map((minSurvivalTicks) =>
-      buildCladeSpeciesActivityCouplingThresholdSeedResult({
-        minSurvivalTicks,
-        species: findThresholdResult(species.seed, minSurvivalTicks, species.thresholds),
-        clade: findThresholdResult(clade.seed, minSurvivalTicks, clade.thresholds)
-      })
-    )
-  };
-}
-
-function buildCladeSpeciesActivityCouplingThresholdSeedResult(input: {
-  minSurvivalTicks: number;
-  species: SpeciesActivitySeedPanelThresholdSeedResult;
-  clade: CladeActivitySeedPanelThresholdSeedResult;
-}): CladeSpeciesActivityCouplingThresholdSeedResult {
-  return {
-    minSurvivalTicks: input.minSurvivalTicks,
-    species: input.species,
-    clade: input.clade,
-    cladeToSpeciesPersistentWindowFraction: divideOrNull(
-      input.clade.persistentWindowFraction,
-      input.species.persistentWindowFraction
-    ),
-    persistentWindowFractionDelta: input.clade.persistentWindowFraction - input.species.persistentWindowFraction,
-    cladeToSpeciesPersistentActivityMeanRatio: divideOrNull(
-      input.clade.summary.postBurnInPersistentNewActivityMean,
-      input.species.summary.postBurnInPersistentNewActivityMean
-    ),
-    persistentActivityMeanDelta:
-      input.clade.summary.postBurnInPersistentNewActivityMean -
-      input.species.summary.postBurnInPersistentNewActivityMean
-  };
-}
-
-function buildCladeSpeciesActivityCouplingThresholdAggregate(
-  minSurvivalTicks: number,
-  seedResults: CladeSpeciesActivityCouplingSeedResult[]
-): CladeSpeciesActivityCouplingThresholdAggregate {
-  const thresholdResults = seedResults.map((seedResult) =>
-    findThresholdResult(seedResult.seed, minSurvivalTicks, seedResult.thresholds)
-  );
-  const speciesSeedResults = seedResults.map((seedResult) => ({
-    seed: seedResult.seed,
-    thresholds: seedResult.thresholds.map((threshold) => threshold.species)
-  }));
-  const cladeSeedResults = seedResults.map((seedResult) => ({
-    seed: seedResult.seed,
-    thresholds: seedResult.thresholds.map((threshold) => threshold.clade)
-  }));
-
-  return {
-    minSurvivalTicks,
-    species: buildActivitySeedPanelThresholdAggregate(minSurvivalTicks, speciesSeedResults),
-    clade: buildActivitySeedPanelThresholdAggregate(minSurvivalTicks, cladeSeedResults),
-    cladeToSpeciesPersistentWindowFraction: buildNullableNumericAggregate(
-      thresholdResults.flatMap((threshold) =>
-        threshold.cladeToSpeciesPersistentWindowFraction === null
-          ? []
-          : [threshold.cladeToSpeciesPersistentWindowFraction]
-      )
-    ),
-    persistentWindowFractionDelta: buildNumericAggregate(
-      thresholdResults.map((threshold) => threshold.persistentWindowFractionDelta)
-    ),
-    cladeToSpeciesPersistentActivityMeanRatio: buildNullableNumericAggregate(
-      thresholdResults.flatMap((threshold) =>
-        threshold.cladeToSpeciesPersistentActivityMeanRatio === null
-          ? []
-          : [threshold.cladeToSpeciesPersistentActivityMeanRatio]
-      )
-    ),
-    persistentActivityMeanDelta: buildNumericAggregate(
-      thresholdResults.map((threshold) => threshold.persistentActivityMeanDelta)
-    )
-  };
-}
-
-function truncateEvolutionHistory(history: EvolutionHistorySnapshot, maxTick: number): EvolutionHistorySnapshot {
-  return {
-    clades: truncateTaxonHistory(history.clades, maxTick),
-    species: truncateTaxonHistory(history.species, maxTick),
-    extinctClades: history.clades.filter((clade) => clade.extinctTick !== null && clade.extinctTick <= maxTick).length,
-    extinctSpecies: history.species.filter((species) => species.extinctTick !== null && species.extinctTick <= maxTick)
-      .length
-  };
-}
-
-function truncateTaxonHistory(taxa: TaxonHistory[], maxTick: number): TaxonHistory[] {
-  return taxa.flatMap((taxon) => {
-    if (taxon.firstSeenTick > maxTick) {
-      return [];
-    }
-
-    const timeline = taxon.timeline.filter((point) => point.tick <= maxTick);
-    if (timeline.length === 0) {
-      return [];
-    }
-
-    return [
-      {
-        id: taxon.id,
-        firstSeenTick: taxon.firstSeenTick,
-        extinctTick: taxon.extinctTick !== null && taxon.extinctTick <= maxTick ? taxon.extinctTick : null,
-        totalBirths: timeline.reduce((total, point) => total + point.births, 0),
-        totalDeaths: timeline.reduce((total, point) => total + point.deaths, 0),
-        peakPopulation: max(timeline.map((point) => point.population)),
-        founderContext: taxon.founderContext === undefined ? undefined : { ...taxon.founderContext },
-        timeline
-      }
-    ];
-  });
-}
-
 function buildTaxonActivitySummary(
   totalTaxa: number,
   stepsExecuted: number,
@@ -1889,38 +1703,6 @@ function withCladeInteractionCoupling(
       ...simulation?.config,
       cladeInteractionCoupling
     }
-  };
-}
-
-function buildCladeSpeciesCountSummary(
-  finalSummary: StepSummary,
-  totalClades: number,
-  totalSpecies: number
-): CladeSpeciesCountSummary {
-  return {
-    activeClades: finalSummary.activeClades,
-    activeSpecies: finalSummary.activeSpecies,
-    totalClades,
-    totalSpecies,
-    activeCladeToSpeciesRatio: divideOrZero(finalSummary.activeClades, finalSummary.activeSpecies),
-    totalCladeToSpeciesRatio: divideOrZero(totalClades, totalSpecies)
-  };
-}
-
-function buildCladeSpeciesCountAggregate(
-  seedResults: CladeActivityCladogenesisSweepSeedResult[]
-): CladeSpeciesCountAggregate {
-  return {
-    activeClades: buildNumericAggregate(seedResults.map((seedResult) => seedResult.counts.activeClades)),
-    activeSpecies: buildNumericAggregate(seedResults.map((seedResult) => seedResult.counts.activeSpecies)),
-    totalClades: buildNumericAggregate(seedResults.map((seedResult) => seedResult.counts.totalClades)),
-    totalSpecies: buildNumericAggregate(seedResults.map((seedResult) => seedResult.counts.totalSpecies)),
-    activeCladeToSpeciesRatio: buildNumericAggregate(
-      seedResults.map((seedResult) => seedResult.counts.activeCladeToSpeciesRatio)
-    ),
-    totalCladeToSpeciesRatio: buildNumericAggregate(
-      seedResults.map((seedResult) => seedResult.counts.totalCladeToSpeciesRatio)
-    )
   };
 }
 
