@@ -6,7 +6,6 @@
 - The best March 14, 2026 ecology-gate follow-up narrows the active-clade deficit to `-17` at cladogenesis threshold `1.0`, but persistent activity drops from `35.49` to `3.03` at `minSurvivalTicks=50`.
 - Recent refactors already extracted `src/activity-study-results.ts`, `src/clade-activity-relabel-null-study-runner.ts`, `src/simulation-history.ts`, and `src/simulation-evolution-history.ts`, but [src/activity.ts](/home/dev/projects/alife-auto-dev/alife/src/activity.ts) is still 1860 lines, [src/simulation.ts](/home/dev/projects/alife-auto-dev/alife/src/simulation.ts) is still 2192 lines, and [src/clade-activity-relabel-null-new-clade-establishment-horizon-study.ts](/home/dev/projects/alife-auto-dev/alife/src/clade-activity-relabel-null-new-clade-establishment-horizon-study.ts) is 689 lines.
 - `buildMatchedSchedulePseudoClades()` still repartitions realized species histories, so any intervention that increases upstream species origination or persistence is partly inherited by the matched null.
-- The local [docs/clade_activity_relabel_null_disturbance_opening_horizon_2026-03-14.json](/home/dev/projects/alife-auto-dev/alife/docs/clade_activity_relabel_null_disturbance_opening_horizon_2026-03-14.json) file is still zero bytes even though CLI-output tests cover representative `--output` writes.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
