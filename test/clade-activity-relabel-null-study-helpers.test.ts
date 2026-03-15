@@ -12,6 +12,8 @@ import {
   CladeActivityProbeSummary,
   CladeActivityRelabelNullSeedResult,
   CladeActivityRelabelNullThresholdResult,
+  SpeciesActivityPersistenceSummary,
+  SpeciesActivityProbeSummary,
   StepSummary
 } from '../src/types';
 
@@ -42,6 +44,42 @@ function createRawSummary(meanNewActivity: number): CladeActivityProbeSummary {
     postBurnInWindows: 4,
     postBurnInWindowsWithNewActivity: 3,
     postBurnInNewClades: 3,
+    postBurnInNewActivityMean: meanNewActivity,
+    postBurnInNewActivityMin: meanNewActivity,
+    postBurnInNewActivityMax: meanNewActivity,
+    finalCumulativeActivity: 30,
+    finalNormalizedCumulativeActivity: 0.3,
+    finalNewActivity: meanNewActivity
+  };
+}
+
+function createSpeciesPersistenceSummary(
+  meanPersistentActivity: number,
+  windowsWithPersistentActivity: number,
+  evaluableWindows = 4
+): SpeciesActivityPersistenceSummary {
+  return {
+    minSurvivalTicks: 50,
+    postBurnInWindows: evaluableWindows,
+    censoredPostBurnInWindows: 0,
+    evaluablePostBurnInWindows: evaluableWindows,
+    postBurnInWindowsWithPersistentNewActivity: windowsWithPersistentActivity,
+    postBurnInPersistentNewSpecies: windowsWithPersistentActivity,
+    postBurnInPersistentNewActivityMean: meanPersistentActivity,
+    postBurnInPersistentNewActivityMin: meanPersistentActivity,
+    postBurnInPersistentNewActivityMax: meanPersistentActivity,
+    finalPersistentNewActivity: meanPersistentActivity,
+    finalWindowCensored: false
+  };
+}
+
+function createSpeciesRawSummary(meanNewActivity: number): SpeciesActivityProbeSummary {
+  return {
+    stepsExecuted: 100,
+    totalSpecies: 5,
+    postBurnInWindows: 4,
+    postBurnInWindowsWithNewActivity: 3,
+    postBurnInNewSpecies: 3,
     postBurnInNewActivityMean: meanNewActivity,
     postBurnInNewActivityMin: meanNewActivity,
     postBurnInNewActivityMax: meanNewActivity,
@@ -95,6 +133,7 @@ function createSeedResult(input: {
     relabelSeed: input.seed + 1000,
     finalSummary: createFinalSummary(input.finalPopulation, input.actualActiveClades),
     actualRawSummary: createRawSummary(input.actualRawMean),
+    actualSpeciesRawSummary: createSpeciesRawSummary(input.actualRawMean),
     matchedNullRawSummary: createRawSummary(input.matchedNullRawMean),
     actualBirthSchedule: [{ tick: 1, births: 1 }],
     matchedNullBirthSchedule: [{ tick: 1, births: 1 }],
@@ -105,6 +144,12 @@ function createSeedResult(input: {
     actualFounderHabitatCrowdingSchedule: [],
     matchedNullFounderHabitatCrowdingSchedule: [],
     founderHabitatCrowdingScheduleMatched: null,
+    actualSpeciesThresholds: [
+      buildActivitySeedPanelThresholdSeedResult({
+        minSurvivalTicks: 50,
+        summary: createSpeciesPersistenceSummary(input.actualPersistentMean, 3)
+      })
+    ],
     thresholds: [
       buildCladeActivityRelabelNullThresholdSeedResult({
         minSurvivalTicks: 50,

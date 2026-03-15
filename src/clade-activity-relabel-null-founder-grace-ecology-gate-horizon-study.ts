@@ -1,4 +1,4 @@
-import { RunCladeActivityRelabelNullStudyInput } from './activity';
+import { RunCladeActivityRelabelNullStudyInput, runCladeActivityRelabelNullStudy } from './activity';
 import {
   FounderGraceFollowupComparison,
   compareFounderGraceFollowupStudies
@@ -17,6 +17,11 @@ import {
   FOUNDER_GRACE_ECOLOGY_GATE_CLADE_HABITAT_COUPLING,
   FOUNDER_GRACE_ECOLOGY_GATE_SETTLEMENT_GRACE_TICKS
 } from './clade-activity-relabel-null-founder-grace-ecology-gate-smoke-study';
+import {
+  CladeActivityRelabelNullSpeciesDecompositionComparison,
+  compareCladeActivityRelabelNullSpeciesDecomposition,
+  supportsRelabelNullSpeciesDecomposition
+} from './clade-activity-relabel-null-species-decomposition';
 import {
   CladeActivityRelabelNullDiagnosticSnapshot,
   CladeActivityRelabelNullStudyExport,
@@ -74,6 +79,7 @@ export interface CladeActivityRelabelNullFounderGraceEcologyGateHorizonStudyExpo
     ecologyGateSimulationConfig: Partial<SimulationConfig>;
   };
   comparison: CladeActivityRelabelNullFounderGraceEcologyGateHorizonComparison[];
+  decomposition: CladeActivityRelabelNullSpeciesDecompositionComparison[];
   ecologyGateStudy: CladeActivityRelabelNullStudyExport;
 }
 
@@ -93,6 +99,14 @@ export function runCladeActivityRelabelNullFounderGraceEcologyGateHorizonStudy(
     baselineStudy: input.baselineStudy,
     currentStudy: input.ecologyGateStudy
   });
+  const baselineDecompositionStudy = resolveDecompositionStudy(
+    study.baselineStudy,
+    study.baselineStudyInput
+  );
+  const currentDecompositionStudy = resolveDecompositionStudy(
+    study.currentStudy,
+    study.currentStudyInput
+  );
 
   return {
     generatedAt: study.generatedAt,
@@ -119,6 +133,10 @@ export function runCladeActivityRelabelNullFounderGraceEcologyGateHorizonStudy(
       ecologyGateSimulationConfig: study.currentStudyInput.simulation?.config ?? {}
     },
     comparison: mapFounderGraceEcologyGateHorizonComparisons(study.comparison),
+    decomposition: compareCladeActivityRelabelNullSpeciesDecomposition(
+      currentDecompositionStudy,
+      baselineDecompositionStudy
+    ),
     ecologyGateStudy: study.currentStudy
   };
 }
@@ -163,6 +181,17 @@ function mapFounderGraceEcologyGateHorizonComparisons(
     founderGraceDiagnostics: comparison.founderGraceDiagnostics,
     ecologyGateDiagnostics: comparison.currentDiagnostics
   }));
+}
+
+function resolveDecompositionStudy(
+  study: CladeActivityRelabelNullStudyExport,
+  studyInput: RunCladeActivityRelabelNullStudyInput
+): CladeActivityRelabelNullStudyExport {
+  if (supportsRelabelNullSpeciesDecomposition(study)) {
+    return study;
+  }
+
+  return runCladeActivityRelabelNullStudy(studyInput);
 }
 
 if (require.main === module) {

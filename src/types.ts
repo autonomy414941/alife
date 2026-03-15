@@ -1088,6 +1088,7 @@ export interface CladeActivityRelabelNullSeedResult {
   relabelSeed: number;
   finalSummary: StepSummary;
   actualRawSummary: CladeActivityProbeSummary;
+  actualSpeciesRawSummary: SpeciesActivityProbeSummary;
   matchedNullRawSummary: CladeActivityProbeSummary;
   actualBirthSchedule: TaxonBirthSchedulePoint[];
   matchedNullBirthSchedule: TaxonBirthSchedulePoint[];
@@ -1098,6 +1099,7 @@ export interface CladeActivityRelabelNullSeedResult {
   actualFounderHabitatCrowdingSchedule: TaxonFounderHabitatCrowdingSchedulePoint[];
   matchedNullFounderHabitatCrowdingSchedule: TaxonFounderHabitatCrowdingSchedulePoint[];
   founderHabitatCrowdingScheduleMatched: boolean | null;
+  actualSpeciesThresholds: SpeciesActivitySeedPanelThresholdSeedResult[];
   thresholds: CladeActivityRelabelNullThresholdSeedResult[];
 }
 

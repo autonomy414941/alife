@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  analyzePersistentSpeciesActivity,
   analyzeCladeActivity,
-  analyzePersistentCladeActivity
+  analyzePersistentCladeActivity,
+  analyzeSpeciesActivity
 } from '../src/activity';
 import { buildCladeActivityRelabelNullThresholdResults } from '../src/clade-activity-relabel-null-study-runner';
 import { EvolutionHistorySnapshot, TaxonHistory } from '../src/types';
@@ -91,7 +93,9 @@ describe('buildCladeActivityRelabelNullThresholdResults', () => {
           }
         }),
         analyzeCladeActivitySummary: (input) => analyzeCladeActivity(input).summary,
+        analyzeSpeciesActivitySummary: (input) => analyzeSpeciesActivity(input).summary,
         analyzePersistentCladeActivitySummary: (input) => analyzePersistentCladeActivity(input).summary,
+        analyzePersistentSpeciesActivitySummary: (input) => analyzePersistentSpeciesActivity(input).summary,
         withCladogenesisThreshold: (simulation, cladogenesisThreshold) => ({
           ...simulation,
           config: {
@@ -113,6 +117,7 @@ describe('buildCladeActivityRelabelNullThresholdResults', () => {
       founderHabitatScheduleMatched: true,
       founderHabitatCrowdingScheduleMatched: true
     });
+    expect(thresholdResults[0]?.seedResults[0]?.actualSpeciesThresholds[0]?.minSurvivalTicks).toBe(1);
     expect(thresholdResults[0]?.seedResults[0]?.thresholds[0]?.minSurvivalTicks).toBe(1);
     expect(thresholdResults[0]?.aggregates[0]?.diagnostics.activeCladeDeltaVsNull.mean).toBe(
       thresholdResults[0]?.seedResults[0]?.thresholds[0]?.diagnostics.activeCladeDeltaVsNull

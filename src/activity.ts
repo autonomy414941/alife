@@ -1151,8 +1151,11 @@ export function runCladeActivityRelabelNullStudy(
         };
       },
       analyzeCladeActivitySummary: (analysisInput) => analyzeCladeActivity(analysisInput).summary,
+      analyzeSpeciesActivitySummary: (analysisInput) => analyzeSpeciesActivity(analysisInput).summary,
       analyzePersistentCladeActivitySummary: (analysisInput) =>
         analyzePersistentCladeActivity(analysisInput).summary,
+      analyzePersistentSpeciesActivitySummary: (analysisInput) =>
+        analyzePersistentSpeciesActivity(analysisInput).summary,
       withCladogenesisThreshold
     }
   );

@@ -1,11 +1,11 @@
 # Backlog
 
-- [validate] Extend matched-null founder context beyond `founderHabitatBin` by matching one extra birth-context signal such as local crowding at birth, then replay the canonical founder-grace panel
-- [split] Extract relabel-null seed-result and matched-null comparison helpers out of `src/activity.ts`
-- [split] Extract taxon-history / founder-context recording and export helpers out of `src/simulation.ts`
+- [validate] Add a decomposition panel with a second null that does not condition on realized species histories, and report upstream species-generation gains separately from downstream clade-structuring gains on the canonical founder-grace / ecology-gate panel
+- [split] Extract founder-establishment horizon / habitat-validation / crowding-validation comparison builders out of `src/clade-activity-relabel-null-new-clade-establishment-horizon-study.ts`
 - [validate] Reproduce the disturbance-opening horizon CLI output and explain whether the zero-byte `2026-03-14` artifact is a stale local file or a remaining emitter bug
 - [split] Continue extracting the reproduction / founding loop from `src/simulation.ts`
-- [strategize] Sketch composable settlement / encounter mechanism slots so future sessions can compare operator families instead of only numeric knobs
+- [benchmark] Measure how `TaxonHistory.timeline` and `localityFrames` memory/runtime cost scale at longer horizons so streaming-history work can be scoped against real pressure
+- [strategize] Sketch composable settlement / encounter / persistence mechanism slots so future sessions can compare operator families instead of only numeric knobs
 - [revert] Archive additional default-off scalar add-on study wrappers that still have no positive horizon evidence after regression diagnostics
 - [critic] [Representational Capacity] Agents only have three mutable genome axes (`metabolism`, `harvest`, `aggression`), while habitat, trophic, and defense traits are derived scalars; no parameter tuning can produce evolvable body plans, sensors, effectors, or additional ecological roles. Intervention: replace the fixed `Genome` schema with extensible heritable loci or modules, and promote habitat / trophic / defense traits from derived summaries to first-class evolvable state.
 - [critic] [Interaction Richness] The interaction alphabet is compile-time fixed to movement, harvest, same-cell energy theft, reproduction, and thresholded clade founding, so lineages cannot evolve new interaction types such as signaling, cooperation, public goods, or alternative predation / resource-conversion modes. Intervention: generalize encounters and foraging into evolvable action channels over multiple resource or field layers instead of a single hard-coded transfer equation.

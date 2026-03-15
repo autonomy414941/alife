@@ -22,6 +22,8 @@ import {
   CladeActivityRelabelNullThresholdResult,
   CladeActivitySeedPanelThresholdSeedResult,
   MatchedNullFounderContext,
+  SpeciesActivityProbeSummary,
+  SpeciesActivitySeedPanelThresholdSeedResult,
   StepSummary,
   TaxonHistory
 } from './types';
@@ -33,7 +35,9 @@ export function buildCladeActivityRelabelNullSeedResult(input: {
   actualClades: TaxonHistory[];
   matchedNullClades: TaxonHistory[];
   actualRawSummary: CladeActivityProbeSummary;
+  actualSpeciesRawSummary: SpeciesActivityProbeSummary;
   matchedNullRawSummary: CladeActivityProbeSummary;
+  actualSpeciesThresholds: SpeciesActivitySeedPanelThresholdSeedResult[];
   actualThresholds: CladeActivitySeedPanelThresholdSeedResult[];
   matchedNullThresholds: CladeActivitySeedPanelThresholdSeedResult[];
   minSurvivalTicks: number[];
@@ -53,6 +57,7 @@ export function buildCladeActivityRelabelNullSeedResult(input: {
     relabelSeed: input.relabelSeed,
     finalSummary: input.finalSummary,
     actualRawSummary: input.actualRawSummary,
+    actualSpeciesRawSummary: input.actualSpeciesRawSummary,
     matchedNullRawSummary: input.matchedNullRawSummary,
     actualBirthSchedule,
     matchedNullBirthSchedule,
@@ -70,6 +75,7 @@ export function buildCladeActivityRelabelNullSeedResult(input: {
           matchedNullFounderHabitatCrowdingSchedule
         )
       : null,
+    actualSpeciesThresholds: input.actualSpeciesThresholds,
     thresholds: input.minSurvivalTicks.map((minSurvivalTicks) =>
       buildCladeActivityRelabelNullThresholdSeedResult({
         minSurvivalTicks,

@@ -151,8 +151,29 @@ describe('runCladeActivityRelabelNullFounderGraceEcologyGateHorizonStudy', () =>
         dominantLossMode: 'matchedOrBetter'
       }
     });
+    expect(result.decomposition).toHaveLength(1);
+    expect(result.decomposition[0].cladogenesisThreshold).toBe(0);
+    expect(result.decomposition[0].minSurvivalTicks).toBe(1);
     expect(result.ecologyGateStudy.config.minSurvivalTicks).toEqual([1]);
     expect(result.comparison[0].founderGraceDiagnostics.finalPopulationMean).toBeGreaterThan(0);
     expect(result.comparison[0].ecologyGateDiagnostics.finalPopulationMean).toBeGreaterThan(0);
+    expect(result.decomposition[0].upstreamSpeciesGeneration.founderGraceActiveSpeciesMean).toBeGreaterThan(0);
+    expect(result.decomposition[0].upstreamSpeciesGeneration.ecologyGateActiveSpeciesMean).toBeGreaterThan(0);
+    expect(result.decomposition[0].upstreamSpeciesGeneration.activeSpeciesGainVsFounderGrace).toBe(0);
+    expect(
+      result.decomposition[0].upstreamSpeciesGeneration.persistentWindowFractionGainVsFounderGrace
+    ).toBeCloseTo(-1 / 3, 10);
+    expect(
+      result.decomposition[0].upstreamSpeciesGeneration.persistentActivityMeanGainVsFounderGrace
+    ).toBeCloseTo(-1 / 3, 10);
+    expect(
+      result.decomposition[0].downstreamCladeStructuring.activeCladeToSpeciesRatioGainVsFounderGrace
+    ).toBeCloseTo(-16 / 17, 10);
+    expect(
+      result.decomposition[0].downstreamCladeStructuring.persistentWindowFractionDeltaGainVsFounderGrace
+    ).toBeCloseTo(-2 / 3, 10);
+    expect(
+      result.decomposition[0].downstreamCladeStructuring.persistentActivityMeanDeltaGainVsFounderGrace
+    ).toBeCloseTo(-4, 10);
   });
 });

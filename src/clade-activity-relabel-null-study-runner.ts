@@ -12,6 +12,8 @@ import {
   CladeActivityRelabelNullThresholdResult,
   EvolutionHistorySnapshot,
   MatchedNullFounderContext,
+  SpeciesActivityPersistenceSummary,
+  SpeciesActivityProbeSummary,
   StepSummary,
   TaxonHistory
 } from './types';
@@ -51,6 +53,12 @@ export interface CladeActivityRelabelNullStudyRunnerDependencies {
     burnIn: number;
     maxTick: number;
   }) => CladeActivityProbeSummary;
+  analyzeSpeciesActivitySummary: (input: {
+    species: TaxonHistory[];
+    windowSize: number;
+    burnIn: number;
+    maxTick: number;
+  }) => SpeciesActivityProbeSummary;
   analyzePersistentCladeActivitySummary: (input: {
     clades: TaxonHistory[];
     windowSize: number;
@@ -58,6 +66,13 @@ export interface CladeActivityRelabelNullStudyRunnerDependencies {
     maxTick: number;
     minSurvivalTicks: number;
   }) => CladeActivityPersistenceSummary;
+  analyzePersistentSpeciesActivitySummary: (input: {
+    species: TaxonHistory[];
+    windowSize: number;
+    burnIn: number;
+    maxTick: number;
+    minSurvivalTicks: number;
+  }) => SpeciesActivityPersistenceSummary;
   withCladogenesisThreshold: (
     simulation: Omit<LifeSimulationOptions, 'seed'> | undefined,
     cladogenesisThreshold: number
@@ -105,7 +120,23 @@ export function buildCladeActivityRelabelNullThresholdResults(
         actualClades: history.clades,
         matchedNullClades,
         actualRawSummary,
+        actualSpeciesRawSummary: dependencies.analyzeSpeciesActivitySummary({
+          species: history.species,
+          windowSize: input.windowSize,
+          burnIn: input.burnIn,
+          maxTick: finalSummary.tick
+        }),
         matchedNullRawSummary,
+        actualSpeciesThresholds: buildSpeciesActivityThresholdSeedResults(
+          {
+            species: history.species,
+            windowSize: input.windowSize,
+            burnIn: input.burnIn,
+            maxTick: finalSummary.tick,
+            minSurvivalTicks: input.minSurvivalTicks
+          },
+          dependencies
+        ),
         actualThresholds: buildCladeActivityThresholdSeedResults({
           clades: history.clades,
           windowSize: input.windowSize,
@@ -150,6 +181,33 @@ function buildCladeActivityThresholdSeedResults(
       minSurvivalTicks,
       summary: dependencies.analyzePersistentCladeActivitySummary({
         clades: input.clades,
+        windowSize: input.windowSize,
+        burnIn: input.burnIn,
+        maxTick: input.maxTick,
+        minSurvivalTicks
+      })
+    })
+  );
+}
+
+function buildSpeciesActivityThresholdSeedResults(
+  input: {
+    species: TaxonHistory[];
+    windowSize: number;
+    burnIn: number;
+    maxTick: number;
+    minSurvivalTicks: number[];
+  },
+  dependencies: Pick<
+    CladeActivityRelabelNullStudyRunnerDependencies,
+    'analyzePersistentSpeciesActivitySummary'
+  >
+) {
+  return input.minSurvivalTicks.map((minSurvivalTicks) =>
+    buildActivitySeedPanelThresholdSeedResult({
+      minSurvivalTicks,
+      summary: dependencies.analyzePersistentSpeciesActivitySummary({
+        species: input.species,
         windowSize: input.windowSize,
         burnIn: input.burnIn,
         maxTick: input.maxTick,
