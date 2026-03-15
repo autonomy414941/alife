@@ -10,16 +10,11 @@ import {
   min
 } from './activity-thresholds';
 import {
-  buildCladeActivityRelabelNullThresholdAggregate
-} from './clade-activity-relabel-null-thresholds';
-import {
   buildCladeActivityRelabelNullCladeHabitatCouplingSweepResult,
   buildCladeActivityRelabelNullCladeInteractionCouplingSweepResult,
-  buildCladeActivityRelabelNullSeedResult,
-  deriveRelabelSeed,
   resolveMatchedNullFounderContext
 } from './clade-activity-relabel-null-study-helpers';
-import { buildMatchedSchedulePseudoClades } from './clade-activity-relabel-null-matched-schedule';
+import { buildCladeActivityRelabelNullThresholdResults } from './clade-activity-relabel-null-study-runner';
 import { LifeSimulation, LifeSimulationOptions } from './simulation';
 import {
   CladeActivityCladogenesisHorizonSweepExport,
@@ -1101,85 +1096,37 @@ export function runCladeActivityRelabelNullStudy(
   const matchedNullFounderContext = resolveMatchedNullFounderContext(
     input.matchedNullFounderContext ?? DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_STUDY.matchedNullFounderContext
   );
-
-  const thresholdResults: CladeActivityRelabelNullThresholdResult[] = cladogenesisThresholds.map(
-    (cladogenesisThreshold) => {
-      const seedResults = seeds.map((seed) => {
-        const { simulation, finalSummary } = executeActivitySimulation({
+  const thresholdResults: CladeActivityRelabelNullThresholdResult[] = buildCladeActivityRelabelNullThresholdResults(
+    {
+      steps,
+      windowSize,
+      burnIn,
+      seeds,
+      minSurvivalTicks,
+      cladogenesisThresholds,
+      stopWhenExtinct,
+      simulation: input.simulation,
+      matchedNullFounderContext
+    },
+    {
+      runSimulation: ({ steps, seed, stopWhenExtinct, simulation, emptyRunError }) => {
+        const { simulation: resultSimulation, finalSummary } = executeActivitySimulation({
           steps,
           seed,
           stopWhenExtinct,
-          simulation: withCladogenesisThreshold(input.simulation, cladogenesisThreshold),
-          emptyRunError: 'Clade activity relabel null study produced no step data'
+          simulation,
+          emptyRunError
         });
-        const history = simulation.history();
-        const relabelSeed = deriveRelabelSeed(seed, cladogenesisThreshold);
-        const matchedNullClades = buildMatchedSchedulePseudoClades({
-          species: history.species,
-          clades: history.clades,
-          maxTick: finalSummary.tick,
-          relabelSeed,
-          matchedNullFounderContext
-        });
-        const actualRawSummary = analyzeCladeActivity({
-          clades: history.clades,
-          windowSize,
-          burnIn,
-          maxTick: finalSummary.tick
-        }).summary;
-        const matchedNullRawSummary = analyzeCladeActivity({
-          clades: matchedNullClades,
-          windowSize,
-          burnIn,
-          maxTick: finalSummary.tick
-        }).summary;
-        const actualThresholds = minSurvivalTicks.map((threshold) =>
-          buildActivitySeedPanelThresholdSeedResult({
-            minSurvivalTicks: threshold,
-            summary: analyzePersistentCladeActivity({
-              clades: history.clades,
-              windowSize,
-              burnIn,
-              maxTick: finalSummary.tick,
-              minSurvivalTicks: threshold
-            }).summary
-          })
-        );
-        const matchedNullThresholds = minSurvivalTicks.map((threshold) =>
-          buildActivitySeedPanelThresholdSeedResult({
-            minSurvivalTicks: threshold,
-            summary: analyzePersistentCladeActivity({
-              clades: matchedNullClades,
-              windowSize,
-              burnIn,
-              maxTick: finalSummary.tick,
-              minSurvivalTicks: threshold
-            }).summary
-          })
-        );
 
-        return buildCladeActivityRelabelNullSeedResult({
-          seed,
-          relabelSeed,
-          finalSummary,
-          actualClades: history.clades,
-          matchedNullClades,
-          actualRawSummary,
-          matchedNullRawSummary,
-          actualThresholds,
-          matchedNullThresholds,
-          minSurvivalTicks,
-          matchedNullFounderContext
-        });
-      });
-
-      return {
-        cladogenesisThreshold,
-        seedResults,
-        aggregates: minSurvivalTicks.map((threshold) =>
-          buildCladeActivityRelabelNullThresholdAggregate(threshold, seedResults)
-        )
-      };
+        return {
+          history: resultSimulation.history(),
+          finalSummary
+        };
+      },
+      analyzeCladeActivitySummary: (analysisInput) => analyzeCladeActivity(analysisInput).summary,
+      analyzePersistentCladeActivitySummary: (analysisInput) =>
+        analyzePersistentCladeActivity(analysisInput).summary,
+      withCladogenesisThreshold
     }
   );
 
