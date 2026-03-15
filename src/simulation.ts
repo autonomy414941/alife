@@ -8,7 +8,6 @@ import {
   resolveMutatedSpeciesHabitatPreference,
   setFoundCladeHabitatPreference
 } from './clade-habitat';
-import { buildFounderContextFromSums } from './clade-activity-relabel-null-founder-context';
 import {
   DisturbanceEventState,
   buildDisturbanceCellSets,
@@ -32,6 +31,14 @@ import {
   resolveDisturbanceSettlementOpeningBonus
 } from './reproduction';
 import { Rng } from './rng';
+import {
+  collectFounderContextSamples,
+  exportTaxonHistory,
+  FounderContextSamples,
+  seedTaxonHistory,
+  TaxonHistoryState,
+  updateTaxonHistory
+} from './simulation-history';
 import {
   resolveEncounterLineageTransferMultiplier,
   resolveOffspringSettlementContext,
@@ -64,8 +71,6 @@ import {
   SpeciesTurnoverAnalytics,
   StepSummary,
   TaxonTurnoverAnalytics,
-  TaxonHistory,
-  TaxonTimelinePoint,
   TurnoverWindow
 } from './types';
 
@@ -149,25 +154,6 @@ export interface LifeSimulationOptions {
   seed?: number;
   config?: Partial<SimulationConfig>;
   initialAgents?: AgentSeed[];
-}
-
-interface TaxonHistoryState {
-  id: number;
-  firstSeenTick: number;
-  extinctTick: number | null;
-  totalBirths: number;
-  totalDeaths: number;
-  peakPopulation: number;
-  founderHabitatSum: number;
-  founderLocalCrowdingSum: number;
-  founderCount: number;
-  lastPopulation: number;
-  timeline: TaxonTimelinePoint[];
-}
-
-interface FounderContextSamples {
-  habitatSamples: number[];
-  localCrowdingSamples: number[];
 }
 
 interface LocalityFrame {
@@ -315,13 +301,27 @@ export class LifeSimulation {
     const cladeFounderContextSamples =
       founderOccupancy === undefined
         ? new Map<number, FounderContextSamples>()
-        : this.collectFounderContextSamples(offspring, (agent) => agent.lineage, nextTick, founderOccupancy);
+        : collectFounderContextSamples(
+            offspring,
+            (agent) => agent.lineage,
+            nextTick,
+            founderOccupancy,
+            (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
+            (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
+          );
     const speciesFounderContextSamples =
       founderOccupancy === undefined
         ? new Map<number, FounderContextSamples>()
-        : this.collectFounderContextSamples(offspring, (agent) => agent.species, nextTick, founderOccupancy);
+        : collectFounderContextSamples(
+            offspring,
+            (agent) => agent.species,
+            nextTick,
+            founderOccupancy,
+            (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
+            (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
+          );
     this.tickCount = nextTick;
-    const cladeExtinctionDelta = this.updateTaxonHistory(
+    const cladeExtinctionDelta = updateTaxonHistory(
       this.cladeHistory,
       this.tickCount,
       this.countBy(this.agents, (agent) => agent.lineage),
@@ -329,7 +329,7 @@ export class LifeSimulation {
       this.countBy(deadAgents, (agent) => agent.lineage),
       cladeFounderContextSamples
     );
-    const speciesExtinctionDelta = this.updateTaxonHistory(
+    const speciesExtinctionDelta = updateTaxonHistory(
       this.speciesHistory,
       this.tickCount,
       this.countBy(this.agents, (agent) => agent.species),
@@ -402,8 +402,8 @@ export class LifeSimulation {
 
   history(): EvolutionHistorySnapshot {
     return {
-      clades: this.exportTaxonHistory(this.cladeHistory),
-      species: this.exportTaxonHistory(this.speciesHistory),
+      clades: exportTaxonHistory(this.cladeHistory),
+      species: exportTaxonHistory(this.speciesHistory),
       extinctClades: this.extinctClades,
       extinctSpecies: this.extinctSpecies
     };
@@ -1121,8 +1121,31 @@ export class LifeSimulation {
   }
 
   private initializeEvolutionHistory(): void {
-    this.seedTaxonHistory(this.cladeHistory, (agent) => agent.lineage);
-    this.seedTaxonHistory(this.speciesHistory, (agent) => agent.species);
+    const initialOccupancy = this.buildOccupancyGrid(this.agents);
+    seedTaxonHistory(
+      this.cladeHistory,
+      collectFounderContextSamples(
+        this.agents,
+        (agent) => agent.lineage,
+        0,
+        initialOccupancy,
+        (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
+        (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
+      ),
+      0
+    );
+    seedTaxonHistory(
+      this.speciesHistory,
+      collectFounderContextSamples(
+        this.agents,
+        (agent) => agent.species,
+        0,
+        initialOccupancy,
+        (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
+        (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
+      ),
+      0
+    );
   }
 
   private initializeCladeFounderGenomes(): void {
@@ -1188,140 +1211,6 @@ export class LifeSimulation {
   private genomeDefenseSignal(genome: Genome): number {
     const metabolismNormalized = normalizeTrait(genome.metabolism, MIN_GENOME.metabolism, MAX_GENOME.metabolism);
     return clamp((1 - genome.aggression) * 0.65 + metabolismNormalized * 0.35, 0, 1);
-  }
-
-  private seedTaxonHistory(
-    history: Map<number, TaxonHistoryState>,
-    idOf: (agent: Pick<Agent, 'species' | 'lineage' | 'x' | 'y'>) => number
-  ): void {
-    const seeded = this.collectFounderContextSamples(this.agents, idOf, 0, this.buildOccupancyGrid(this.agents));
-
-    for (const [id, samples] of seeded) {
-      const founderCount = samples.habitatSamples.length;
-      history.set(id, {
-        id,
-        firstSeenTick: 0,
-        extinctTick: null,
-        totalBirths: founderCount,
-        totalDeaths: 0,
-        peakPopulation: founderCount,
-        founderHabitatSum: samples.habitatSamples.reduce((total, sample) => total + sample, 0),
-        founderLocalCrowdingSum: samples.localCrowdingSamples.reduce((total, sample) => total + sample, 0),
-        founderCount,
-        lastPopulation: founderCount,
-        timeline: [{ tick: 0, population: founderCount, births: founderCount, deaths: 0 }]
-      });
-    }
-  }
-
-  private updateTaxonHistory(
-    history: Map<number, TaxonHistoryState>,
-    tick: number,
-    populationCounts: Map<number, number>,
-    birthsCounts: Map<number, number>,
-    deathsCounts: Map<number, number>,
-    founderContextSamples: Map<number, FounderContextSamples>
-  ): number {
-    const idsToRecord = new Set<number>();
-    for (const id of populationCounts.keys()) {
-      idsToRecord.add(id);
-    }
-    for (const id of birthsCounts.keys()) {
-      idsToRecord.add(id);
-    }
-    for (const id of deathsCounts.keys()) {
-      idsToRecord.add(id);
-    }
-    for (const [id, state] of history) {
-      if (state.extinctTick === null || state.lastPopulation > 0) {
-        idsToRecord.add(id);
-      }
-    }
-
-    let extinctionDelta = 0;
-
-    for (const id of idsToRecord) {
-      const population = populationCounts.get(id) ?? 0;
-      const births = birthsCounts.get(id) ?? 0;
-      const deaths = deathsCounts.get(id) ?? 0;
-
-      let state = history.get(id);
-      if (!state) {
-        const samples = founderContextSamples.get(id) ?? { habitatSamples: [], localCrowdingSamples: [] };
-        state = {
-          id,
-          firstSeenTick: tick,
-          extinctTick: null,
-          totalBirths: 0,
-          totalDeaths: 0,
-          peakPopulation: 0,
-          founderHabitatSum: samples.habitatSamples.reduce((total, sample) => total + sample, 0),
-          founderLocalCrowdingSum: samples.localCrowdingSamples.reduce((total, sample) => total + sample, 0),
-          founderCount: samples.habitatSamples.length,
-          lastPopulation: 0,
-          timeline: []
-        };
-        history.set(id, state);
-      }
-
-      const hadPopulationBeforeStep = state.lastPopulation > 0 || births > 0;
-      const wasExtinct = state.extinctTick !== null;
-
-      state.totalBirths += births;
-      state.totalDeaths += deaths;
-      state.peakPopulation = Math.max(state.peakPopulation, population);
-
-      if (wasExtinct && population > 0) {
-        state.extinctTick = null;
-        extinctionDelta -= 1;
-      }
-
-      if (state.extinctTick === null && hadPopulationBeforeStep && population === 0) {
-        state.extinctTick = tick;
-        extinctionDelta += 1;
-      }
-
-      state.timeline.push({ tick, population, births, deaths });
-      state.lastPopulation = population;
-    }
-
-    return extinctionDelta;
-  }
-
-  private exportTaxonHistory(history: Map<number, TaxonHistoryState>): TaxonHistory[] {
-    return [...history.values()]
-      .sort((a, b) => a.id - b.id)
-      .map((entry) => ({
-        id: entry.id,
-        firstSeenTick: entry.firstSeenTick,
-        extinctTick: entry.extinctTick,
-        totalBirths: entry.totalBirths,
-        totalDeaths: entry.totalDeaths,
-        peakPopulation: entry.peakPopulation,
-        founderContext: buildFounderContextFromSums({
-          founderHabitatSum: entry.founderHabitatSum,
-          founderLocalCrowdingSum: entry.founderLocalCrowdingSum,
-          founderCount: entry.founderCount
-        }),
-        timeline: entry.timeline.map((point) => ({ ...point }))
-      }));
-  }
-
-  private collectFounderContextSamples(
-    agents: ReadonlyArray<Pick<Agent, 'species' | 'lineage' | 'x' | 'y'>>,
-    idOf: (agent: Pick<Agent, 'species' | 'lineage' | 'x' | 'y'>) => number,
-    tick: number,
-    occupancy: number[][]
-  ): Map<number, FounderContextSamples> {
-    const samples = new Map<number, FounderContextSamples>();
-    for (const agent of agents) {
-      const id = idOf(agent);
-      const current = samples.get(id) ?? { habitatSamples: [], localCrowdingSamples: [] };
-      current.habitatSamples.push(this.effectiveBiomeFertilityAt(agent.x, agent.y, tick));
-      current.localCrowdingSamples.push(this.neighborhoodCrowding(agent.x, agent.y, occupancy));
-      samples.set(id, current);
-    }
-    return samples;
   }
 
   private buildInitialResources(): number[][] {
