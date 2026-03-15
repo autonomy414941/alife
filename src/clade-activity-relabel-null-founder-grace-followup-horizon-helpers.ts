@@ -75,7 +75,7 @@ export const FOUNDER_GRACE_FOLLOWUP_HORIZON_DEFINITIONS = {
     currentValue: NEW_CLADE_ENCOUNTER_RESTRAINT_GRACE_BOOST_VALUES[1]
   },
   founderGraceEcologyGate: {
-    artifact: 'docs/clade_activity_relabel_null_founder_grace_ecology_gate_horizon_2026-03-14.json',
+    artifact: 'docs/clade_activity_relabel_null_founder_grace_ecology_gate_horizon_2026-03-15.json',
     baselineArtifact: FOUNDER_GRACE_BASELINE_HORIZON_ARTIFACT,
     baselineExportKey: 'founderGraceStudy',
     baselineExportDescription: 'a new-clade establishment horizon study export',

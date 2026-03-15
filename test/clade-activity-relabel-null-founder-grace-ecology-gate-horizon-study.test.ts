@@ -175,5 +175,16 @@ describe('runCladeActivityRelabelNullFounderGraceEcologyGateHorizonStudy', () =>
     expect(
       result.decomposition[0].downstreamCladeStructuring.persistentActivityMeanDeltaGainVsFounderGrace
     ).toBeCloseTo(-4, 10);
+    expect(result.decomposition[0].nonSpeciesConditionedNull).toMatchObject({
+      nullModel: 'permutedActualCladeProfiles'
+    });
+    expect(result.decomposition[0].nonSpeciesConditionedNull.founderGraceNullActiveCladesMean).toBeGreaterThan(0);
+    expect(result.decomposition[0].nonSpeciesConditionedNull.ecologyGateNullActiveCladesMean).toBeGreaterThan(0);
+    expect(
+      result.decomposition[0].nonSpeciesConditionedNull.founderGraceActiveCladeDeltaVsNullMean
+    ).toBeTypeOf('number');
+    expect(
+      result.decomposition[0].nonSpeciesConditionedNull.ecologyGatePersistentActivityMeanDeltaVsNullMean
+    ).toBeTypeOf('number');
   });
 });

@@ -37,9 +37,12 @@ export function buildCladeActivityRelabelNullSeedResult(input: {
   actualRawSummary: CladeActivityProbeSummary;
   actualSpeciesRawSummary: SpeciesActivityProbeSummary;
   matchedNullRawSummary: CladeActivityProbeSummary;
+  nonSpeciesConditionedNullRawSummary: CladeActivityProbeSummary;
   actualSpeciesThresholds: SpeciesActivitySeedPanelThresholdSeedResult[];
   actualThresholds: CladeActivitySeedPanelThresholdSeedResult[];
   matchedNullThresholds: CladeActivitySeedPanelThresholdSeedResult[];
+  nonSpeciesConditionedNullThresholds: CladeActivitySeedPanelThresholdSeedResult[];
+  nonSpeciesConditionedNullFinalActiveClades: number;
   minSurvivalTicks: number[];
   matchedNullFounderContext: MatchedNullFounderContext;
 }): CladeActivityRelabelNullSeedResult {
@@ -59,6 +62,7 @@ export function buildCladeActivityRelabelNullSeedResult(input: {
     actualRawSummary: input.actualRawSummary,
     actualSpeciesRawSummary: input.actualSpeciesRawSummary,
     matchedNullRawSummary: input.matchedNullRawSummary,
+    nonSpeciesConditionedNullRawSummary: input.nonSpeciesConditionedNullRawSummary,
     actualBirthSchedule,
     matchedNullBirthSchedule,
     birthScheduleMatched: taxonBirthSchedulesEqual(actualBirthSchedule, matchedNullBirthSchedule),
@@ -76,6 +80,8 @@ export function buildCladeActivityRelabelNullSeedResult(input: {
         )
       : null,
     actualSpeciesThresholds: input.actualSpeciesThresholds,
+    nonSpeciesConditionedNullFinalActiveClades: input.nonSpeciesConditionedNullFinalActiveClades,
+    nonSpeciesConditionedNullThresholds: input.nonSpeciesConditionedNullThresholds,
     thresholds: input.minSurvivalTicks.map((minSurvivalTicks) =>
       buildCladeActivityRelabelNullThresholdSeedResult({
         minSurvivalTicks,

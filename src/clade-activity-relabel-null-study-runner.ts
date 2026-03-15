@@ -1,5 +1,9 @@
 import { buildActivitySeedPanelThresholdSeedResult } from './activity-thresholds';
-import { buildMatchedSchedulePseudoClades } from './clade-activity-relabel-null-matched-schedule';
+import {
+  buildMatchedSchedulePseudoClades,
+  countActiveTaxaAtTick
+} from './clade-activity-relabel-null-matched-schedule';
+import { buildPermutedCladeProfileNull } from './clade-activity-relabel-null-permuted-clade-profiles';
 import {
   buildCladeActivityRelabelNullSeedResult,
   deriveRelabelSeed
@@ -100,6 +104,11 @@ export function buildCladeActivityRelabelNullThresholdResults(
         relabelSeed,
         matchedNullFounderContext: input.matchedNullFounderContext
       });
+      const nonSpeciesConditionedNullClades = buildPermutedCladeProfileNull({
+        clades: history.clades,
+        maxTick: finalSummary.tick,
+        relabelSeed: ((relabelSeed ^ 0x85ebca6b) >>> 0) || 1
+      });
       const actualRawSummary = dependencies.analyzeCladeActivitySummary({
         clades: history.clades,
         windowSize: input.windowSize,
@@ -108,6 +117,12 @@ export function buildCladeActivityRelabelNullThresholdResults(
       });
       const matchedNullRawSummary = dependencies.analyzeCladeActivitySummary({
         clades: matchedNullClades,
+        windowSize: input.windowSize,
+        burnIn: input.burnIn,
+        maxTick: finalSummary.tick
+      });
+      const nonSpeciesConditionedNullRawSummary = dependencies.analyzeCladeActivitySummary({
+        clades: nonSpeciesConditionedNullClades,
         windowSize: input.windowSize,
         burnIn: input.burnIn,
         maxTick: finalSummary.tick
@@ -127,6 +142,7 @@ export function buildCladeActivityRelabelNullThresholdResults(
           maxTick: finalSummary.tick
         }),
         matchedNullRawSummary,
+        nonSpeciesConditionedNullRawSummary,
         actualSpeciesThresholds: buildSpeciesActivityThresholdSeedResults(
           {
             species: history.species,
@@ -151,6 +167,17 @@ export function buildCladeActivityRelabelNullThresholdResults(
           maxTick: finalSummary.tick,
           minSurvivalTicks: input.minSurvivalTicks
         }, dependencies),
+        nonSpeciesConditionedNullThresholds: buildCladeActivityThresholdSeedResults({
+          clades: nonSpeciesConditionedNullClades,
+          windowSize: input.windowSize,
+          burnIn: input.burnIn,
+          maxTick: finalSummary.tick,
+          minSurvivalTicks: input.minSurvivalTicks
+        }, dependencies),
+        nonSpeciesConditionedNullFinalActiveClades: countActiveTaxaAtTick(
+          nonSpeciesConditionedNullClades,
+          finalSummary.tick
+        ),
         minSurvivalTicks: input.minSurvivalTicks,
         matchedNullFounderContext: input.matchedNullFounderContext
       });

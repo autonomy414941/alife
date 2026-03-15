@@ -20,6 +20,7 @@ import {
 import {
   CladeActivityRelabelNullSpeciesDecompositionComparison,
   compareCladeActivityRelabelNullSpeciesDecomposition,
+  supportsRelabelNullNonSpeciesConditionedNull,
   supportsRelabelNullSpeciesDecomposition
 } from './clade-activity-relabel-null-species-decomposition';
 import {
@@ -187,7 +188,10 @@ function resolveDecompositionStudy(
   study: CladeActivityRelabelNullStudyExport,
   studyInput: RunCladeActivityRelabelNullStudyInput
 ): CladeActivityRelabelNullStudyExport {
-  if (supportsRelabelNullSpeciesDecomposition(study)) {
+  if (
+    supportsRelabelNullSpeciesDecomposition(study) &&
+    supportsRelabelNullNonSpeciesConditionedNull(study)
+  ) {
     return study;
   }
 

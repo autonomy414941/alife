@@ -29,6 +29,24 @@ export interface CladeActivityRelabelNullSpeciesDecompositionComparison {
     ecologyGatePersistentActivityMeanDeltaVsSpeciesMean: number;
     persistentActivityMeanDeltaGainVsFounderGrace: number;
   };
+  nonSpeciesConditionedNull: {
+    nullModel: 'permutedActualCladeProfiles';
+    founderGraceNullActiveCladesMean: number;
+    ecologyGateNullActiveCladesMean: number;
+    founderGraceActiveCladeDeltaVsNullMean: number;
+    ecologyGateActiveCladeDeltaVsNullMean: number;
+    activeCladeDeltaGainVsFounderGrace: number;
+    founderGraceNullPersistentWindowFractionMean: number;
+    ecologyGateNullPersistentWindowFractionMean: number;
+    founderGracePersistentWindowFractionDeltaVsNullMean: number;
+    ecologyGatePersistentWindowFractionDeltaVsNullMean: number;
+    persistentWindowFractionDeltaGainVsFounderGrace: number;
+    founderGraceNullPersistentActivityMean: number;
+    ecologyGateNullPersistentActivityMean: number;
+    founderGracePersistentActivityMeanDeltaVsNullMean: number;
+    ecologyGatePersistentActivityMeanDeltaVsNullMean: number;
+    persistentActivityMeanDeltaGainVsFounderGrace: number;
+  };
 }
 
 export function compareCladeActivityRelabelNullSpeciesDecomposition(
@@ -63,6 +81,14 @@ export function compareCladeActivityRelabelNullSpeciesDecomposition(
         threshold
       );
       const ecologyGateDownstream = summarizeDownstreamCladeStructuring(
+        currentThresholdResult.seedResults,
+        threshold
+      );
+      const founderGraceNonSpeciesConditionedNull = summarizeNonSpeciesConditionedNull(
+        baselineThresholdResult.seedResults,
+        threshold
+      );
+      const ecologyGateNonSpeciesConditionedNull = summarizeNonSpeciesConditionedNull(
         currentThresholdResult.seedResults,
         threshold
       );
@@ -105,6 +131,40 @@ export function compareCladeActivityRelabelNullSpeciesDecomposition(
           persistentActivityMeanDeltaGainVsFounderGrace:
             ecologyGateDownstream.persistentActivityMeanDeltaVsSpeciesMean -
             founderGraceDownstream.persistentActivityMeanDeltaVsSpeciesMean
+        },
+        nonSpeciesConditionedNull: {
+          nullModel: 'permutedActualCladeProfiles',
+          founderGraceNullActiveCladesMean: founderGraceNonSpeciesConditionedNull.activeCladesMean,
+          ecologyGateNullActiveCladesMean: ecologyGateNonSpeciesConditionedNull.activeCladesMean,
+          founderGraceActiveCladeDeltaVsNullMean:
+            founderGraceNonSpeciesConditionedNull.activeCladeDeltaVsNullMean,
+          ecologyGateActiveCladeDeltaVsNullMean:
+            ecologyGateNonSpeciesConditionedNull.activeCladeDeltaVsNullMean,
+          activeCladeDeltaGainVsFounderGrace:
+            ecologyGateNonSpeciesConditionedNull.activeCladeDeltaVsNullMean -
+            founderGraceNonSpeciesConditionedNull.activeCladeDeltaVsNullMean,
+          founderGraceNullPersistentWindowFractionMean:
+            founderGraceNonSpeciesConditionedNull.persistentWindowFractionMean,
+          ecologyGateNullPersistentWindowFractionMean:
+            ecologyGateNonSpeciesConditionedNull.persistentWindowFractionMean,
+          founderGracePersistentWindowFractionDeltaVsNullMean:
+            founderGraceNonSpeciesConditionedNull.persistentWindowFractionDeltaVsNullMean,
+          ecologyGatePersistentWindowFractionDeltaVsNullMean:
+            ecologyGateNonSpeciesConditionedNull.persistentWindowFractionDeltaVsNullMean,
+          persistentWindowFractionDeltaGainVsFounderGrace:
+            ecologyGateNonSpeciesConditionedNull.persistentWindowFractionDeltaVsNullMean -
+            founderGraceNonSpeciesConditionedNull.persistentWindowFractionDeltaVsNullMean,
+          founderGraceNullPersistentActivityMean:
+            founderGraceNonSpeciesConditionedNull.persistentActivityMean,
+          ecologyGateNullPersistentActivityMean:
+            ecologyGateNonSpeciesConditionedNull.persistentActivityMean,
+          founderGracePersistentActivityMeanDeltaVsNullMean:
+            founderGraceNonSpeciesConditionedNull.persistentActivityMeanDeltaVsNullMean,
+          ecologyGatePersistentActivityMeanDeltaVsNullMean:
+            ecologyGateNonSpeciesConditionedNull.persistentActivityMeanDeltaVsNullMean,
+          persistentActivityMeanDeltaGainVsFounderGrace:
+            ecologyGateNonSpeciesConditionedNull.persistentActivityMeanDeltaVsNullMean -
+            founderGraceNonSpeciesConditionedNull.persistentActivityMeanDeltaVsNullMean
         }
       };
     });
@@ -121,6 +181,22 @@ export function supportsRelabelNullSpeciesDecomposition(
         seedResult.actualSpeciesRawSummary !== undefined &&
         'actualSpeciesThresholds' in seedResult &&
         Array.isArray(seedResult.actualSpeciesThresholds)
+    )
+  );
+}
+
+export function supportsRelabelNullNonSpeciesConditionedNull(
+  study: CladeActivityRelabelNullStudyExport
+): boolean {
+  return study.thresholdResults.every((thresholdResult) =>
+    thresholdResult.seedResults.every(
+      (seedResult) =>
+        'nonSpeciesConditionedNullRawSummary' in seedResult &&
+        seedResult.nonSpeciesConditionedNullRawSummary !== undefined &&
+        'nonSpeciesConditionedNullFinalActiveClades' in seedResult &&
+        typeof seedResult.nonSpeciesConditionedNullFinalActiveClades === 'number' &&
+        'nonSpeciesConditionedNullThresholds' in seedResult &&
+        Array.isArray(seedResult.nonSpeciesConditionedNullThresholds)
     )
   );
 }
@@ -186,6 +262,83 @@ function summarizeDownstreamCladeStructuring(
       })
     )
   };
+}
+
+function summarizeNonSpeciesConditionedNull(
+  seedResults: CladeActivityRelabelNullSeedResult[],
+  minSurvivalTicks: number
+) {
+  return {
+    activeCladesMean: mean(
+      seedResults.map((seedResult) => requireNonSpeciesConditionedNullActiveClades(seedResult))
+    ),
+    activeCladeDeltaVsNullMean: mean(
+      seedResults.map(
+        (seedResult) =>
+          seedResult.finalSummary.activeClades - requireNonSpeciesConditionedNullActiveClades(seedResult)
+      )
+    ),
+    persistentWindowFractionMean: mean(
+      seedResults.map(
+        (seedResult) =>
+          requireNonSpeciesConditionedNullThreshold(seedResult, minSurvivalTicks).persistentWindowFraction
+      )
+    ),
+    persistentWindowFractionDeltaVsNullMean: mean(
+      seedResults.map((seedResult) => {
+        const actualThreshold = findThresholdResult(seedResult.seed, minSurvivalTicks, seedResult.thresholds);
+        const nonSpeciesConditionedNullThreshold = requireNonSpeciesConditionedNullThreshold(
+          seedResult,
+          minSurvivalTicks
+        );
+
+        return (
+          actualThreshold.actual.persistentWindowFraction -
+          nonSpeciesConditionedNullThreshold.persistentWindowFraction
+        );
+      })
+    ),
+    persistentActivityMean: mean(
+      seedResults.map(
+        (seedResult) =>
+          requireNonSpeciesConditionedNullThreshold(seedResult, minSurvivalTicks).summary
+            .postBurnInPersistentNewActivityMean
+      )
+    ),
+    persistentActivityMeanDeltaVsNullMean: mean(
+      seedResults.map((seedResult) => {
+        const actualThreshold = findThresholdResult(seedResult.seed, minSurvivalTicks, seedResult.thresholds);
+        const nonSpeciesConditionedNullThreshold = requireNonSpeciesConditionedNullThreshold(
+          seedResult,
+          minSurvivalTicks
+        );
+
+        return (
+          actualThreshold.actual.summary.postBurnInPersistentNewActivityMean -
+          nonSpeciesConditionedNullThreshold.summary.postBurnInPersistentNewActivityMean
+        );
+      })
+    )
+  };
+}
+
+function requireNonSpeciesConditionedNullActiveClades(seedResult: CladeActivityRelabelNullSeedResult): number {
+  if (typeof seedResult.nonSpeciesConditionedNullFinalActiveClades !== 'number') {
+    throw new Error(`Seed ${seedResult.seed} is missing non-species-conditioned null active clade counts`);
+  }
+
+  return seedResult.nonSpeciesConditionedNullFinalActiveClades;
+}
+
+function requireNonSpeciesConditionedNullThreshold(
+  seedResult: CladeActivityRelabelNullSeedResult,
+  minSurvivalTicks: number
+) {
+  if (!seedResult.nonSpeciesConditionedNullThresholds) {
+    throw new Error(`Seed ${seedResult.seed} is missing non-species-conditioned null thresholds`);
+  }
+
+  return findThresholdResult(seedResult.seed, minSurvivalTicks, seedResult.nonSpeciesConditionedNullThresholds);
 }
 
 function divideOrZero(numerator: number, denominator: number): number {

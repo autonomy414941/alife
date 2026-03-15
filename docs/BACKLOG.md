@@ -2,8 +2,8 @@
 
 - [validate] Add a decomposition panel with a second null that does not condition on realized species histories, and report upstream species-generation gains separately from downstream clade-structuring gains on the canonical founder-grace / ecology-gate panel
 - [split] Extract founder-establishment horizon / habitat-validation / crowding-validation comparison builders out of `src/clade-activity-relabel-null-new-clade-establishment-horizon-study.ts`
-- [validate] Reproduce the disturbance-opening horizon CLI output and explain whether the zero-byte `2026-03-14` artifact is a stale local file or a remaining emitter bug
 - [split] Continue extracting the reproduction / founding loop from `src/simulation.ts`
+- [validate] Add abundance-weighted or energy-weighted activity metrics to complement occupancy-only activity, so the evaluation can distinguish barely-alive label persistence from ecologically consequential expansion
 - [benchmark] Measure how `TaxonHistory.timeline` and `localityFrames` memory/runtime cost scale at longer horizons so streaming-history work can be scoped against real pressure
 - [strategize] Sketch composable settlement / encounter / persistence mechanism slots so future sessions can compare operator families instead of only numeric knobs
 - [revert] Archive additional default-off scalar add-on study wrappers that still have no positive horizon evidence after regression diagnostics

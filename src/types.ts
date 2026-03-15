@@ -1090,6 +1090,7 @@ export interface CladeActivityRelabelNullSeedResult {
   actualRawSummary: CladeActivityProbeSummary;
   actualSpeciesRawSummary: SpeciesActivityProbeSummary;
   matchedNullRawSummary: CladeActivityProbeSummary;
+  nonSpeciesConditionedNullRawSummary?: CladeActivityProbeSummary;
   actualBirthSchedule: TaxonBirthSchedulePoint[];
   matchedNullBirthSchedule: TaxonBirthSchedulePoint[];
   birthScheduleMatched: boolean;
@@ -1100,6 +1101,8 @@ export interface CladeActivityRelabelNullSeedResult {
   matchedNullFounderHabitatCrowdingSchedule: TaxonFounderHabitatCrowdingSchedulePoint[];
   founderHabitatCrowdingScheduleMatched: boolean | null;
   actualSpeciesThresholds: SpeciesActivitySeedPanelThresholdSeedResult[];
+  nonSpeciesConditionedNullFinalActiveClades?: number;
+  nonSpeciesConditionedNullThresholds?: CladeActivitySeedPanelThresholdSeedResult[];
   thresholds: CladeActivityRelabelNullThresholdSeedResult[];
 }
 
