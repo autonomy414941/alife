@@ -90,7 +90,8 @@ describe('analyzeSpeciesActivity', () => {
         newSpecies: 1,
         cumulativeActivity: 3,
         normalizedCumulativeActivity: 1.5,
-        newActivity: 1
+        newActivity: 1,
+        newAbundanceWeightedActivity: 1
       },
       {
         windowIndex: 1,
@@ -101,7 +102,8 @@ describe('analyzeSpeciesActivity', () => {
         newSpecies: 1,
         cumulativeActivity: 7,
         normalizedCumulativeActivity: 1.75,
-        newActivity: 1
+        newActivity: 1,
+        newAbundanceWeightedActivity: 1
       },
       {
         windowIndex: 2,
@@ -112,7 +114,8 @@ describe('analyzeSpeciesActivity', () => {
         newSpecies: 0,
         cumulativeActivity: 8,
         normalizedCumulativeActivity: 1.6,
-        newActivity: 0
+        newActivity: 0,
+        newAbundanceWeightedActivity: 0
       }
     ]);
     expect(analysis.summary).toEqual({
@@ -124,9 +127,61 @@ describe('analyzeSpeciesActivity', () => {
       postBurnInNewActivityMean: 0.5,
       postBurnInNewActivityMin: 0,
       postBurnInNewActivityMax: 1,
+      postBurnInNewAbundanceWeightedActivityMean: 0.5,
+      postBurnInNewAbundanceWeightedActivityMin: 0,
+      postBurnInNewAbundanceWeightedActivityMax: 1,
       finalCumulativeActivity: 8,
       finalNormalizedCumulativeActivity: 1.6,
-      finalNewActivity: 0
+      finalNewActivity: 0,
+      finalNewAbundanceWeightedActivity: 0
+    });
+  });
+
+  it('tracks abundance-weighted origin-window activity separately from occupancy', () => {
+    const species: TaxonHistory[] = [
+      {
+        id: 1,
+        firstSeenTick: 2,
+        extinctTick: null,
+        totalBirths: 2,
+        totalDeaths: 0,
+        peakPopulation: 3,
+        timeline: [
+          { tick: 2, population: 2, births: 2, deaths: 0 },
+          { tick: 3, population: 3, births: 1, deaths: 0 },
+          { tick: 4, population: 1, births: 0, deaths: 2 }
+        ]
+      },
+      {
+        id: 2,
+        firstSeenTick: 3,
+        extinctTick: null,
+        totalBirths: 4,
+        totalDeaths: 2,
+        peakPopulation: 4,
+        timeline: [
+          { tick: 3, population: 4, births: 4, deaths: 0 },
+          { tick: 4, population: 2, births: 0, deaths: 2 }
+        ]
+      }
+    ];
+
+    const analysis = analyzeSpeciesActivity({
+      species,
+      windowSize: 2,
+      burnIn: 0,
+      maxTick: 4
+    });
+
+    expect(analysis.windows).toMatchObject([
+      { windowIndex: 0, newActivity: 1, newAbundanceWeightedActivity: 2 },
+      { windowIndex: 1, newActivity: 2, newAbundanceWeightedActivity: 6 }
+    ]);
+    expect(analysis.summary).toMatchObject({
+      postBurnInNewActivityMean: 1.5,
+      postBurnInNewAbundanceWeightedActivityMean: 4,
+      finalNewActivity: 2,
+      finalNewAbundanceWeightedActivity: 6
     });
   });
 });
@@ -194,7 +249,8 @@ describe('analyzeCladeActivity', () => {
         newClades: 1,
         cumulativeActivity: 3,
         normalizedCumulativeActivity: 1.5,
-        newActivity: 1
+        newActivity: 1,
+        newAbundanceWeightedActivity: 1
       },
       {
         windowIndex: 1,
@@ -205,7 +261,8 @@ describe('analyzeCladeActivity', () => {
         newClades: 1,
         cumulativeActivity: 7,
         normalizedCumulativeActivity: 1.75,
-        newActivity: 1
+        newActivity: 1,
+        newAbundanceWeightedActivity: 1
       },
       {
         windowIndex: 2,
@@ -216,7 +273,8 @@ describe('analyzeCladeActivity', () => {
         newClades: 0,
         cumulativeActivity: 8,
         normalizedCumulativeActivity: 1.6,
-        newActivity: 0
+        newActivity: 0,
+        newAbundanceWeightedActivity: 0
       }
     ]);
     expect(analysis.summary).toEqual({
@@ -228,9 +286,13 @@ describe('analyzeCladeActivity', () => {
       postBurnInNewActivityMean: 0.5,
       postBurnInNewActivityMin: 0,
       postBurnInNewActivityMax: 1,
+      postBurnInNewAbundanceWeightedActivityMean: 0.5,
+      postBurnInNewAbundanceWeightedActivityMin: 0,
+      postBurnInNewAbundanceWeightedActivityMax: 1,
       finalCumulativeActivity: 8,
       finalNormalizedCumulativeActivity: 1.6,
-      finalNewActivity: 0
+      finalNewActivity: 0,
+      finalNewAbundanceWeightedActivity: 0
     });
   });
 });
@@ -358,8 +420,10 @@ describe('analyzePersistentSpeciesActivity', () => {
         censored: false,
         newSpecies: 1,
         rawNewActivity: 1,
+        rawNewAbundanceWeightedActivity: 1,
         persistentNewSpecies: 1,
-        persistentNewActivity: 1
+        persistentNewActivity: 1,
+        persistentNewAbundanceWeightedActivity: 1
       },
       {
         windowIndex: 1,
@@ -370,8 +434,10 @@ describe('analyzePersistentSpeciesActivity', () => {
         censored: false,
         newSpecies: 2,
         rawNewActivity: 3,
+        rawNewAbundanceWeightedActivity: 3,
         persistentNewSpecies: 2,
-        persistentNewActivity: 3
+        persistentNewActivity: 3,
+        persistentNewAbundanceWeightedActivity: 3
       },
       {
         windowIndex: 2,
@@ -382,8 +448,10 @@ describe('analyzePersistentSpeciesActivity', () => {
         censored: true,
         newSpecies: 1,
         rawNewActivity: 2,
+        rawNewAbundanceWeightedActivity: 2,
         persistentNewSpecies: null,
-        persistentNewActivity: null
+        persistentNewActivity: null,
+        persistentNewAbundanceWeightedActivity: null
       }
     ]);
     expect(analysis.summary).toEqual({
@@ -396,7 +464,11 @@ describe('analyzePersistentSpeciesActivity', () => {
       postBurnInPersistentNewActivityMean: 3,
       postBurnInPersistentNewActivityMin: 3,
       postBurnInPersistentNewActivityMax: 3,
+      postBurnInPersistentNewAbundanceWeightedActivityMean: 3,
+      postBurnInPersistentNewAbundanceWeightedActivityMin: 3,
+      postBurnInPersistentNewAbundanceWeightedActivityMax: 3,
       finalPersistentNewActivity: null,
+      finalPersistentNewAbundanceWeightedActivity: null,
       finalWindowCensored: true
     });
   });
@@ -477,8 +549,10 @@ describe('analyzePersistentCladeActivity', () => {
         censored: false,
         newClades: 1,
         rawNewActivity: 1,
+        rawNewAbundanceWeightedActivity: 1,
         persistentNewClades: 1,
-        persistentNewActivity: 1
+        persistentNewActivity: 1,
+        persistentNewAbundanceWeightedActivity: 1
       },
       {
         windowIndex: 1,
@@ -489,8 +563,10 @@ describe('analyzePersistentCladeActivity', () => {
         censored: false,
         newClades: 2,
         rawNewActivity: 3,
+        rawNewAbundanceWeightedActivity: 3,
         persistentNewClades: 2,
-        persistentNewActivity: 3
+        persistentNewActivity: 3,
+        persistentNewAbundanceWeightedActivity: 3
       },
       {
         windowIndex: 2,
@@ -501,8 +577,10 @@ describe('analyzePersistentCladeActivity', () => {
         censored: true,
         newClades: 1,
         rawNewActivity: 2,
+        rawNewAbundanceWeightedActivity: 2,
         persistentNewClades: null,
-        persistentNewActivity: null
+        persistentNewActivity: null,
+        persistentNewAbundanceWeightedActivity: null
       }
     ]);
     expect(analysis.summary).toEqual({
@@ -515,7 +593,11 @@ describe('analyzePersistentCladeActivity', () => {
       postBurnInPersistentNewActivityMean: 3,
       postBurnInPersistentNewActivityMin: 3,
       postBurnInPersistentNewActivityMax: 3,
+      postBurnInPersistentNewAbundanceWeightedActivityMean: 3,
+      postBurnInPersistentNewAbundanceWeightedActivityMin: 3,
+      postBurnInPersistentNewAbundanceWeightedActivityMax: 3,
       finalPersistentNewActivity: null,
+      finalPersistentNewAbundanceWeightedActivity: null,
       finalWindowCensored: true
     });
   });

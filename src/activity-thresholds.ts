@@ -4,6 +4,7 @@ export interface ActivityThresholdSummaryLike {
   evaluablePostBurnInWindows: number;
   postBurnInWindowsWithPersistentNewActivity: number;
   postBurnInPersistentNewActivityMean: number;
+  postBurnInPersistentNewAbundanceWeightedActivityMean: number;
 }
 
 export interface ActivityThresholdLike<TSummary extends ActivityThresholdSummaryLike> {
@@ -56,6 +57,9 @@ export function buildActivitySeedPanelThresholdAggregate<
   minPersistentActivityMean: number;
   meanPersistentActivityMean: number;
   maxPersistentActivityMean: number;
+  minPersistentAbundanceWeightedActivityMean: number;
+  meanPersistentAbundanceWeightedActivityMean: number;
+  maxPersistentAbundanceWeightedActivityMean: number;
 } {
   const thresholdResults = seedResults.map((seedResult) =>
     findThresholdResult(seedResult.seed, minSurvivalTicks, seedResult.thresholds)
@@ -63,6 +67,9 @@ export function buildActivitySeedPanelThresholdAggregate<
   const persistentWindowFractions = thresholdResults.map((threshold) => threshold.persistentWindowFraction);
   const persistentActivityMeans = thresholdResults.map(
     (threshold) => threshold.summary.postBurnInPersistentNewActivityMean
+  );
+  const persistentAbundanceWeightedActivityMeans = thresholdResults.map(
+    (threshold) => threshold.summary.postBurnInPersistentNewAbundanceWeightedActivityMean
   );
 
   return {
@@ -77,7 +84,10 @@ export function buildActivitySeedPanelThresholdAggregate<
     maxPersistentWindowFraction: max(persistentWindowFractions),
     minPersistentActivityMean: min(persistentActivityMeans),
     meanPersistentActivityMean: mean(persistentActivityMeans),
-    maxPersistentActivityMean: max(persistentActivityMeans)
+    maxPersistentActivityMean: max(persistentActivityMeans),
+    minPersistentAbundanceWeightedActivityMean: min(persistentAbundanceWeightedActivityMeans),
+    meanPersistentAbundanceWeightedActivityMean: mean(persistentAbundanceWeightedActivityMeans),
+    maxPersistentAbundanceWeightedActivityMean: max(persistentAbundanceWeightedActivityMeans)
   };
 }
 

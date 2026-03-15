@@ -352,6 +352,7 @@ interface RunActivitySimulationInput {
 interface TaxonWindowContribution {
   windowIndex: number;
   activityInOriginWindow: number;
+  abundanceWeightedActivityInOriginWindow: number;
   observedLifetime: number;
 }
 
@@ -370,6 +371,7 @@ interface TaxonActivityWindowData {
   cumulativeActivity: number;
   normalizedCumulativeActivity: number;
   newActivity: number;
+  newAbundanceWeightedActivity: number;
 }
 
 interface TaxonActivityProbeSummaryData {
@@ -381,9 +383,13 @@ interface TaxonActivityProbeSummaryData {
   postBurnInNewActivityMean: number;
   postBurnInNewActivityMin: number;
   postBurnInNewActivityMax: number;
+  postBurnInNewAbundanceWeightedActivityMean: number;
+  postBurnInNewAbundanceWeightedActivityMin: number;
+  postBurnInNewAbundanceWeightedActivityMax: number;
   finalCumulativeActivity: number;
   finalNormalizedCumulativeActivity: number;
   finalNewActivity: number;
+  finalNewAbundanceWeightedActivity: number;
 }
 
 interface TaxonActivityPersistenceWindowData {
@@ -395,8 +401,10 @@ interface TaxonActivityPersistenceWindowData {
   censored: boolean;
   newTaxa: number;
   rawNewActivity: number;
+  rawNewAbundanceWeightedActivity: number;
   persistentNewTaxa: number | null;
   persistentNewActivity: number | null;
+  persistentNewAbundanceWeightedActivity: number | null;
 }
 
 interface TaxonActivityPersistenceSummaryData {
@@ -409,7 +417,11 @@ interface TaxonActivityPersistenceSummaryData {
   postBurnInPersistentNewActivityMean: number;
   postBurnInPersistentNewActivityMin: number;
   postBurnInPersistentNewActivityMax: number;
+  postBurnInPersistentNewAbundanceWeightedActivityMean: number;
+  postBurnInPersistentNewAbundanceWeightedActivityMin: number;
+  postBurnInPersistentNewAbundanceWeightedActivityMax: number;
   finalPersistentNewActivity: number | null;
+  finalPersistentNewAbundanceWeightedActivity: number | null;
   finalWindowCensored: boolean;
 }
 
@@ -419,7 +431,9 @@ export const SPECIES_ACTIVITY_PROBE_DEFINITION: SpeciesActivityProbeDefinition =
   cumulativeActivity: 'Sum of occupied species-ticks from simulation tick 1 through the end of each window.',
   normalizedCumulativeActivity: 'Cumulative activity divided by elapsed simulation ticks at the end of each window.',
   newActivity:
-    'Occupied species-ticks within a window contributed by species whose firstSeenTick falls inside that same window.'
+    'Occupied species-ticks within a window contributed by species whose firstSeenTick falls inside that same window.',
+  newAbundanceWeightedActivity:
+    'Population summed across occupied ticks within a window for species whose firstSeenTick falls inside that same window.'
 };
 
 export const SPECIES_ACTIVITY_PERSISTENCE_SWEEP_DEFINITION: SpeciesActivityPersistenceSweepDefinition = {
@@ -428,6 +442,8 @@ export const SPECIES_ACTIVITY_PERSISTENCE_SWEEP_DEFINITION: SpeciesActivityPersi
     'Observed lifetime is extinctTick - firstSeenTick for extinct species and maxTick - firstSeenTick for extant species.',
   persistentNewActivity:
     'Occupied species-ticks within an origin window contributed by species whose observed lifetime reaches the survival threshold.',
+  persistentNewAbundanceWeightedActivity:
+    'Population summed across occupied ticks within an origin window for species whose observed lifetime reaches the survival threshold.',
   censoredWindow:
     'A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin species in that window cannot yet be fully evaluated.'
 };
@@ -446,7 +462,9 @@ export const CLADE_ACTIVITY_PROBE_DEFINITION: CladeActivityProbeDefinition = {
   cumulativeActivity: 'Sum of occupied clade-ticks from simulation tick 1 through the end of each window.',
   normalizedCumulativeActivity: 'Cumulative activity divided by elapsed simulation ticks at the end of each window.',
   newActivity:
-    'Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window.'
+    'Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window.',
+  newAbundanceWeightedActivity:
+    'Population summed across occupied ticks within a window for clades whose firstSeenTick falls inside that same window.'
 };
 
 export const CLADE_ACTIVITY_PERSISTENCE_SWEEP_DEFINITION: CladeActivityPersistenceSweepDefinition = {
@@ -455,6 +473,8 @@ export const CLADE_ACTIVITY_PERSISTENCE_SWEEP_DEFINITION: CladeActivityPersisten
     'Observed lifetime is extinctTick - firstSeenTick for extinct clades and maxTick - firstSeenTick for extant clades.',
   persistentNewActivity:
     'Occupied clade-ticks within an origin window contributed by clades whose observed lifetime reaches the survival threshold.',
+  persistentNewAbundanceWeightedActivity:
+    'Population summed across occupied ticks within an origin window for clades whose observed lifetime reaches the survival threshold.',
   censoredWindow:
     'A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin clades in that window cannot yet be fully evaluated.'
 };
@@ -487,7 +507,11 @@ export const CLADE_SPECIES_ACTIVITY_COUPLING_DEFINITION: CladeSpeciesActivityCou
   cladeToSpeciesPersistentActivityMeanRatio:
     'For one seed and survival threshold, clade postBurnInPersistentNewActivityMean divided by species postBurnInPersistentNewActivityMean. Null when the species mean is zero.',
   persistentActivityMeanDelta:
-    'For one seed and survival threshold, clade postBurnInPersistentNewActivityMean minus species postBurnInPersistentNewActivityMean.'
+    'For one seed and survival threshold, clade postBurnInPersistentNewActivityMean minus species postBurnInPersistentNewActivityMean.',
+  cladeToSpeciesPersistentAbundanceWeightedActivityMeanRatio:
+    'For one seed and survival threshold, clade postBurnInPersistentNewAbundanceWeightedActivityMean divided by species postBurnInPersistentNewAbundanceWeightedActivityMean. Null when the species mean is zero.',
+  persistentAbundanceWeightedActivityMeanDelta:
+    'For one seed and survival threshold, clade postBurnInPersistentNewAbundanceWeightedActivityMean minus species postBurnInPersistentNewAbundanceWeightedActivityMean.'
 };
 
 export const CLADE_ACTIVITY_RELABEL_NULL_DEFINITION: CladeActivityRelabelNullDefinition = {
@@ -510,7 +534,11 @@ export const CLADE_ACTIVITY_RELABEL_NULL_DEFINITION: CladeActivityRelabelNullDef
   actualToNullPersistentActivityMeanRatio:
     'For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean divided by matched-null postBurnInPersistentNewActivityMean. Null when the matched-null mean is zero.',
   persistentActivityMeanDeltaVsNull:
-    'For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean minus matched-null postBurnInPersistentNewActivityMean.'
+    'For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean minus matched-null postBurnInPersistentNewActivityMean.',
+  actualToNullPersistentAbundanceWeightedActivityMeanRatio:
+    'For one seed and survival threshold, actual clade postBurnInPersistentNewAbundanceWeightedActivityMean divided by matched-null postBurnInPersistentNewAbundanceWeightedActivityMean. Null when the matched-null mean is zero.',
+  persistentAbundanceWeightedActivityMeanDeltaVsNull:
+    'For one seed and survival threshold, actual clade postBurnInPersistentNewAbundanceWeightedActivityMean minus matched-null postBurnInPersistentNewAbundanceWeightedActivityMean.'
 };
 
 export const CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP_DEFINITION: CladeActivityRelabelNullCladeHabitatCouplingSweepDefinition =
@@ -527,7 +555,11 @@ export const CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP_DEFINITION
     actualToNullPersistentActivityMeanRatioMean:
       'Mean across seeds of actualToNullPersistentActivityMeanRatio for the selected survival threshold.',
     persistentActivityMeanDeltaVsNullMean:
-      'Mean across seeds of actual persistent activity mean minus matched-null persistent activity mean for the selected survival threshold.'
+      'Mean across seeds of actual persistent activity mean minus matched-null persistent activity mean for the selected survival threshold.',
+    actualToNullPersistentAbundanceWeightedActivityMeanRatioMean:
+      'Mean across seeds of actualToNullPersistentAbundanceWeightedActivityMeanRatio for the selected survival threshold.',
+    persistentAbundanceWeightedActivityMeanDeltaVsNullMean:
+      'Mean across seeds of actual persistent abundance-weighted activity mean minus matched-null persistent abundance-weighted activity mean for the selected survival threshold.'
   };
 
 export const CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP_DEFINITION: CladeActivityRelabelNullCladeInteractionCouplingSweepDefinition =
@@ -544,7 +576,11 @@ export const CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP_DEFINI
     actualToNullPersistentActivityMeanRatioMean:
       'Mean across seeds of actualToNullPersistentActivityMeanRatio for the selected survival threshold.',
     persistentActivityMeanDeltaVsNullMean:
-      'Mean across seeds of actual persistent activity mean minus matched-null persistent activity mean for the selected survival threshold.'
+      'Mean across seeds of actual persistent activity mean minus matched-null persistent activity mean for the selected survival threshold.',
+    actualToNullPersistentAbundanceWeightedActivityMeanRatioMean:
+      'Mean across seeds of actualToNullPersistentAbundanceWeightedActivityMeanRatio for the selected survival threshold.',
+    persistentAbundanceWeightedActivityMeanDeltaVsNullMean:
+      'Mean across seeds of actual persistent abundance-weighted activity mean minus matched-null persistent abundance-weighted activity mean for the selected survival threshold.'
   };
 
 export function analyzeSpeciesActivity(input: AnalyzeSpeciesActivityInput): AnalyzeSpeciesActivityResult {
@@ -1364,12 +1400,18 @@ function analyzeTaxonActivity(input: AnalyzeTaxonActivityInput): AnalyzeTaxonAct
   const maxTick = toNonNegativeInt('maxTick', input.maxTick);
   const context = collectTaxonActivityContext(input.taxa, windowSize, maxTick);
   const newActivityByWindow = new Map<number, number>();
+  const newAbundanceWeightedActivityByWindow = new Map<number, number>();
   const newTaxaByWindow = new Map<number, number>();
 
   for (const contribution of context.contributions) {
     newActivityByWindow.set(
       contribution.windowIndex,
       (newActivityByWindow.get(contribution.windowIndex) ?? 0) + contribution.activityInOriginWindow
+    );
+    newAbundanceWeightedActivityByWindow.set(
+      contribution.windowIndex,
+      (newAbundanceWeightedActivityByWindow.get(contribution.windowIndex) ?? 0) +
+        contribution.abundanceWeightedActivityInOriginWindow
     );
     newTaxaByWindow.set(contribution.windowIndex, (newTaxaByWindow.get(contribution.windowIndex) ?? 0) + 1);
   }
@@ -1388,7 +1430,8 @@ function analyzeTaxonActivity(input: AnalyzeTaxonActivityInput): AnalyzeTaxonAct
       newTaxa: newTaxaByWindow.get(windowIndex) ?? 0,
       cumulativeActivity,
       normalizedCumulativeActivity: cumulativeActivity / endTick,
-      newActivity: newActivityByWindow.get(windowIndex) ?? 0
+      newActivity: newActivityByWindow.get(windowIndex) ?? 0,
+      newAbundanceWeightedActivity: newAbundanceWeightedActivityByWindow.get(windowIndex) ?? 0
     });
   }
 
@@ -1407,8 +1450,10 @@ function analyzePersistentTaxonActivity(
   const minSurvivalTicks = toNonNegativeInt('minSurvivalTicks', input.minSurvivalTicks);
   const context = collectTaxonActivityContext(input.taxa, windowSize, maxTick);
   const rawNewActivityByWindow = new Map<number, number>();
+  const rawNewAbundanceWeightedActivityByWindow = new Map<number, number>();
   const newTaxaByWindow = new Map<number, number>();
   const persistentNewActivityByWindow = new Map<number, number>();
+  const persistentNewAbundanceWeightedActivityByWindow = new Map<number, number>();
   const persistentNewTaxaByWindow = new Map<number, number>();
 
   for (const contribution of context.contributions) {
@@ -1416,12 +1461,22 @@ function analyzePersistentTaxonActivity(
       contribution.windowIndex,
       (rawNewActivityByWindow.get(contribution.windowIndex) ?? 0) + contribution.activityInOriginWindow
     );
+    rawNewAbundanceWeightedActivityByWindow.set(
+      contribution.windowIndex,
+      (rawNewAbundanceWeightedActivityByWindow.get(contribution.windowIndex) ?? 0) +
+        contribution.abundanceWeightedActivityInOriginWindow
+    );
     newTaxaByWindow.set(contribution.windowIndex, (newTaxaByWindow.get(contribution.windowIndex) ?? 0) + 1);
 
     if (contribution.observedLifetime >= minSurvivalTicks) {
       persistentNewActivityByWindow.set(
         contribution.windowIndex,
         (persistentNewActivityByWindow.get(contribution.windowIndex) ?? 0) + contribution.activityInOriginWindow
+      );
+      persistentNewAbundanceWeightedActivityByWindow.set(
+        contribution.windowIndex,
+        (persistentNewAbundanceWeightedActivityByWindow.get(contribution.windowIndex) ?? 0) +
+          contribution.abundanceWeightedActivityInOriginWindow
       );
       persistentNewTaxaByWindow.set(
         contribution.windowIndex,
@@ -1443,8 +1498,11 @@ function analyzePersistentTaxonActivity(
       censored,
       newTaxa: newTaxaByWindow.get(windowIndex) ?? 0,
       rawNewActivity: rawNewActivityByWindow.get(windowIndex) ?? 0,
+      rawNewAbundanceWeightedActivity: rawNewAbundanceWeightedActivityByWindow.get(windowIndex) ?? 0,
       persistentNewTaxa: censored ? null : persistentNewTaxaByWindow.get(windowIndex) ?? 0,
-      persistentNewActivity: censored ? null : persistentNewActivityByWindow.get(windowIndex) ?? 0
+      persistentNewActivity: censored ? null : persistentNewActivityByWindow.get(windowIndex) ?? 0,
+      persistentNewAbundanceWeightedActivity:
+        censored ? null : persistentNewAbundanceWeightedActivityByWindow.get(windowIndex) ?? 0
     });
   }
 
@@ -1492,6 +1550,9 @@ function buildTaxonActivitySummary(
 ): TaxonActivityProbeSummaryData {
   const postBurnInWindows = windows.filter((window) => window.postBurnIn);
   const postBurnInNewActivity = postBurnInWindows.map((window) => window.newActivity);
+  const postBurnInNewAbundanceWeightedActivity = postBurnInWindows.map(
+    (window) => window.newAbundanceWeightedActivity
+  );
   const finalWindow = windows[windows.length - 1];
 
   return {
@@ -1503,9 +1564,13 @@ function buildTaxonActivitySummary(
     postBurnInNewActivityMean: mean(postBurnInNewActivity),
     postBurnInNewActivityMin: min(postBurnInNewActivity),
     postBurnInNewActivityMax: max(postBurnInNewActivity),
+    postBurnInNewAbundanceWeightedActivityMean: mean(postBurnInNewAbundanceWeightedActivity),
+    postBurnInNewAbundanceWeightedActivityMin: min(postBurnInNewAbundanceWeightedActivity),
+    postBurnInNewAbundanceWeightedActivityMax: max(postBurnInNewAbundanceWeightedActivity),
     finalCumulativeActivity: finalWindow?.cumulativeActivity ?? 0,
     finalNormalizedCumulativeActivity: finalWindow?.normalizedCumulativeActivity ?? 0,
-    finalNewActivity: finalWindow?.newActivity ?? 0
+    finalNewActivity: finalWindow?.newActivity ?? 0,
+    finalNewAbundanceWeightedActivity: finalWindow?.newAbundanceWeightedActivity ?? 0
   };
 }
 
@@ -1517,6 +1582,9 @@ function buildTaxonActivityPersistenceSummary(
   const evaluablePostBurnInWindows = postBurnInWindows.filter((window) => !window.censored);
   const postBurnInPersistentNewActivity = evaluablePostBurnInWindows.map(
     (window) => window.persistentNewActivity ?? 0
+  );
+  const postBurnInPersistentNewAbundanceWeightedActivity = evaluablePostBurnInWindows.map(
+    (window) => window.persistentNewAbundanceWeightedActivity ?? 0
   );
   const finalWindow = windows[windows.length - 1];
 
@@ -1535,7 +1603,12 @@ function buildTaxonActivityPersistenceSummary(
     postBurnInPersistentNewActivityMean: mean(postBurnInPersistentNewActivity),
     postBurnInPersistentNewActivityMin: min(postBurnInPersistentNewActivity),
     postBurnInPersistentNewActivityMax: max(postBurnInPersistentNewActivity),
+    postBurnInPersistentNewAbundanceWeightedActivityMean: mean(postBurnInPersistentNewAbundanceWeightedActivity),
+    postBurnInPersistentNewAbundanceWeightedActivityMin: min(postBurnInPersistentNewAbundanceWeightedActivity),
+    postBurnInPersistentNewAbundanceWeightedActivityMax: max(postBurnInPersistentNewAbundanceWeightedActivity),
     finalPersistentNewActivity: finalWindow?.censored ? null : finalWindow?.persistentNewActivity ?? 0,
+    finalPersistentNewAbundanceWeightedActivity:
+      finalWindow?.censored ? null : finalWindow?.persistentNewAbundanceWeightedActivity ?? 0,
     finalWindowCensored: finalWindow?.censored ?? false
   };
 }
@@ -1550,7 +1623,8 @@ function toSpeciesActivityWindow(window: TaxonActivityWindowData): SpeciesActivi
     newSpecies: window.newTaxa,
     cumulativeActivity: window.cumulativeActivity,
     normalizedCumulativeActivity: window.normalizedCumulativeActivity,
-    newActivity: window.newActivity
+    newActivity: window.newActivity,
+    newAbundanceWeightedActivity: window.newAbundanceWeightedActivity
   };
 }
 
@@ -1564,7 +1638,8 @@ function toCladeActivityWindow(window: TaxonActivityWindowData): CladeActivityWi
     newClades: window.newTaxa,
     cumulativeActivity: window.cumulativeActivity,
     normalizedCumulativeActivity: window.normalizedCumulativeActivity,
-    newActivity: window.newActivity
+    newActivity: window.newActivity,
+    newAbundanceWeightedActivity: window.newAbundanceWeightedActivity
   };
 }
 
@@ -1578,9 +1653,13 @@ function toSpeciesActivityProbeSummary(summary: TaxonActivityProbeSummaryData): 
     postBurnInNewActivityMean: summary.postBurnInNewActivityMean,
     postBurnInNewActivityMin: summary.postBurnInNewActivityMin,
     postBurnInNewActivityMax: summary.postBurnInNewActivityMax,
+    postBurnInNewAbundanceWeightedActivityMean: summary.postBurnInNewAbundanceWeightedActivityMean,
+    postBurnInNewAbundanceWeightedActivityMin: summary.postBurnInNewAbundanceWeightedActivityMin,
+    postBurnInNewAbundanceWeightedActivityMax: summary.postBurnInNewAbundanceWeightedActivityMax,
     finalCumulativeActivity: summary.finalCumulativeActivity,
     finalNormalizedCumulativeActivity: summary.finalNormalizedCumulativeActivity,
-    finalNewActivity: summary.finalNewActivity
+    finalNewActivity: summary.finalNewActivity,
+    finalNewAbundanceWeightedActivity: summary.finalNewAbundanceWeightedActivity
   };
 }
 
@@ -1594,9 +1673,13 @@ function toCladeActivityProbeSummary(summary: TaxonActivityProbeSummaryData): Cl
     postBurnInNewActivityMean: summary.postBurnInNewActivityMean,
     postBurnInNewActivityMin: summary.postBurnInNewActivityMin,
     postBurnInNewActivityMax: summary.postBurnInNewActivityMax,
+    postBurnInNewAbundanceWeightedActivityMean: summary.postBurnInNewAbundanceWeightedActivityMean,
+    postBurnInNewAbundanceWeightedActivityMin: summary.postBurnInNewAbundanceWeightedActivityMin,
+    postBurnInNewAbundanceWeightedActivityMax: summary.postBurnInNewAbundanceWeightedActivityMax,
     finalCumulativeActivity: summary.finalCumulativeActivity,
     finalNormalizedCumulativeActivity: summary.finalNormalizedCumulativeActivity,
-    finalNewActivity: summary.finalNewActivity
+    finalNewActivity: summary.finalNewActivity,
+    finalNewAbundanceWeightedActivity: summary.finalNewAbundanceWeightedActivity
   };
 }
 
@@ -1612,8 +1695,10 @@ function toSpeciesActivityPersistenceWindow(
     censored: window.censored,
     newSpecies: window.newTaxa,
     rawNewActivity: window.rawNewActivity,
+    rawNewAbundanceWeightedActivity: window.rawNewAbundanceWeightedActivity,
     persistentNewSpecies: window.persistentNewTaxa,
-    persistentNewActivity: window.persistentNewActivity
+    persistentNewActivity: window.persistentNewActivity,
+    persistentNewAbundanceWeightedActivity: window.persistentNewAbundanceWeightedActivity
   };
 }
 
@@ -1629,8 +1714,10 @@ function toCladeActivityPersistenceWindow(
     censored: window.censored,
     newClades: window.newTaxa,
     rawNewActivity: window.rawNewActivity,
+    rawNewAbundanceWeightedActivity: window.rawNewAbundanceWeightedActivity,
     persistentNewClades: window.persistentNewTaxa,
-    persistentNewActivity: window.persistentNewActivity
+    persistentNewActivity: window.persistentNewActivity,
+    persistentNewAbundanceWeightedActivity: window.persistentNewAbundanceWeightedActivity
   };
 }
 
@@ -1647,7 +1734,14 @@ function toSpeciesActivityPersistenceSummary(
     postBurnInPersistentNewActivityMean: summary.postBurnInPersistentNewActivityMean,
     postBurnInPersistentNewActivityMin: summary.postBurnInPersistentNewActivityMin,
     postBurnInPersistentNewActivityMax: summary.postBurnInPersistentNewActivityMax,
+    postBurnInPersistentNewAbundanceWeightedActivityMean:
+      summary.postBurnInPersistentNewAbundanceWeightedActivityMean,
+    postBurnInPersistentNewAbundanceWeightedActivityMin:
+      summary.postBurnInPersistentNewAbundanceWeightedActivityMin,
+    postBurnInPersistentNewAbundanceWeightedActivityMax:
+      summary.postBurnInPersistentNewAbundanceWeightedActivityMax,
     finalPersistentNewActivity: summary.finalPersistentNewActivity,
+    finalPersistentNewAbundanceWeightedActivity: summary.finalPersistentNewAbundanceWeightedActivity,
     finalWindowCensored: summary.finalWindowCensored
   };
 }
@@ -1665,7 +1759,14 @@ function toCladeActivityPersistenceSummary(
     postBurnInPersistentNewActivityMean: summary.postBurnInPersistentNewActivityMean,
     postBurnInPersistentNewActivityMin: summary.postBurnInPersistentNewActivityMin,
     postBurnInPersistentNewActivityMax: summary.postBurnInPersistentNewActivityMax,
+    postBurnInPersistentNewAbundanceWeightedActivityMean:
+      summary.postBurnInPersistentNewAbundanceWeightedActivityMean,
+    postBurnInPersistentNewAbundanceWeightedActivityMin:
+      summary.postBurnInPersistentNewAbundanceWeightedActivityMin,
+    postBurnInPersistentNewAbundanceWeightedActivityMax:
+      summary.postBurnInPersistentNewAbundanceWeightedActivityMax,
     finalPersistentNewActivity: summary.finalPersistentNewActivity,
+    finalPersistentNewAbundanceWeightedActivity: summary.finalPersistentNewAbundanceWeightedActivity,
     finalWindowCensored: summary.finalWindowCensored
   };
 }
@@ -1729,17 +1830,20 @@ function collectTaxonActivityContext(taxa: TaxonHistory[], windowSize: number, m
     const windowStart = windowIndex * windowSize + 1;
     const windowEnd = Math.min(maxTick, windowStart + windowSize - 1);
     let activityInOriginWindow = 0;
+    let abundanceWeightedActivityInOriginWindow = 0;
 
     for (const point of taxonHistory.timeline) {
       if (point.tick < windowStart || point.tick > windowEnd || point.population <= 0) {
         continue;
       }
       activityInOriginWindow += 1;
+      abundanceWeightedActivityInOriginWindow += point.population;
     }
 
     contributions.push({
       windowIndex,
       activityInOriginWindow,
+      abundanceWeightedActivityInOriginWindow,
       observedLifetime: observedLifetime(taxonHistory, maxTick)
     });
   }

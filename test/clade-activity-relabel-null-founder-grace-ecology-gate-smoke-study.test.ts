@@ -80,5 +80,7 @@ describe('runCladeActivityRelabelNullFounderGraceEcologyGateSmokeStudy', () => {
     });
     expect(result.results[0].summary.birthScheduleMatchedAllSeeds).toBe(true);
     expect(result.results[1].summary.birthScheduleMatchedAllSeeds).toBe(true);
+    expect(result.results[0].summary.persistentAbundanceWeightedActivityMeanDeltaVsNullMean).toBe(0);
+    expect(result.results[1].summary.persistentAbundanceWeightedActivityMeanDeltaVsNullMean).toBe(0);
   });
 });

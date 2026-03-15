@@ -176,6 +176,10 @@ function buildRelabelNullSweepResultBase(
     actualToNullPersistentWindowFractionRatioMean: aggregate.actualToNullPersistentWindowFractionRatio.mean,
     persistentWindowFractionDeltaVsNullMean: aggregate.persistentWindowFractionDeltaVsNull.mean,
     actualToNullPersistentActivityMeanRatioMean: aggregate.actualToNullPersistentActivityMeanRatio.mean,
-    persistentActivityMeanDeltaVsNullMean: aggregate.persistentActivityMeanDeltaVsNull.mean
+    persistentActivityMeanDeltaVsNullMean: aggregate.persistentActivityMeanDeltaVsNull.mean,
+    actualToNullPersistentAbundanceWeightedActivityMeanRatioMean:
+      aggregate.actualToNullPersistentAbundanceWeightedActivityMeanRatio.mean,
+    persistentAbundanceWeightedActivityMeanDeltaVsNullMean:
+      aggregate.persistentAbundanceWeightedActivityMeanDeltaVsNull.mean
   };
 }

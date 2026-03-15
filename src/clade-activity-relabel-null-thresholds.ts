@@ -57,6 +57,13 @@ export function buildCladeActivityRelabelNullThresholdSeedResult(input: {
       input.matchedNull.summary.postBurnInPersistentNewActivityMean
     ),
     persistentActivityMeanDeltaVsNull,
+    actualToNullPersistentAbundanceWeightedActivityMeanRatio: divideOrNull(
+      input.actual.summary.postBurnInPersistentNewAbundanceWeightedActivityMean,
+      input.matchedNull.summary.postBurnInPersistentNewAbundanceWeightedActivityMean
+    ),
+    persistentAbundanceWeightedActivityMeanDeltaVsNull:
+      input.actual.summary.postBurnInPersistentNewAbundanceWeightedActivityMean -
+      input.matchedNull.summary.postBurnInPersistentNewAbundanceWeightedActivityMean,
     diagnostics: {
       ...diagnostics,
       rawNewCladeActivityMeanDeltaVsNull,
@@ -104,6 +111,16 @@ export function buildCladeActivityRelabelNullThresholdAggregate(
     ),
     persistentActivityMeanDeltaVsNull: buildNumericAggregate(
       thresholdResults.map((threshold) => threshold.persistentActivityMeanDeltaVsNull)
+    ),
+    actualToNullPersistentAbundanceWeightedActivityMeanRatio: buildNullableNumericAggregate(
+      thresholdResults.flatMap((threshold) =>
+        threshold.actualToNullPersistentAbundanceWeightedActivityMeanRatio === null
+          ? []
+          : [threshold.actualToNullPersistentAbundanceWeightedActivityMeanRatio]
+      )
+    ),
+    persistentAbundanceWeightedActivityMeanDeltaVsNull: buildNumericAggregate(
+      thresholdResults.map((threshold) => threshold.persistentAbundanceWeightedActivityMeanDeltaVsNull)
     ),
     diagnostics: buildCladeActivityRelabelNullThresholdAggregateDiagnostics(thresholdResults)
   };

@@ -94,6 +94,7 @@ describe('runCladeActivityRelabelNullSmokeStudy', () => {
       birthScheduleMatchedAllSeeds: true,
       persistentWindowFractionDeltaVsNullMean: 0,
       persistentActivityMeanDeltaVsNullMean: 0,
+      persistentAbundanceWeightedActivityMeanDeltaVsNullMean: 0,
       diagnostics: {
         activeCladeDeltaVsNullMean: 0,
         rawNewCladeActivityMeanDeltaVsNullMean: 0,

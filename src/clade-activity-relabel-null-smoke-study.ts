@@ -19,6 +19,7 @@ export interface CladeActivityRelabelNullSmokeSummary {
   birthScheduleMatchedAllSeeds: boolean;
   persistentWindowFractionDeltaVsNullMean: number;
   persistentActivityMeanDeltaVsNullMean: number;
+  persistentAbundanceWeightedActivityMeanDeltaVsNullMean: number;
   diagnostics: CladeActivityRelabelNullDiagnosticSnapshot;
 }
 
@@ -211,6 +212,8 @@ function summarizeCladeActivityRelabelNullSmokeStudy(
     birthScheduleMatchedAllSeeds: thresholdResult.seedResults.every((seedResult) => seedResult.birthScheduleMatched),
     persistentWindowFractionDeltaVsNullMean: aggregate.persistentWindowFractionDeltaVsNull.mean,
     persistentActivityMeanDeltaVsNullMean: aggregate.persistentActivityMeanDeltaVsNull.mean,
+    persistentAbundanceWeightedActivityMeanDeltaVsNullMean:
+      aggregate.persistentAbundanceWeightedActivityMeanDeltaVsNull.mean,
     diagnostics: {
       finalPopulationMean: aggregate.diagnostics.finalPopulation.mean,
       actualActiveCladesMean: aggregate.diagnostics.actualActiveClades.mean,

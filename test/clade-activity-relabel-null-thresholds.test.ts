@@ -15,6 +15,7 @@ import {
 function createPersistenceSummary(
   meanPersistentActivity: number,
   windowsWithPersistentActivity: number,
+  meanPersistentAbundanceWeightedActivity = meanPersistentActivity,
   evaluableWindows = 4
 ): CladeActivityPersistenceSummary {
   return {
@@ -27,7 +28,11 @@ function createPersistenceSummary(
     postBurnInPersistentNewActivityMean: meanPersistentActivity,
     postBurnInPersistentNewActivityMin: meanPersistentActivity,
     postBurnInPersistentNewActivityMax: meanPersistentActivity,
+    postBurnInPersistentNewAbundanceWeightedActivityMean: meanPersistentAbundanceWeightedActivity,
+    postBurnInPersistentNewAbundanceWeightedActivityMin: meanPersistentAbundanceWeightedActivity,
+    postBurnInPersistentNewAbundanceWeightedActivityMax: meanPersistentAbundanceWeightedActivity,
     finalPersistentNewActivity: meanPersistentActivity,
+    finalPersistentNewAbundanceWeightedActivity: meanPersistentAbundanceWeightedActivity,
     finalWindowCensored: false
   };
 }
@@ -42,9 +47,13 @@ function createRawSummary(meanNewActivity: number): CladeActivityProbeSummary {
     postBurnInNewActivityMean: meanNewActivity,
     postBurnInNewActivityMin: meanNewActivity,
     postBurnInNewActivityMax: meanNewActivity,
+    postBurnInNewAbundanceWeightedActivityMean: meanNewActivity,
+    postBurnInNewAbundanceWeightedActivityMin: meanNewActivity,
+    postBurnInNewAbundanceWeightedActivityMax: meanNewActivity,
     finalCumulativeActivity: 30,
     finalNormalizedCumulativeActivity: 0.3,
-    finalNewActivity: meanNewActivity
+    finalNewActivity: meanNewActivity,
+    finalNewAbundanceWeightedActivity: meanNewActivity
   };
 }
 
@@ -146,6 +155,8 @@ describe('buildCladeActivityRelabelNullThresholdSeedResult', () => {
       persistentWindowFractionDeltaVsNull: 0.25,
       actualToNullPersistentActivityMeanRatio: 2,
       persistentActivityMeanDeltaVsNull: 4,
+      actualToNullPersistentAbundanceWeightedActivityMeanRatio: 2,
+      persistentAbundanceWeightedActivityMeanDeltaVsNull: 4,
       diagnostics: {
         finalPopulation: 42,
         actualActiveClades: 3,
@@ -195,19 +206,23 @@ describe('buildCladeActivityRelabelNullThresholdAggregate', () => {
       minSurvivalTicks: 50,
       seeds: 2,
       meanPersistentWindowFraction: 0.5,
-      meanPersistentActivityMean: 5
+      meanPersistentActivityMean: 5,
+      meanPersistentAbundanceWeightedActivityMean: 5
     });
     expect(aggregate.matchedNull).toMatchObject({
       meanPersistentWindowFraction: 0.5,
-      meanPersistentActivityMean: 5
+      meanPersistentActivityMean: 5,
+      meanPersistentAbundanceWeightedActivityMean: 5
     });
     expect(aggregate.actualToNullPersistentWindowFractionRatio).toMatchObject({
       definedSeeds: 2,
       mean: 1
     });
     expect(aggregate.actualToNullPersistentActivityMeanRatio.mean).toBeCloseTo(7 / 6, 10);
+    expect(aggregate.actualToNullPersistentAbundanceWeightedActivityMeanRatio.mean).toBeCloseTo(7 / 6, 10);
     expect(aggregate.persistentWindowFractionDeltaVsNull.mean).toBeCloseTo(0, 10);
     expect(aggregate.persistentActivityMeanDeltaVsNull.mean).toBeCloseTo(0, 10);
+    expect(aggregate.persistentAbundanceWeightedActivityMeanDeltaVsNull.mean).toBeCloseTo(0, 10);
     expect(aggregate.diagnostics).toMatchObject({
       finalPopulation: { mean: 15, min: 12, max: 18 },
       activeCladeDeltaVsNull: { mean: -1, min: -2, max: 0 },

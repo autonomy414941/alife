@@ -201,6 +201,16 @@ export function buildCladeSpeciesActivityCouplingThresholdAggregate(
     ),
     persistentActivityMeanDelta: buildNumericAggregate(
       thresholdResults.map((threshold) => threshold.persistentActivityMeanDelta)
+    ),
+    cladeToSpeciesPersistentAbundanceWeightedActivityMeanRatio: buildNullableNumericAggregate(
+      thresholdResults.flatMap((threshold) =>
+        threshold.cladeToSpeciesPersistentAbundanceWeightedActivityMeanRatio === null
+          ? []
+          : [threshold.cladeToSpeciesPersistentAbundanceWeightedActivityMeanRatio]
+      )
+    ),
+    persistentAbundanceWeightedActivityMeanDelta: buildNumericAggregate(
+      thresholdResults.map((threshold) => threshold.persistentAbundanceWeightedActivityMeanDelta)
     )
   };
 }
@@ -252,7 +262,14 @@ function buildCladeSpeciesActivityCouplingThresholdSeedResult(input: {
     ),
     persistentActivityMeanDelta:
       input.clade.summary.postBurnInPersistentNewActivityMean -
-      input.species.summary.postBurnInPersistentNewActivityMean
+      input.species.summary.postBurnInPersistentNewActivityMean,
+    cladeToSpeciesPersistentAbundanceWeightedActivityMeanRatio: divideOrNull(
+      input.clade.summary.postBurnInPersistentNewAbundanceWeightedActivityMean,
+      input.species.summary.postBurnInPersistentNewAbundanceWeightedActivityMean
+    ),
+    persistentAbundanceWeightedActivityMeanDelta:
+      input.clade.summary.postBurnInPersistentNewAbundanceWeightedActivityMean -
+      input.species.summary.postBurnInPersistentNewAbundanceWeightedActivityMean
   };
 }
 

@@ -1,0 +1,1776 @@
+{
+  "generatedAt": "2026-03-15T00:00:00.000Z",
+  "question": "On the static habitat baseline with founder grace already enabled, does a modest cladogenesis ecology gate recover persistence without giving back the active-clade gain?",
+  "prediction": "If short founder grace is letting weak founders survive long enough to dilute persistence, raising cladogenesisEcologyAdvantageThreshold from -1 to 0.1 should keep birth schedules matched, preserve positive persistent activity, and improve activeCladeDeltaVsNullMean.",
+  "config": {
+    "steps": 300,
+    "windowSize": 50,
+    "burnIn": 50,
+    "seeds": [
+      20260307,
+      20260308
+    ],
+    "stopWhenExtinct": true,
+    "minSurvivalTicks": [
+      25
+    ],
+    "cladogenesisThresholds": [
+      1
+    ],
+    "lineageHarvestCrowdingPenalty": 1,
+    "lineageDispersalCrowdingPenalty": 1,
+    "lineageEncounterRestraint": 1,
+    "lineageOffspringSettlementCrowdingPenalty": 0,
+    "offspringSettlementEcologyScoring": true,
+    "decompositionSpilloverFraction": 0,
+    "cladeHabitatCoupling": 0.75,
+    "adaptiveCladeHabitatMemoryRate": 0,
+    "newCladeSettlementCrowdingGraceTicks": 36,
+    "cladogenesisEcologyAdvantageThresholdValues": [
+      -1,
+      0.1
+    ]
+  },
+  "results": [
+    {
+      "cladogenesisEcologyAdvantageThreshold": -1,
+      "studyInput": {
+        "steps": 300,
+        "windowSize": 50,
+        "burnIn": 50,
+        "seeds": [
+          20260307,
+          20260308
+        ],
+        "stopWhenExtinct": true,
+        "minSurvivalTicks": [
+          25
+        ],
+        "cladogenesisThresholds": [
+          1
+        ],
+        "matchedNullFounderContext": "none",
+        "simulation": {
+          "config": {
+            "lineageHarvestCrowdingPenalty": 1,
+            "lineageDispersalCrowdingPenalty": 1,
+            "lineageEncounterRestraint": 1,
+            "lineageOffspringSettlementCrowdingPenalty": 0,
+            "offspringSettlementEcologyScoring": true,
+            "decompositionSpilloverFraction": 0,
+            "cladeHabitatCoupling": 0.75,
+            "adaptiveCladeHabitatMemoryRate": 0,
+            "newCladeSettlementCrowdingGraceTicks": 36,
+            "cladogenesisEcologyAdvantageThreshold": -1
+          }
+        },
+        "generatedAt": "2026-03-15T00:00:00.000Z"
+      },
+      "summary": {
+        "birthScheduleMatchedAllSeeds": true,
+        "persistentWindowFractionDeltaVsNullMean": 0,
+        "persistentActivityMeanDeltaVsNullMean": 0,
+        "persistentAbundanceWeightedActivityMeanDeltaVsNullMean": -0.875,
+        "diagnostics": {
+          "finalPopulationMean": 1195,
+          "actualActiveCladesMean": 8.5,
+          "matchedNullActiveCladesMean": 24,
+          "activeCladeDeltaVsNullMean": -15.5,
+          "rawNewCladeActivityMeanDeltaVsNullMean": 0,
+          "persistencePenaltyVsRawDeltaMean": 0,
+          "dominantLossMode": "activeCladeDeficit"
+        }
+      },
+      "study": {
+        "generatedAt": "2026-03-15T00:00:00.000Z",
+        "definition": {
+          "actual": {
+            "raw": {
+              "component": "clades",
+              "activityUnit": "activeCladeTick",
+              "cumulativeActivity": "Sum of occupied clade-ticks from simulation tick 1 through the end of each window.",
+              "normalizedCumulativeActivity": "Cumulative activity divided by elapsed simulation ticks at the end of each window.",
+              "newActivity": "Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window.",
+              "newAbundanceWeightedActivity": "Population summed across occupied ticks within a window for clades whose firstSeenTick falls inside that same window."
+            },
+            "observedLifetime": "Observed lifetime is extinctTick - firstSeenTick for extinct clades and maxTick - firstSeenTick for extant clades.",
+            "persistentNewActivity": "Occupied clade-ticks within an origin window contributed by clades whose observed lifetime reaches the survival threshold.",
+            "persistentNewAbundanceWeightedActivity": "Population summed across occupied ticks within an origin window for clades whose observed lifetime reaches the survival threshold.",
+            "censoredWindow": "A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin clades in that window cannot yet be fully evaluated.",
+            "persistentWindowFraction": "For one seed and threshold, the fraction of evaluable post-burn-in windows whose persistentNewActivity is greater than zero.",
+            "allEvaluableWindowsPositive": "For one seed and threshold, true when every evaluable post-burn-in window has persistentNewActivity greater than zero."
+          },
+          "matchedNull": {
+            "raw": {
+              "component": "clades",
+              "activityUnit": "activeCladeTick",
+              "cumulativeActivity": "Sum of occupied clade-ticks from simulation tick 1 through the end of each window.",
+              "normalizedCumulativeActivity": "Cumulative activity divided by elapsed simulation ticks at the end of each window.",
+              "newActivity": "Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window.",
+              "newAbundanceWeightedActivity": "Population summed across occupied ticks within a window for clades whose firstSeenTick falls inside that same window."
+            },
+            "observedLifetime": "Observed lifetime is extinctTick - firstSeenTick for extinct clades and maxTick - firstSeenTick for extant clades.",
+            "persistentNewActivity": "Occupied clade-ticks within an origin window contributed by clades whose observed lifetime reaches the survival threshold.",
+            "persistentNewAbundanceWeightedActivity": "Population summed across occupied ticks within an origin window for clades whose observed lifetime reaches the survival threshold.",
+            "censoredWindow": "A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin clades in that window cannot yet be fully evaluated.",
+            "persistentWindowFraction": "For one seed and threshold, the fraction of evaluable post-burn-in windows whose persistentNewActivity is greater than zero.",
+            "allEvaluableWindowsPositive": "For one seed and threshold, true when every evaluable post-burn-in window has persistentNewActivity greater than zero."
+          },
+          "matchedSchedule": "For each seed and cladogenesis threshold, the pseudo-clade null preserves the observed clade birth count at every firstSeenTick.",
+          "matchedFounderContext": "matchedNullFounderContext=none matches birth ticks only. matchedNullFounderContext=founderHabitatBin also preserves, at each firstSeenTick, the count of founders in each habitat bin derived from founder habitat means. matchedNullFounderContext=founderHabitatAndCrowdingBin additionally preserves the joint founder habitat-bin and local-crowding-bin schedule.",
+          "relabeling": "Pseudo-clade founders are randomly selected from species born at each matched birth tick, and remaining species are randomly reassigned to pseudo-clades that were already active at the prior tick.",
+          "diagnostics": "Diagnostics compare per-seed raw new-clade activity, persistent activity, final population, and final active clade counts so founder suppression can be separated from post-founding persistence loss.",
+          "dominantLossMode": "matchedOrBetter means the actual clades are not behind the matched null on the tracked signals; founderSuppression means the main deficit appears before the persistence filter; persistenceFailure means the persistence filter widens the deficit; activeCladeDeficit means the final active clade count trails the matched null the most.",
+          "actualToNullPersistentWindowFractionRatio": "For one seed and survival threshold, actual clade persistentWindowFraction divided by matched-null persistentWindowFraction. Null when the matched-null fraction is zero.",
+          "persistentWindowFractionDeltaVsNull": "For one seed and survival threshold, actual clade persistentWindowFraction minus matched-null persistentWindowFraction.",
+          "actualToNullPersistentActivityMeanRatio": "For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean divided by matched-null postBurnInPersistentNewActivityMean. Null when the matched-null mean is zero.",
+          "persistentActivityMeanDeltaVsNull": "For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean minus matched-null postBurnInPersistentNewActivityMean.",
+          "actualToNullPersistentAbundanceWeightedActivityMeanRatio": "For one seed and survival threshold, actual clade postBurnInPersistentNewAbundanceWeightedActivityMean divided by matched-null postBurnInPersistentNewAbundanceWeightedActivityMean. Null when the matched-null mean is zero.",
+          "persistentAbundanceWeightedActivityMeanDeltaVsNull": "For one seed and survival threshold, actual clade postBurnInPersistentNewAbundanceWeightedActivityMean minus matched-null postBurnInPersistentNewAbundanceWeightedActivityMean."
+        },
+        "config": {
+          "steps": 300,
+          "windowSize": 50,
+          "burnIn": 50,
+          "seeds": [
+            20260307,
+            20260308
+          ],
+          "stopWhenExtinct": true,
+          "minSurvivalTicks": [
+            25
+          ],
+          "cladogenesisThresholds": [
+            1
+          ],
+          "matchedNullFounderContext": "none"
+        },
+        "thresholdResults": [
+          {
+            "cladogenesisThreshold": 1,
+            "seedResults": [
+              {
+                "seed": 20260307,
+                "relabelSeed": 3036252999,
+                "finalSummary": {
+                  "tick": 300,
+                  "population": 1162,
+                  "births": 8,
+                  "deaths": 9,
+                  "meanEnergy": 7.353431230825657,
+                  "meanGenome": {
+                    "metabolism": 0.6358872386825248,
+                    "harvest": 0.9894119869241975,
+                    "aggression": 0.970227364103732
+                  },
+                  "activeClades": 7,
+                  "activeSpecies": 174,
+                  "dominantSpeciesShare": 0.21600688468158347,
+                  "selectionDifferential": {
+                    "metabolism": 0.06741724243322811,
+                    "harvest": 0.07985701126555234,
+                    "aggression": 0.012855859743502895
+                  },
+                  "cladeExtinctions": 0,
+                  "speciesExtinctions": 1,
+                  "cumulativeExtinctClades": 17,
+                  "cumulativeExtinctSpecies": 362
+                },
+                "actualRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 24,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 0,
+                  "postBurnInNewClades": 0,
+                  "postBurnInNewActivityMean": 0,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 0,
+                  "postBurnInNewAbundanceWeightedActivityMean": 0,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 0,
+                  "finalCumulativeActivity": 4584,
+                  "finalNormalizedCumulativeActivity": 15.28,
+                  "finalNewActivity": 0,
+                  "finalNewAbundanceWeightedActivity": 0
+                },
+                "actualSpeciesRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalSpecies": 536,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 5,
+                  "postBurnInNewSpecies": 390,
+                  "postBurnInNewActivityMean": 1972.4,
+                  "postBurnInNewActivityMin": 1317,
+                  "postBurnInNewActivityMax": 2228,
+                  "postBurnInNewAbundanceWeightedActivityMean": 2075,
+                  "postBurnInNewAbundanceWeightedActivityMin": 1317,
+                  "postBurnInNewAbundanceWeightedActivityMax": 2623,
+                  "finalCumulativeActivity": 46037,
+                  "finalNormalizedCumulativeActivity": 153.45666666666668,
+                  "finalNewActivity": 2123,
+                  "finalNewAbundanceWeightedActivity": 2143
+                },
+                "matchedNullRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 24,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 0,
+                  "postBurnInNewClades": 0,
+                  "postBurnInNewActivityMean": 0,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 0,
+                  "postBurnInNewAbundanceWeightedActivityMean": 0,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 0,
+                  "finalCumulativeActivity": 7081,
+                  "finalNormalizedCumulativeActivity": 23.60333333333333,
+                  "finalNewActivity": 0,
+                  "finalNewAbundanceWeightedActivity": 0
+                },
+                "nonSpeciesConditionedNullRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 24,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 0,
+                  "postBurnInNewClades": 0,
+                  "postBurnInNewActivityMean": 0,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 0,
+                  "postBurnInNewAbundanceWeightedActivityMean": 0,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 0,
+                  "finalCumulativeActivity": 4584,
+                  "finalNormalizedCumulativeActivity": 15.28,
+                  "finalNewActivity": 0,
+                  "finalNewAbundanceWeightedActivity": 0
+                },
+                "actualBirthSchedule": [
+                  {
+                    "tick": 0,
+                    "births": 24
+                  }
+                ],
+                "matchedNullBirthSchedule": [
+                  {
+                    "tick": 0,
+                    "births": 24
+                  }
+                ],
+                "birthScheduleMatched": true,
+                "actualFounderHabitatSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "births": 17
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "births": 7
+                  }
+                ],
+                "matchedNullFounderHabitatSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "births": 17
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "births": 7
+                  }
+                ],
+                "founderHabitatScheduleMatched": null,
+                "actualFounderHabitatCrowdingSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 0,
+                    "births": 17
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 0,
+                    "births": 7
+                  }
+                ],
+                "matchedNullFounderHabitatCrowdingSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 0,
+                    "births": 17
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 0,
+                    "births": 7
+                  }
+                ],
+                "founderHabitatCrowdingScheduleMatched": null,
+                "actualSpeciesThresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "summary": {
+                      "minSurvivalTicks": 25,
+                      "postBurnInWindows": 5,
+                      "censoredPostBurnInWindows": 1,
+                      "evaluablePostBurnInWindows": 4,
+                      "postBurnInWindowsWithPersistentNewActivity": 4,
+                      "postBurnInPersistentNewSpecies": 291,
+                      "postBurnInPersistentNewActivityMean": 1842.75,
+                      "postBurnInPersistentNewActivityMin": 1317,
+                      "postBurnInPersistentNewActivityMax": 2160,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMean": 1966,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMin": 1317,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMax": 2458,
+                      "finalPersistentNewActivity": null,
+                      "finalPersistentNewAbundanceWeightedActivity": null,
+                      "finalWindowCensored": true
+                    },
+                    "persistentWindowFraction": 1,
+                    "allEvaluableWindowsPositive": true
+                  }
+                ],
+                "nonSpeciesConditionedNullFinalActiveClades": 7,
+                "nonSpeciesConditionedNullThresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "summary": {
+                      "minSurvivalTicks": 25,
+                      "postBurnInWindows": 5,
+                      "censoredPostBurnInWindows": 1,
+                      "evaluablePostBurnInWindows": 4,
+                      "postBurnInWindowsWithPersistentNewActivity": 0,
+                      "postBurnInPersistentNewClades": 0,
+                      "postBurnInPersistentNewActivityMean": 0,
+                      "postBurnInPersistentNewActivityMin": 0,
+                      "postBurnInPersistentNewActivityMax": 0,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMean": 0,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMax": 0,
+                      "finalPersistentNewActivity": null,
+                      "finalPersistentNewAbundanceWeightedActivity": null,
+                      "finalWindowCensored": true
+                    },
+                    "persistentWindowFraction": 0,
+                    "allEvaluableWindowsPositive": false
+                  }
+                ],
+                "thresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "actual": {
+                      "minSurvivalTicks": 25,
+                      "summary": {
+                        "minSurvivalTicks": 25,
+                        "postBurnInWindows": 5,
+                        "censoredPostBurnInWindows": 1,
+                        "evaluablePostBurnInWindows": 4,
+                        "postBurnInWindowsWithPersistentNewActivity": 0,
+                        "postBurnInPersistentNewClades": 0,
+                        "postBurnInPersistentNewActivityMean": 0,
+                        "postBurnInPersistentNewActivityMin": 0,
+                        "postBurnInPersistentNewActivityMax": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMean": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMax": 0,
+                        "finalPersistentNewActivity": null,
+                        "finalPersistentNewAbundanceWeightedActivity": null,
+                        "finalWindowCensored": true
+                      },
+                      "persistentWindowFraction": 0,
+                      "allEvaluableWindowsPositive": false
+                    },
+                    "matchedNull": {
+                      "minSurvivalTicks": 25,
+                      "summary": {
+                        "minSurvivalTicks": 25,
+                        "postBurnInWindows": 5,
+                        "censoredPostBurnInWindows": 1,
+                        "evaluablePostBurnInWindows": 4,
+                        "postBurnInWindowsWithPersistentNewActivity": 0,
+                        "postBurnInPersistentNewClades": 0,
+                        "postBurnInPersistentNewActivityMean": 0,
+                        "postBurnInPersistentNewActivityMin": 0,
+                        "postBurnInPersistentNewActivityMax": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMean": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMax": 0,
+                        "finalPersistentNewActivity": null,
+                        "finalPersistentNewAbundanceWeightedActivity": null,
+                        "finalWindowCensored": true
+                      },
+                      "persistentWindowFraction": 0,
+                      "allEvaluableWindowsPositive": false
+                    },
+                    "actualToNullPersistentWindowFractionRatio": null,
+                    "persistentWindowFractionDeltaVsNull": 0,
+                    "actualToNullPersistentActivityMeanRatio": null,
+                    "persistentActivityMeanDeltaVsNull": 0,
+                    "actualToNullPersistentAbundanceWeightedActivityMeanRatio": null,
+                    "persistentAbundanceWeightedActivityMeanDeltaVsNull": 0,
+                    "diagnostics": {
+                      "finalPopulation": 1162,
+                      "actualActiveClades": 7,
+                      "matchedNullActiveClades": 23,
+                      "activeCladeDeltaVsNull": -16,
+                      "actualRawNewCladeActivityMean": 0,
+                      "matchedNullRawNewCladeActivityMean": 0,
+                      "actualPersistentActivityMean": 0,
+                      "matchedNullPersistentActivityMean": 0,
+                      "persistencePenaltyVsRawDelta": 0,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": 0,
+                      "persistentActivityMeanDeltaVsNull": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "seed": 20260308,
+                "relabelSeed": 3034525042,
+                "finalSummary": {
+                  "tick": 300,
+                  "population": 1228,
+                  "births": 14,
+                  "deaths": 11,
+                  "meanEnergy": 7.798451254389581,
+                  "meanGenome": {
+                    "metabolism": 0.5890673336074099,
+                    "harvest": 1.5472512285681996,
+                    "aggression": 0.9727965187758789
+                  },
+                  "activeClades": 10,
+                  "activeSpecies": 164,
+                  "dominantSpeciesShare": 0.15798045602605862,
+                  "selectionDifferential": {
+                    "metabolism": 0.037829016402754156,
+                    "harvest": 0.03167818050902915,
+                    "aggression": 0.009322321754999474
+                  },
+                  "cladeExtinctions": 0,
+                  "speciesExtinctions": 5,
+                  "cumulativeExtinctClades": 16,
+                  "cumulativeExtinctSpecies": 397
+                },
+                "actualRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 26,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 2,
+                  "postBurnInNewClades": 2,
+                  "postBurnInNewActivityMean": 9.4,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 27,
+                  "postBurnInNewAbundanceWeightedActivityMean": 13.4,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 47,
+                  "finalCumulativeActivity": 4508,
+                  "finalNormalizedCumulativeActivity": 15.026666666666667,
+                  "finalNewActivity": 20,
+                  "finalNewAbundanceWeightedActivity": 20
+                },
+                "actualSpeciesRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalSpecies": 561,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 5,
+                  "postBurnInNewSpecies": 417,
+                  "postBurnInNewActivityMean": 2127.8,
+                  "postBurnInNewActivityMin": 1500,
+                  "postBurnInNewActivityMax": 3404,
+                  "postBurnInNewAbundanceWeightedActivityMean": 2369.4,
+                  "postBurnInNewAbundanceWeightedActivityMin": 1544,
+                  "postBurnInNewAbundanceWeightedActivityMax": 4341,
+                  "finalCumulativeActivity": 47662,
+                  "finalNormalizedCumulativeActivity": 158.87333333333333,
+                  "finalNewActivity": 2071,
+                  "finalNewAbundanceWeightedActivity": 2114
+                },
+                "matchedNullRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 26,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 2,
+                  "postBurnInNewClades": 2,
+                  "postBurnInNewActivityMean": 9.4,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 27,
+                  "postBurnInNewAbundanceWeightedActivityMean": 14.8,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 54,
+                  "finalCumulativeActivity": 7217,
+                  "finalNormalizedCumulativeActivity": 24.05666666666667,
+                  "finalNewActivity": 20,
+                  "finalNewAbundanceWeightedActivity": 20
+                },
+                "nonSpeciesConditionedNullRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 26,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 2,
+                  "postBurnInNewClades": 2,
+                  "postBurnInNewActivityMean": 9.4,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 27,
+                  "postBurnInNewAbundanceWeightedActivityMean": 34.8,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 127,
+                  "finalCumulativeActivity": 4378,
+                  "finalNormalizedCumulativeActivity": 14.593333333333334,
+                  "finalNewActivity": 20,
+                  "finalNewAbundanceWeightedActivity": 127
+                },
+                "actualBirthSchedule": [
+                  {
+                    "tick": 0,
+                    "births": 24
+                  },
+                  {
+                    "tick": 224,
+                    "births": 1
+                  },
+                  {
+                    "tick": 281,
+                    "births": 1
+                  }
+                ],
+                "matchedNullBirthSchedule": [
+                  {
+                    "tick": 0,
+                    "births": 24
+                  },
+                  {
+                    "tick": 224,
+                    "births": 1
+                  },
+                  {
+                    "tick": 281,
+                    "births": 1
+                  }
+                ],
+                "birthScheduleMatched": true,
+                "actualFounderHabitatSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "births": 20
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "births": 4
+                  },
+                  {
+                    "tick": 224,
+                    "habitatBin": 2,
+                    "births": 1
+                  },
+                  {
+                    "tick": 281,
+                    "habitatBin": 2,
+                    "births": 1
+                  }
+                ],
+                "matchedNullFounderHabitatSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "births": 20
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "births": 4
+                  },
+                  {
+                    "tick": 224,
+                    "habitatBin": 1,
+                    "births": 1
+                  },
+                  {
+                    "tick": 281,
+                    "habitatBin": 2,
+                    "births": 1
+                  }
+                ],
+                "founderHabitatScheduleMatched": null,
+                "actualFounderHabitatCrowdingSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 0,
+                    "births": 20
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 0,
+                    "births": 4
+                  },
+                  {
+                    "tick": 224,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 3,
+                    "births": 1
+                  },
+                  {
+                    "tick": 281,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 3,
+                    "births": 1
+                  }
+                ],
+                "matchedNullFounderHabitatCrowdingSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 0,
+                    "births": 20
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 0,
+                    "births": 4
+                  },
+                  {
+                    "tick": 224,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 2,
+                    "births": 1
+                  },
+                  {
+                    "tick": 281,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 3,
+                    "births": 1
+                  }
+                ],
+                "founderHabitatCrowdingScheduleMatched": null,
+                "actualSpeciesThresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "summary": {
+                      "minSurvivalTicks": 25,
+                      "postBurnInWindows": 5,
+                      "censoredPostBurnInWindows": 1,
+                      "evaluablePostBurnInWindows": 4,
+                      "postBurnInWindowsWithPersistentNewActivity": 4,
+                      "postBurnInPersistentNewSpecies": 328,
+                      "postBurnInPersistentNewActivityMean": 2109.75,
+                      "postBurnInPersistentNewActivityMin": 1500,
+                      "postBurnInPersistentNewActivityMax": 3381,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMean": 2401,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMin": 1544,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMax": 4318,
+                      "finalPersistentNewActivity": null,
+                      "finalPersistentNewAbundanceWeightedActivity": null,
+                      "finalWindowCensored": true
+                    },
+                    "persistentWindowFraction": 1,
+                    "allEvaluableWindowsPositive": true
+                  }
+                ],
+                "nonSpeciesConditionedNullFinalActiveClades": 10,
+                "nonSpeciesConditionedNullThresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "summary": {
+                      "minSurvivalTicks": 25,
+                      "postBurnInWindows": 5,
+                      "censoredPostBurnInWindows": 1,
+                      "evaluablePostBurnInWindows": 4,
+                      "postBurnInWindowsWithPersistentNewActivity": 1,
+                      "postBurnInPersistentNewClades": 1,
+                      "postBurnInPersistentNewActivityMean": 6.75,
+                      "postBurnInPersistentNewActivityMin": 0,
+                      "postBurnInPersistentNewActivityMax": 27,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMean": 11.75,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMax": 47,
+                      "finalPersistentNewActivity": null,
+                      "finalPersistentNewAbundanceWeightedActivity": null,
+                      "finalWindowCensored": true
+                    },
+                    "persistentWindowFraction": 0.25,
+                    "allEvaluableWindowsPositive": false
+                  }
+                ],
+                "thresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "actual": {
+                      "minSurvivalTicks": 25,
+                      "summary": {
+                        "minSurvivalTicks": 25,
+                        "postBurnInWindows": 5,
+                        "censoredPostBurnInWindows": 1,
+                        "evaluablePostBurnInWindows": 4,
+                        "postBurnInWindowsWithPersistentNewActivity": 1,
+                        "postBurnInPersistentNewClades": 1,
+                        "postBurnInPersistentNewActivityMean": 6.75,
+                        "postBurnInPersistentNewActivityMin": 0,
+                        "postBurnInPersistentNewActivityMax": 27,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMean": 11.75,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMax": 47,
+                        "finalPersistentNewActivity": null,
+                        "finalPersistentNewAbundanceWeightedActivity": null,
+                        "finalWindowCensored": true
+                      },
+                      "persistentWindowFraction": 0.25,
+                      "allEvaluableWindowsPositive": false
+                    },
+                    "matchedNull": {
+                      "minSurvivalTicks": 25,
+                      "summary": {
+                        "minSurvivalTicks": 25,
+                        "postBurnInWindows": 5,
+                        "censoredPostBurnInWindows": 1,
+                        "evaluablePostBurnInWindows": 4,
+                        "postBurnInWindowsWithPersistentNewActivity": 1,
+                        "postBurnInPersistentNewClades": 1,
+                        "postBurnInPersistentNewActivityMean": 6.75,
+                        "postBurnInPersistentNewActivityMin": 0,
+                        "postBurnInPersistentNewActivityMax": 27,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMean": 13.5,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMax": 54,
+                        "finalPersistentNewActivity": null,
+                        "finalPersistentNewAbundanceWeightedActivity": null,
+                        "finalWindowCensored": true
+                      },
+                      "persistentWindowFraction": 0.25,
+                      "allEvaluableWindowsPositive": false
+                    },
+                    "actualToNullPersistentWindowFractionRatio": 1,
+                    "persistentWindowFractionDeltaVsNull": 0,
+                    "actualToNullPersistentActivityMeanRatio": 1,
+                    "persistentActivityMeanDeltaVsNull": 0,
+                    "actualToNullPersistentAbundanceWeightedActivityMeanRatio": 0.8703703703703703,
+                    "persistentAbundanceWeightedActivityMeanDeltaVsNull": -1.75,
+                    "diagnostics": {
+                      "finalPopulation": 1228,
+                      "actualActiveClades": 10,
+                      "matchedNullActiveClades": 25,
+                      "activeCladeDeltaVsNull": -15,
+                      "actualRawNewCladeActivityMean": 9.4,
+                      "matchedNullRawNewCladeActivityMean": 9.4,
+                      "actualPersistentActivityMean": 6.75,
+                      "matchedNullPersistentActivityMean": 6.75,
+                      "persistencePenaltyVsRawDelta": 0,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": 0,
+                      "persistentActivityMeanDeltaVsNull": 0
+                    }
+                  }
+                ]
+              }
+            ],
+            "aggregates": [
+              {
+                "minSurvivalTicks": 25,
+                "actual": {
+                  "minSurvivalTicks": 25,
+                  "seeds": 2,
+                  "seedsWithEvaluableWindows": 2,
+                  "seedsWithAllEvaluableWindowsPositive": 0,
+                  "minPersistentWindowFraction": 0,
+                  "meanPersistentWindowFraction": 0.125,
+                  "maxPersistentWindowFraction": 0.25,
+                  "minPersistentActivityMean": 0,
+                  "meanPersistentActivityMean": 3.375,
+                  "maxPersistentActivityMean": 6.75,
+                  "minPersistentAbundanceWeightedActivityMean": 0,
+                  "meanPersistentAbundanceWeightedActivityMean": 5.875,
+                  "maxPersistentAbundanceWeightedActivityMean": 11.75
+                },
+                "matchedNull": {
+                  "minSurvivalTicks": 25,
+                  "seeds": 2,
+                  "seedsWithEvaluableWindows": 2,
+                  "seedsWithAllEvaluableWindowsPositive": 0,
+                  "minPersistentWindowFraction": 0,
+                  "meanPersistentWindowFraction": 0.125,
+                  "maxPersistentWindowFraction": 0.25,
+                  "minPersistentActivityMean": 0,
+                  "meanPersistentActivityMean": 3.375,
+                  "maxPersistentActivityMean": 6.75,
+                  "minPersistentAbundanceWeightedActivityMean": 0,
+                  "meanPersistentAbundanceWeightedActivityMean": 6.75,
+                  "maxPersistentAbundanceWeightedActivityMean": 13.5
+                },
+                "actualToNullPersistentWindowFractionRatio": {
+                  "definedSeeds": 1,
+                  "mean": 1,
+                  "min": 1,
+                  "max": 1
+                },
+                "persistentWindowFractionDeltaVsNull": {
+                  "mean": 0,
+                  "min": 0,
+                  "max": 0
+                },
+                "actualToNullPersistentActivityMeanRatio": {
+                  "definedSeeds": 1,
+                  "mean": 1,
+                  "min": 1,
+                  "max": 1
+                },
+                "persistentActivityMeanDeltaVsNull": {
+                  "mean": 0,
+                  "min": 0,
+                  "max": 0
+                },
+                "actualToNullPersistentAbundanceWeightedActivityMeanRatio": {
+                  "definedSeeds": 1,
+                  "mean": 0.8703703703703703,
+                  "min": 0.8703703703703703,
+                  "max": 0.8703703703703703
+                },
+                "persistentAbundanceWeightedActivityMeanDeltaVsNull": {
+                  "mean": -0.875,
+                  "min": -1.75,
+                  "max": 0
+                },
+                "diagnostics": {
+                  "finalPopulation": {
+                    "mean": 1195,
+                    "min": 1162,
+                    "max": 1228
+                  },
+                  "actualActiveClades": {
+                    "mean": 8.5,
+                    "min": 7,
+                    "max": 10
+                  },
+                  "matchedNullActiveClades": {
+                    "mean": 24,
+                    "min": 23,
+                    "max": 25
+                  },
+                  "activeCladeDeltaVsNull": {
+                    "mean": -15.5,
+                    "min": -16,
+                    "max": -15
+                  },
+                  "actualRawNewCladeActivityMean": {
+                    "mean": 4.7,
+                    "min": 0,
+                    "max": 9.4
+                  },
+                  "matchedNullRawNewCladeActivityMean": {
+                    "mean": 4.7,
+                    "min": 0,
+                    "max": 9.4
+                  },
+                  "rawNewCladeActivityMeanDeltaVsNull": {
+                    "mean": 0,
+                    "min": 0,
+                    "max": 0
+                  },
+                  "actualPersistentActivityMean": {
+                    "mean": 3.375,
+                    "min": 0,
+                    "max": 6.75
+                  },
+                  "matchedNullPersistentActivityMean": {
+                    "mean": 3.375,
+                    "min": 0,
+                    "max": 6.75
+                  },
+                  "persistentActivityMeanDeltaVsNull": {
+                    "mean": 0,
+                    "min": 0,
+                    "max": 0
+                  },
+                  "persistencePenaltyVsRawDelta": {
+                    "mean": 0,
+                    "min": 0,
+                    "max": 0
+                  },
+                  "dominantLossMode": "activeCladeDeficit"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "cladogenesisEcologyAdvantageThreshold": 0.1,
+      "studyInput": {
+        "steps": 300,
+        "windowSize": 50,
+        "burnIn": 50,
+        "seeds": [
+          20260307,
+          20260308
+        ],
+        "stopWhenExtinct": true,
+        "minSurvivalTicks": [
+          25
+        ],
+        "cladogenesisThresholds": [
+          1
+        ],
+        "matchedNullFounderContext": "none",
+        "simulation": {
+          "config": {
+            "lineageHarvestCrowdingPenalty": 1,
+            "lineageDispersalCrowdingPenalty": 1,
+            "lineageEncounterRestraint": 1,
+            "lineageOffspringSettlementCrowdingPenalty": 0,
+            "offspringSettlementEcologyScoring": true,
+            "decompositionSpilloverFraction": 0,
+            "cladeHabitatCoupling": 0.75,
+            "adaptiveCladeHabitatMemoryRate": 0,
+            "newCladeSettlementCrowdingGraceTicks": 36,
+            "cladogenesisEcologyAdvantageThreshold": 0.1
+          }
+        },
+        "generatedAt": "2026-03-15T00:00:00.000Z"
+      },
+      "summary": {
+        "birthScheduleMatchedAllSeeds": true,
+        "persistentWindowFractionDeltaVsNullMean": 0,
+        "persistentActivityMeanDeltaVsNullMean": 0,
+        "persistentAbundanceWeightedActivityMeanDeltaVsNullMean": 0,
+        "diagnostics": {
+          "finalPopulationMean": 1196,
+          "actualActiveCladesMean": 8.5,
+          "matchedNullActiveCladesMean": 24,
+          "activeCladeDeltaVsNullMean": -15.5,
+          "rawNewCladeActivityMeanDeltaVsNullMean": 0,
+          "persistencePenaltyVsRawDeltaMean": 0,
+          "dominantLossMode": "activeCladeDeficit"
+        }
+      },
+      "study": {
+        "generatedAt": "2026-03-15T00:00:00.000Z",
+        "definition": {
+          "actual": {
+            "raw": {
+              "component": "clades",
+              "activityUnit": "activeCladeTick",
+              "cumulativeActivity": "Sum of occupied clade-ticks from simulation tick 1 through the end of each window.",
+              "normalizedCumulativeActivity": "Cumulative activity divided by elapsed simulation ticks at the end of each window.",
+              "newActivity": "Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window.",
+              "newAbundanceWeightedActivity": "Population summed across occupied ticks within a window for clades whose firstSeenTick falls inside that same window."
+            },
+            "observedLifetime": "Observed lifetime is extinctTick - firstSeenTick for extinct clades and maxTick - firstSeenTick for extant clades.",
+            "persistentNewActivity": "Occupied clade-ticks within an origin window contributed by clades whose observed lifetime reaches the survival threshold.",
+            "persistentNewAbundanceWeightedActivity": "Population summed across occupied ticks within an origin window for clades whose observed lifetime reaches the survival threshold.",
+            "censoredWindow": "A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin clades in that window cannot yet be fully evaluated.",
+            "persistentWindowFraction": "For one seed and threshold, the fraction of evaluable post-burn-in windows whose persistentNewActivity is greater than zero.",
+            "allEvaluableWindowsPositive": "For one seed and threshold, true when every evaluable post-burn-in window has persistentNewActivity greater than zero."
+          },
+          "matchedNull": {
+            "raw": {
+              "component": "clades",
+              "activityUnit": "activeCladeTick",
+              "cumulativeActivity": "Sum of occupied clade-ticks from simulation tick 1 through the end of each window.",
+              "normalizedCumulativeActivity": "Cumulative activity divided by elapsed simulation ticks at the end of each window.",
+              "newActivity": "Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window.",
+              "newAbundanceWeightedActivity": "Population summed across occupied ticks within a window for clades whose firstSeenTick falls inside that same window."
+            },
+            "observedLifetime": "Observed lifetime is extinctTick - firstSeenTick for extinct clades and maxTick - firstSeenTick for extant clades.",
+            "persistentNewActivity": "Occupied clade-ticks within an origin window contributed by clades whose observed lifetime reaches the survival threshold.",
+            "persistentNewAbundanceWeightedActivity": "Population summed across occupied ticks within an origin window for clades whose observed lifetime reaches the survival threshold.",
+            "censoredWindow": "A window is censored when its end tick plus the survival threshold exceeds the simulation horizon, so late-origin clades in that window cannot yet be fully evaluated.",
+            "persistentWindowFraction": "For one seed and threshold, the fraction of evaluable post-burn-in windows whose persistentNewActivity is greater than zero.",
+            "allEvaluableWindowsPositive": "For one seed and threshold, true when every evaluable post-burn-in window has persistentNewActivity greater than zero."
+          },
+          "matchedSchedule": "For each seed and cladogenesis threshold, the pseudo-clade null preserves the observed clade birth count at every firstSeenTick.",
+          "matchedFounderContext": "matchedNullFounderContext=none matches birth ticks only. matchedNullFounderContext=founderHabitatBin also preserves, at each firstSeenTick, the count of founders in each habitat bin derived from founder habitat means. matchedNullFounderContext=founderHabitatAndCrowdingBin additionally preserves the joint founder habitat-bin and local-crowding-bin schedule.",
+          "relabeling": "Pseudo-clade founders are randomly selected from species born at each matched birth tick, and remaining species are randomly reassigned to pseudo-clades that were already active at the prior tick.",
+          "diagnostics": "Diagnostics compare per-seed raw new-clade activity, persistent activity, final population, and final active clade counts so founder suppression can be separated from post-founding persistence loss.",
+          "dominantLossMode": "matchedOrBetter means the actual clades are not behind the matched null on the tracked signals; founderSuppression means the main deficit appears before the persistence filter; persistenceFailure means the persistence filter widens the deficit; activeCladeDeficit means the final active clade count trails the matched null the most.",
+          "actualToNullPersistentWindowFractionRatio": "For one seed and survival threshold, actual clade persistentWindowFraction divided by matched-null persistentWindowFraction. Null when the matched-null fraction is zero.",
+          "persistentWindowFractionDeltaVsNull": "For one seed and survival threshold, actual clade persistentWindowFraction minus matched-null persistentWindowFraction.",
+          "actualToNullPersistentActivityMeanRatio": "For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean divided by matched-null postBurnInPersistentNewActivityMean. Null when the matched-null mean is zero.",
+          "persistentActivityMeanDeltaVsNull": "For one seed and survival threshold, actual clade postBurnInPersistentNewActivityMean minus matched-null postBurnInPersistentNewActivityMean.",
+          "actualToNullPersistentAbundanceWeightedActivityMeanRatio": "For one seed and survival threshold, actual clade postBurnInPersistentNewAbundanceWeightedActivityMean divided by matched-null postBurnInPersistentNewAbundanceWeightedActivityMean. Null when the matched-null mean is zero.",
+          "persistentAbundanceWeightedActivityMeanDeltaVsNull": "For one seed and survival threshold, actual clade postBurnInPersistentNewAbundanceWeightedActivityMean minus matched-null postBurnInPersistentNewAbundanceWeightedActivityMean."
+        },
+        "config": {
+          "steps": 300,
+          "windowSize": 50,
+          "burnIn": 50,
+          "seeds": [
+            20260307,
+            20260308
+          ],
+          "stopWhenExtinct": true,
+          "minSurvivalTicks": [
+            25
+          ],
+          "cladogenesisThresholds": [
+            1
+          ],
+          "matchedNullFounderContext": "none"
+        },
+        "thresholdResults": [
+          {
+            "cladogenesisThreshold": 1,
+            "seedResults": [
+              {
+                "seed": 20260307,
+                "relabelSeed": 3036252999,
+                "finalSummary": {
+                  "tick": 300,
+                  "population": 1162,
+                  "births": 8,
+                  "deaths": 9,
+                  "meanEnergy": 7.353431230825657,
+                  "meanGenome": {
+                    "metabolism": 0.6358872386825248,
+                    "harvest": 0.9894119869241975,
+                    "aggression": 0.970227364103732
+                  },
+                  "activeClades": 7,
+                  "activeSpecies": 174,
+                  "dominantSpeciesShare": 0.21600688468158347,
+                  "selectionDifferential": {
+                    "metabolism": 0.06741724243322811,
+                    "harvest": 0.07985701126555234,
+                    "aggression": 0.012855859743502895
+                  },
+                  "cladeExtinctions": 0,
+                  "speciesExtinctions": 1,
+                  "cumulativeExtinctClades": 17,
+                  "cumulativeExtinctSpecies": 362
+                },
+                "actualRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 24,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 0,
+                  "postBurnInNewClades": 0,
+                  "postBurnInNewActivityMean": 0,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 0,
+                  "postBurnInNewAbundanceWeightedActivityMean": 0,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 0,
+                  "finalCumulativeActivity": 4584,
+                  "finalNormalizedCumulativeActivity": 15.28,
+                  "finalNewActivity": 0,
+                  "finalNewAbundanceWeightedActivity": 0
+                },
+                "actualSpeciesRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalSpecies": 536,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 5,
+                  "postBurnInNewSpecies": 390,
+                  "postBurnInNewActivityMean": 1972.4,
+                  "postBurnInNewActivityMin": 1317,
+                  "postBurnInNewActivityMax": 2228,
+                  "postBurnInNewAbundanceWeightedActivityMean": 2075,
+                  "postBurnInNewAbundanceWeightedActivityMin": 1317,
+                  "postBurnInNewAbundanceWeightedActivityMax": 2623,
+                  "finalCumulativeActivity": 46037,
+                  "finalNormalizedCumulativeActivity": 153.45666666666668,
+                  "finalNewActivity": 2123,
+                  "finalNewAbundanceWeightedActivity": 2143
+                },
+                "matchedNullRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 24,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 0,
+                  "postBurnInNewClades": 0,
+                  "postBurnInNewActivityMean": 0,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 0,
+                  "postBurnInNewAbundanceWeightedActivityMean": 0,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 0,
+                  "finalCumulativeActivity": 7081,
+                  "finalNormalizedCumulativeActivity": 23.60333333333333,
+                  "finalNewActivity": 0,
+                  "finalNewAbundanceWeightedActivity": 0
+                },
+                "nonSpeciesConditionedNullRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 24,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 0,
+                  "postBurnInNewClades": 0,
+                  "postBurnInNewActivityMean": 0,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 0,
+                  "postBurnInNewAbundanceWeightedActivityMean": 0,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 0,
+                  "finalCumulativeActivity": 4584,
+                  "finalNormalizedCumulativeActivity": 15.28,
+                  "finalNewActivity": 0,
+                  "finalNewAbundanceWeightedActivity": 0
+                },
+                "actualBirthSchedule": [
+                  {
+                    "tick": 0,
+                    "births": 24
+                  }
+                ],
+                "matchedNullBirthSchedule": [
+                  {
+                    "tick": 0,
+                    "births": 24
+                  }
+                ],
+                "birthScheduleMatched": true,
+                "actualFounderHabitatSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "births": 17
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "births": 7
+                  }
+                ],
+                "matchedNullFounderHabitatSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "births": 17
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "births": 7
+                  }
+                ],
+                "founderHabitatScheduleMatched": null,
+                "actualFounderHabitatCrowdingSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 0,
+                    "births": 17
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 0,
+                    "births": 7
+                  }
+                ],
+                "matchedNullFounderHabitatCrowdingSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 0,
+                    "births": 17
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 0,
+                    "births": 7
+                  }
+                ],
+                "founderHabitatCrowdingScheduleMatched": null,
+                "actualSpeciesThresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "summary": {
+                      "minSurvivalTicks": 25,
+                      "postBurnInWindows": 5,
+                      "censoredPostBurnInWindows": 1,
+                      "evaluablePostBurnInWindows": 4,
+                      "postBurnInWindowsWithPersistentNewActivity": 4,
+                      "postBurnInPersistentNewSpecies": 291,
+                      "postBurnInPersistentNewActivityMean": 1842.75,
+                      "postBurnInPersistentNewActivityMin": 1317,
+                      "postBurnInPersistentNewActivityMax": 2160,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMean": 1966,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMin": 1317,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMax": 2458,
+                      "finalPersistentNewActivity": null,
+                      "finalPersistentNewAbundanceWeightedActivity": null,
+                      "finalWindowCensored": true
+                    },
+                    "persistentWindowFraction": 1,
+                    "allEvaluableWindowsPositive": true
+                  }
+                ],
+                "nonSpeciesConditionedNullFinalActiveClades": 7,
+                "nonSpeciesConditionedNullThresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "summary": {
+                      "minSurvivalTicks": 25,
+                      "postBurnInWindows": 5,
+                      "censoredPostBurnInWindows": 1,
+                      "evaluablePostBurnInWindows": 4,
+                      "postBurnInWindowsWithPersistentNewActivity": 0,
+                      "postBurnInPersistentNewClades": 0,
+                      "postBurnInPersistentNewActivityMean": 0,
+                      "postBurnInPersistentNewActivityMin": 0,
+                      "postBurnInPersistentNewActivityMax": 0,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMean": 0,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMax": 0,
+                      "finalPersistentNewActivity": null,
+                      "finalPersistentNewAbundanceWeightedActivity": null,
+                      "finalWindowCensored": true
+                    },
+                    "persistentWindowFraction": 0,
+                    "allEvaluableWindowsPositive": false
+                  }
+                ],
+                "thresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "actual": {
+                      "minSurvivalTicks": 25,
+                      "summary": {
+                        "minSurvivalTicks": 25,
+                        "postBurnInWindows": 5,
+                        "censoredPostBurnInWindows": 1,
+                        "evaluablePostBurnInWindows": 4,
+                        "postBurnInWindowsWithPersistentNewActivity": 0,
+                        "postBurnInPersistentNewClades": 0,
+                        "postBurnInPersistentNewActivityMean": 0,
+                        "postBurnInPersistentNewActivityMin": 0,
+                        "postBurnInPersistentNewActivityMax": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMean": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMax": 0,
+                        "finalPersistentNewActivity": null,
+                        "finalPersistentNewAbundanceWeightedActivity": null,
+                        "finalWindowCensored": true
+                      },
+                      "persistentWindowFraction": 0,
+                      "allEvaluableWindowsPositive": false
+                    },
+                    "matchedNull": {
+                      "minSurvivalTicks": 25,
+                      "summary": {
+                        "minSurvivalTicks": 25,
+                        "postBurnInWindows": 5,
+                        "censoredPostBurnInWindows": 1,
+                        "evaluablePostBurnInWindows": 4,
+                        "postBurnInWindowsWithPersistentNewActivity": 0,
+                        "postBurnInPersistentNewClades": 0,
+                        "postBurnInPersistentNewActivityMean": 0,
+                        "postBurnInPersistentNewActivityMin": 0,
+                        "postBurnInPersistentNewActivityMax": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMean": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMax": 0,
+                        "finalPersistentNewActivity": null,
+                        "finalPersistentNewAbundanceWeightedActivity": null,
+                        "finalWindowCensored": true
+                      },
+                      "persistentWindowFraction": 0,
+                      "allEvaluableWindowsPositive": false
+                    },
+                    "actualToNullPersistentWindowFractionRatio": null,
+                    "persistentWindowFractionDeltaVsNull": 0,
+                    "actualToNullPersistentActivityMeanRatio": null,
+                    "persistentActivityMeanDeltaVsNull": 0,
+                    "actualToNullPersistentAbundanceWeightedActivityMeanRatio": null,
+                    "persistentAbundanceWeightedActivityMeanDeltaVsNull": 0,
+                    "diagnostics": {
+                      "finalPopulation": 1162,
+                      "actualActiveClades": 7,
+                      "matchedNullActiveClades": 23,
+                      "activeCladeDeltaVsNull": -16,
+                      "actualRawNewCladeActivityMean": 0,
+                      "matchedNullRawNewCladeActivityMean": 0,
+                      "actualPersistentActivityMean": 0,
+                      "matchedNullPersistentActivityMean": 0,
+                      "persistencePenaltyVsRawDelta": 0,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": 0,
+                      "persistentActivityMeanDeltaVsNull": 0
+                    }
+                  }
+                ]
+              },
+              {
+                "seed": 20260308,
+                "relabelSeed": 3034525042,
+                "finalSummary": {
+                  "tick": 300,
+                  "population": 1230,
+                  "births": 18,
+                  "deaths": 15,
+                  "meanEnergy": 7.539568408925036,
+                  "meanGenome": {
+                    "metabolism": 0.6110682401333833,
+                    "harvest": 1.5378185952447985,
+                    "aggression": 0.9718447935070484
+                  },
+                  "activeClades": 10,
+                  "activeSpecies": 173,
+                  "dominantSpeciesShare": 0.16585365853658537,
+                  "selectionDifferential": {
+                    "metabolism": 0.042495449350615444,
+                    "harvest": 0.018318598135038444,
+                    "aggression": 0.011449763305437677
+                  },
+                  "cladeExtinctions": 0,
+                  "speciesExtinctions": 2,
+                  "cumulativeExtinctClades": 16,
+                  "cumulativeExtinctSpecies": 390
+                },
+                "actualRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 26,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 1,
+                  "postBurnInNewClades": 2,
+                  "postBurnInNewActivityMean": 15.2,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 76,
+                  "postBurnInNewAbundanceWeightedActivityMean": 37.2,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 186,
+                  "finalCumulativeActivity": 4487,
+                  "finalNormalizedCumulativeActivity": 14.956666666666667,
+                  "finalNewActivity": 76,
+                  "finalNewAbundanceWeightedActivity": 186
+                },
+                "actualSpeciesRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalSpecies": 563,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 5,
+                  "postBurnInNewSpecies": 419,
+                  "postBurnInNewActivityMean": 2160.2,
+                  "postBurnInNewActivityMin": 1480,
+                  "postBurnInNewActivityMax": 3404,
+                  "postBurnInNewAbundanceWeightedActivityMean": 2429.2,
+                  "postBurnInNewAbundanceWeightedActivityMin": 1528,
+                  "postBurnInNewAbundanceWeightedActivityMax": 4341,
+                  "finalCumulativeActivity": 47768,
+                  "finalNormalizedCumulativeActivity": 159.22666666666666,
+                  "finalNewActivity": 2253,
+                  "finalNewAbundanceWeightedActivity": 2429
+                },
+                "matchedNullRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 26,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 1,
+                  "postBurnInNewClades": 2,
+                  "postBurnInNewActivityMean": 15.2,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 76,
+                  "postBurnInNewAbundanceWeightedActivityMean": 44.4,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 222,
+                  "finalCumulativeActivity": 7196,
+                  "finalNormalizedCumulativeActivity": 23.986666666666668,
+                  "finalNewActivity": 76,
+                  "finalNewAbundanceWeightedActivity": 222
+                },
+                "nonSpeciesConditionedNullRawSummary": {
+                  "stepsExecuted": 300,
+                  "totalClades": 26,
+                  "postBurnInWindows": 5,
+                  "postBurnInWindowsWithNewActivity": 1,
+                  "postBurnInNewClades": 2,
+                  "postBurnInNewActivityMean": 15.2,
+                  "postBurnInNewActivityMin": 0,
+                  "postBurnInNewActivityMax": 76,
+                  "postBurnInNewAbundanceWeightedActivityMean": 124,
+                  "postBurnInNewAbundanceWeightedActivityMin": 0,
+                  "postBurnInNewAbundanceWeightedActivityMax": 620,
+                  "finalCumulativeActivity": 4371,
+                  "finalNormalizedCumulativeActivity": 14.57,
+                  "finalNewActivity": 76,
+                  "finalNewAbundanceWeightedActivity": 620
+                },
+                "actualBirthSchedule": [
+                  {
+                    "tick": 0,
+                    "births": 24
+                  },
+                  {
+                    "tick": 259,
+                    "births": 1
+                  },
+                  {
+                    "tick": 267,
+                    "births": 1
+                  }
+                ],
+                "matchedNullBirthSchedule": [
+                  {
+                    "tick": 0,
+                    "births": 24
+                  },
+                  {
+                    "tick": 259,
+                    "births": 1
+                  },
+                  {
+                    "tick": 267,
+                    "births": 1
+                  }
+                ],
+                "birthScheduleMatched": true,
+                "actualFounderHabitatSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "births": 20
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "births": 4
+                  },
+                  {
+                    "tick": 259,
+                    "habitatBin": 1,
+                    "births": 1
+                  },
+                  {
+                    "tick": 267,
+                    "habitatBin": 2,
+                    "births": 1
+                  }
+                ],
+                "matchedNullFounderHabitatSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "births": 20
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "births": 4
+                  },
+                  {
+                    "tick": 259,
+                    "habitatBin": 1,
+                    "births": 1
+                  },
+                  {
+                    "tick": 267,
+                    "habitatBin": 2,
+                    "births": 1
+                  }
+                ],
+                "founderHabitatScheduleMatched": null,
+                "actualFounderHabitatCrowdingSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 0,
+                    "births": 20
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 0,
+                    "births": 4
+                  },
+                  {
+                    "tick": 259,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 3,
+                    "births": 1
+                  },
+                  {
+                    "tick": 267,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 2,
+                    "births": 1
+                  }
+                ],
+                "matchedNullFounderHabitatCrowdingSchedule": [
+                  {
+                    "tick": 0,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 0,
+                    "births": 20
+                  },
+                  {
+                    "tick": 0,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 0,
+                    "births": 4
+                  },
+                  {
+                    "tick": 259,
+                    "habitatBin": 1,
+                    "localCrowdingBin": 3,
+                    "births": 1
+                  },
+                  {
+                    "tick": 267,
+                    "habitatBin": 2,
+                    "localCrowdingBin": 2,
+                    "births": 1
+                  }
+                ],
+                "founderHabitatCrowdingScheduleMatched": null,
+                "actualSpeciesThresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "summary": {
+                      "minSurvivalTicks": 25,
+                      "postBurnInWindows": 5,
+                      "censoredPostBurnInWindows": 1,
+                      "evaluablePostBurnInWindows": 4,
+                      "postBurnInWindowsWithPersistentNewActivity": 4,
+                      "postBurnInPersistentNewSpecies": 324,
+                      "postBurnInPersistentNewActivityMean": 2104.75,
+                      "postBurnInPersistentNewActivityMin": 1480,
+                      "postBurnInPersistentNewActivityMax": 3381,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMean": 2397,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMin": 1528,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMax": 4318,
+                      "finalPersistentNewActivity": null,
+                      "finalPersistentNewAbundanceWeightedActivity": null,
+                      "finalWindowCensored": true
+                    },
+                    "persistentWindowFraction": 1,
+                    "allEvaluableWindowsPositive": true
+                  }
+                ],
+                "nonSpeciesConditionedNullFinalActiveClades": 10,
+                "nonSpeciesConditionedNullThresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "summary": {
+                      "minSurvivalTicks": 25,
+                      "postBurnInWindows": 5,
+                      "censoredPostBurnInWindows": 1,
+                      "evaluablePostBurnInWindows": 4,
+                      "postBurnInWindowsWithPersistentNewActivity": 0,
+                      "postBurnInPersistentNewClades": 0,
+                      "postBurnInPersistentNewActivityMean": 0,
+                      "postBurnInPersistentNewActivityMin": 0,
+                      "postBurnInPersistentNewActivityMax": 0,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMean": 0,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                      "postBurnInPersistentNewAbundanceWeightedActivityMax": 0,
+                      "finalPersistentNewActivity": null,
+                      "finalPersistentNewAbundanceWeightedActivity": null,
+                      "finalWindowCensored": true
+                    },
+                    "persistentWindowFraction": 0,
+                    "allEvaluableWindowsPositive": false
+                  }
+                ],
+                "thresholds": [
+                  {
+                    "minSurvivalTicks": 25,
+                    "actual": {
+                      "minSurvivalTicks": 25,
+                      "summary": {
+                        "minSurvivalTicks": 25,
+                        "postBurnInWindows": 5,
+                        "censoredPostBurnInWindows": 1,
+                        "evaluablePostBurnInWindows": 4,
+                        "postBurnInWindowsWithPersistentNewActivity": 0,
+                        "postBurnInPersistentNewClades": 0,
+                        "postBurnInPersistentNewActivityMean": 0,
+                        "postBurnInPersistentNewActivityMin": 0,
+                        "postBurnInPersistentNewActivityMax": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMean": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMax": 0,
+                        "finalPersistentNewActivity": null,
+                        "finalPersistentNewAbundanceWeightedActivity": null,
+                        "finalWindowCensored": true
+                      },
+                      "persistentWindowFraction": 0,
+                      "allEvaluableWindowsPositive": false
+                    },
+                    "matchedNull": {
+                      "minSurvivalTicks": 25,
+                      "summary": {
+                        "minSurvivalTicks": 25,
+                        "postBurnInWindows": 5,
+                        "censoredPostBurnInWindows": 1,
+                        "evaluablePostBurnInWindows": 4,
+                        "postBurnInWindowsWithPersistentNewActivity": 0,
+                        "postBurnInPersistentNewClades": 0,
+                        "postBurnInPersistentNewActivityMean": 0,
+                        "postBurnInPersistentNewActivityMin": 0,
+                        "postBurnInPersistentNewActivityMax": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMean": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMin": 0,
+                        "postBurnInPersistentNewAbundanceWeightedActivityMax": 0,
+                        "finalPersistentNewActivity": null,
+                        "finalPersistentNewAbundanceWeightedActivity": null,
+                        "finalWindowCensored": true
+                      },
+                      "persistentWindowFraction": 0,
+                      "allEvaluableWindowsPositive": false
+                    },
+                    "actualToNullPersistentWindowFractionRatio": null,
+                    "persistentWindowFractionDeltaVsNull": 0,
+                    "actualToNullPersistentActivityMeanRatio": null,
+                    "persistentActivityMeanDeltaVsNull": 0,
+                    "actualToNullPersistentAbundanceWeightedActivityMeanRatio": null,
+                    "persistentAbundanceWeightedActivityMeanDeltaVsNull": 0,
+                    "diagnostics": {
+                      "finalPopulation": 1230,
+                      "actualActiveClades": 10,
+                      "matchedNullActiveClades": 25,
+                      "activeCladeDeltaVsNull": -15,
+                      "actualRawNewCladeActivityMean": 15.2,
+                      "matchedNullRawNewCladeActivityMean": 15.2,
+                      "actualPersistentActivityMean": 0,
+                      "matchedNullPersistentActivityMean": 0,
+                      "persistencePenaltyVsRawDelta": 0,
+                      "dominantLossMode": "activeCladeDeficit",
+                      "rawNewCladeActivityMeanDeltaVsNull": 0,
+                      "persistentActivityMeanDeltaVsNull": 0
+                    }
+                  }
+                ]
+              }
+            ],
+            "aggregates": [
+              {
+                "minSurvivalTicks": 25,
+                "actual": {
+                  "minSurvivalTicks": 25,
+                  "seeds": 2,
+                  "seedsWithEvaluableWindows": 2,
+                  "seedsWithAllEvaluableWindowsPositive": 0,
+                  "minPersistentWindowFraction": 0,
+                  "meanPersistentWindowFraction": 0,
+                  "maxPersistentWindowFraction": 0,
+                  "minPersistentActivityMean": 0,
+                  "meanPersistentActivityMean": 0,
+                  "maxPersistentActivityMean": 0,
+                  "minPersistentAbundanceWeightedActivityMean": 0,
+                  "meanPersistentAbundanceWeightedActivityMean": 0,
+                  "maxPersistentAbundanceWeightedActivityMean": 0
+                },
+                "matchedNull": {
+                  "minSurvivalTicks": 25,
+                  "seeds": 2,
+                  "seedsWithEvaluableWindows": 2,
+                  "seedsWithAllEvaluableWindowsPositive": 0,
+                  "minPersistentWindowFraction": 0,
+                  "meanPersistentWindowFraction": 0,
+                  "maxPersistentWindowFraction": 0,
+                  "minPersistentActivityMean": 0,
+                  "meanPersistentActivityMean": 0,
+                  "maxPersistentActivityMean": 0,
+                  "minPersistentAbundanceWeightedActivityMean": 0,
+                  "meanPersistentAbundanceWeightedActivityMean": 0,
+                  "maxPersistentAbundanceWeightedActivityMean": 0
+                },
+                "actualToNullPersistentWindowFractionRatio": {
+                  "definedSeeds": 0,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                },
+                "persistentWindowFractionDeltaVsNull": {
+                  "mean": 0,
+                  "min": 0,
+                  "max": 0
+                },
+                "actualToNullPersistentActivityMeanRatio": {
+                  "definedSeeds": 0,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                },
+                "persistentActivityMeanDeltaVsNull": {
+                  "mean": 0,
+                  "min": 0,
+                  "max": 0
+                },
+                "actualToNullPersistentAbundanceWeightedActivityMeanRatio": {
+                  "definedSeeds": 0,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                },
+                "persistentAbundanceWeightedActivityMeanDeltaVsNull": {
+                  "mean": 0,
+                  "min": 0,
+                  "max": 0
+                },
+                "diagnostics": {
+                  "finalPopulation": {
+                    "mean": 1196,
+                    "min": 1162,
+                    "max": 1230
+                  },
+                  "actualActiveClades": {
+                    "mean": 8.5,
+                    "min": 7,
+                    "max": 10
+                  },
+                  "matchedNullActiveClades": {
+                    "mean": 24,
+                    "min": 23,
+                    "max": 25
+                  },
+                  "activeCladeDeltaVsNull": {
+                    "mean": -15.5,
+                    "min": -16,
+                    "max": -15
+                  },
+                  "actualRawNewCladeActivityMean": {
+                    "mean": 7.6,
+                    "min": 0,
+                    "max": 15.2
+                  },
+                  "matchedNullRawNewCladeActivityMean": {
+                    "mean": 7.6,
+                    "min": 0,
+                    "max": 15.2
+                  },
+                  "rawNewCladeActivityMeanDeltaVsNull": {
+                    "mean": 0,
+                    "min": 0,
+                    "max": 0
+                  },
+                  "actualPersistentActivityMean": {
+                    "mean": 0,
+                    "min": 0,
+                    "max": 0
+                  },
+                  "matchedNullPersistentActivityMean": {
+                    "mean": 0,
+                    "min": 0,
+                    "max": 0
+                  },
+                  "persistentActivityMeanDeltaVsNull": {
+                    "mean": 0,
+                    "min": 0,
+                    "max": 0
+                  },
+                  "persistencePenaltyVsRawDelta": {
+                    "mean": 0,
+                    "min": 0,
+                    "max": 0
+                  },
+                  "dominantLossMode": "activeCladeDeficit"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

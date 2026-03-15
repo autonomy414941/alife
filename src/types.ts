@@ -537,6 +537,7 @@ export interface SpeciesActivityWindow {
   cumulativeActivity: number;
   normalizedCumulativeActivity: number;
   newActivity: number;
+  newAbundanceWeightedActivity: number;
 }
 
 export interface SpeciesActivityProbeDefinition {
@@ -545,12 +546,14 @@ export interface SpeciesActivityProbeDefinition {
   cumulativeActivity: string;
   normalizedCumulativeActivity: string;
   newActivity: string;
+  newAbundanceWeightedActivity: string;
 }
 
 export interface SpeciesActivityPersistenceSweepDefinition {
   raw: SpeciesActivityProbeDefinition;
   observedLifetime: string;
   persistentNewActivity: string;
+  persistentNewAbundanceWeightedActivity: string;
   censoredWindow: string;
 }
 
@@ -571,9 +574,13 @@ export interface SpeciesActivityProbeSummary {
   postBurnInNewActivityMean: number;
   postBurnInNewActivityMin: number;
   postBurnInNewActivityMax: number;
+  postBurnInNewAbundanceWeightedActivityMean: number;
+  postBurnInNewAbundanceWeightedActivityMin: number;
+  postBurnInNewAbundanceWeightedActivityMax: number;
   finalCumulativeActivity: number;
   finalNormalizedCumulativeActivity: number;
   finalNewActivity: number;
+  finalNewAbundanceWeightedActivity: number;
 }
 
 export interface SpeciesActivityProbeExport {
@@ -598,8 +605,10 @@ export interface SpeciesActivityPersistenceWindow {
   censored: boolean;
   newSpecies: number;
   rawNewActivity: number;
+  rawNewAbundanceWeightedActivity: number;
   persistentNewSpecies: number | null;
   persistentNewActivity: number | null;
+  persistentNewAbundanceWeightedActivity: number | null;
 }
 
 export interface SpeciesActivityPersistenceSummary {
@@ -612,7 +621,11 @@ export interface SpeciesActivityPersistenceSummary {
   postBurnInPersistentNewActivityMean: number;
   postBurnInPersistentNewActivityMin: number;
   postBurnInPersistentNewActivityMax: number;
+  postBurnInPersistentNewAbundanceWeightedActivityMean: number;
+  postBurnInPersistentNewAbundanceWeightedActivityMin: number;
+  postBurnInPersistentNewAbundanceWeightedActivityMax: number;
   finalPersistentNewActivity: number | null;
+  finalPersistentNewAbundanceWeightedActivity: number | null;
   finalWindowCensored: boolean;
 }
 
@@ -674,6 +687,9 @@ export interface SpeciesActivitySeedPanelThresholdAggregate {
   minPersistentActivityMean: number;
   meanPersistentActivityMean: number;
   maxPersistentActivityMean: number;
+  minPersistentAbundanceWeightedActivityMean: number;
+  meanPersistentAbundanceWeightedActivityMean: number;
+  maxPersistentAbundanceWeightedActivityMean: number;
 }
 
 export interface SpeciesActivitySeedPanelExport {
@@ -694,6 +710,7 @@ export interface CladeActivityWindow {
   cumulativeActivity: number;
   normalizedCumulativeActivity: number;
   newActivity: number;
+  newAbundanceWeightedActivity: number;
 }
 
 export interface CladeActivityProbeDefinition {
@@ -702,12 +719,14 @@ export interface CladeActivityProbeDefinition {
   cumulativeActivity: string;
   normalizedCumulativeActivity: string;
   newActivity: string;
+  newAbundanceWeightedActivity: string;
 }
 
 export interface CladeActivityPersistenceSweepDefinition {
   raw: CladeActivityProbeDefinition;
   observedLifetime: string;
   persistentNewActivity: string;
+  persistentNewAbundanceWeightedActivity: string;
   censoredWindow: string;
 }
 
@@ -728,9 +747,13 @@ export interface CladeActivityProbeSummary {
   postBurnInNewActivityMean: number;
   postBurnInNewActivityMin: number;
   postBurnInNewActivityMax: number;
+  postBurnInNewAbundanceWeightedActivityMean: number;
+  postBurnInNewAbundanceWeightedActivityMin: number;
+  postBurnInNewAbundanceWeightedActivityMax: number;
   finalCumulativeActivity: number;
   finalNormalizedCumulativeActivity: number;
   finalNewActivity: number;
+  finalNewAbundanceWeightedActivity: number;
 }
 
 export interface CladeActivityPersistenceSweepConfig extends CladeActivityProbeConfig {
@@ -746,8 +769,10 @@ export interface CladeActivityPersistenceWindow {
   censored: boolean;
   newClades: number;
   rawNewActivity: number;
+  rawNewAbundanceWeightedActivity: number;
   persistentNewClades: number | null;
   persistentNewActivity: number | null;
+  persistentNewAbundanceWeightedActivity: number | null;
 }
 
 export interface CladeActivityPersistenceSummary {
@@ -760,7 +785,11 @@ export interface CladeActivityPersistenceSummary {
   postBurnInPersistentNewActivityMean: number;
   postBurnInPersistentNewActivityMin: number;
   postBurnInPersistentNewActivityMax: number;
+  postBurnInPersistentNewAbundanceWeightedActivityMean: number;
+  postBurnInPersistentNewAbundanceWeightedActivityMin: number;
+  postBurnInPersistentNewAbundanceWeightedActivityMax: number;
   finalPersistentNewActivity: number | null;
+  finalPersistentNewAbundanceWeightedActivity: number | null;
   finalWindowCensored: boolean;
 }
 
@@ -822,6 +851,9 @@ export interface CladeActivitySeedPanelThresholdAggregate {
   minPersistentActivityMean: number;
   meanPersistentActivityMean: number;
   maxPersistentActivityMean: number;
+  minPersistentAbundanceWeightedActivityMean: number;
+  meanPersistentAbundanceWeightedActivityMean: number;
+  maxPersistentAbundanceWeightedActivityMean: number;
 }
 
 export interface CladeActivitySeedPanelExport {
@@ -921,6 +953,8 @@ export interface CladeSpeciesActivityCouplingDefinition {
   persistentWindowFractionDelta: string;
   cladeToSpeciesPersistentActivityMeanRatio: string;
   persistentActivityMeanDelta: string;
+  cladeToSpeciesPersistentAbundanceWeightedActivityMeanRatio: string;
+  persistentAbundanceWeightedActivityMeanDelta: string;
 }
 
 export interface CladeSpeciesActivityCouplingConfig {
@@ -941,6 +975,8 @@ export interface CladeSpeciesActivityCouplingThresholdSeedResult {
   persistentWindowFractionDelta: number;
   cladeToSpeciesPersistentActivityMeanRatio: number | null;
   persistentActivityMeanDelta: number;
+  cladeToSpeciesPersistentAbundanceWeightedActivityMeanRatio: number | null;
+  persistentAbundanceWeightedActivityMeanDelta: number;
 }
 
 export interface CladeSpeciesActivityCouplingSeedResult {
@@ -966,6 +1002,8 @@ export interface CladeSpeciesActivityCouplingThresholdAggregate {
   persistentWindowFractionDelta: NumericAggregate;
   cladeToSpeciesPersistentActivityMeanRatio: CladeSpeciesActivityCouplingRatioAggregate;
   persistentActivityMeanDelta: NumericAggregate;
+  cladeToSpeciesPersistentAbundanceWeightedActivityMeanRatio: CladeSpeciesActivityCouplingRatioAggregate;
+  persistentAbundanceWeightedActivityMeanDelta: NumericAggregate;
 }
 
 export interface CladeSpeciesActivityCouplingThresholdResult {
@@ -1013,6 +1051,8 @@ export interface CladeActivityRelabelNullDefinition {
   persistentWindowFractionDeltaVsNull: string;
   actualToNullPersistentActivityMeanRatio: string;
   persistentActivityMeanDeltaVsNull: string;
+  actualToNullPersistentAbundanceWeightedActivityMeanRatio: string;
+  persistentAbundanceWeightedActivityMeanDeltaVsNull: string;
 }
 
 export interface CladeActivityRelabelNullStudyConfig {
@@ -1080,6 +1120,8 @@ export interface CladeActivityRelabelNullThresholdSeedResult {
   persistentWindowFractionDeltaVsNull: number;
   actualToNullPersistentActivityMeanRatio: number | null;
   persistentActivityMeanDeltaVsNull: number;
+  actualToNullPersistentAbundanceWeightedActivityMeanRatio: number | null;
+  persistentAbundanceWeightedActivityMeanDeltaVsNull: number;
   diagnostics: CladeActivityRelabelNullSeedDiagnostics;
 }
 
@@ -1114,6 +1156,8 @@ export interface CladeActivityRelabelNullThresholdAggregate {
   persistentWindowFractionDeltaVsNull: NumericAggregate;
   actualToNullPersistentActivityMeanRatio: CladeSpeciesActivityCouplingRatioAggregate;
   persistentActivityMeanDeltaVsNull: NumericAggregate;
+  actualToNullPersistentAbundanceWeightedActivityMeanRatio: CladeSpeciesActivityCouplingRatioAggregate;
+  persistentAbundanceWeightedActivityMeanDeltaVsNull: NumericAggregate;
   diagnostics: CladeActivityRelabelNullAggregateDiagnostics;
 }
 
@@ -1138,6 +1182,8 @@ export interface CladeActivityRelabelNullCladeHabitatCouplingSweepDefinition {
   persistentWindowFractionDeltaVsNullMean: string;
   actualToNullPersistentActivityMeanRatioMean: string;
   persistentActivityMeanDeltaVsNullMean: string;
+  actualToNullPersistentAbundanceWeightedActivityMeanRatioMean: string;
+  persistentAbundanceWeightedActivityMeanDeltaVsNullMean: string;
 }
 
 export interface CladeActivityRelabelNullCladeHabitatCouplingSweepConfig {
@@ -1160,6 +1206,8 @@ export interface CladeActivityRelabelNullCladeHabitatCouplingSweepResult {
   persistentWindowFractionDeltaVsNullMean: number;
   actualToNullPersistentActivityMeanRatioMean: number | null;
   persistentActivityMeanDeltaVsNullMean: number;
+  actualToNullPersistentAbundanceWeightedActivityMeanRatioMean: number | null;
+  persistentAbundanceWeightedActivityMeanDeltaVsNullMean: number;
 }
 
 export interface CladeActivityRelabelNullCladeHabitatCouplingSweepExport {
@@ -1177,6 +1225,8 @@ export interface CladeActivityRelabelNullCladeInteractionCouplingSweepDefinition
   persistentWindowFractionDeltaVsNullMean: string;
   actualToNullPersistentActivityMeanRatioMean: string;
   persistentActivityMeanDeltaVsNullMean: string;
+  actualToNullPersistentAbundanceWeightedActivityMeanRatioMean: string;
+  persistentAbundanceWeightedActivityMeanDeltaVsNullMean: string;
 }
 
 export interface CladeActivityRelabelNullCladeInteractionCouplingSweepConfig {
@@ -1199,6 +1249,8 @@ export interface CladeActivityRelabelNullCladeInteractionCouplingSweepResult {
   persistentWindowFractionDeltaVsNullMean: number;
   actualToNullPersistentActivityMeanRatioMean: number | null;
   persistentActivityMeanDeltaVsNullMean: number;
+  actualToNullPersistentAbundanceWeightedActivityMeanRatioMean: number | null;
+  persistentAbundanceWeightedActivityMeanDeltaVsNullMean: number;
 }
 
 export interface CladeActivityRelabelNullCladeInteractionCouplingSweepExport {
