@@ -12,15 +12,15 @@ import {
 import { HORIZON_BASELINE_CLADEGENESIS_ECOLOGY_ADVANTAGE_THRESHOLD } from './clade-activity-relabel-null-founder-grace-ecology-gate-horizon-study';
 
 export const ENCOUNTER_OPERATOR_COMPARATIVE_HORIZON_ARTIFACT =
-  'docs/clade_activity_relabel_null_encounter_operator_comparative_horizon_2026-03-16.json';
+  'docs/clade_activity_relabel_null_encounter_operator_comparative_horizon_2026-03-17.json';
 
 const HORIZON_STUDY_INPUT: RunCladeActivityRelabelNullStudyInput = {
-  steps: 100,
-  windowSize: 10,
-  burnIn: 20,
-  seeds: [77, 42],
-  minSurvivalTicks: [1, 10],
-  cladogenesisThresholds: [0, 1.0],
+  steps: 4000,
+  windowSize: 100,
+  burnIn: 200,
+  seeds: [20260307, 20260308, 20260309, 20260310],
+  minSurvivalTicks: [50, 100],
+  cladogenesisThresholds: [1.0, 1.2],
   stopWhenExtinct: false,
   simulation: {
     config: {

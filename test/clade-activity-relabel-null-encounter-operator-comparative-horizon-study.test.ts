@@ -5,7 +5,7 @@ import { runEncounterOperatorComparativeStudy } from '../src/clade-activity-rela
 describe('encounter operator comparative horizon study', () => {
   it('defines the correct artifact path', () => {
     expect(ENCOUNTER_OPERATOR_COMPARATIVE_HORIZON_ARTIFACT).toBe(
-      'docs/clade_activity_relabel_null_encounter_operator_comparative_horizon_2026-03-16.json'
+      'docs/clade_activity_relabel_null_encounter_operator_comparative_horizon_2026-03-17.json'
     );
   });
 
