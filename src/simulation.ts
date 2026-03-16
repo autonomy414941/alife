@@ -19,8 +19,7 @@ import {
   updateDisturbanceEventState
 } from './disturbance';
 import {
-  LineageOccupancyGrid,
-  SettlementAgent
+  LineageOccupancyGrid
 } from './reproduction';
 import {
   EncounterOperator,
@@ -34,11 +33,16 @@ import {
   SimulationEvolutionHistory
 } from './simulation-evolution-history';
 import { TaxonHistoryState } from './simulation-history';
-import { reproduceAgent, runReproductionPhase } from './simulation-reproduction';
+import { reproduceInSimulation, resolveSimulationLocalEcologyScore } from './simulation-offspring';
+import { runReproductionPhase } from './simulation-reproduction';
+import { resolveEncounterLineageTransferMultiplier } from './settlement-cladogenesis';
 import {
-  resolveEncounterLineageTransferMultiplier,
-  resolveSettlementEcologyScore
-} from './settlement-cladogenesis';
+  adjustLineageOccupancy,
+  buildLineageOccupancyGrid,
+  buildOccupancyGrid,
+  neighborhoodCrowding,
+  sameLineageNeighborhoodCrowdingAt
+} from './settlement-spatial';
 import {
   Agent,
   AgentSeed,
@@ -237,8 +241,10 @@ export class LifeSimulation {
     this.regenerateResources();
     this.applyDisturbanceIfScheduled(this.tickCount + 1);
 
-    const occupancy = this.buildOccupancyGrid();
-    const lineageOccupancy = this.usesAdultLineageOccupancy() ? this.buildLineageOccupancyGrid() : undefined;
+    const occupancy = buildOccupancyGrid(this.config.width, this.config.height, this.agents);
+    const lineageOccupancy = this.usesAdultLineageOccupancy()
+      ? buildLineageOccupancyGrid(this.config.width, this.config.height, this.agents)
+      : undefined;
     const turnOrder = this.rng.shuffle([...this.agents]);
     for (const agent of turnOrder) {
       if (!this.isAlive(agent.id)) {
@@ -254,10 +260,19 @@ export class LifeSimulation {
       config: this.config,
       isAlive: (agentId) => this.isAlive(agentId),
       randomFloat: () => this.rng.float(),
-      buildOccupancyGrid: (agents) => this.buildOccupancyGrid(agents),
-      buildLineageOccupancyGrid: (agents) => this.buildLineageOccupancyGrid(agents),
+      buildOccupancyGrid: (agents) => buildOccupancyGrid(this.config.width, this.config.height, agents),
+      buildLineageOccupancyGrid: (agents) =>
+        buildLineageOccupancyGrid(this.config.width, this.config.height, agents),
       adjustLineageOccupancy: (occupancy, lineage, x, y, delta) =>
-        this.adjustLineageOccupancy(occupancy, lineage, x, y, delta),
+        adjustLineageOccupancy({
+          width: this.config.width,
+          height: this.config.height,
+          lineageOccupancy: occupancy,
+          lineage,
+          x,
+          y,
+          delta
+        }),
       reproduce: (parent, occupancy, lineageOccupancy) => this.reproduce(parent, occupancy, lineageOccupancy)
     });
     const births = offspring.length;
@@ -288,7 +303,15 @@ export class LifeSimulation {
       deadAgents,
       founderOccupancy,
       effectiveBiomeFertilityAt: (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
-      neighborhoodCrowdingAt: (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
+      neighborhoodCrowdingAt: (x, y, occupancy) =>
+        neighborhoodCrowding({
+          x,
+          y,
+          occupancy,
+          dispersalRadius: this.normalizedDispersalRadius(),
+          wrapX: (cellX) => this.wrapX(cellX),
+          wrapY: (cellY) => this.wrapY(cellY)
+        })
     });
     this.recordLocalityFrame(this.tickCount);
     updateDisturbanceEventState(this.disturbanceEvents, this.tickCount, afterCount, diversity.activeSpecies);
@@ -1039,12 +1062,20 @@ export class LifeSimulation {
   }
 
   private initializeEvolutionHistory(): void {
-    const initialOccupancy = this.buildOccupancyGrid(this.agents);
+    const initialOccupancy = buildOccupancyGrid(this.config.width, this.config.height, this.agents);
     this.evolutionHistory.initialize(this.agents, {
       tick: 0,
       occupancy: initialOccupancy,
       effectiveBiomeFertilityAt: (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
-      neighborhoodCrowdingAt: (x, y, occupancy) => this.neighborhoodCrowding(x, y, occupancy)
+      neighborhoodCrowdingAt: (x, y, occupancy) =>
+        neighborhoodCrowding({
+          x,
+          y,
+          occupancy,
+          dispersalRadius: this.normalizedDispersalRadius(),
+          wrapX: (cellX) => this.wrapX(cellX),
+          wrapY: (cellY) => this.wrapY(cellY)
+        })
     });
   }
 
@@ -1126,47 +1157,13 @@ export class LifeSimulation {
   }
 
   private buildOccupancyGrid(agents: ReadonlyArray<Pick<Agent, 'x' | 'y'>> = this.agents): number[][] {
-    const occupancy = Array.from({ length: this.config.height }, () =>
-      Array.from({ length: this.config.width }, () => 0)
-    );
-    for (const agent of agents) {
-      occupancy[agent.y][agent.x] += 1;
-    }
-    return occupancy;
+    return buildOccupancyGrid(this.config.width, this.config.height, agents);
   }
 
   private buildLineageOccupancyGrid(
     agents: ReadonlyArray<Pick<Agent, 'lineage' | 'x' | 'y'>> = this.agents
   ): LineageOccupancyGrid {
-    const grids: LineageOccupancyGrid = new Map();
-    for (const agent of agents) {
-      let grid = grids.get(agent.lineage);
-      if (!grid) {
-        grid = Array.from({ length: this.config.height }, () => Array.from({ length: this.config.width }, () => 0));
-        grids.set(agent.lineage, grid);
-      }
-      grid[agent.y][agent.x] += 1;
-    }
-    return grids;
-  }
-
-  private adjustLineageOccupancy(
-    lineageOccupancy: LineageOccupancyGrid,
-    lineage: number,
-    x: number,
-    y: number,
-    delta: number
-  ): void {
-    let grid = lineageOccupancy.get(lineage);
-    if (!grid) {
-      if (delta <= 0) {
-        return;
-      }
-      grid = Array.from({ length: this.config.height }, () => Array.from({ length: this.config.width }, () => 0));
-      lineageOccupancy.set(lineage, grid);
-    }
-
-    grid[y][x] = Math.max(0, grid[y][x] + delta);
+    return buildLineageOccupancyGrid(this.config.width, this.config.height, agents);
   }
 
   private buildBiomeFertility(): number[][] {
@@ -1246,7 +1243,15 @@ export class LifeSimulation {
     if (agent.energy <= 0 || agent.age > this.config.maxAge) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
       if (lineageOccupancy) {
-        this.adjustLineageOccupancy(lineageOccupancy, agent.lineage, agent.x, agent.y, -1);
+        adjustLineageOccupancy({
+          width: this.config.width,
+          height: this.config.height,
+          lineageOccupancy,
+          lineage: agent.lineage,
+          x: agent.x,
+          y: agent.y,
+          delta: -1
+        });
       }
       return;
     }
@@ -1262,15 +1267,39 @@ export class LifeSimulation {
       occupancy[previousY][previousX] = Math.max(0, occupancy[previousY][previousX] - 1);
       occupancy[agent.y][agent.x] += 1;
       if (lineageOccupancy) {
-        this.adjustLineageOccupancy(lineageOccupancy, agent.lineage, previousX, previousY, -1);
-        this.adjustLineageOccupancy(lineageOccupancy, agent.lineage, agent.x, agent.y, 1);
+        adjustLineageOccupancy({
+          width: this.config.width,
+          height: this.config.height,
+          lineageOccupancy,
+          lineage: agent.lineage,
+          x: previousX,
+          y: previousY,
+          delta: -1
+        });
+        adjustLineageOccupancy({
+          width: this.config.width,
+          height: this.config.height,
+          lineageOccupancy,
+          lineage: agent.lineage,
+          x: agent.x,
+          y: agent.y,
+          delta: 1
+        });
       }
       agent.energy -= this.config.moveCost * agent.genome.metabolism;
     }
     if (agent.energy <= 0) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
       if (lineageOccupancy) {
-        this.adjustLineageOccupancy(lineageOccupancy, agent.lineage, agent.x, agent.y, -1);
+        adjustLineageOccupancy({
+          width: this.config.width,
+          height: this.config.height,
+          lineageOccupancy,
+          lineage: agent.lineage,
+          x: agent.x,
+          y: agent.y,
+          delta: -1
+        });
       }
       return;
     }
@@ -1313,16 +1342,28 @@ export class LifeSimulation {
     const lineagePenalty = Math.max(0, this.config.lineageDispersalCrowdingPenalty);
 
     for (const option of options) {
-      const score = this.localEcologyScore(
+      const score = resolveSimulationLocalEcologyScore({
+        config: this.config,
+        tickCount: this.tickCount,
+        dispersalRadius: this.normalizedDispersalRadius(),
+        width: this.config.width,
+        cladeHistory: this.cladeHistory,
+        resources: this.resources,
+        speciesHabitatPreference: this.speciesHabitatPreference,
+        cladeHabitatPreference: this.cladeHabitatPreference,
         agent,
-        option.x,
-        option.y,
+        x: option.x,
+        y: option.y,
         occupancy,
         lineageOccupancy,
         lineagePenalty,
-        { x: agent.x, y: agent.y },
-        this.rng.float() * 0.05
-      );
+        excludedPosition: { x: agent.x, y: agent.y },
+        jitter: this.rng.float() * 0.05,
+        effectiveBiomeFertilityAt: (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
+        wrapX: (x) => this.wrapX(x),
+        wrapY: (y) => this.wrapY(y),
+        cellIndex: (x, y) => this.cellIndex(x, y)
+      });
       if (score > bestScore) {
         bestScore = score;
         best = option;
@@ -1330,34 +1371,6 @@ export class LifeSimulation {
     }
 
     return best;
-  }
-
-  private neighborhoodCrowding(x: number, y: number, occupancy: number[][]): number {
-    const radius = this.normalizedDispersalRadius();
-    if (radius === 0) {
-      return occupancy[this.wrapY(y)][this.wrapX(x)];
-    }
-
-    let weightedCount = 0;
-    let totalWeight = 0;
-    for (let dy = -radius; dy <= radius; dy += 1) {
-      for (let dx = -radius; dx <= radius; dx += 1) {
-        const distance = Math.abs(dx) + Math.abs(dy);
-        if (distance > radius) {
-          continue;
-        }
-        const weight = 1 / (distance + 1);
-        const nx = this.wrapX(x + dx);
-        const ny = this.wrapY(y + dy);
-        weightedCount += occupancy[ny][nx] * weight;
-        totalWeight += weight;
-      }
-    }
-
-    if (totalWeight === 0) {
-      return 0;
-    }
-    return weightedCount / totalWeight;
   }
 
   private lineageHarvestCrowdingEfficiency(
@@ -1369,93 +1382,23 @@ export class LifeSimulation {
       return 1;
     }
 
-    const crowding = this.sameLineageNeighborhoodCrowding(agent, lineageOccupancy);
+    const crowding = sameLineageNeighborhoodCrowdingAt({
+      width: this.config.width,
+      lineage: agent.lineage,
+      x: agent.x,
+      y: agent.y,
+      lineageOccupancy,
+      dispersalRadius: this.normalizedDispersalRadius(),
+      cellIndex: (x, y) => this.cellIndex(x, y),
+      wrapX: (x) => this.wrapX(x),
+      wrapY: (y) => this.wrapY(y),
+      excludedPosition: { x: agent.x, y: agent.y }
+    });
     if (crowding <= 0) {
       return 1;
     }
 
     return Math.max(0.05, 1 / (1 + penalty * crowding));
-  }
-
-  private sameLineageNeighborhoodCrowding(
-    agent: Pick<Agent, 'lineage' | 'x' | 'y'>,
-    lineageOccupancy: LineageOccupancyGrid
-  ): number {
-    return this.sameLineageNeighborhoodCrowdingAt(agent.lineage, agent.x, agent.y, lineageOccupancy, {
-      x: agent.x,
-      y: agent.y
-    });
-  }
-
-  private sameLineageNeighborhoodCrowdingAt(
-    lineage: number,
-    x: number,
-    y: number,
-    lineageOccupancy: LineageOccupancyGrid,
-    excludedPosition?: { x: number; y: number }
-  ): number {
-    return this.sameLineageNeighborhoodStatsAt(lineage, x, y, lineageOccupancy, excludedPosition).weightedCount;
-  }
-
-  private sameLineageNeighborhoodStatsAt(
-    lineage: number,
-    x: number,
-    y: number,
-    lineageOccupancy: LineageOccupancyGrid,
-    excludedPosition?: { x: number; y: number }
-  ): { weightedCount: number; totalWeight: number } {
-    const grid = lineageOccupancy.get(lineage);
-    if (!grid) {
-      return { weightedCount: 0, totalWeight: 0 };
-    }
-
-    const width = this.config.width;
-    const excludedIndex =
-      excludedPosition === undefined
-        ? -1
-        : this.cellIndex(excludedPosition.x, excludedPosition.y);
-
-    let weightedCount = 0;
-    let totalWeight = 0;
-    for (const [index, distance] of this.neighborhoodCellDistances(x, y)) {
-      const cellX = index % width;
-      const cellY = Math.floor(index / width);
-      const rawCount = grid[cellY][cellX];
-      const count = index === excludedIndex ? Math.max(0, rawCount - 1) : rawCount;
-      if (count <= 0) {
-        totalWeight += 1 / (distance + 1);
-        continue;
-      }
-      const weight = 1 / (distance + 1);
-      weightedCount += count * weight;
-      totalWeight += weight;
-    }
-
-    return { weightedCount, totalWeight };
-  }
-
-  private neighborhoodCellDistances(x: number, y: number): Map<number, number> {
-    const radius = this.normalizedDispersalRadius();
-    const cellDistances = new Map<number, number>();
-    const centerX = this.wrapX(x);
-    const centerY = this.wrapY(y);
-
-    for (let dy = -radius; dy <= radius; dy += 1) {
-      for (let dx = -radius; dx <= radius; dx += 1) {
-        const distance = Math.abs(dx) + Math.abs(dy);
-        if (distance > radius) {
-          continue;
-        }
-
-        const index = this.cellIndex(centerX + dx, centerY + dy);
-        const current = cellDistances.get(index);
-        if (current === undefined || distance < current) {
-          cellDistances.set(index, distance);
-        }
-      }
-    }
-
-    return cellDistances;
   }
 
   private resolveEncounters(): void {
@@ -1497,11 +1440,14 @@ export class LifeSimulation {
     occupancy?: number[][],
     lineageOccupancy?: LineageOccupancyGrid
   ): Agent {
-    return reproduceAgent({
+    return reproduceInSimulation({
       parent,
       agents: this.agents,
       config: this.config,
       tickCount: this.tickCount,
+      width: this.config.width,
+      height: this.config.height,
+      dispersalRadius: this.normalizedDispersalRadius(),
       occupancy,
       lineageOccupancy,
       speciesHabitatPreference: this.speciesHabitatPreference,
@@ -1509,69 +1455,20 @@ export class LifeSimulation {
       speciesDefenseLevel: this.speciesDefenseLevel,
       cladeFounderGenome: this.cladeFounderGenome,
       cladeHabitatPreference: this.cladeHabitatPreference,
+      cladeHistory: this.cladeHistory,
+      resources: this.resources,
+      disturbanceSettlementOpenUntilTick: this.disturbanceSettlementOpenUntilTick,
+      minGenome: MIN_GENOME,
+      maxGenome: MAX_GENOME,
       allocateAgentId: () => this.nextAgentId++,
       allocateSpeciesId: () => this.nextSpeciesId++,
       allocateLineageId: () => this.nextLineageId++,
       randomFloat: () => this.rng.float(),
-      mutateGenome: (genome) => this.mutateGenome(genome),
-      buildOccupancyGrid: (agents) => this.buildOccupancyGrid(agents),
-      buildLineageOccupancyGrid: (agents) => this.buildLineageOccupancyGrid(agents),
       wrapX: (x) => this.wrapX(x),
       wrapY: (y) => this.wrapY(y),
+      cellIndex: (x, y) => this.cellIndex(x, y),
       pickRandomNeighbor: (neighbors) => this.rng.pick(neighbors),
-      localEcologyScore: (agent, x, y, nextOccupancy, nextLineageOccupancy, lineagePenalty, excludedPosition, jitter) =>
-        this.localEcologyScore(
-          agent,
-          x,
-          y,
-          nextOccupancy,
-          nextLineageOccupancy,
-          lineagePenalty,
-          excludedPosition,
-          jitter
-        ),
-      disturbanceSettlementOpenUntilTick: this.disturbanceSettlementOpenUntilTick,
-      sameLineageNeighborhoodCrowdingAt: (lineage, x, y, nextLineageOccupancy, excludedPosition) =>
-        this.sameLineageNeighborhoodCrowdingAt(lineage, x, y, nextLineageOccupancy, excludedPosition),
-      effectiveBiomeFertilityAt: (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
-      getCladeFounderGenome: (lineage) => this.getCladeFounderGenome(lineage),
-      getSpeciesHabitatPreference: (species) => this.getSpeciesHabitatPreference(species),
-      getCladeHabitatPreference: (lineage) => this.getCladeHabitatPreference(lineage),
-      getSpeciesTrophicLevel: (species) => this.getSpeciesTrophicLevel(species),
-      getCladeTrophicLevel: (lineage) => this.getCladeTrophicLevel(lineage),
-      getSpeciesDefenseLevel: (species) => this.getSpeciesDefenseLevel(species),
-      getCladeDefenseLevel: (lineage) => this.getCladeDefenseLevel(lineage)
-    });
-  }
-
-  private localEcologyScore(
-    agent: SettlementAgent,
-    x: number,
-    y: number,
-    occupancy: number[][],
-    lineageOccupancy: LineageOccupancyGrid | undefined,
-    lineagePenalty: number,
-    excludedPosition: { x: number; y: number } | undefined,
-    jitter: number
-  ): number {
-    return resolveSettlementEcologyScore({
-      config: this.config,
-      tickCount: this.tickCount,
-      cladeHistory: this.cladeHistory,
-      agent,
-      x,
-      y,
-      occupancy,
-      lineageOccupancy,
-      lineagePenalty,
-      excludedPosition,
-      jitter,
-      resourceAt: (cellX, cellY) => this.resources[this.wrapY(cellY)][this.wrapX(cellX)],
-      habitatMatchEfficiencyAt: (nextAgent, cellX, cellY) =>
-        this.habitatMatchEfficiency(nextAgent, this.wrapX(cellX), this.wrapY(cellY)),
-      neighborhoodCrowdingAt: (cellX, cellY, nextOccupancy) => this.neighborhoodCrowding(cellX, cellY, nextOccupancy),
-      sameLineageNeighborhoodCrowdingAt: (lineage, cellX, cellY, nextLineageOccupancy, nextExcludedPosition) =>
-        this.sameLineageNeighborhoodCrowdingAt(lineage, cellX, cellY, nextLineageOccupancy, nextExcludedPosition)
+      effectiveBiomeFertilityAt: (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick)
     });
   }
 
@@ -1602,19 +1499,6 @@ export class LifeSimulation {
     const genome = copyGenome(founder);
     this.cladeFounderGenome.set(lineage, genome);
     return genome;
-  }
-
-  private mutateGenome(genome: Genome): Genome {
-    return {
-      metabolism: this.mutateTrait(genome.metabolism, MIN_GENOME.metabolism, MAX_GENOME.metabolism),
-      harvest: this.mutateTrait(genome.harvest, MIN_GENOME.harvest, MAX_GENOME.harvest),
-      aggression: this.mutateTrait(genome.aggression, MIN_GENOME.aggression, MAX_GENOME.aggression)
-    };
-  }
-
-  private mutateTrait(value: number, min: number, max: number): number {
-    const delta = (this.rng.float() + this.rng.float() - 1) * this.config.mutationAmount;
-    return clamp(value + delta, min, max);
   }
 
   private randomTrait(min: number, max: number): number {
