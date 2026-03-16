@@ -11,23 +11,31 @@ describe('resource metabolism fungibility diagnostics', () => {
     );
   });
 
-  it('shows that harvested resource identity collapses into scalar energy', () => {
+  it('shows that harvested resource identity is preserved in internal pools', () => {
     const diagnostics = runResourceMetabolismFungibilityDiagnostics({
       generatedAt: '2026-03-16T00:00:00.000Z'
     });
 
     expect(diagnostics.generatedAt).toBe('2026-03-16T00:00:00.000Z');
-    expect(diagnostics.structuralEvidence.retainsDistinctInternalEnergyPools).toBe(false);
-    expect(diagnostics.structuralEvidence.harvestAddsOnlyTotalHarvestToAgentEnergy).toBe(true);
-    expect(diagnostics.matchedHarvestCollapse.identicalPostHarvestAgentState).toBe(true);
+    expect(diagnostics.structuralEvidence.retainsDistinctInternalEnergyPools).toBe(true);
+    expect(diagnostics.structuralEvidence.harvestAddsOnlyTotalHarvestToAgentEnergy).toBe(false);
+    expect(diagnostics.structuralEvidence.metabolismConsumesOnlyScalarEnergy).toBe(false);
+    expect(diagnostics.structuralEvidence.reproductionConsumesOnlyScalarEnergy).toBe(false);
+    expect(diagnostics.matchedHarvestCollapse.identicalPostHarvestAgentState).toBe(false);
     expect(diagnostics.matchedHarvestCollapse.postHarvestEnergyDelta).toBe(0);
+    expect(diagnostics.matchedHarvestCollapse.primaryOnly.finalAgentState.energyPrimary).toBeGreaterThan(
+      diagnostics.matchedHarvestCollapse.secondaryOnly.finalAgentState.energyPrimary
+    );
+    expect(diagnostics.matchedHarvestCollapse.primaryOnly.finalAgentState.energySecondary).toBeLessThan(
+      diagnostics.matchedHarvestCollapse.secondaryOnly.finalAgentState.energySecondary
+    );
     expect(diagnostics.downstreamCostEquivalence.metabolismAfterMatchedHarvest.identicalEnergyLoss).toBe(true);
     expect(diagnostics.downstreamCostEquivalence.metabolismAfterMatchedHarvest.energyLossDelta).toBe(0);
     expect(diagnostics.downstreamCostEquivalence.reproductionAfterMatchedHarvest.identicalOutcome).toBe(true);
     expect(diagnostics.specialistVsGeneralist.sharedEnvironmentHarvest.harvestDifferentiationOnlyAtIntake).toBe(true);
     expect(diagnostics.specialistVsGeneralist.matchedEnergyMetabolism.identicalEnergyLoss).toBe(true);
     expect(diagnostics.specialistVsGeneralist.matchedEnergyReproduction.identicalScalarOutcome).toBe(true);
-    expect(diagnostics.specialistVsGeneralist.showsDistinctInternalStateAtMatchedTotalEnergy).toBe(false);
-    expect(diagnostics.diagnosis).toContain('fungible energy scalar');
+    expect(diagnostics.specialistVsGeneralist.showsDistinctInternalStateAtMatchedTotalEnergy).toBe(true);
+    expect(diagnostics.diagnosis).toContain('preserves resource identity');
   });
 });

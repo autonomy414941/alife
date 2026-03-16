@@ -1,3 +1,4 @@
+import { transferAgentEnergy } from './agent-energy';
 import { Agent, SimulationConfig } from './types';
 
 type EncounterConfig = Pick<SimulationConfig, 'predationPressure' | 'defenseMitigation'>;
@@ -28,8 +29,7 @@ export const dominantEncounterOperator: EncounterOperator = (agentsInCell, conte
       continue;
     }
 
-    target.energy -= stolen;
-    dominant.energy += stolen;
+    transferAgentEnergy(target, dominant, stolen);
   }
 };
 
@@ -78,8 +78,7 @@ export const pairwiseEncounterOperator: EncounterOperator = (agentsInCell, conte
         continue;
       }
 
-      target.energy -= stolen;
-      dominant.energy += stolen;
+      transferAgentEnergy(target, dominant, stolen);
     }
   }
 };

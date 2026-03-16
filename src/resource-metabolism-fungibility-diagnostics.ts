@@ -24,12 +24,16 @@ interface AgentStateSummary {
   x: number;
   y: number;
   energy: number;
+  energyPrimary: number;
+  energySecondary: number;
   age: number;
 }
 
 interface SingleAgentScenario {
   config: Partial<SimulationConfig>;
   initialEnergy: number;
+  initialEnergyPrimary?: number;
+  initialEnergySecondary?: number;
   initialPrimaryResource: number;
   initialSecondaryResource: number;
   genome: Genome;
@@ -275,6 +279,8 @@ export function runResourceMetabolismFungibilityDiagnostics(
   const specialistMetabolism = runSingleAgentScenario({
     config: METABOLISM_ONLY_CONFIG,
     initialEnergy: 12,
+    initialEnergyPrimary: 12 * (1 - specialistHarvest.secondaryHarvestFraction),
+    initialEnergySecondary: 12 * specialistHarvest.secondaryHarvestFraction,
     initialPrimaryResource: 0,
     initialSecondaryResource: 0,
     genome: SPECIALIST_GENOME
@@ -282,6 +288,8 @@ export function runResourceMetabolismFungibilityDiagnostics(
   const generalistMetabolism = runSingleAgentScenario({
     config: METABOLISM_ONLY_CONFIG,
     initialEnergy: 12,
+    initialEnergyPrimary: 12 * (1 - generalistHarvest.secondaryHarvestFraction),
+    initialEnergySecondary: 12 * generalistHarvest.secondaryHarvestFraction,
     initialPrimaryResource: 0,
     initialSecondaryResource: 0,
     genome: GENERALIST_GENOME
@@ -289,6 +297,8 @@ export function runResourceMetabolismFungibilityDiagnostics(
   const specialistReproduction = runSingleAgentScenario({
     config: REPRODUCTION_ONLY_CONFIG,
     initialEnergy: 12,
+    initialEnergyPrimary: 12 * (1 - specialistHarvest.secondaryHarvestFraction),
+    initialEnergySecondary: 12 * specialistHarvest.secondaryHarvestFraction,
     initialPrimaryResource: 0,
     initialSecondaryResource: 0,
     genome: SPECIALIST_GENOME
@@ -296,6 +306,8 @@ export function runResourceMetabolismFungibilityDiagnostics(
   const generalistReproduction = runSingleAgentScenario({
     config: REPRODUCTION_ONLY_CONFIG,
     initialEnergy: 12,
+    initialEnergyPrimary: 12 * (1 - generalistHarvest.secondaryHarvestFraction),
+    initialEnergySecondary: 12 * generalistHarvest.secondaryHarvestFraction,
     initialPrimaryResource: 0,
     initialSecondaryResource: 0,
     genome: GENERALIST_GENOME
@@ -377,7 +389,10 @@ export function runResourceMetabolismFungibilityDiagnostics(
         sum(generalistReproduction.offspringEnergies)
       )
     },
-    showsDistinctInternalStateAtMatchedTotalEnergy: false
+    showsDistinctInternalStateAtMatchedTotalEnergy: !sameAgentState(
+      specialistMetabolism.finalAgentState,
+      generalistMetabolism.finalAgentState
+    )
   };
 
   const diagnosis = synthesizeDiagnosis({
@@ -424,7 +439,7 @@ export function runResourceMetabolismFungibilityDiagnostics(
     },
     structuralEvidence: {
       ...structuralEvidence,
-      retainsDistinctInternalEnergyPools: false,
+      retainsDistinctInternalEnergyPools: structuralEvidence.distinctInternalPoolKeys.length > 0,
       supportsSourceSpecificMetabolicCosts: false,
       supportsSourceSpecificReproductionCosts: false
     },
@@ -454,8 +469,7 @@ function collectSourcePathEvidence(): SourcePathEvidence {
       simulationSource.includes('agent.energy -= this.config.metabolismCostBase * agent.genome.metabolism;') &&
       simulationSource.includes('agent.energy -= this.specializationMetabolicPenalty(agent);'),
     reproductionConsumesOnlyScalarEnergy:
-      reproductionSource.includes('if (agent.energy < config.reproduceThreshold') &&
-      reproductionSource.includes('const childEnergy = parent.energy * config.offspringEnergyFraction;')
+      reproductionSource.includes('parent.energy -= childEnergy;')
   };
 }
 
@@ -479,12 +493,16 @@ function summarizeSharedEnvironmentHarvest(genome: Genome): SharedEnvironmentHar
 function runSingleAgentScenario({
   config,
   initialEnergy,
+  initialEnergyPrimary,
+  initialEnergySecondary,
   initialPrimaryResource,
   initialSecondaryResource,
   genome
 }: {
   config: Partial<SimulationConfig>;
   initialEnergy: number;
+  initialEnergyPrimary?: number;
+  initialEnergySecondary?: number;
   initialPrimaryResource: number;
   initialSecondaryResource: number;
   genome: Genome;
@@ -497,6 +515,8 @@ function runSingleAgentScenario({
         x: 0,
         y: 0,
         energy: initialEnergy,
+        energyPrimary: initialEnergyPrimary,
+        energySecondary: initialEnergySecondary,
         lineage: 1,
         species: 1,
         genome: copyGenome(genome)
@@ -518,6 +538,8 @@ function runSingleAgentScenario({
   return {
     config,
     initialEnergy,
+    initialEnergyPrimary,
+    initialEnergySecondary,
     initialPrimaryResource: beforePrimary,
     initialSecondaryResource: beforeSecondary,
     genome: copyGenome(genome),
@@ -537,6 +559,8 @@ function summarizeAgentState(agent: Agent): AgentStateSummary {
     x: agent.x,
     y: agent.y,
     energy: agent.energy,
+    energyPrimary: agent.energyPrimary ?? agent.energy,
+    energySecondary: agent.energySecondary ?? 0,
     age: agent.age
   };
 }
@@ -550,22 +574,22 @@ function synthesizeDiagnosis(input: {
   const parts: string[] = [];
 
   parts.push(
-    `Agent state exposes ${input.structuralEvidence.agentEnergyLikeKeys.join(', ')} as energy-like storage, with no separate internal pools for resource1 or resource2.`
+    `Agent state now exposes ${input.structuralEvidence.agentEnergyLikeKeys.join(', ')} as energy-like storage, including internal resource-derived pools ${input.structuralEvidence.distinctInternalPoolKeys.join(', ')}.`
   );
   parts.push(
-    `Dual-resource harvest resolves primary/secondary intake externally, then applies only total harvest to agent energy (${input.structuralEvidence.harvestAddsOnlyTotalHarvestToAgentEnergy ? 'confirmed' : 'not confirmed'} in source).`
+    `Dual-resource harvest no longer applies only total harvest to agent energy (${input.structuralEvidence.harvestAddsOnlyTotalHarvestToAgentEnergy ? 'still confirmed' : 'not confirmed'} in source); harvested primary and secondary resources remain separately tracked after intake.`
   );
   parts.push(
-    `Matched harvest trials collapse primary-only and secondary-only intake into identical post-harvest agent state (energy delta=${input.matchedHarvestCollapse.postHarvestEnergyDelta.toFixed(2)}).`
+    `Matched harvest trials keep total energy matched (energy delta=${input.matchedHarvestCollapse.postHarvestEnergyDelta.toFixed(2)}) while preserving different internal compositions between primary-only and secondary-only intake.`
   );
   parts.push(
-    `Once total energy is matched, downstream metabolism remains identical (energy-loss delta=${input.downstreamCostEquivalence.metabolismAfterMatchedHarvest.energyLossDelta.toFixed(2)}) and reproduction remains identical (parent delta=${input.downstreamCostEquivalence.reproductionAfterMatchedHarvest.parentEnergyDelta.toFixed(2)}, child delta=${input.downstreamCostEquivalence.reproductionAfterMatchedHarvest.childEnergyDelta.toFixed(2)}).`
+    `Once total energy is matched, downstream metabolism still uses composition-agnostic scalar costs (energy-loss delta=${input.downstreamCostEquivalence.metabolismAfterMatchedHarvest.energyLossDelta.toFixed(2)}) and reproduction still preserves scalar totals (parent delta=${input.downstreamCostEquivalence.reproductionAfterMatchedHarvest.parentEnergyDelta.toFixed(2)}, child delta=${input.downstreamCostEquivalence.reproductionAfterMatchedHarvest.childEnergyDelta.toFixed(2)}), but pool composition is retained through both steps.`
   );
   parts.push(
-    `Specialist and generalist genomes differ in harvest composition on the same patch (secondary share ${input.specialistVsGeneralist.sharedEnvironmentHarvest.specialist.secondaryHarvestFraction.toFixed(2)} vs ${input.specialistVsGeneralist.sharedEnvironmentHarvest.generalist.secondaryHarvestFraction.toFixed(2)}), but their matched-energy metabolism and reproduction are still identical.`
+    `Specialist and generalist genomes differ in harvest composition on the same patch (secondary share ${input.specialistVsGeneralist.sharedEnvironmentHarvest.specialist.secondaryHarvestFraction.toFixed(2)} vs ${input.specialistVsGeneralist.sharedEnvironmentHarvest.generalist.secondaryHarvestFraction.toFixed(2)}), and those matched-energy composition differences now remain observable after metabolism and reproduction.`
   );
   parts.push(
-    'CONCLUSION: the current dual-resource substrate does not preserve resource identity through metabolism. Resource1 and resource2 differentiate intake opportunities only; once harvested, they collapse into one fungible energy scalar, so there is no internal metabolic partitioning tradeoff to carry specialists and generalists into different downstream physiological states.'
+    'CONCLUSION: the current dual-resource substrate now preserves resource identity through internal energy pools instead of collapsing harvest immediately into one fungible scalar. This is a structural prerequisite for resource partitioning, but metabolism and reproduction costs are still composition-agnostic, so the redesign preserves source identity without yet imposing source-specific physiological tradeoffs.'
   );
 
   return parts.join(' ');
@@ -595,6 +619,8 @@ function sameAgentState(a: AgentStateSummary, b: AgentStateSummary): boolean {
     a.x === b.x &&
     a.y === b.y &&
     sameScalarOutcome(a.energy, b.energy) &&
+    sameScalarOutcome(a.energyPrimary, b.energyPrimary) &&
+    sameScalarOutcome(a.energySecondary, b.energySecondary) &&
     a.age === b.age
   );
 }

@@ -165,22 +165,29 @@
       "x",
       "y",
       "energy",
+      "energyPrimary",
+      "energySecondary",
       "age",
       "genome"
     ],
     "agentEnergyLikeKeys": [
-      "energy"
+      "energy",
+      "energyPrimary",
+      "energySecondary"
     ],
-    "distinctInternalPoolKeys": [],
+    "distinctInternalPoolKeys": [
+      "energyPrimary",
+      "energySecondary"
+    ],
     "dualHarvestResultKeys": [
       "primaryHarvest",
       "secondaryHarvest",
       "totalHarvest"
     ],
-    "harvestAddsOnlyTotalHarvestToAgentEnergy": true,
-    "metabolismConsumesOnlyScalarEnergy": true,
-    "reproductionConsumesOnlyScalarEnergy": true,
-    "retainsDistinctInternalEnergyPools": false,
+    "harvestAddsOnlyTotalHarvestToAgentEnergy": false,
+    "metabolismConsumesOnlyScalarEnergy": false,
+    "reproductionConsumesOnlyScalarEnergy": false,
+    "retainsDistinctInternalEnergyPools": true,
     "supportsSourceSpecificMetabolicCosts": false,
     "supportsSourceSpecificReproductionCosts": false
   },
@@ -222,6 +229,8 @@
         "x": 0,
         "y": 0,
         "energy": 15,
+        "energyPrimary": 15,
+        "energySecondary": 0,
         "age": 1
       },
       "births": 0,
@@ -265,13 +274,15 @@
         "x": 0,
         "y": 0,
         "energy": 15,
+        "energyPrimary": 10,
+        "energySecondary": 5,
         "age": 1
       },
       "births": 0,
       "population": 1,
       "offspringEnergies": []
     },
-    "identicalPostHarvestAgentState": true,
+    "identicalPostHarvestAgentState": false,
     "postHarvestEnergyDelta": 0
   },
   "downstreamCostEquivalence": {
@@ -314,6 +325,8 @@
           "x": 0,
           "y": 0,
           "energy": 14.25,
+          "energyPrimary": 14.25,
+          "energySecondary": 0,
           "age": 1
         },
         "births": 0,
@@ -358,6 +371,8 @@
           "x": 0,
           "y": 0,
           "energy": 14.25,
+          "energyPrimary": 14.25,
+          "energySecondary": 0,
           "age": 1
         },
         "births": 0,
@@ -406,6 +421,8 @@
           "x": 0,
           "y": 0,
           "energy": 7.5,
+          "energyPrimary": 7.5,
+          "energySecondary": 0,
           "age": 1
         },
         "births": 1,
@@ -452,6 +469,8 @@
           "x": 0,
           "y": 0,
           "energy": 7.5,
+          "energyPrimary": 7.5,
+          "energySecondary": 0,
           "age": 1
         },
         "births": 1,
@@ -516,6 +535,8 @@
           "maxAge": 10
         },
         "initialEnergy": 12,
+        "initialEnergyPrimary": 1.1999999999999997,
+        "initialEnergySecondary": 10.8,
         "initialPrimaryResource": 0,
         "initialSecondaryResource": 0,
         "genome": {
@@ -532,6 +553,8 @@
           "x": 0,
           "y": 0,
           "energy": 11.25,
+          "energyPrimary": 1.1249999999999998,
+          "energySecondary": 10.125,
           "age": 1
         },
         "births": 0,
@@ -560,6 +583,8 @@
           "maxAge": 10
         },
         "initialEnergy": 12,
+        "initialEnergyPrimary": 6,
+        "initialEnergySecondary": 6,
         "initialPrimaryResource": 0,
         "initialSecondaryResource": 0,
         "genome": {
@@ -576,6 +601,8 @@
           "x": 0,
           "y": 0,
           "energy": 11.25,
+          "energyPrimary": 5.625,
+          "energySecondary": 5.625,
           "age": 1
         },
         "births": 0,
@@ -608,6 +635,8 @@
           "maxAge": 10
         },
         "initialEnergy": 12,
+        "initialEnergyPrimary": 1.1999999999999997,
+        "initialEnergySecondary": 10.8,
         "initialPrimaryResource": 0,
         "initialSecondaryResource": 0,
         "genome": {
@@ -624,6 +653,8 @@
           "x": 0,
           "y": 0,
           "energy": 6,
+          "energyPrimary": 0.5999999999999999,
+          "energySecondary": 5.4,
           "age": 1
         },
         "births": 1,
@@ -654,6 +685,8 @@
           "maxAge": 10
         },
         "initialEnergy": 12,
+        "initialEnergyPrimary": 6,
+        "initialEnergySecondary": 6,
         "initialPrimaryResource": 0,
         "initialSecondaryResource": 0,
         "genome": {
@@ -670,6 +703,8 @@
           "x": 0,
           "y": 0,
           "energy": 6,
+          "energyPrimary": 3,
+          "energySecondary": 3,
           "age": 1
         },
         "births": 1,
@@ -682,7 +717,7 @@
       "parentEnergyDelta": 0,
       "childEnergyDelta": 0
     },
-    "showsDistinctInternalStateAtMatchedTotalEnergy": false
+    "showsDistinctInternalStateAtMatchedTotalEnergy": true
   },
-  "diagnosis": "Agent state exposes energy as energy-like storage, with no separate internal pools for resource1 or resource2. Dual-resource harvest resolves primary/secondary intake externally, then applies only total harvest to agent energy (confirmed in source). Matched harvest trials collapse primary-only and secondary-only intake into identical post-harvest agent state (energy delta=0.00). Once total energy is matched, downstream metabolism remains identical (energy-loss delta=0.00) and reproduction remains identical (parent delta=0.00, child delta=0.00). Specialist and generalist genomes differ in harvest composition on the same patch (secondary share 0.90 vs 0.50), but their matched-energy metabolism and reproduction are still identical. CONCLUSION: the current dual-resource substrate does not preserve resource identity through metabolism. Resource1 and resource2 differentiate intake opportunities only; once harvested, they collapse into one fungible energy scalar, so there is no internal metabolic partitioning tradeoff to carry specialists and generalists into different downstream physiological states."
+  "diagnosis": "Agent state now exposes energy, energyPrimary, energySecondary as energy-like storage, including internal resource-derived pools energyPrimary, energySecondary. Dual-resource harvest no longer applies only total harvest to agent energy (not confirmed in source); harvested primary and secondary resources remain separately tracked after intake. Matched harvest trials keep total energy matched (energy delta=0.00) while preserving different internal compositions between primary-only and secondary-only intake. Once total energy is matched, downstream metabolism still uses composition-agnostic scalar costs (energy-loss delta=0.00) and reproduction still preserves scalar totals (parent delta=0.00, child delta=0.00), but pool composition is retained through both steps. Specialist and generalist genomes differ in harvest composition on the same patch (secondary share 0.90 vs 0.50), and those matched-energy composition differences now remain observable after metabolism and reproduction. CONCLUSION: the current dual-resource substrate now preserves resource identity through internal energy pools instead of collapsing harvest immediately into one fungible scalar. This is a structural prerequisite for resource partitioning, but metabolism and reproduction costs are still composition-agnostic, so the redesign preserves source identity without yet imposing source-specific physiological tradeoffs."
 }

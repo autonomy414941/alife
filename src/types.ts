@@ -190,6 +190,8 @@ export interface Agent {
   x: number;
   y: number;
   energy: number;
+  energyPrimary?: number;
+  energySecondary?: number;
   age: number;
   genome: Genome;
 }
@@ -198,6 +200,8 @@ export interface AgentSeed {
   x: number;
   y: number;
   energy: number;
+  energyPrimary?: number;
+  energySecondary?: number;
   genome: Genome;
   age?: number;
   lineage?: number;

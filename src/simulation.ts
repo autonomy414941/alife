@@ -1,4 +1,12 @@
 import {
+  addAgentEnergy,
+  getAgentEnergyPools,
+  initializeAgentEnergy,
+  scaleAgentEnergy,
+  spendAgentEnergy,
+  syncAgentEnergy
+} from './agent-energy';
+import {
   getCladeHabitatPreference as lookupCladeHabitatPreference,
   getSpeciesHabitatPreference as lookupSpeciesHabitatPreference,
   habitatMatchEfficiency as calculateHabitatMatchEfficiency,
@@ -1238,6 +1246,7 @@ export class LifeSimulation {
         age: 0,
         genome
       });
+      syncAgentEnergy(agents[agents.length - 1]);
     }
     return agents;
   }
@@ -1266,6 +1275,7 @@ export class LifeSimulation {
       age: seed.age ?? 0,
       genome
     };
+    initializeAgentEnergy(agent, seed);
     return agent;
   }
 
@@ -1275,8 +1285,8 @@ export class LifeSimulation {
     lineageOccupancy: LineageOccupancyGrid | undefined
   ): void {
     agent.age += 1;
-    agent.energy -= this.config.metabolismCostBase * agent.genome.metabolism;
-    agent.energy -= this.specializationMetabolicPenalty(agent);
+    spendAgentEnergy(agent, this.config.metabolismCostBase * agent.genome.metabolism);
+    spendAgentEnergy(agent, this.specializationMetabolicPenalty(agent));
     if (agent.energy <= 0 || agent.age > this.config.maxAge) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
       if (lineageOccupancy) {
@@ -1323,7 +1333,7 @@ export class LifeSimulation {
           delta: 1
         });
       }
-      agent.energy -= this.config.moveCost * agent.genome.metabolism;
+      spendAgentEnergy(agent, this.config.moveCost * agent.genome.metabolism);
     }
     if (agent.energy <= 0) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
@@ -1362,7 +1372,10 @@ export class LifeSimulation {
     });
     this.resources[agent.y][agent.x] -= harvest.primaryHarvest;
     this.resources2[agent.y][agent.x] -= harvest.secondaryHarvest;
-    agent.energy += harvest.totalHarvest;
+    addAgentEnergy(agent, {
+      primary: harvest.primaryHarvest,
+      secondary: harvest.secondaryHarvest
+    });
   }
 
   private pickDestination(
@@ -1702,7 +1715,7 @@ export class LifeSimulation {
         if (!affectedCellIndices.has(cellIndex)) {
           continue;
         }
-        agent.energy *= energyMultiplier;
+        scaleAgentEnergy(agent, energyMultiplier);
       }
     }
 
@@ -1760,14 +1773,17 @@ export class LifeSimulation {
     const spilloverFraction = clamp(this.config.decompositionSpilloverFraction, 0, 1);
     for (const agent of deadAgents) {
       const fertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, stepTick);
+      const pools = getAgentEnergyPools(agent);
       const recycled =
         (this.config.decompositionBase +
-          Math.max(0, agent.energy) * this.config.decompositionEnergyFraction) *
+          pools.total * this.config.decompositionEnergyFraction) *
         fertility;
       if (recycled <= 0) {
         continue;
       }
-      const { primaryShare, secondaryShare } = resolveResourceHarvestShares(agent.genome);
+      const fallbackShares = resolveResourceHarvestShares(agent.genome);
+      const primaryShare = pools.total <= 0 ? fallbackShares.primaryShare : pools.primary / pools.total;
+      const secondaryShare = pools.total <= 0 ? fallbackShares.secondaryShare : pools.secondary / pools.total;
       const resourceDeltas = new Map<number, number>();
       const resource2Deltas = new Map<number, number>();
       this.accumulateResourceDelta(

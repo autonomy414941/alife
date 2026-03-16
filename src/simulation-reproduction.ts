@@ -1,3 +1,4 @@
+import { spendAgentEnergy } from './agent-energy';
 import { disturbanceSettlementOpenUntilTickAt, resolveDisturbanceSettlementOpeningConfig } from './disturbance';
 import {
   LineageOccupancyGrid,
@@ -181,7 +182,7 @@ export function reproduceAgent({
 }: ReproduceAgentOptions): Agent {
   const currentStepTick = tickCount + 1;
   const childEnergy = parent.energy * config.offspringEnergyFraction;
-  parent.energy -= childEnergy;
+  const childPools = spendAgentEnergy(parent, childEnergy);
 
   const childGenome = mutateGenome(parent.genome);
   const diverged = genomeDistance(parent.genome, childGenome) >= config.speciationThreshold;
@@ -288,6 +289,8 @@ export function reproduceAgent({
     x: childPos.x,
     y: childPos.y,
     energy: childEnergy,
+    energyPrimary: childPools.primary,
+    energySecondary: childPools.secondary,
     age: 0,
     genome: childGenome
   };
