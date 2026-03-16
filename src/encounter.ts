@@ -57,6 +57,33 @@ function resolveDominantEncounterTransfer(
   );
 }
 
+export const pairwiseEncounterOperator: EncounterOperator = (agentsInCell, context) => {
+  if (agentsInCell.length < 2) {
+    return;
+  }
+
+  for (let i = 0; i < agentsInCell.length; i++) {
+    for (let j = i + 1; j < agentsInCell.length; j++) {
+      const a = agentsInCell[i];
+      const b = agentsInCell[j];
+
+      const [dominant, target] =
+        a.genome.aggression > b.genome.aggression ||
+        (a.genome.aggression === b.genome.aggression && a.energy >= b.energy)
+          ? [a, b]
+          : [b, a];
+
+      const stolen = resolveDominantEncounterTransfer(dominant, target, context);
+      if (stolen <= 0) {
+        continue;
+      }
+
+      target.energy -= stolen;
+      dominant.energy += stolen;
+    }
+  }
+};
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
