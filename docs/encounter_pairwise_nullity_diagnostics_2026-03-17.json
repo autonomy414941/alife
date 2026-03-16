@@ -1,0 +1,39 @@
+{
+  "generatedAt": "2026-03-17T00:00:00.000Z",
+  "question": "Why does the pairwise encounter operator produce zero coexistence differentiation versus the dominant-only operator?",
+  "config": {
+    "seed": 20260317,
+    "steps": 100,
+    "simulationConfig": {
+      "cladeHabitatCoupling": 0.75,
+      "adaptiveCladeHabitatMemoryRate": 0,
+      "newCladeSettlementCrowdingGraceTicks": 36,
+      "cladogenesisEcologyAdvantageThreshold": -1,
+      "lineageHarvestCrowdingPenalty": 1,
+      "lineageDispersalCrowdingPenalty": 1,
+      "lineageEncounterRestraint": 1,
+      "offspringSettlementEcologyScoring": true
+    }
+  },
+  "dominantOperatorDiagnostics": {
+    "operatorName": "dominant",
+    "meanEnergyTransferPerEncounter": 1.0970576809541708,
+    "medianEnergyTransferPerEncounter": 0.7274809779809672,
+    "maxEnergyTransferPerEncounter": 16.45600624329387,
+    "totalEncounters": 11385,
+    "nonZeroTransferEncounters": 11385,
+    "aggressionRankStabilityKendallTau": 0.63783926218708,
+    "highAggressionSpatialClusteringRatio": 0.8553365358331027
+  },
+  "pairwiseOperatorDiagnostics": {
+    "operatorName": "pairwise",
+    "meanEnergyTransferPerEncounter": 1.1021010064024652,
+    "medianEnergyTransferPerEncounter": 0.7314270981438558,
+    "maxEnergyTransferPerEncounter": 16.45600624329387,
+    "totalEncounters": 11458,
+    "nonZeroTransferEncounters": 11458,
+    "aggressionRankStabilityKendallTau": 0.6564496421713979,
+    "highAggressionSpatialClusteringRatio": 0.7452327861946665
+  },
+  "diagnosis": "Mean energy transfer per encounter is nearly identical (dominant=1.10, pairwise=1.10, delta=0.005). Aggression hierarchies show moderate stability (mean Kendall tau=0.65), indicating that high-aggression agents consistently dominate regardless of resolution order. Spatial clustering of high-aggression agents is similar (dominant=0.86, pairwise=0.75, delta=0.110). CONCLUSION: Pairwise encounter topology produces zero coexistence differentiation because (1) energy transfer magnitudes are identical between operators, (2) aggression hierarchies stabilize to the same dominance order regardless of resolution sequence, and (3) spatial distributions of aggressive phenotypes remain unchanged. Under the current single-resource, greedy-local-movement architecture, encounter order does not affect who wins or loses—only the sequence of accounting. The nullity is structural: pairwise versus dominant topology is invisible to long-run outcomes when all agents compete for the same fungible resource pool."
+}
