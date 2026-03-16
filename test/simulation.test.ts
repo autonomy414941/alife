@@ -2016,6 +2016,117 @@ describe('LifeSimulation', () => {
     expect(totalResources).toBeCloseTo(8, 10);
   });
 
+  it('keeps the second resource layer inert when its regeneration is zero', () => {
+    const baseline = new LifeSimulation({
+      seed: 84,
+      config: {
+        width: 4,
+        height: 4,
+        maxResource: 8,
+        resourceRegen: 0.4,
+        metabolismCostBase: 0.2,
+        moveCost: 0.1,
+        reproduceProbability: 0,
+        maxAge: 20
+      }
+    });
+    const zeroRegenSecondLayer = new LifeSimulation({
+      seed: 84,
+      config: {
+        width: 4,
+        height: 4,
+        maxResource: 8,
+        maxResource2: 8,
+        resourceRegen: 0.4,
+        resource2Regen: 0,
+        metabolismCostBase: 0.2,
+        moveCost: 0.1,
+        reproduceProbability: 0,
+        maxAge: 20
+      }
+    });
+
+    baseline.run(10);
+    zeroRegenSecondLayer.run(10);
+
+    expect(zeroRegenSecondLayer.snapshot()).toEqual(baseline.snapshot());
+  });
+
+  it('lets harvestEfficiency2 increase payoff from the second resource layer', () => {
+    const config = {
+      width: 1,
+      height: 1,
+      maxResource: 0,
+      maxResource2: 10,
+      resourceRegen: 0,
+      resource2Regen: 1,
+      metabolismCostBase: 0,
+      moveCost: 0,
+      harvestCap: 1,
+      reproduceProbability: 0,
+      maxAge: 100
+    };
+    const lowEfficiency = new LifeSimulation({
+      seed: 85,
+      config,
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 0.1,
+          genome: { metabolism: 1, harvest: 0.4, aggression: 0, harvestEfficiency2: 0.4 }
+        }
+      ]
+    });
+    const highEfficiency = new LifeSimulation({
+      seed: 85,
+      config,
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 0.1,
+          genome: { metabolism: 1, harvest: 0.4, aggression: 0, harvestEfficiency2: 2.8 }
+        }
+      ]
+    });
+
+    lowEfficiency.setResource2(0, 0, 4);
+    highEfficiency.setResource2(0, 0, 4);
+
+    lowEfficiency.step();
+    highEfficiency.step();
+
+    expect(highEfficiency.snapshot().agents[0]?.energy ?? 0).toBeGreaterThan(lowEfficiency.snapshot().agents[0]?.energy ?? 0);
+    expect(highEfficiency.getResource2(0, 0)).toBeLessThan(lowEfficiency.getResource2(0, 0));
+  });
+
+  it('applies disturbance loss to the second resource layer', () => {
+    const sim = new LifeSimulation({
+      seed: 86,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        maxResource2: 10,
+        resourceRegen: 0,
+        resource2Regen: 0,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        initialAgents: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        disturbanceInterval: 1,
+        disturbanceResourceLoss: 0.25
+      }
+    });
+    sim.setResource2(0, 0, 8);
+
+    sim.step();
+
+    expect(sim.getResource2(0, 0)).toBeCloseTo(6, 10);
+  });
+
   it('applies biome fertility to per-cell resource regeneration', () => {
     const sim = new LifeSimulation({
       seed: 21,

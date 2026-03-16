@@ -12,6 +12,7 @@ import {
   neighborhoodCrowding,
   sameLineageNeighborhoodCrowdingAt
 } from './settlement-spatial';
+import { combinedResourceAvailability, secondaryHarvestEfficiency } from './resource-harvest';
 import { Agent, Genome, SimulationConfig } from './types';
 
 interface ReproduceInSimulationOptions {
@@ -31,6 +32,7 @@ interface ReproduceInSimulationOptions {
   cladeHabitatPreference: Map<number, number>;
   cladeHistory: ReadonlyMap<number, { firstSeenTick: number }>;
   resources: number[][];
+  resources2: number[][];
   disturbanceSettlementOpenUntilTick: number[][];
   minGenome: Genome;
   maxGenome: Genome;
@@ -62,6 +64,7 @@ export function reproduceInSimulation({
   cladeHabitatPreference,
   cladeHistory,
   resources,
+  resources2,
   disturbanceSettlementOpenUntilTick,
   minGenome,
   maxGenome,
@@ -105,6 +108,7 @@ export function reproduceInSimulation({
         width,
         cladeHistory,
         resources,
+        resources2,
         speciesHabitatPreference,
         cladeHabitatPreference,
         agent,
@@ -155,6 +159,7 @@ export function resolveSimulationLocalEcologyScore({
   width,
   cladeHistory,
   resources,
+  resources2,
   speciesHabitatPreference,
   cladeHabitatPreference,
   agent,
@@ -176,6 +181,7 @@ export function resolveSimulationLocalEcologyScore({
   width: number;
   cladeHistory: ReadonlyMap<number, { firstSeenTick: number }>;
   resources: number[][];
+  resources2: number[][];
   speciesHabitatPreference: Map<number, number>;
   cladeHabitatPreference: Map<number, number>;
   agent: SettlementAgent;
@@ -203,7 +209,12 @@ export function resolveSimulationLocalEcologyScore({
     lineagePenalty,
     excludedPosition,
     jitter,
-    resourceAt: (cellX, cellY) => resources[wrapY(cellY)][wrapX(cellX)],
+    resourceAt: (cellX, cellY) =>
+      combinedResourceAvailability(
+        resources[wrapY(cellY)][wrapX(cellX)],
+        resources2[wrapY(cellY)][wrapX(cellX)],
+        agent.genome
+      ),
     habitatMatchEfficiencyAt: (nextAgent, cellX, cellY) =>
       calculateHabitatMatchEfficiency({
         agent: nextAgent,
@@ -270,11 +281,21 @@ function mutateGenome(
   maxGenome: Genome,
   randomFloat: () => number
 ): Genome {
-  return {
+  const mutated: Genome = {
     metabolism: mutateTrait(genome.metabolism, minGenome.metabolism, maxGenome.metabolism, config, randomFloat),
     harvest: mutateTrait(genome.harvest, minGenome.harvest, maxGenome.harvest, config, randomFloat),
     aggression: mutateTrait(genome.aggression, minGenome.aggression, maxGenome.aggression, config, randomFloat)
   };
+  if (usesSecondResourceLayer(config) || genome.harvestEfficiency2 !== undefined) {
+    mutated.harvestEfficiency2 = mutateTrait(
+      secondaryHarvestEfficiency(genome),
+      minGenome.harvestEfficiency2 ?? 0,
+      maxGenome.harvestEfficiency2 ?? maxGenome.harvest,
+      config,
+      randomFloat
+    );
+  }
+  return mutated;
 }
 
 function mutateTrait(
@@ -306,13 +327,21 @@ function normalizeTrait(value: number, min: number, max: number): number {
 }
 
 function copyGenome(genome: Genome): Genome {
-  return {
+  const copy: Genome = {
     metabolism: genome.metabolism,
     harvest: genome.harvest,
     aggression: genome.aggression
   };
+  if (genome.harvestEfficiency2 !== undefined) {
+    copy.harvestEfficiency2 = genome.harvestEfficiency2;
+  }
+  return copy;
 }
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function usesSecondResourceLayer(config: SimulationConfig): boolean {
+  return config.maxResource2 > 0 && config.resource2Regen > 0;
 }

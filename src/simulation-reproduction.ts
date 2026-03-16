@@ -19,6 +19,7 @@ import {
   usesOffspringSettlementContext,
   usesOffspringSettlementLineageOccupancy
 } from './settlement-cladogenesis';
+import { secondaryHarvestEfficiency } from './resource-harvest';
 import { Agent, Genome, SimulationConfig } from './types';
 
 type SpeciesData = Pick<Agent, 'species' | 'genome' | 'lineage' | 'x' | 'y'>;
@@ -320,6 +321,7 @@ function genomeDistance(a: Genome, b: Genome): number {
   return (
     Math.abs(a.metabolism - b.metabolism) +
     Math.abs(a.harvest - b.harvest) +
+    Math.abs(secondaryHarvestEfficiency(a) - secondaryHarvestEfficiency(b)) +
     Math.abs(a.aggression - b.aggression)
   );
 }

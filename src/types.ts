@@ -2,6 +2,7 @@ export interface Genome {
   metabolism: number;
   harvest: number;
   aggression: number;
+  harvestEfficiency2?: number;
 }
 
 export interface TaxonTimelinePoint {
@@ -207,7 +208,9 @@ export interface SimulationConfig {
   width: number;
   height: number;
   maxResource: number;
+  maxResource2: number;
   resourceRegen: number;
+  resource2Regen: number;
   seasonalCycleLength: number;
   seasonalRegenAmplitude: number;
   seasonalFertilityContrastAmplitude: number;

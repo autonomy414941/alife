@@ -256,7 +256,8 @@ export function foundClade({
   cladeFounderGenome.set(lineage, {
     metabolism: founderGenome.metabolism,
     harvest: founderGenome.harvest,
-    aggression: founderGenome.aggression
+    aggression: founderGenome.aggression,
+    harvestEfficiency2: founderGenome.harvestEfficiency2
   });
   setFoundCladeHabitatPreference({
     cladeHabitatPreference,
