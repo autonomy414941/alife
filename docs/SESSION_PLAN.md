@@ -1,90 +1,93 @@
-# Session Plan — 2026-03-16
+# Session Plan — 2026-03-17
 
 ## Compact Context
-- `3eb3007` extracted encounter resolution behind `EncounterOperator` interface; `dominantEncounterOperator` preserves existing behavior while opening a seam for alternative encounter models.
-- `caf1b53` refreshed the canonical founder-grace / ecology-gate horizon artifact with decomposition and non-species-conditioned null; absolute active-clade deltas remain negative under species-conditioned matching.
-- The simulator now has one working mechanism seam (encounter operators) and the plumbing to track both null families.
-- `src/simulation.ts` still locks physiology to one resource pool, inheritance to clonal mutation, and movement to greedy one-step local scoring.
+- `886e509` validated pairwise encounter operator: structurally sound, but zero differentiation versus dominant-only (identical active-clade deltas, persistence, abundance metrics at all tested thresholds).
+- `24820b3` measured history memory scaling: linear up to 5000 steps (~30MB heap), ruling out memory as immediate blocker but revealing 100-step study horizons versus 4000-step canonical artifacts.
+- The simulator now has one tested mechanism seam (encounter operators: dominant and pairwise) with evaluation infrastructure (relabel nulls, decomposition, abundance metrics).
+- `src/simulation.ts` still locks physiology to one resource pool; trophic specialization collapses to a single axis under one fungible resource currency.
 - Package manager is npm (`package-lock.json`).
+- Recent coexistence literature (Ecology Letters 2025, Theoretical Population Biology 2025) emphasizes emergent gains from mechanism combinations extending persistence tenfold versus singular mechanisms.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Planner governance | 5 | 0e1d76f |
-| Mechanism-surface extraction | 1 | 3eb3007 |
-| Evaluation-surface honesty | 1 | caf1b53 |
-| Metric instrumentation | 1 | 662767d |
-| Runtime modularization | 1 | 77de075 |
-| Study-surface refactors | 1 | 52c2de0 |
-| Alternative mechanism implementations | 0 | n/a |
-| Scalability measurement | 0 | n/a |
+| Structural diagnosis / Critic | 1 | a949e26 |
+| Code modularization | 1 | b68d34d |
+| Scalability measurement | 1 | 24820b3 |
+| Mechanism validation | 1 | 886e509 |
+| Alternative mechanism implementations | 1 | 242d31b |
+| Planner governance | 5 | 973a230, 3eb3007, caf1b53, 0e1d76f, d26c26f |
 
 Dominant axis: Planner governance (5/10)
-Underexplored axes: alternative mechanism implementations, scalability measurement
+Underexplored axes: resource-layer expansion, mechanism-composition experiments, long-horizon comparative studies
 
 ## Project State
-- The encounter operator seam landed in the last session (`3eb3007`), creating the first pluggable mechanism slot.
-- The project has evaluation infrastructure (relabel nulls, decomposition, abundance metrics) but still no alternative mechanism implementation behind the new seam.
-- Recent sessions focused on planning and evaluation plumbing rather than building and testing a second encounter operator or other mechanism family.
+- The encounter operator seam is stable and tested with two implementations, but pairwise topology produces no coexistence differentiation when tested in isolation.
+- The Critic flagged Resource Topology Ceiling: one fungible resource pool prevents resource partitioning, specialist-generalist tradeoffs, or multi-nutrient co-limitation.
+- Recent sessions built infrastructure (encounter seam, memory scaling diagnosis) but tested new mechanisms in isolation on 100-step micro-horizons instead of combining mechanisms or matching the canonical 4000-step horizon.
 
 ## External Context
-- [Functional coexistence theory: Identifying mechanisms linking biodiversity and ecosystem function](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecm.70033) (Ecological Monographs, Jan 2025): Integrates mechanistic understanding of species interactions with ecosystem function, arguing for explicit linkage between coexistence mechanisms and functional outcomes.
-- [Species coexistence as an emergent effect of interacting mechanisms](https://www.sciencedirect.com/science/article/pii/S0040580924001084) (Theoretical Population Biology, 2025): Mechanism combinations extend coexistence times more than tenfold versus singular mechanisms, emphasizing interaction over individual tuning.
-- [Coexistence in diverse communities with higher-order interactions](https://www.pnas.org/doi/10.1073/pnas.2205063119) (PNAS, 2022): Three-or-more species interactions modify theoretical coexistence understanding beyond pairwise frameworks.
+- [Multispecies Coexistence Emerges From Pairwise Exclusions in Communities With Competitive Hierarchy](https://onlinelibrary.wiley.com/doi/full/10.1111/ele.70206) (Ecology Letters, 2025): Emergent coexistence—where multispecies persistence occurs without pairwise coexistence—can arise without intransitivity, with competitive hierarchy and simple trade-offs producing emergent multispecies persistence.
+- [Species coexistence as an emergent effect of interacting mechanisms](https://www.sciencedirect.com/science/article/pii/S0040580924001084) (Theoretical Population Biology, 2025): Significant emergent effects occur for mechanism combinations, with coexistence times extended more than tenfold compared to individual mechanisms; studies of individual coexistence mechanisms might be insufficient and misleading for quantifying their overall impact on biodiversity.
 
 ## Research Gaps
-- The encounter operator seam exists but has no second implementation to test whether the abstraction boundary is stable or whether it forces premature design commitments.
-- Does a pairwise encounter operator (matching each pair rather than dominant-takes-all) reveal structural API deficiencies or remain compatible with the current `EncounterOperatorContext`?
+- Does pairwise encounter topology produce differentiation when combined with dual-resource partitioning, or does interaction diversity require substrate diversity to express coexistence gains?
+- Does the pairwise operator differentiate at the canonical 4000-step horizon where slow coexistence regimes could emerge, or is the 100-step validation horizon insufficient?
 
 ## Current Anti-Evidence
-- No tested configuration beats its species-conditioned relabel null in absolute active clades; the refreshed canonical artifact shows founder grace at `-23.75` and ecology gate at `-20.25` versus null at threshold `1.0`.
-- The encounter operator seam is the only mechanism slot; resource allocation, inheritance, and settlement remain hard-coded, so the system cannot yet test whether mechanism combinations are the missing leverage or whether encounters alone are sufficient.
+- Pairwise encounter operator produced zero delta versus dominant-only at all tested thresholds (active clades, persistence, abundance-weighted activity all identical).
+- Under one fungible resource pool, trophic specialization collapses to a single axis, so encounter topology variation changes interaction order but not resource competition structure.
+- No tested configuration beats its species-conditioned relabel null in absolute active clades; the canonical artifact shows founder grace at `-25.75` and ecology gate at `-20.25` versus null at threshold `1.0`.
 
 ## Bet Queue
-Selected from backlog:
 
-### Bet 1: [feat] Implement Pairwise Encounter Operator
-Build a second encounter operator that resolves conflicts pairwise (each pair interacts once per cell) instead of collapsing to one dominant. This is the cheapest way to test whether the `EncounterOperator` seam is stable and whether a different interaction topology changes coexistence structure without redesigning the whole simulator.
-
-#### Success Evidence
-- A new `pairwiseEncounterOperator` exports from `src/encounter.ts` alongside `dominantEncounterOperator`, consumes the same `EncounterOperatorContext`, and is substitutable at runtime with deterministic test coverage.
-
-#### Stop Conditions
-- Stop after one working pairwise operator passes tests and integrates with the existing encounter call site.
-- Stop if the work reveals that the current `EncounterOperatorContext` is insufficient and forces a breaking seam redesign before the second operator can function.
-
-### Bet 2: [validate] Compare Dominant Versus Pairwise On Canonical Stack
-Run the canonical founder-grace / ecology-gate configuration with both encounter operators and export comparative active-clade, persistence, and abundance-weighted deltas. The hypothesis is that pairwise encounters reduce dominance exclusion and improve absolute active-clade outcomes versus null, but this bet measures rather than assumes.
+### Bet 1: [expand] Add Second Resource Layer With Independent Harvest Efficiency
+Add a second resource scalar per cell with independent regeneration and harvest-efficiency genome axis, enabling agents to specialize on different resource types. This is the cheapest substrate-heterogeneity expansion to test whether resource partitioning unlocks coexistence gains that encounter topology alone cannot produce.
 
 #### Success Evidence
-- One comparative study artifact exports both encounter operators on the same stack, surfaces absolute and delta active-clade outcomes, and includes deterministic test coverage for the comparison harness.
+- Each cell contains `resource` and `resource2` scalars with independent regeneration rates.
+- Agents have a fourth genome axis (`harvestEfficiency2` or `resourcePreference`) affecting yield from the second resource.
+- Metabolism consumes a weighted sum of both resources, creating specialist-generalist tradeoff potential.
+- All existing tests pass without behavior change when the second resource is disabled or set to zero regeneration.
 
 #### Stop Conditions
-- Stop after one artifact comparing both operators on the canonical stack.
-- Stop if results show no difference, suggesting the encounter topology change does not affect coexistence under the current one-resource, clonal architecture.
+- Stop after dual-resource physiology is wired and tested, even if no study artifact is produced yet.
+- Stop if the work starts redesigning the entire harvest/metabolism system instead of adding one parallel resource channel.
 
-### Bet 3: [benchmark] Measure History Memory Scaling At Extended Horizons
-Quantify how `TaxonHistory.timeline` and per-tick `localityFrames` memory and runtime cost scale with horizon length and taxon count. The backlog has flagged this as a blocker for longer-run regimes, but no session has measured actual cost curves to scope streaming-history work.
+### Bet 2: [validate] Run 2×2 Factorial Pilot: Encounter Topology × Resource Layers At Canonical Horizon
+Run a small factorial comparison (dominant vs. pairwise encounter × single-resource vs. dual-resource) at the canonical 4000-step horizon with matched null, testing whether mechanism combinations produce synergistic coexistence gains.
 
 #### Success Evidence
-- One benchmark script or test exports memory footprint and wall-time measurements across horizon lengths (500, 1000, 2000, 5000 ticks) and reports whether cost is linear, quadratic, or bounded by active taxon count.
+- One artifact comparing four conditions (dominant+single, dominant+dual, pairwise+single, pairwise+dual) with active-clade deltas, persistence, and abundance-weighted metrics at the canonical 4000-step horizon.
+- Includes species-conditioned relabel null for each condition.
 
 #### Stop Conditions
-- Stop after one measurement artifact with clear scaling characterization.
-- Stop if memory cost is negligible even at 5000 ticks, which would invalidate the streaming-history priority.
+- Stop after one 2×2 factorial artifact, even if results show no interaction effect.
+- Stop if dual-resource is not yet implemented; defer this bet to a future session.
 
-### Bet 4: [split] Continue Extracting Reproduction Loop From simulation.ts
-`src/simulation.ts` is still 1989 lines; reproduction logic has been partially extracted to `simulation-reproduction.ts`, but settlement, offspring placement, and cladogenesis checks remain in the main file. Continue the split to shrink the main simulation module and clarify the reproduction versus settlement boundary.
+### Bet 3: [investigate] Diagnose Pairwise Nullity: Dominance Hierarchy Stability Versus Energy Transfer Magnitude
+The pairwise operator produced zero differentiation despite structural differences. Run targeted diagnostics to measure whether: (1) aggression hierarchies remain stable across resolution orders, (2) per-pair energy transfer magnitudes are too small to affect survival, or (3) spatial/demographic homogeneity prevents interaction diversity.
 
 #### Success Evidence
-- `src/simulation.ts` shrinks by at least 100 lines, settlement / offspring logic moves behind a focused module boundary, and all existing reproduction tests pass without behavior change.
+- One diagnostic artifact measuring aggression-rank stability, mean per-encounter transfer magnitude, and spatial clustering of high-aggression agents for both dominant and pairwise operators.
+- Clear statement of which mechanism explains the null result.
 
 #### Stop Conditions
-- Stop after one extraction pass that reduces `simulation.ts` size and passes tests.
-- Stop if the work starts redesigning reproduction logic instead of relocating existing code.
+- Stop after one diagnostic artifact with clear causal identification.
+- Stop if the work starts redesigning encounter resolution instead of measuring existing behavior.
+
+### Bet 4: [validate] Re-run Pairwise Comparison At Canonical 4000-Step Horizon With Matched Config
+The encounter operator comparative study ran at 100 steps with short burn-in, far below the canonical 4000-step horizon. Re-run the comparison at the canonical horizon with matched configuration to test whether differentiation emerges in slow-forming coexistence regimes.
+
+#### Success Evidence
+- One artifact comparing dominant versus pairwise at 4000 steps with the canonical founder-grace configuration stack, including species-conditioned relabel null.
+
+#### Stop Conditions
+- Stop after one long-horizon comparative artifact.
+- Stop if the work starts tuning additional parameters instead of matching the canonical configuration exactly.
 
 ## Assumptions / Unknowns
-- Assumption: pairwise encounters are the simplest second operator to implement and will stress-test the `EncounterOperator` seam more cheaply than building a multi-resource or recombination layer.
-- Unknown: whether pairwise encounter resolution improves absolute active-clade outcomes or whether coexistence is still capped by single-resource and clonal constraints regardless of interaction topology.
-- Assumption: history memory is a genuine scaling bottleneck; this bet measures to confirm or refute before investing in streaming infrastructure.
-- Observation: the dominant exploration axis is planner governance (5/10 commits), while alternative mechanism implementations remain at zero despite the encounter seam landing last session.
+- Assumption: dual-resource partitioning is simpler to implement than spatial refugia, behavioral complexity, or recombination, and provides the cleanest test of whether substrate heterogeneity unlocks interaction-topology gains.
+- Unknown: whether pairwise topology differentiates at the canonical 4000-step horizon or whether the 100-step validation was long enough to capture steady-state outcomes.
+- Unknown: whether the pairwise nullity is due to stable dominance hierarchies, negligible transfer magnitudes, or homogeneous spatial distribution.
+- Observation: the dominant exploration axis remains planner governance (5/10 commits), while mechanism-composition experiments and long-horizon comparative studies remain at zero despite the literature emphasizing emergent gains from mechanism combinations.
