@@ -1,0 +1,688 @@
+{
+  "generatedAt": "2026-03-16T00:00:00.000Z",
+  "question": "Does the dual-resource substrate preserve resource-type identity inside agents, or do primary and secondary harvest collapse into one fungible energy pool?",
+  "config": {
+    "matchedHarvestCollapse": {
+      "initialEnergy": 10,
+      "baseConfig": {
+        "width": 1,
+        "height": 1,
+        "maxResource": 20,
+        "maxResource2": 20,
+        "resourceRegen": 0,
+        "resource2Regen": 0,
+        "habitatPreferenceStrength": 0,
+        "trophicForagingPenalty": 0,
+        "defenseForagingPenalty": 0,
+        "metabolismCostBase": 0,
+        "moveCost": 0,
+        "harvestCap": 10,
+        "reproduceThreshold": 100,
+        "reproduceProbability": 0,
+        "offspringEnergyFraction": 0.5,
+        "mutationAmount": 0,
+        "maxAge": 10
+      },
+      "generalistGenome": {
+        "metabolism": 1,
+        "harvest": 1,
+        "aggression": 0.2,
+        "harvestEfficiency2": 1
+      },
+      "primaryOnlyResources": {
+        "primary": 20,
+        "secondary": 0
+      },
+      "secondaryOnlyResources": {
+        "primary": 0,
+        "secondary": 20
+      }
+    },
+    "downstreamMetabolismEquivalence": {
+      "initialEnergy": 15,
+      "config": {
+        "width": 1,
+        "height": 1,
+        "maxResource": 20,
+        "maxResource2": 20,
+        "resourceRegen": 0,
+        "resource2Regen": 0,
+        "habitatPreferenceStrength": 0,
+        "trophicForagingPenalty": 0,
+        "defenseForagingPenalty": 0,
+        "metabolismCostBase": 0.75,
+        "moveCost": 0,
+        "harvestCap": 0,
+        "reproduceThreshold": 100,
+        "reproduceProbability": 0,
+        "offspringEnergyFraction": 0.5,
+        "mutationAmount": 0,
+        "specializationMetabolicCost": 0,
+        "maxAge": 10
+      },
+      "generalistGenome": {
+        "metabolism": 1,
+        "harvest": 1,
+        "aggression": 0.2,
+        "harvestEfficiency2": 1
+      }
+    },
+    "downstreamReproductionEquivalence": {
+      "initialEnergy": 15,
+      "config": {
+        "width": 1,
+        "height": 1,
+        "maxResource": 20,
+        "maxResource2": 20,
+        "resourceRegen": 0,
+        "resource2Regen": 0,
+        "habitatPreferenceStrength": 0,
+        "trophicForagingPenalty": 0,
+        "defenseForagingPenalty": 0,
+        "metabolismCostBase": 0,
+        "moveCost": 0,
+        "harvestCap": 0,
+        "reproduceThreshold": 12,
+        "reproduceProbability": 1,
+        "offspringEnergyFraction": 0.5,
+        "mutationAmount": 0,
+        "speciationThreshold": 10,
+        "maxAge": 10
+      },
+      "generalistGenome": {
+        "metabolism": 1,
+        "harvest": 1,
+        "aggression": 0.2,
+        "harvestEfficiency2": 1
+      }
+    },
+    "specialistVsGeneralist": {
+      "sharedEnvironment": {
+        "primaryAvailable": 20,
+        "secondaryAvailable": 20,
+        "baseCapacity": 4
+      },
+      "matchedEnergyMetabolismConfig": {
+        "width": 1,
+        "height": 1,
+        "maxResource": 20,
+        "maxResource2": 20,
+        "resourceRegen": 0,
+        "resource2Regen": 0,
+        "habitatPreferenceStrength": 0,
+        "trophicForagingPenalty": 0,
+        "defenseForagingPenalty": 0,
+        "metabolismCostBase": 0.75,
+        "moveCost": 0,
+        "harvestCap": 0,
+        "reproduceThreshold": 100,
+        "reproduceProbability": 0,
+        "offspringEnergyFraction": 0.5,
+        "mutationAmount": 0,
+        "specializationMetabolicCost": 0,
+        "maxAge": 10
+      },
+      "matchedEnergyReproductionConfig": {
+        "width": 1,
+        "height": 1,
+        "maxResource": 20,
+        "maxResource2": 20,
+        "resourceRegen": 0,
+        "resource2Regen": 0,
+        "habitatPreferenceStrength": 0,
+        "trophicForagingPenalty": 0,
+        "defenseForagingPenalty": 0,
+        "metabolismCostBase": 0,
+        "moveCost": 0,
+        "harvestCap": 0,
+        "reproduceThreshold": 12,
+        "reproduceProbability": 1,
+        "offspringEnergyFraction": 0.5,
+        "mutationAmount": 0,
+        "speciationThreshold": 10,
+        "maxAge": 10
+      },
+      "initialEnergy": 12,
+      "specialistGenome": {
+        "metabolism": 1,
+        "harvest": 0.5,
+        "aggression": 0.2,
+        "harvestEfficiency2": 1.5
+      },
+      "generalistGenome": {
+        "metabolism": 1,
+        "harvest": 1,
+        "aggression": 0.2,
+        "harvestEfficiency2": 1
+      }
+    }
+  },
+  "structuralEvidence": {
+    "agentStateKeys": [
+      "id",
+      "lineage",
+      "species",
+      "x",
+      "y",
+      "energy",
+      "age",
+      "genome"
+    ],
+    "agentEnergyLikeKeys": [
+      "energy"
+    ],
+    "distinctInternalPoolKeys": [],
+    "dualHarvestResultKeys": [
+      "primaryHarvest",
+      "secondaryHarvest",
+      "totalHarvest"
+    ],
+    "harvestAddsOnlyTotalHarvestToAgentEnergy": true,
+    "metabolismConsumesOnlyScalarEnergy": true,
+    "reproductionConsumesOnlyScalarEnergy": true,
+    "retainsDistinctInternalEnergyPools": false,
+    "supportsSourceSpecificMetabolicCosts": false,
+    "supportsSourceSpecificReproductionCosts": false
+  },
+  "matchedHarvestCollapse": {
+    "primaryOnly": {
+      "config": {
+        "width": 1,
+        "height": 1,
+        "maxResource": 20,
+        "maxResource2": 20,
+        "resourceRegen": 0,
+        "resource2Regen": 0,
+        "habitatPreferenceStrength": 0,
+        "trophicForagingPenalty": 0,
+        "defenseForagingPenalty": 0,
+        "metabolismCostBase": 0,
+        "moveCost": 0,
+        "harvestCap": 10,
+        "reproduceThreshold": 100,
+        "reproduceProbability": 0,
+        "offspringEnergyFraction": 0.5,
+        "mutationAmount": 0,
+        "maxAge": 10
+      },
+      "initialEnergy": 10,
+      "initialPrimaryResource": 20,
+      "initialSecondaryResource": 0,
+      "genome": {
+        "metabolism": 1,
+        "harvest": 1,
+        "aggression": 0.2,
+        "harvestEfficiency2": 1
+      },
+      "harvestedPrimary": 5,
+      "harvestedSecondary": 0,
+      "finalAgentState": {
+        "lineage": 1,
+        "species": 1,
+        "x": 0,
+        "y": 0,
+        "energy": 15,
+        "age": 1
+      },
+      "births": 0,
+      "population": 1,
+      "offspringEnergies": []
+    },
+    "secondaryOnly": {
+      "config": {
+        "width": 1,
+        "height": 1,
+        "maxResource": 20,
+        "maxResource2": 20,
+        "resourceRegen": 0,
+        "resource2Regen": 0,
+        "habitatPreferenceStrength": 0,
+        "trophicForagingPenalty": 0,
+        "defenseForagingPenalty": 0,
+        "metabolismCostBase": 0,
+        "moveCost": 0,
+        "harvestCap": 10,
+        "reproduceThreshold": 100,
+        "reproduceProbability": 0,
+        "offspringEnergyFraction": 0.5,
+        "mutationAmount": 0,
+        "maxAge": 10
+      },
+      "initialEnergy": 10,
+      "initialPrimaryResource": 0,
+      "initialSecondaryResource": 20,
+      "genome": {
+        "metabolism": 1,
+        "harvest": 1,
+        "aggression": 0.2,
+        "harvestEfficiency2": 1
+      },
+      "harvestedPrimary": 0,
+      "harvestedSecondary": 5,
+      "finalAgentState": {
+        "lineage": 1,
+        "species": 1,
+        "x": 0,
+        "y": 0,
+        "energy": 15,
+        "age": 1
+      },
+      "births": 0,
+      "population": 1,
+      "offspringEnergies": []
+    },
+    "identicalPostHarvestAgentState": true,
+    "postHarvestEnergyDelta": 0
+  },
+  "downstreamCostEquivalence": {
+    "metabolismAfterMatchedHarvest": {
+      "priorPrimaryDerived": {
+        "config": {
+          "width": 1,
+          "height": 1,
+          "maxResource": 20,
+          "maxResource2": 20,
+          "resourceRegen": 0,
+          "resource2Regen": 0,
+          "habitatPreferenceStrength": 0,
+          "trophicForagingPenalty": 0,
+          "defenseForagingPenalty": 0,
+          "metabolismCostBase": 0.75,
+          "moveCost": 0,
+          "harvestCap": 0,
+          "reproduceThreshold": 100,
+          "reproduceProbability": 0,
+          "offspringEnergyFraction": 0.5,
+          "mutationAmount": 0,
+          "specializationMetabolicCost": 0,
+          "maxAge": 10
+        },
+        "initialEnergy": 15,
+        "initialPrimaryResource": 0,
+        "initialSecondaryResource": 0,
+        "genome": {
+          "metabolism": 1,
+          "harvest": 1,
+          "aggression": 0.2,
+          "harvestEfficiency2": 1
+        },
+        "harvestedPrimary": 0,
+        "harvestedSecondary": 0,
+        "finalAgentState": {
+          "lineage": 1,
+          "species": 1,
+          "x": 0,
+          "y": 0,
+          "energy": 14.25,
+          "age": 1
+        },
+        "births": 0,
+        "population": 1,
+        "offspringEnergies": []
+      },
+      "priorSecondaryDerived": {
+        "config": {
+          "width": 1,
+          "height": 1,
+          "maxResource": 20,
+          "maxResource2": 20,
+          "resourceRegen": 0,
+          "resource2Regen": 0,
+          "habitatPreferenceStrength": 0,
+          "trophicForagingPenalty": 0,
+          "defenseForagingPenalty": 0,
+          "metabolismCostBase": 0.75,
+          "moveCost": 0,
+          "harvestCap": 0,
+          "reproduceThreshold": 100,
+          "reproduceProbability": 0,
+          "offspringEnergyFraction": 0.5,
+          "mutationAmount": 0,
+          "specializationMetabolicCost": 0,
+          "maxAge": 10
+        },
+        "initialEnergy": 15,
+        "initialPrimaryResource": 0,
+        "initialSecondaryResource": 0,
+        "genome": {
+          "metabolism": 1,
+          "harvest": 1,
+          "aggression": 0.2,
+          "harvestEfficiency2": 1
+        },
+        "harvestedPrimary": 0,
+        "harvestedSecondary": 0,
+        "finalAgentState": {
+          "lineage": 1,
+          "species": 1,
+          "x": 0,
+          "y": 0,
+          "energy": 14.25,
+          "age": 1
+        },
+        "births": 0,
+        "population": 1,
+        "offspringEnergies": []
+      },
+      "identicalEnergyLoss": true,
+      "energyLossDelta": 0
+    },
+    "reproductionAfterMatchedHarvest": {
+      "priorPrimaryDerived": {
+        "config": {
+          "width": 1,
+          "height": 1,
+          "maxResource": 20,
+          "maxResource2": 20,
+          "resourceRegen": 0,
+          "resource2Regen": 0,
+          "habitatPreferenceStrength": 0,
+          "trophicForagingPenalty": 0,
+          "defenseForagingPenalty": 0,
+          "metabolismCostBase": 0,
+          "moveCost": 0,
+          "harvestCap": 0,
+          "reproduceThreshold": 12,
+          "reproduceProbability": 1,
+          "offspringEnergyFraction": 0.5,
+          "mutationAmount": 0,
+          "speciationThreshold": 10,
+          "maxAge": 10
+        },
+        "initialEnergy": 15,
+        "initialPrimaryResource": 0,
+        "initialSecondaryResource": 0,
+        "genome": {
+          "metabolism": 1,
+          "harvest": 1,
+          "aggression": 0.2,
+          "harvestEfficiency2": 1
+        },
+        "harvestedPrimary": 0,
+        "harvestedSecondary": 0,
+        "finalAgentState": {
+          "lineage": 1,
+          "species": 1,
+          "x": 0,
+          "y": 0,
+          "energy": 7.5,
+          "age": 1
+        },
+        "births": 1,
+        "population": 2,
+        "offspringEnergies": [
+          7.5
+        ]
+      },
+      "priorSecondaryDerived": {
+        "config": {
+          "width": 1,
+          "height": 1,
+          "maxResource": 20,
+          "maxResource2": 20,
+          "resourceRegen": 0,
+          "resource2Regen": 0,
+          "habitatPreferenceStrength": 0,
+          "trophicForagingPenalty": 0,
+          "defenseForagingPenalty": 0,
+          "metabolismCostBase": 0,
+          "moveCost": 0,
+          "harvestCap": 0,
+          "reproduceThreshold": 12,
+          "reproduceProbability": 1,
+          "offspringEnergyFraction": 0.5,
+          "mutationAmount": 0,
+          "speciationThreshold": 10,
+          "maxAge": 10
+        },
+        "initialEnergy": 15,
+        "initialPrimaryResource": 0,
+        "initialSecondaryResource": 0,
+        "genome": {
+          "metabolism": 1,
+          "harvest": 1,
+          "aggression": 0.2,
+          "harvestEfficiency2": 1
+        },
+        "harvestedPrimary": 0,
+        "harvestedSecondary": 0,
+        "finalAgentState": {
+          "lineage": 1,
+          "species": 1,
+          "x": 0,
+          "y": 0,
+          "energy": 7.5,
+          "age": 1
+        },
+        "births": 1,
+        "population": 2,
+        "offspringEnergies": [
+          7.5
+        ]
+      },
+      "identicalOutcome": true,
+      "parentEnergyDelta": 0,
+      "childEnergyDelta": 0
+    }
+  },
+  "specialistVsGeneralist": {
+    "sharedEnvironmentHarvest": {
+      "specialist": {
+        "genome": {
+          "metabolism": 1,
+          "harvest": 0.5,
+          "aggression": 0.2,
+          "harvestEfficiency2": 1.5
+        },
+        "primaryHarvest": 0.5,
+        "secondaryHarvest": 4.5,
+        "totalHarvest": 5,
+        "secondaryHarvestFraction": 0.9
+      },
+      "generalist": {
+        "genome": {
+          "metabolism": 1,
+          "harvest": 1,
+          "aggression": 0.2,
+          "harvestEfficiency2": 1
+        },
+        "primaryHarvest": 2,
+        "secondaryHarvest": 2,
+        "totalHarvest": 4,
+        "secondaryHarvestFraction": 0.5
+      },
+      "harvestDifferentiationOnlyAtIntake": true
+    },
+    "matchedEnergyMetabolism": {
+      "specialist": {
+        "config": {
+          "width": 1,
+          "height": 1,
+          "maxResource": 20,
+          "maxResource2": 20,
+          "resourceRegen": 0,
+          "resource2Regen": 0,
+          "habitatPreferenceStrength": 0,
+          "trophicForagingPenalty": 0,
+          "defenseForagingPenalty": 0,
+          "metabolismCostBase": 0.75,
+          "moveCost": 0,
+          "harvestCap": 0,
+          "reproduceThreshold": 100,
+          "reproduceProbability": 0,
+          "offspringEnergyFraction": 0.5,
+          "mutationAmount": 0,
+          "specializationMetabolicCost": 0,
+          "maxAge": 10
+        },
+        "initialEnergy": 12,
+        "initialPrimaryResource": 0,
+        "initialSecondaryResource": 0,
+        "genome": {
+          "metabolism": 1,
+          "harvest": 0.5,
+          "aggression": 0.2,
+          "harvestEfficiency2": 1.5
+        },
+        "harvestedPrimary": 0,
+        "harvestedSecondary": 0,
+        "finalAgentState": {
+          "lineage": 1,
+          "species": 1,
+          "x": 0,
+          "y": 0,
+          "energy": 11.25,
+          "age": 1
+        },
+        "births": 0,
+        "population": 1,
+        "offspringEnergies": []
+      },
+      "generalist": {
+        "config": {
+          "width": 1,
+          "height": 1,
+          "maxResource": 20,
+          "maxResource2": 20,
+          "resourceRegen": 0,
+          "resource2Regen": 0,
+          "habitatPreferenceStrength": 0,
+          "trophicForagingPenalty": 0,
+          "defenseForagingPenalty": 0,
+          "metabolismCostBase": 0.75,
+          "moveCost": 0,
+          "harvestCap": 0,
+          "reproduceThreshold": 100,
+          "reproduceProbability": 0,
+          "offspringEnergyFraction": 0.5,
+          "mutationAmount": 0,
+          "specializationMetabolicCost": 0,
+          "maxAge": 10
+        },
+        "initialEnergy": 12,
+        "initialPrimaryResource": 0,
+        "initialSecondaryResource": 0,
+        "genome": {
+          "metabolism": 1,
+          "harvest": 1,
+          "aggression": 0.2,
+          "harvestEfficiency2": 1
+        },
+        "harvestedPrimary": 0,
+        "harvestedSecondary": 0,
+        "finalAgentState": {
+          "lineage": 1,
+          "species": 1,
+          "x": 0,
+          "y": 0,
+          "energy": 11.25,
+          "age": 1
+        },
+        "births": 0,
+        "population": 1,
+        "offspringEnergies": []
+      },
+      "identicalEnergyLoss": true,
+      "energyLossDelta": 0
+    },
+    "matchedEnergyReproduction": {
+      "specialist": {
+        "config": {
+          "width": 1,
+          "height": 1,
+          "maxResource": 20,
+          "maxResource2": 20,
+          "resourceRegen": 0,
+          "resource2Regen": 0,
+          "habitatPreferenceStrength": 0,
+          "trophicForagingPenalty": 0,
+          "defenseForagingPenalty": 0,
+          "metabolismCostBase": 0,
+          "moveCost": 0,
+          "harvestCap": 0,
+          "reproduceThreshold": 12,
+          "reproduceProbability": 1,
+          "offspringEnergyFraction": 0.5,
+          "mutationAmount": 0,
+          "speciationThreshold": 10,
+          "maxAge": 10
+        },
+        "initialEnergy": 12,
+        "initialPrimaryResource": 0,
+        "initialSecondaryResource": 0,
+        "genome": {
+          "metabolism": 1,
+          "harvest": 0.5,
+          "aggression": 0.2,
+          "harvestEfficiency2": 1.5
+        },
+        "harvestedPrimary": 0,
+        "harvestedSecondary": 0,
+        "finalAgentState": {
+          "lineage": 1,
+          "species": 1,
+          "x": 0,
+          "y": 0,
+          "energy": 6,
+          "age": 1
+        },
+        "births": 1,
+        "population": 2,
+        "offspringEnergies": [
+          6
+        ]
+      },
+      "generalist": {
+        "config": {
+          "width": 1,
+          "height": 1,
+          "maxResource": 20,
+          "maxResource2": 20,
+          "resourceRegen": 0,
+          "resource2Regen": 0,
+          "habitatPreferenceStrength": 0,
+          "trophicForagingPenalty": 0,
+          "defenseForagingPenalty": 0,
+          "metabolismCostBase": 0,
+          "moveCost": 0,
+          "harvestCap": 0,
+          "reproduceThreshold": 12,
+          "reproduceProbability": 1,
+          "offspringEnergyFraction": 0.5,
+          "mutationAmount": 0,
+          "speciationThreshold": 10,
+          "maxAge": 10
+        },
+        "initialEnergy": 12,
+        "initialPrimaryResource": 0,
+        "initialSecondaryResource": 0,
+        "genome": {
+          "metabolism": 1,
+          "harvest": 1,
+          "aggression": 0.2,
+          "harvestEfficiency2": 1
+        },
+        "harvestedPrimary": 0,
+        "harvestedSecondary": 0,
+        "finalAgentState": {
+          "lineage": 1,
+          "species": 1,
+          "x": 0,
+          "y": 0,
+          "energy": 6,
+          "age": 1
+        },
+        "births": 1,
+        "population": 2,
+        "offspringEnergies": [
+          6
+        ]
+      },
+      "identicalScalarOutcome": true,
+      "parentEnergyDelta": 0,
+      "childEnergyDelta": 0
+    },
+    "showsDistinctInternalStateAtMatchedTotalEnergy": false
+  },
+  "diagnosis": "Agent state exposes energy as energy-like storage, with no separate internal pools for resource1 or resource2. Dual-resource harvest resolves primary/secondary intake externally, then applies only total harvest to agent energy (confirmed in source). Matched harvest trials collapse primary-only and secondary-only intake into identical post-harvest agent state (energy delta=0.00). Once total energy is matched, downstream metabolism remains identical (energy-loss delta=0.00) and reproduction remains identical (parent delta=0.00, child delta=0.00). Specialist and generalist genomes differ in harvest composition on the same patch (secondary share 0.90 vs 0.50), but their matched-energy metabolism and reproduction are still identical. CONCLUSION: the current dual-resource substrate does not preserve resource identity through metabolism. Resource1 and resource2 differentiate intake opportunities only; once harvested, they collapse into one fungible energy scalar, so there is no internal metabolic partitioning tradeoff to carry specialists and generalists into different downstream physiological states."
+}

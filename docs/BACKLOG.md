@@ -1,9 +1,9 @@
 # Backlog
 
-- [expand] Add second resource layer with independent regeneration and harvest-efficiency genome axis, enabling resource partitioning and specialist-generalist tradeoffs
+- [investigate] Verify whether dual-resource substrate preserves resource-type identity through metabolism or collapses to fungible energy, and measure metabolic differentiation between specialists versus generalists
 - [validate] Run 2×2 factorial pilot: encounter topology (dominant vs. pairwise) × resource layers (single vs. dual) at canonical 4000-step horizon with matched null
-- [investigate] Diagnose pairwise nullity: measure aggression-rank stability, per-encounter transfer magnitude, and spatial clustering to identify why pairwise operator produces zero differentiation
-- [validate] Re-run pairwise comparison at canonical 4000-step horizon with matched founder-grace configuration to test whether differentiation emerges in slow coexistence regimes
+- [expand] Add trajectory quality metrics (area under active-clade diversity, innovation survival curves, regime-switch counts) alongside final-state summaries
+- [feat] Implement a third encounter operator (e.g., non-transitive Rock-Paper-Scissors or trait-threshold resolution) to stress-test the mechanism slot abstraction beyond just pairwise versus dominant
 - [validate] Add trajectory quality metrics (area under active-clade diversity, innovation survival curves, regime-switch counts) alongside final-state summaries
 - [feat] Implement a third encounter operator (e.g., non-transitive Rock-Paper-Scissors or trait-threshold resolution) to stress-test the mechanism slot abstraction beyond just pairwise versus dominant
 - [expand] [Representational Capacity] Agents only have three mutable genome axes (`metabolism`, `harvest`, `aggression`), while habitat, trophic, and defense traits are derived scalars; no parameter tuning can produce evolvable body plans, sensors, effectors, or additional ecological roles. Intervention: replace the fixed `Genome` schema with extensible heritable loci or modules, and promote habitat / trophic / defense traits from derived summaries to first-class evolvable state.
