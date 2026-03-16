@@ -155,6 +155,19 @@ interface LocalityFrame {
   occupiedCells: number;
 }
 
+export interface SimulationStorageDiagnostics {
+  cladeHistories: number;
+  speciesHistories: number;
+  cladeTimelinePoints: number;
+  speciesTimelinePoints: number;
+  timelineNumericSlotsRetained: number;
+  localityFramesRetained: number;
+  localityFullCellSlotsRetained: number;
+  localityOccupiedMetricSlotsRetained: number;
+  localityNumericSlotsRetained: number;
+  estimatedRetainedBytesLowerBound: number;
+}
+
 export class LifeSimulation {
   private readonly rng: Rng;
 
@@ -340,6 +353,42 @@ export class LifeSimulation {
 
   history(): EvolutionHistorySnapshot {
     return this.evolutionHistory.snapshot();
+  }
+
+  storageDiagnostics(): SimulationStorageDiagnostics {
+    const cladeTimelinePoints = this.countTimelinePoints(this.cladeHistory);
+    const speciesTimelinePoints = this.countTimelinePoints(this.speciesHistory);
+    const localityFullCellSlotsRetained = this.localityFrames.reduce(
+      (total, frame) =>
+        total + frame.dominantSpeciesByCell.length + frame.neighborhoodDominantSpeciesByCell.length,
+      0
+    );
+    const localityOccupiedMetricSlotsRetained = this.localityFrames.reduce(
+      (total, frame) =>
+        total +
+        frame.dominanceSharesByOccupiedCell.length +
+        frame.speciesRichnessByOccupiedCell.length +
+        frame.neighborhoodDominanceSharesByOccupiedCell.length +
+        frame.neighborhoodSpeciesRichnessByOccupiedCell.length +
+        frame.neighborhoodCenterDominantAlignmentByOccupiedCell.length +
+        1,
+      0
+    );
+    const timelineNumericSlotsRetained = (cladeTimelinePoints + speciesTimelinePoints) * 4;
+    const localityNumericSlotsRetained = localityFullCellSlotsRetained + localityOccupiedMetricSlotsRetained;
+
+    return {
+      cladeHistories: this.cladeHistory.size,
+      speciesHistories: this.speciesHistory.size,
+      cladeTimelinePoints,
+      speciesTimelinePoints,
+      timelineNumericSlotsRetained,
+      localityFramesRetained: this.localityFrames.length,
+      localityFullCellSlotsRetained,
+      localityOccupiedMetricSlotsRetained,
+      localityNumericSlotsRetained,
+      estimatedRetainedBytesLowerBound: (timelineNumericSlotsRetained + localityNumericSlotsRetained) * 8
+    };
   }
 
   analytics(windowSize = 25): EvolutionAnalyticsSnapshot {
@@ -971,6 +1020,14 @@ export class LifeSimulation {
 
   private get speciesHistory(): Map<number, TaxonHistoryState> {
     return this.evolutionHistory.getSpeciesHistory();
+  }
+
+  private countTimelinePoints(history: Map<number, TaxonHistoryState>): number {
+    let total = 0;
+    for (const state of history.values()) {
+      total += state.timeline.length;
+    }
+    return total;
   }
 
   private countOriginationsInWindow(history: Map<number, TaxonHistoryState>, window: TurnoverWindow): number {
