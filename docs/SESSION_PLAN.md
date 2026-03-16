@@ -1,92 +1,90 @@
-# Session Plan — 2026-03-15
+# Session Plan — 2026-03-16
 
 ## Compact Context
-- `a70776b` added the non-species-conditioned relabel null and species-versus-clade decomposition helpers; `test/clade-activity-relabel-null-founder-grace-ecology-gate-horizon-study.test.ts` now asserts `nonSpeciesConditionedNull`.
-- `662767d` added abundance-weighted activity metrics, and the canonical founder-grace / ecology-gate horizon artifact has now been refreshed at `docs/clade_activity_relabel_null_founder_grace_ecology_gate_horizon_2026-03-15.json` with `decomposition`, `nonSpeciesConditionedNull`, and abundance-aware summaries surfaced from current code.
-- The strongest current anti-evidence is absolute: under stricter habitat-plus-crowding matching, founder grace gained `+9` versus static habitat at cladogenesis threshold `1.0` but still sat at `-25.75` active clades versus null, while the best ecology gate only improved to `-17` and gave back large persistent-activity gains.
-- The refreshed canonical founder-grace / ecology-gate artifact did not rescue the story: at cladogenesis threshold `1.0` and survival `50`, ecology gating improved species-conditioned active-clade delta only from `-23.75` to `-20.25` while persistent activity delta collapsed from `35.49` to `3.79`; the non-species-conditioned null stayed positive for both arms (`+6` founder grace, `+10.75` ecology gate).
-- `src/simulation.ts` (1989 lines), `src/activity.ts` (1967 lines), and `src/types.ts` (1280 lines) remain the main leverage points; encounter resolution is still a dominant-versus-all collapse.
-- `TaxonHistory.timeline` and per-tick `localityFrames` are still always-on full histories, so every long-horizon study pays both simulation and replay cost.
+- `3eb3007` extracted encounter resolution behind `EncounterOperator` interface; `dominantEncounterOperator` preserves existing behavior while opening a seam for alternative encounter models.
+- `caf1b53` refreshed the canonical founder-grace / ecology-gate horizon artifact with decomposition and non-species-conditioned null; absolute active-clade deltas remain negative under species-conditioned matching.
+- The simulator now has one working mechanism seam (encounter operators) and the plumbing to track both null families.
+- `src/simulation.ts` still locks physiology to one resource pool, inheritance to clonal mutation, and movement to greedy one-step local scoring.
 - Package manager is npm (`package-lock.json`).
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Planner / backlog governance | 5 | d26c26f |
-| Evaluation surface / null fidelity | 2 | a70776b |
-| Runtime / study-surface refactors | 2 | 77de075 |
+| Planner governance | 5 | 0e1d76f |
+| Mechanism-surface extraction | 1 | 3eb3007 |
+| Evaluation-surface honesty | 1 | caf1b53 |
 | Metric instrumentation | 1 | 662767d |
-| Mechanism-surface expansion | 0 | n/a |
+| Runtime modularization | 1 | 77de075 |
+| Study-surface refactors | 1 | 52c2de0 |
+| Alternative mechanism implementations | 0 | n/a |
 | Scalability measurement | 0 | n/a |
 
-Dominant axis: Planner / backlog governance (5/10)
-Underexplored axes: mechanism-surface expansion, scalability measurement
+Dominant axis: Planner governance (5/10)
+Underexplored axes: alternative mechanism implementations, scalability measurement
 
 ## Project State
-- The project already has relabel-null studies, founder-context-matched nulls, a non-species-conditioned null implementation, and abundance-weighted activity metrics.
-- Recent sessions mostly improved planning docs, tightened evaluation honesty, and extracted study/runtime plumbing rather than adding a new coexistence mechanism family.
-- The important gap is the mechanism surface itself: encounters are still dominant-only, physiology is single-currency, and the planner is still mostly choosing among scalar `SimulationConfig` knobs.
+- The encounter operator seam landed in the last session (`3eb3007`), creating the first pluggable mechanism slot.
+- The project has evaluation infrastructure (relabel nulls, decomposition, abundance metrics) but still no alternative mechanism implementation behind the new seam.
+- Recent sessions focused on planning and evaluation plumbing rather than building and testing a second encounter operator or other mechanism family.
 
 ## External Context
-- [Species coexistence as an emergent effect of interacting mechanisms](https://www.sciencedirect.com/science/article/pii/S0040580924001084) (Theoretical Population Biology, 2025): coexistence times increase far more when mechanisms are combined than when any one mechanism is tuned in isolation, which argues against continuing one-knob sweeps as the main search strategy.
-- [Ecology, Spatial Structure, and Selection Pressure Induce Strong Signatures in Phylogenetic Structure](https://direct.mit.edu/artl/article/doi/10.1162/artl_a_00470/128541/Ecology-Spatial-Structure-and-Selection-Pressure) (Artificial Life, 2025): spatial interaction structure leaves measurable phylogenetic signatures, which is directly relevant because this simulator still collapses encounters to one dominant occupant per cell.
+- [Functional coexistence theory: Identifying mechanisms linking biodiversity and ecosystem function](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecm.70033) (Ecological Monographs, Jan 2025): Integrates mechanistic understanding of species interactions with ecosystem function, arguing for explicit linkage between coexistence mechanisms and functional outcomes.
+- [Species coexistence as an emergent effect of interacting mechanisms](https://www.sciencedirect.com/science/article/pii/S0040580924001084) (Theoretical Population Biology, 2025): Mechanism combinations extend coexistence times more than tenfold versus singular mechanisms, emphasizing interaction over individual tuning.
+- [Coexistence in diverse communities with higher-order interactions](https://www.pnas.org/doi/10.1073/pnas.2205063119) (PNAS, 2022): Three-or-more species interactions modify theoretical coexistence understanding beyond pairwise frameworks.
 
 ## Research Gaps
-- How should planning weigh the split exposed by `docs/clade_activity_relabel_null_founder_grace_ecology_gate_horizon_2026-03-15.json`, where the species-conditioned matched null stays negative in absolute active clades but the non-species-conditioned null is positive for both founder grace and ecology gating?
-- Does extracting encounter resolution behind a pluggable matchup kernel create a practical seam for richer coexistence mechanisms without first rewriting the whole simulator?
+- The encounter operator seam exists but has no second implementation to test whether the abstraction boundary is stable or whether it forces premature design commitments.
+- Does a pairwise encounter operator (matching each pair rather than dominant-takes-all) reveal structural API deficiencies or remain compatible with the current `EncounterOperatorContext`?
 
 ## Current Anti-Evidence
-- No tested stack beats its species-conditioned null in absolute active clades on the canonical horizon surface: founder grace remains `-23.75` to `-25.75` depending on matching strictness, and the refreshed ecology gate only improves to `-20.25` at threshold `1.0` / survival `50` and `-19.25` at threshold `1.2` while sacrificing persistent activity.
-- The simulator is still locked to a one-resource, dominant-only, clonal, one-step local decision architecture, so the current positive results are limited to scalar retuning inside a mechanism family that may be unable to express the coexistence structures the project is claiming to pursue.
+- No tested configuration beats its species-conditioned relabel null in absolute active clades; the refreshed canonical artifact shows founder grace at `-23.75` and ecology gate at `-20.25` versus null at threshold `1.0`.
+- The encounter operator seam is the only mechanism slot; resource allocation, inheritance, and settlement remain hard-coded, so the system cannot yet test whether mechanism combinations are the missing leverage or whether encounters alone are sufficient.
 
 ## Bet Queue
-- [validate] Refresh the canonical founder-grace / ecology-gate horizon artifact so the already-landed decomposition and abundance-aware summaries feed back into planning
-- [validate] [Absolute-Versus-Null Fixation] The optimization loop credits interventions for improving delta-versus-null (founder grace +9 vs static habitat) while ignoring that both arms sit far below zero in absolute active clades (founder grace -25.75, static habitat -34.75). Under that objective surface the Planner can win on relative gains while the system as a whole continues losing to the null baseline, which means reported progress does not necessarily mean the system is approaching genuinely positive diversification. Intervention: add co-equal absolute active-clade targets or minimum viability floors alongside delta metrics, and surface both "better than the alternative" and "better than null" as distinct success criteria. Dimension: Feedback Loops.
-- [strategize] [Single-Mechanism Tuning Ceiling] The current research surface sweeps numeric and boolean fields in `SimulationConfig` (founder grace ticks, crowding penalties, clade coupling scalars), while the architecture remains locked to one resource pool, three genome axes, greedy one-step movement, dominant-only encounters, and clonal inheritance. No amount of Planner optimization inside that parameter surface can discover whether the system needs multi-resource constraints, interaction-type diversity, recombination, or alternative encounter resolutions because those mechanism classes are not knobs to turn. Intervention: replace the axis-specific sweep wrappers with composable mechanism slots for resources, inheritance, encounters, and settlement so studies can compare whole operator families instead of only retuning single-mechanism constants. Dimension: Assumptions.
-- [refactor] [Interaction Topology] `resolveEncounters()` collapses every occupied cell to one aggression-sorted dominant that steals energy from every other occupant with the same transfer rule. Within that architecture the system cannot express pair-specific matchups, non-transitive competition, coalition effects, mutual kills, or context-dependent encounter outcomes because every multispecies contest reduces to a single linear dominance order. Intervention: replace dominant-versus-all resolution with a pairwise encounter scheduler or matchup kernel keyed by participant traits and neighborhood context, and allow multiple outcome types beyond one-way theft. Dimension: Expressiveness.
+Selected from backlog:
 
-### Bet 1: [validate] Refresh Canonical Founder-Grace Artifact
-Regenerate the canonical founder-grace / ecology-gate horizon artifact from current code so the planner stops relying on the March 14 export that predates non-species-conditioned decomposition reporting. The point is not new mechanics; it is to get one honest canonical artifact that exposes both null families, species-versus-clade decomposition, and the new abundance-aware summaries before more claims are made about the founder-grace line.
+### Bet 1: [feat] Implement Pairwise Encounter Operator
+Build a second encounter operator that resolves conflicts pairwise (each pair interacts once per cell) instead of collapsing to one dominant. This is the cheapest way to test whether the `EncounterOperator` seam is stable and whether a different interaction topology changes coexistence structure without redesigning the whole simulator.
 
 #### Success Evidence
-- One fresh canonical horizon artifact includes `decomposition`, `nonSpeciesConditionedNull`, and abundance-aware summary fields, and planner-facing docs reference that artifact instead of the stale March 14 export.
+- A new `pairwiseEncounterOperator` exports from `src/encounter.ts` alongside `dominantEncounterOperator`, consumes the same `EncounterOperatorContext`, and is substitutable at runtime with deterministic test coverage.
 
 #### Stop Conditions
-- Stop after one canonical artifact and any minimal tests or fixture updates needed to keep it reproducible.
-- Stop if the work starts redesigning study schemas or adding new mechanisms instead of refreshing reporting.
+- Stop after one working pairwise operator passes tests and integrates with the existing encounter call site.
+- Stop if the work reveals that the current `EncounterOperatorContext` is insufficient and forces a breaking seam redesign before the second operator can function.
 
-### Bet 2: [validate] Promote Absolute And Viability Floors
-Make absolute active-clade outcomes and abundance-aware viability floors co-equal with delta-versus-null improvements in the founder-grace / ecology-gate study surface. The anti-evidence is that the project can currently claim progress while still losing badly to null in absolute terms, so this bet hardens the selection loop against that failure mode rather than adding another optimistic scalar sweep.
+### Bet 2: [validate] Compare Dominant Versus Pairwise On Canonical Stack
+Run the canonical founder-grace / ecology-gate configuration with both encounter operators and export comparative active-clade, persistence, and abundance-weighted deltas. The hypothesis is that pairwise encounters reduce dominance exclusion and improve absolute active-clade outcomes versus null, but this bet measures rather than assumes.
 
 #### Success Evidence
-- The canonical comparison output exposes absolute active-clade outcomes and explicit pass/fail criteria for both relative improvement and better-than-null viability, with deterministic coverage for the new summary logic.
+- One comparative study artifact exports both encounter operators on the same stack, surfaces absolute and delta active-clade outcomes, and includes deterministic test coverage for the comparison harness.
 
 #### Stop Conditions
-- Stop after the study outputs and tests clearly separate relative wins from absolute viability.
-- Stop if the work starts inventing new diversity metrics beyond the absolute and abundance-aware gates needed for this decision surface.
+- Stop after one artifact comparing both operators on the canonical stack.
+- Stop if results show no difference, suggesting the encounter topology change does not affect coexistence under the current one-resource, clonal architecture.
 
-### Bet 3: [strategize] Define A Minimal Mechanism Slot Seam
-Design the smallest code-near mechanism-slot seam that would let the simulator compare more than one encounter, settlement, inheritance, or resource operator family without rewriting the whole runtime. The target is a precise plan tied to current insertion points in `src/simulation.ts`, `src/simulation-reproduction.ts`, and related study harnesses, because the project needs a buildable seam rather than another broad wishlist.
+### Bet 3: [benchmark] Measure History Memory Scaling At Extended Horizons
+Quantify how `TaxonHistory.timeline` and per-tick `localityFrames` memory and runtime cost scale with horizon length and taxon count. The backlog has flagged this as a blocker for longer-run regimes, but no session has measured actual cost curves to scope streaming-history work.
 
 #### Success Evidence
-- A concrete implementation sketch names the first slot boundary, the affected runtime entry points, and the smallest backwards-compatible config or interface changes needed to support one alternate operator family.
+- One benchmark script or test exports memory footprint and wall-time measurements across horizon lengths (500, 1000, 2000, 5000 ticks) and reports whether cost is linear, quadratic, or bounded by active taxon count.
 
 #### Stop Conditions
-- Stop after one buildable seam is specified; do not redesign the entire simulator architecture.
-- Stop if the work drifts into a broad mechanism manifesto without naming concrete code insertion points.
+- Stop after one measurement artifact with clear scaling characterization.
+- Stop if memory cost is negligible even at 5000 ticks, which would invalidate the streaming-history priority.
 
-### Bet 4: [refactor] Extract Encounter Resolution Behind A Matchup Kernel
-Refactor `resolveEncounters()` so the existing dominant-only rule becomes one implementation behind a narrower matchup kernel or scheduler interface. This is the first concrete mechanism seam because encounter topology directly limits coexistence structure, and it can be isolated more cleanly than a full multi-resource or inheritance rewrite.
+### Bet 4: [split] Continue Extracting Reproduction Loop From simulation.ts
+`src/simulation.ts` is still 1989 lines; reproduction logic has been partially extracted to `simulation-reproduction.ts`, but settlement, offspring placement, and cladogenesis checks remain in the main file. Continue the split to shrink the main simulation module and clarify the reproduction versus settlement boundary.
 
 #### Success Evidence
-- The current encounter behavior is preserved behind a pluggable kernel boundary, `src/simulation.ts` shrinks accordingly, and existing encounter-related tests still pass without schema drift.
+- `src/simulation.ts` shrinks by at least 100 lines, settlement / offspring logic moves behind a focused module boundary, and all existing reproduction tests pass without behavior change.
 
 #### Stop Conditions
-- Stop after behavior-preserving extraction of the dominant-only encounter rule behind a seam.
-- Stop if the work starts introducing a full alternate encounter model before the seam is stable and tested.
+- Stop after one extraction pass that reduces `simulation.ts` size and passes tests.
+- Stop if the work starts redesigning reproduction logic instead of relocating existing code.
 
 ## Assumptions / Unknowns
-- Assumption: encounter topology is the smallest high-leverage mechanism seam because it sits directly on the current dominant-only coexistence ceiling without requiring an immediate physiology or inheritance rewrite.
-- Observation: the refreshed canonical horizon artifact narrowed ambiguity but not the anti-evidence. It surfaced a real evaluation split between species-conditioned and non-species-conditioned nulls, but the core species-conditioned coexistence story stayed negative.
-- Assumption: promoting absolute and abundance-aware viability criteria will prevent the planner from over-crediting relative improvements that still lose to null.
-- Unknown: whether the cleanest mechanism-slot seam should be runtime pluggability, static interface implementations, or a hybrid that keeps the current config surface stable while opening one alternate operator family.
+- Assumption: pairwise encounters are the simplest second operator to implement and will stress-test the `EncounterOperator` seam more cheaply than building a multi-resource or recombination layer.
+- Unknown: whether pairwise encounter resolution improves absolute active-clade outcomes or whether coexistence is still capped by single-resource and clonal constraints regardless of interaction topology.
+- Assumption: history memory is a genuine scaling bottleneck; this bet measures to confirm or refute before investing in streaming infrastructure.
+- Observation: the dominant exploration axis is planner governance (5/10 commits), while alternative mechanism implementations remain at zero despite the encounter seam landing last session.
