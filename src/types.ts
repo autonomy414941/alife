@@ -264,6 +264,8 @@ export interface SimulationConfig {
   reproduceThreshold: number;
   reproduceProbability: number;
   offspringEnergyFraction: number;
+  reproductionMinPrimaryFraction: number;
+  reproductionMinSecondaryFraction: number;
   mutationAmount: number;
   speciationThreshold: number;
   cladogenesisThreshold: number;

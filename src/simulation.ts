@@ -133,6 +133,8 @@ const DEFAULT_CONFIG: SimulationConfig = {
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
   offspringEnergyFraction: 0.45,
+  reproductionMinPrimaryFraction: 0,
+  reproductionMinSecondaryFraction: 0,
   mutationAmount: 0.2,
   speciationThreshold: 0.25,
   cladogenesisThreshold: -1,

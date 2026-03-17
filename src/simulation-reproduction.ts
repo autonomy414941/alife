@@ -1,4 +1,4 @@
-import { spendAgentEnergy } from './agent-energy';
+import { spendAgentEnergy, getAgentEnergyPools } from './agent-energy';
 import { disturbanceSettlementOpenUntilTickAt, resolveDisturbanceSettlementOpeningConfig } from './disturbance';
 import {
   LineageOccupancyGrid,
@@ -103,6 +103,29 @@ interface ReproduceAgentOptions {
   getCladeDefenseLevel: (lineage: number) => number;
 }
 
+function canReproduce(agent: Agent, config: SimulationConfig): boolean {
+  if (agent.energy < config.reproduceThreshold) {
+    return false;
+  }
+
+  const minPrimaryFraction = config.reproductionMinPrimaryFraction;
+  const minSecondaryFraction = config.reproductionMinSecondaryFraction;
+
+  if (minPrimaryFraction <= 0 && minSecondaryFraction <= 0) {
+    return true;
+  }
+
+  const pools = getAgentEnergyPools(agent);
+  if (pools.total <= 0) {
+    return false;
+  }
+
+  const primaryFraction = pools.primary / pools.total;
+  const secondaryFraction = pools.secondary / pools.total;
+
+  return primaryFraction >= minPrimaryFraction && secondaryFraction >= minSecondaryFraction;
+}
+
 export function runReproductionPhase({
   agents,
   config,
@@ -126,7 +149,7 @@ export function runReproductionPhase({
     if (!isAlive(agent.id)) {
       continue;
     }
-    if (agent.energy < config.reproduceThreshold || randomFloat() >= config.reproduceProbability) {
+    if (!canReproduce(agent, config) || randomFloat() >= config.reproduceProbability) {
       continue;
     }
 
