@@ -554,6 +554,9 @@ export interface SpeciesActivityProbeDefinition {
   normalizedCumulativeActivity: string;
   newActivity: string;
   newAbundanceWeightedActivity: string;
+  activeSpeciesAreaUnderCurve: string;
+  innovationMedianLifespan: string;
+  regimeSwitchCount: string;
 }
 
 export interface SpeciesActivityPersistenceSweepDefinition {
@@ -588,6 +591,9 @@ export interface SpeciesActivityProbeSummary {
   finalNormalizedCumulativeActivity: number;
   finalNewActivity: number;
   finalNewAbundanceWeightedActivity: number;
+  activeSpeciesAreaUnderCurve: number;
+  innovationMedianLifespan: number;
+  regimeSwitchCount: number;
 }
 
 export interface SpeciesActivityProbeExport {
@@ -727,6 +733,9 @@ export interface CladeActivityProbeDefinition {
   normalizedCumulativeActivity: string;
   newActivity: string;
   newAbundanceWeightedActivity: string;
+  activeCladeAreaUnderCurve: string;
+  innovationMedianLifespan: string;
+  regimeSwitchCount: string;
 }
 
 export interface CladeActivityPersistenceSweepDefinition {
@@ -761,6 +770,9 @@ export interface CladeActivityProbeSummary {
   finalNormalizedCumulativeActivity: number;
   finalNewActivity: number;
   finalNewAbundanceWeightedActivity: number;
+  activeCladeAreaUnderCurve: number;
+  innovationMedianLifespan: number;
+  regimeSwitchCount: number;
 }
 
 export interface CladeActivityPersistenceSweepConfig extends CladeActivityProbeConfig {

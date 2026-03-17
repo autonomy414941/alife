@@ -390,6 +390,9 @@ interface TaxonActivityProbeSummaryData {
   finalNormalizedCumulativeActivity: number;
   finalNewActivity: number;
   finalNewAbundanceWeightedActivity: number;
+  activeTaxaAreaUnderCurve: number;
+  innovationMedianLifespan: number;
+  regimeSwitchCount: number;
 }
 
 interface TaxonActivityPersistenceWindowData {
@@ -433,7 +436,13 @@ export const SPECIES_ACTIVITY_PROBE_DEFINITION: SpeciesActivityProbeDefinition =
   newActivity:
     'Occupied species-ticks within a window contributed by species whose firstSeenTick falls inside that same window.',
   newAbundanceWeightedActivity:
-    'Population summed across occupied ticks within a window for species whose firstSeenTick falls inside that same window.'
+    'Population summed across occupied ticks within a window for species whose firstSeenTick falls inside that same window.',
+  activeSpeciesAreaUnderCurve:
+    'Sum of active species counts across all post-burn-in ticks, representing the total active-species diversity over time.',
+  innovationMedianLifespan:
+    'Median observed lifetime (extinctTick - firstSeenTick, or maxTick - firstSeenTick for extant species) across all species.',
+  regimeSwitchCount:
+    'Count of tick-to-tick increases in active species after drops, indicating regime shifts where diversity recovers after decline.'
 };
 
 export const SPECIES_ACTIVITY_PERSISTENCE_SWEEP_DEFINITION: SpeciesActivityPersistenceSweepDefinition = {
@@ -464,7 +473,13 @@ export const CLADE_ACTIVITY_PROBE_DEFINITION: CladeActivityProbeDefinition = {
   newActivity:
     'Occupied clade-ticks within a window contributed by clades whose firstSeenTick falls inside that same window.',
   newAbundanceWeightedActivity:
-    'Population summed across occupied ticks within a window for clades whose firstSeenTick falls inside that same window.'
+    'Population summed across occupied ticks within a window for clades whose firstSeenTick falls inside that same window.',
+  activeCladeAreaUnderCurve:
+    'Sum of active clade counts across all post-burn-in ticks, representing the total active-clade diversity over time.',
+  innovationMedianLifespan:
+    'Median observed lifetime (extinctTick - firstSeenTick, or maxTick - firstSeenTick for extant clades) across all clades.',
+  regimeSwitchCount:
+    'Count of tick-to-tick increases in active clades after drops, indicating regime shifts where diversity recovers after decline.'
 };
 
 export const CLADE_ACTIVITY_PERSISTENCE_SWEEP_DEFINITION: CladeActivityPersistenceSweepDefinition = {
@@ -1437,7 +1452,14 @@ function analyzeTaxonActivity(input: AnalyzeTaxonActivityInput): AnalyzeTaxonAct
 
   return {
     windows,
-    summary: buildTaxonActivitySummary(input.taxa.length, maxTick, windows)
+    summary: buildTaxonActivitySummary(
+      input.taxa.length,
+      maxTick,
+      windows,
+      context.activeTaxaByTick,
+      context.contributions,
+      burnIn
+    )
   };
 }
 
@@ -1546,7 +1568,10 @@ function executeActivitySimulation(input: RunActivitySimulationInput): {
 function buildTaxonActivitySummary(
   totalTaxa: number,
   stepsExecuted: number,
-  windows: TaxonActivityWindowData[]
+  windows: TaxonActivityWindowData[],
+  activeTaxaByTick: number[],
+  contributions: TaxonWindowContribution[],
+  burnIn: number
 ): TaxonActivityProbeSummaryData {
   const postBurnInWindows = windows.filter((window) => window.postBurnIn);
   const postBurnInNewActivity = postBurnInWindows.map((window) => window.newActivity);
@@ -1554,6 +1579,10 @@ function buildTaxonActivitySummary(
     (window) => window.newAbundanceWeightedActivity
   );
   const finalWindow = windows[windows.length - 1];
+
+  const activeTaxaAreaUnderCurve = computeAreaUnderCurve(activeTaxaByTick, burnIn);
+  const innovationMedianLifespan = computeMedianLifespan(contributions);
+  const regimeSwitchCount = computeRegimeSwitchCount(activeTaxaByTick, burnIn);
 
   return {
     stepsExecuted,
@@ -1570,7 +1599,10 @@ function buildTaxonActivitySummary(
     finalCumulativeActivity: finalWindow?.cumulativeActivity ?? 0,
     finalNormalizedCumulativeActivity: finalWindow?.normalizedCumulativeActivity ?? 0,
     finalNewActivity: finalWindow?.newActivity ?? 0,
-    finalNewAbundanceWeightedActivity: finalWindow?.newAbundanceWeightedActivity ?? 0
+    finalNewAbundanceWeightedActivity: finalWindow?.newAbundanceWeightedActivity ?? 0,
+    activeTaxaAreaUnderCurve,
+    innovationMedianLifespan,
+    regimeSwitchCount
   };
 }
 
@@ -1659,7 +1691,10 @@ function toSpeciesActivityProbeSummary(summary: TaxonActivityProbeSummaryData): 
     finalCumulativeActivity: summary.finalCumulativeActivity,
     finalNormalizedCumulativeActivity: summary.finalNormalizedCumulativeActivity,
     finalNewActivity: summary.finalNewActivity,
-    finalNewAbundanceWeightedActivity: summary.finalNewAbundanceWeightedActivity
+    finalNewAbundanceWeightedActivity: summary.finalNewAbundanceWeightedActivity,
+    activeSpeciesAreaUnderCurve: summary.activeTaxaAreaUnderCurve,
+    innovationMedianLifespan: summary.innovationMedianLifespan,
+    regimeSwitchCount: summary.regimeSwitchCount
   };
 }
 
@@ -1679,7 +1714,10 @@ function toCladeActivityProbeSummary(summary: TaxonActivityProbeSummaryData): Cl
     finalCumulativeActivity: summary.finalCumulativeActivity,
     finalNormalizedCumulativeActivity: summary.finalNormalizedCumulativeActivity,
     finalNewActivity: summary.finalNewActivity,
-    finalNewAbundanceWeightedActivity: summary.finalNewAbundanceWeightedActivity
+    finalNewAbundanceWeightedActivity: summary.finalNewAbundanceWeightedActivity,
+    activeCladeAreaUnderCurve: summary.activeTaxaAreaUnderCurve,
+    innovationMedianLifespan: summary.innovationMedianLifespan,
+    regimeSwitchCount: summary.regimeSwitchCount
   };
 }
 
@@ -1860,6 +1898,45 @@ function buildCumulativeActivityByTick(activeTaxaByTick: number[]): number[] {
     cumulativeActivityByTick[tick] = cumulativeActivityByTick[tick - 1] + activeTaxaByTick[tick];
   }
   return cumulativeActivityByTick;
+}
+
+function computeAreaUnderCurve(activeTaxaByTick: number[], burnIn: number): number {
+  let areaUnderCurve = 0;
+  for (let tick = burnIn + 1; tick < activeTaxaByTick.length; tick += 1) {
+    areaUnderCurve += activeTaxaByTick[tick];
+  }
+  return areaUnderCurve;
+}
+
+function computeMedianLifespan(contributions: TaxonWindowContribution[]): number {
+  if (contributions.length === 0) {
+    return 0;
+  }
+  const lifespans = contributions.map((c) => c.observedLifetime).sort((a, b) => a - b);
+  const mid = Math.floor(lifespans.length / 2);
+  if (lifespans.length % 2 === 0) {
+    return (lifespans[mid - 1] + lifespans[mid]) / 2;
+  }
+  return lifespans[mid];
+}
+
+function computeRegimeSwitchCount(activeTaxaByTick: number[], burnIn: number): number {
+  let regimeSwitchCount = 0;
+  let previousActiveTaxa = 0;
+  let wasDecreasing = false;
+
+  for (let tick = burnIn + 1; tick < activeTaxaByTick.length; tick += 1) {
+    const currentActiveTaxa = activeTaxaByTick[tick];
+    if (currentActiveTaxa < previousActiveTaxa) {
+      wasDecreasing = true;
+    } else if (currentActiveTaxa > previousActiveTaxa && wasDecreasing) {
+      regimeSwitchCount += 1;
+      wasDecreasing = false;
+    }
+    previousActiveTaxa = currentActiveTaxa;
+  }
+
+  return regimeSwitchCount;
 }
 
 function observedLifetime(taxon: TaxonHistory, maxTick: number): number {

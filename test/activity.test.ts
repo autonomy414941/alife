@@ -133,7 +133,10 @@ describe('analyzeSpeciesActivity', () => {
       finalCumulativeActivity: 8,
       finalNormalizedCumulativeActivity: 1.6,
       finalNewActivity: 0,
-      finalNewAbundanceWeightedActivity: 0
+      finalNewAbundanceWeightedActivity: 0,
+      activeSpeciesAreaUnderCurve: 5,
+      innovationMedianLifespan: 2,
+      regimeSwitchCount: 0
     });
   });
 
@@ -292,7 +295,10 @@ describe('analyzeCladeActivity', () => {
       finalCumulativeActivity: 8,
       finalNormalizedCumulativeActivity: 1.6,
       finalNewActivity: 0,
-      finalNewAbundanceWeightedActivity: 0
+      finalNewAbundanceWeightedActivity: 0,
+      activeCladeAreaUnderCurve: 5,
+      innovationMedianLifespan: 2,
+      regimeSwitchCount: 0
     });
   });
 });
