@@ -5,6 +5,10 @@ export interface Genome {
   harvestEfficiency2?: number;
 }
 
+export interface GenomeV2 {
+  traits: Map<string, number>;
+}
+
 export interface TaxonTimelinePoint {
   tick: number;
   population: number;
