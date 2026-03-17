@@ -90,6 +90,42 @@ describe('buildCladeActivityRelabelNullThresholdResults', () => {
             speciesExtinctions: 0,
             cumulativeExtinctClades: 0,
             cumulativeExtinctSpecies: 0
+          },
+          finalSnapshot: {
+            tick: 4,
+            population: 2,
+            meanEnergy: 10,
+            activeClades: 2,
+            activeSpecies: 2,
+            dominantSpeciesShare: 0.5,
+            extinctClades: 0,
+            extinctSpecies: 0,
+            agents: [
+              {
+                id: 1,
+                lineage: 101,
+                species: 2,
+                x: 0,
+                y: 0,
+                energy: 10,
+                energyPrimary: 6,
+                energySecondary: 4,
+                age: 1,
+                genome: { metabolism: 1, harvest: 1.5, aggression: 0.2, harvestEfficiency2: 0.5 }
+              },
+              {
+                id: 2,
+                lineage: 102,
+                species: 3,
+                x: 0,
+                y: 0,
+                energy: 10,
+                energyPrimary: 2,
+                energySecondary: 8,
+                age: 1,
+                genome: { metabolism: 1, harvest: 0.5, aggression: 0.2, harvestEfficiency2: 1.5 }
+              }
+            ]
           }
         }),
         analyzeCladeActivitySummary: (input) => analyzeCladeActivity(input).summary,
@@ -119,6 +155,14 @@ describe('buildCladeActivityRelabelNullThresholdResults', () => {
     });
     expect(thresholdResults[0]?.seedResults[0]?.actualSpeciesThresholds[0]?.minSurvivalTicks).toBe(1);
     expect(thresholdResults[0]?.seedResults[0]?.thresholds[0]?.minSurvivalTicks).toBe(1);
+    expect(thresholdResults[0]?.seedResults[0]?.actualSubstrateMetrics.meanPrimaryEnergyShare).toBeCloseTo(0.4, 10);
+    expect(
+      thresholdResults[0]?.seedResults[0]?.actualSubstrateMetrics.cladeSubstrateDependence.map((clade) => clade.lineage)
+    ).toEqual([101, 102]);
+    expect(thresholdResults[0]?.aggregates[0]?.actualSubstrateMetrics.meanSecondaryEnergyShare.mean).toBeCloseTo(
+      0.6,
+      10
+    );
     expect(thresholdResults[0]?.aggregates[0]?.diagnostics.activeCladeDeltaVsNull.mean).toBe(
       thresholdResults[0]?.seedResults[0]?.thresholds[0]?.diagnostics.activeCladeDeltaVsNull
     );

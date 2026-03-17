@@ -6,6 +6,7 @@ import {
   findThresholdResult,
   mean
 } from './activity-thresholds';
+import { buildSubstrateObservabilityAggregate } from './substrate-observability';
 import {
   CladeActivityProbeSummary,
   CladeActivityRelabelNullAggregateDiagnostics,
@@ -92,6 +93,9 @@ export function buildCladeActivityRelabelNullThresholdAggregate(
     minSurvivalTicks,
     actual: buildActivitySeedPanelThresholdAggregate(minSurvivalTicks, actualSeedResults),
     matchedNull: buildActivitySeedPanelThresholdAggregate(minSurvivalTicks, matchedNullSeedResults),
+    actualSubstrateMetrics: buildSubstrateObservabilityAggregate(
+      seedResults.map((seedResult) => seedResult.actualSubstrateMetrics)
+    ),
     actualToNullPersistentWindowFractionRatio: buildNullableNumericAggregate(
       thresholdResults.flatMap((threshold) =>
         threshold.actualToNullPersistentWindowFractionRatio === null

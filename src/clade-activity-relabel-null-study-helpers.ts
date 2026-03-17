@@ -25,6 +25,7 @@ import {
   SpeciesActivityProbeSummary,
   SpeciesActivitySeedPanelThresholdSeedResult,
   StepSummary,
+  SubstrateObservabilityMetrics,
   TaxonHistory
 } from './types';
 
@@ -32,6 +33,7 @@ export function buildCladeActivityRelabelNullSeedResult(input: {
   seed: number;
   relabelSeed: number;
   finalSummary: StepSummary;
+  actualSubstrateMetrics: SubstrateObservabilityMetrics;
   actualClades: TaxonHistory[];
   matchedNullClades: TaxonHistory[];
   actualRawSummary: CladeActivityProbeSummary;
@@ -59,6 +61,7 @@ export function buildCladeActivityRelabelNullSeedResult(input: {
     seed: input.seed,
     relabelSeed: input.relabelSeed,
     finalSummary: input.finalSummary,
+    actualSubstrateMetrics: input.actualSubstrateMetrics,
     actualRawSummary: input.actualRawSummary,
     actualSpeciesRawSummary: input.actualSpeciesRawSummary,
     matchedNullRawSummary: input.matchedNullRawSummary,

@@ -9,6 +9,7 @@ import {
   deriveRelabelSeed
 } from './clade-activity-relabel-null-study-helpers';
 import { buildCladeActivityRelabelNullThresholdAggregate } from './clade-activity-relabel-null-thresholds';
+import { buildSubstrateObservabilityMetrics } from './substrate-observability';
 import { LifeSimulationOptions } from './simulation';
 import {
   CladeActivityPersistenceSummary,
@@ -16,6 +17,7 @@ import {
   CladeActivityRelabelNullThresholdResult,
   EvolutionHistorySnapshot,
   MatchedNullFounderContext,
+  SimulationSnapshot,
   SpeciesActivityPersistenceSummary,
   SpeciesActivityProbeSummary,
   StepSummary,
@@ -33,6 +35,7 @@ export interface RunCladeActivityRelabelNullSeedSimulationInput {
 export interface RunCladeActivityRelabelNullSeedSimulationResult {
   history: EvolutionHistorySnapshot;
   finalSummary: StepSummary;
+  finalSnapshot: SimulationSnapshot;
 }
 
 export interface BuildCladeActivityRelabelNullThresholdResultsInput {
@@ -89,7 +92,7 @@ export function buildCladeActivityRelabelNullThresholdResults(
 ): CladeActivityRelabelNullThresholdResult[] {
   return input.cladogenesisThresholds.map((cladogenesisThreshold) => {
     const seedResults = input.seeds.map((seed) => {
-      const { history, finalSummary } = dependencies.runSimulation({
+      const { history, finalSummary, finalSnapshot } = dependencies.runSimulation({
         steps: input.steps,
         seed,
         stopWhenExtinct: input.stopWhenExtinct,
@@ -132,6 +135,7 @@ export function buildCladeActivityRelabelNullThresholdResults(
         seed,
         relabelSeed,
         finalSummary,
+        actualSubstrateMetrics: buildSubstrateObservabilityMetrics(finalSnapshot.agents),
         actualClades: history.clades,
         matchedNullClades,
         actualRawSummary,

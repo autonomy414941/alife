@@ -312,6 +312,48 @@ export interface NumericAggregate {
   max: number;
 }
 
+export type SubstrateSpecializationBand = 'primaryBiased' | 'mixed' | 'secondaryBiased';
+
+export interface SubstrateSpecializationBandMetrics {
+  population: number;
+  populationFraction: number;
+  meanPrimaryEnergyShare: number;
+  meanSecondaryEnergyShare: number;
+}
+
+export interface SubstrateSpecializationBandAggregate {
+  populationFraction: NumericAggregate;
+  meanPrimaryEnergyShare: NumericAggregate;
+  meanSecondaryEnergyShare: NumericAggregate;
+}
+
+export interface CladeSubstrateDependence {
+  lineage: number;
+  population: number;
+  populationFraction: number;
+  meanPrimaryEnergyShare: number;
+  meanSecondaryEnergyShare: number;
+  meanHarvestEfficiency2: number;
+  meanSecondaryHarvestShare: number;
+}
+
+export interface SubstrateObservabilityMetrics {
+  meanPrimaryEnergyShare: number;
+  meanSecondaryEnergyShare: number;
+  meanHarvestEfficiency2: number;
+  meanSecondaryHarvestShare: number;
+  specializationStrata: Record<SubstrateSpecializationBand, SubstrateSpecializationBandMetrics>;
+  cladeSubstrateDependence: CladeSubstrateDependence[];
+}
+
+export interface SubstrateObservabilityAggregate {
+  meanPrimaryEnergyShare: NumericAggregate;
+  meanSecondaryEnergyShare: NumericAggregate;
+  meanHarvestEfficiency2: NumericAggregate;
+  meanSecondaryHarvestShare: NumericAggregate;
+  specializationStrata: Record<SubstrateSpecializationBand, SubstrateSpecializationBandAggregate>;
+}
+
 export interface ExperimentRunSummary {
   run: number;
   seed: number;
@@ -1150,6 +1192,7 @@ export interface CladeActivityRelabelNullSeedResult {
   seed: number;
   relabelSeed: number;
   finalSummary: StepSummary;
+  actualSubstrateMetrics: SubstrateObservabilityMetrics;
   actualRawSummary: CladeActivityProbeSummary;
   actualSpeciesRawSummary: SpeciesActivityProbeSummary;
   matchedNullRawSummary: CladeActivityProbeSummary;
@@ -1173,6 +1216,7 @@ export interface CladeActivityRelabelNullThresholdAggregate {
   minSurvivalTicks: number;
   actual: CladeActivitySeedPanelThresholdAggregate;
   matchedNull: CladeActivitySeedPanelThresholdAggregate;
+  actualSubstrateMetrics: SubstrateObservabilityAggregate;
   actualToNullPersistentWindowFractionRatio: CladeSpeciesActivityCouplingRatioAggregate;
   persistentWindowFractionDeltaVsNull: NumericAggregate;
   actualToNullPersistentActivityMeanRatio: CladeSpeciesActivityCouplingRatioAggregate;

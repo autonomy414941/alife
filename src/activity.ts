@@ -1198,7 +1198,8 @@ export function runCladeActivityRelabelNullStudy(
 
         return {
           history: resultSimulation.history(),
-          finalSummary
+          finalSummary,
+          finalSnapshot: resultSimulation.snapshot()
         };
       },
       analyzeCladeActivitySummary: (analysisInput) => analyzeCladeActivity(analysisInput).summary,
