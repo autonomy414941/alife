@@ -1,9 +1,21 @@
 import { describe, it, expect } from 'vitest';
-import { dominantEncounterOperator, pairwiseEncounterOperator, EncounterOperatorContext } from '../src/encounter';
-import { Agent } from '../src/types';
+import {
+  dominantEncounterOperator,
+  pairwiseEncounterOperator,
+  nonTransitiveEncounterOperator,
+  EncounterOperatorContext
+} from '../src/encounter';
+import { Agent, Genome } from '../src/types';
 import { LifeSimulation } from '../src/simulation';
 
-function createAgent(id: number, aggression: number, energy: number, species = 1, lineage = 1): Agent {
+function createAgent(
+  id: number,
+  aggression: number,
+  energy: number,
+  species = 1,
+  lineage = 1,
+  genomeOverrides: Partial<Genome> = {}
+): Agent {
   return {
     id,
     species,
@@ -12,12 +24,10 @@ function createAgent(id: number, aggression: number, energy: number, species = 1
     y: 0,
     energy,
     genome: {
+      metabolism: 0.5,
+      harvest: 0.5,
       aggression,
-      fertility: 0.5,
-      efficiency: 0.5,
-      habitatBias0: 0,
-      habitatBias1: 0,
-      habitatBias2: 0
+      ...genomeOverrides
     },
     age: 0,
     generation: 1,
@@ -210,6 +220,78 @@ describe('pairwiseEncounterOperator', () => {
   });
 });
 
+describe('nonTransitiveEncounterOperator', () => {
+  it('does nothing when there are fewer than 2 agents', () => {
+    const agents = [createAgent(1, 0.5, 100)];
+    const context = createContext();
+    nonTransitiveEncounterOperator(agents, context);
+    expect(agents[0].energy).toBe(100);
+  });
+
+  it('supports cyclic dominance across genome archetypes', () => {
+    const context = createContext();
+
+    const metabolismSpecialist = () =>
+      createAgent(1, 0.1, 100, 1, 1, {
+        metabolism: 0.95,
+        harvest: 0.2
+      });
+    const aggressionSpecialist = () =>
+      createAgent(2, 0.95, 100, 1, 2, {
+        metabolism: 0.2,
+        harvest: 0.1
+      });
+    const harvestSpecialist = () =>
+      createAgent(3, 0.2, 100, 1, 3, {
+        metabolism: 0.1,
+        harvest: 0.95
+      });
+
+    const metabolismVsAggression = [metabolismSpecialist(), aggressionSpecialist()];
+    nonTransitiveEncounterOperator(metabolismVsAggression, context);
+    expect(metabolismVsAggression[0].energy).toBeGreaterThan(100);
+    expect(metabolismVsAggression[1].energy).toBeLessThan(100);
+
+    const aggressionVsHarvest = [aggressionSpecialist(), harvestSpecialist()];
+    nonTransitiveEncounterOperator(aggressionVsHarvest, context);
+    expect(aggressionVsHarvest[0].energy).toBeGreaterThan(100);
+    expect(aggressionVsHarvest[1].energy).toBeLessThan(100);
+
+    const harvestVsMetabolism = [harvestSpecialist(), metabolismSpecialist()];
+    nonTransitiveEncounterOperator(harvestVsMetabolism, context);
+    expect(harvestVsMetabolism[0].energy).toBeGreaterThan(100);
+    expect(harvestVsMetabolism[1].energy).toBeLessThan(100);
+  });
+
+  it('falls back to aggression dominance within the same archetype', () => {
+    const agents = [
+      createAgent(1, 0.3, 100, 1, 1, { metabolism: 0.9, harvest: 0.2 }),
+      createAgent(2, 0.8, 100, 1, 2, { metabolism: 0.95, harvest: 0.1 })
+    ];
+    const context = createContext();
+
+    nonTransitiveEncounterOperator(agents, context);
+
+    expect(agents[1].energy).toBeGreaterThan(100);
+    expect(agents[0].energy).toBeLessThan(100);
+  });
+
+  it('preserves total energy across cyclic pair resolution', () => {
+    const agents = [
+      createAgent(1, 0.1, 100, 1, 1, { metabolism: 0.95, harvest: 0.2 }),
+      createAgent(2, 0.95, 100, 1, 2, { metabolism: 0.2, harvest: 0.1 }),
+      createAgent(3, 0.2, 100, 1, 3, { metabolism: 0.1, harvest: 0.95 })
+    ];
+    const context = createContext();
+    const initialTotal = agents.reduce((sum, agent) => sum + agent.energy, 0);
+
+    nonTransitiveEncounterOperator(agents, context);
+
+    const finalTotal = agents.reduce((sum, agent) => sum + agent.energy, 0);
+    expect(finalTotal).toBeCloseTo(initialTotal, 5);
+  });
+});
+
 describe('encounter operator runtime substitution', () => {
   it('accepts pairwiseEncounterOperator at simulation construction', () => {
     const simWithPairwise = new LifeSimulation({
@@ -241,6 +323,22 @@ describe('encounter operator runtime substitution', () => {
     }).not.toThrow();
 
     expect(simWithDominant.snapshot().tick).toBe(10);
+  });
+
+  it('accepts nonTransitiveEncounterOperator explicitly', () => {
+    const simWithNonTransitive = new LifeSimulation({
+      seed: 42,
+      encounterOperator: nonTransitiveEncounterOperator,
+      config: { width: 10, height: 10, initialAgents: 20 }
+    });
+
+    expect(() => {
+      for (let i = 0; i < 10; i++) {
+        simWithNonTransitive.step();
+      }
+    }).not.toThrow();
+
+    expect(simWithNonTransitive.snapshot().tick).toBe(10);
   });
 
   it('produces different outcomes for dominant vs pairwise operators', () => {
