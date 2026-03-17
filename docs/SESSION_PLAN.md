@@ -1,100 +1,102 @@
-# Session Plan — 2026-03-17
+# Session Plan — 2026-03-18
 
 ## Compact Context
-- Agents now have internal dual-resource pools (`energyPrimary`, `energySecondary`) that preserve source identity through metabolism and reproduction (`c5cb3eb`).
-- Metabolism and reproduction costs are composition-agnostic (equal scalar scaling regardless of pool mix).
-- Non-transitive encounter operator implemented (`4bd9349`), pairwise and dominant operators validated at canonical horizon.
-- Trajectory metrics (area under curve, innovation median lifespan, regime switches) now exported (`891b38c`, `766c205`).
-- No configuration beats species-conditioned relabel null in absolute active clades; canonical founder-grace sits at `-25.75`.
-- Package manager is npm (`package-lock.json`).
+- Composition-dependent reproduction landed: `canReproduce()` requires minimum 30% primary and 30% secondary energy fractions.
+- Substrate observability metrics wired: exports now include pool-composition summaries.
+- Non-transitive encounter operator validation completed: zero delta versus dominant at canonical 4000-step horizon (both converge to single active clade).
+- Factorial study code exists (`src/clade-activity-relabel-null-encounter-topology-composition-cost-factorial-study.ts`) but artifact missing—execution is the critical decision point.
+- All tests pass (47 files, 231 tests, March 18).
+- Package manager is npm.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Mechanism implementation (substrate / operators) | 4 | 4bd9349, c5cb3eb, 0a069b9, 242d31b |
-| Structural diagnosis (Critic / diagnostics) | 3 | 56a58f8, 85a4c34, 55f33e7, 5b7056a |
-| Validation study (comparative / horizon) | 2 | 1d4c357, 886e509 |
-| Trajectory metrics / export | 2 | 766c205, 891b38c |
-| Planner governance | 2 | 8f6d22f, 973a230 |
-| Code refactoring | 1 | b68d34d |
-| Scalability measurement | 1 | 24820b3 |
+| Mechanism implementation | 5 | fc23956, 41e37c1, 4bd9349, c5cb3eb, 0a069b9 |
+| Validation studies | 3 | 584d70e, 1d4c357, 55f33e7 |
+| Structural diagnosis | 3 | 3c0b7ed, 56a58f8, 5b7056a |
+| Trajectory metrics | 2 | 766c205, 891b38c |
+| Infrastructure / refactoring | 2 | 39dd4d7, b68d34d |
+| Planner governance | 1 | 749cab3 |
+| Scalability measurement | 1 | 85a4c34 |
 
-Dominant axis: Mechanism implementation (4/10)
-Underexplored axes: mechanism-combination experiments (0 commits), factorial comparative studies, composition-dependent physiology
+Dominant axis: Mechanism implementation (5/10)
+Underexplored axes: structural expansion (0 commits), complexity-ratchet infrastructure (0 commits)
 
 ## Project State
-- The dual-resource substrate now preserves source identity internally (agents retain separate `energyPrimary` and `energySecondary` pools), but downstream physiology (metabolism, reproduction) remains composition-agnostic.
-- Three encounter operators exist (dominant, pairwise, non-transitive), but comparative studies confirm pairwise produces zero delta versus dominant at canonical 4000-step horizon.
-- Trajectory metrics are implemented but not yet used in mechanism-combination experiments.
-- Recent sessions built substrate and operator diversity but have not tested whether combinations produce synergistic gains.
+- Infrastructure phase complete: composition-dependent costs implemented, non-transitive operator validated (nullity confirmed), substrate observability wired, trajectory metrics exportable.
+- Factorial code landed (commit 39dd4d7) but has not run—no artifact exists under `docs/`.
+- Recent commit messages confirm nullity findings: non-transitive operator shows "zero active-clade delta improvement (0.00) across all conditions" and "converges to single active clade identical to dominant operator, confirming structural equivalence under composition-agnostic physiology."
+- The backlog contains 14 Critic-flagged structural ceiling items spanning six dimensions (Representational Capacity, Behavioral Control, Inheritance Architecture, Interaction Richness, Environmental Complexity, Evolutionary Mechanisms).
+- Zero commits on structural expansion in last 20 commits despite literature emphasis on complexity ratchet and open-endedness requiring unbounded complexity increase.
 
 ## External Context
-- [Species coexistence as an emergent effect of interacting mechanisms](https://www.sciencedirect.com/science/article/pii/S0040580924001084) (Theoretical Population Biology, 2025): Mechanism combinations extend coexistence more than tenfold compared to singular mechanisms. The particular combination of mechanisms and their interactions appears vital for biodiversity.
-- [Functional coexistence theory: Identifying mechanisms linking biodiversity and ecosystem function](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecm.70033) (Ecological Monographs, 2025): Three core coexistence mechanisms—storage effect, intransitivity, and resource partitioning—are supported.
-- [A practical guide to characterising ecological coexistence](https://doi.org/10.1111/brv.70079) (Biological Reviews, 2026): Recent integrative framework for characterizing coexistence mechanisms.
+- [The Complexity Ratchet: Stronger than Selection, Stronger than Evolvability, Weaker than Robustness](https://direct.mit.edu/artl/article/26/1/38/93265/The-Complexity-Ratchet-Stronger-than-Selection) (Artificial Life, 2020): Using the Aevol platform, researchers found that organisms become complex although such organisms are less fit than simple ones, demonstrating a complexity ratchet that operates independently of selection. An open question is whether the complexity ratchet could contribute to open-ended evolution, opening the door for non-selectively-driven open-endedness.
+- [Automating the Search for Artificial Life with Foundation Models](https://arxiv.org/html/2412.17799v2) (arXiv, 2024): Automated Search for Artificial Life (ASAL) enables foundation models to identify interesting ALife simulations producing temporally open-ended novelty. ASAL discovered previously unseen lifeforms and expanded the frontier of emergent structures, revealing that automated search can identify life-like cellular automata which are open-ended.
+- [Towards open-ended dynamics in Artificial Life](https://theses.hal.science/tel-05137835v1/file/HAMON_GAUTIER_2025.pdf) (PhD thesis, 2025): Open-ended evolution describes systems where continual generation of novelty and unbounded increase in complexity characterize evolution on multiple scales. The thesis explores conditions for open-endedness in computational systems.
 
 ## Research Gaps
-- Does composition-dependent metabolism or reproduction (e.g., requiring minimum primary and secondary thresholds, or penalizing imbalanced pools) enable resource-partitioning tradeoffs that composition-agnostic physiology cannot express?
-- Do mechanism combinations (encounter topology × resource substrate × composition-dependent costs) produce emergent coexistence gains at canonical horizon?
+- Does the 2×2 factorial (encounter topology × composition-dependent costs) produce synergistic coexistence gains that neither mechanism produces in isolation, or does nullity persist across all four conditions?
+- If the factorial shows null across all conditions, which of the 14 Critic-flagged structural ceiling items offers the highest leverage for enabling complexity ratchet and open-ended novelty generation?
 
 ## Current Anti-Evidence
-- Internal pool preservation alone is insufficient: the diagnostics confirmed that "metabolism and reproduction costs are still composition-agnostic, so the redesign preserves source identity without yet imposing source-specific physiological tradeoffs."
-- Pairwise versus dominant encounter operators produce zero delta at canonical horizon (both converge to single active clade).
-- Non-transitive operator is implemented but untested in long-horizon comparative studies.
-- No configuration has produced positive absolute active-clade deltas versus species-conditioned null.
+- Non-transitive operator validation confirmed zero delta: "both converge to single active clade" and "structural equivalence under composition-agnostic physiology."
+- Composition-dependent reproduction gates eligibility but does not alter metabolism, movement cost, encounter transfers, or disturbance impacts—all still key off total energy only.
+- The genome remains three mutable axes (`metabolism`, `harvest`, `aggression`) plus optional `harvestEfficiency2`; all other ecological roles are derived scalars computed from these axes.
+- No configuration has produced positive absolute active-clade deltas versus species-conditioned relabel null.
 
 ## Bet Queue
 
-### Bet 1: [expand] Implement Composition-Dependent Physiology to Enable Partitioning Tradeoffs
-The dual-resource substrate preserves internal pool identity, but metabolism and reproduction remain composition-agnostic. Implement composition-dependent costs (e.g., reproduction requires minimum thresholds in both pools, or metabolism penalizes imbalanced compositions based on genome-defined target ratios) to enable genuine partitioning tradeoffs where specialists and generalists face different viability constraints.
+### Bet 1: [validate] Execute 2×2 Factorial and Generate Decision Artifact
+Run the encounter-topology × composition-cost factorial study at canonical 4000-step horizon to test whether mechanism combinations produce synergistic coexistence gains. The study code exists; execution is the decision point. If all four conditions show null results (zero interaction effect, zero absolute gains versus null), this confirms that the current expressiveness ceiling (three-axis genome, composition-agnostic metabolism except reproductive gating, fungible total-energy physiology) structurally caps partitioning tradeoffs regardless of constraint tuning.
 
 #### Success Evidence
-- New `SimulationConfig` field (e.g., `compositionDependentReproduction` or `metabolicBalancePenalty`) that makes reproduction or metabolism depend on internal pool structure, not just total energy.
-- Unit tests demonstrating that specialists with imbalanced pools face different viability than generalists with matched total energy.
-- Existing tests pass.
+- Artifact at `docs/clade_activity_relabel_null_encounter_topology_composition_cost_factorial_horizon_2026-03-18.json`.
+- Four conditions tested: (1) dominant + agnostic, (2) dominant + dependent, (3) non-transitive + agnostic, (4) non-transitive + dependent.
+- Reports interaction effects on active-clade delta, abundance-weighted activity, area under curve, innovation median lifespan, regime switches.
 
 #### Stop Conditions
-- Stop after one composition-dependent mechanism is implemented and tested.
-- Stop if the implementation starts redesigning the entire physiology layer instead of adding one targeted constraint.
+- Stop after one factorial artifact, even if results show null across all conditions.
+- Stop if execution exceeds 2 hours wall time; document partial results if available.
 
-### Bet 2: [validate] Run 2×2 Factorial: Encounter Topology × Composition-Dependent Costs at Canonical Horizon
-Test whether the combination of non-transitive encounter topology plus composition-dependent reproduction produces synergistic coexistence gains that neither mechanism produces alone, using canonical 4000-step horizon with matched null.
+### Bet 2: [synthesize] Write Structural-Expansion Decision Memo if Factorial Shows Null
+If Bet 1 confirms null results across all four factorial conditions, write a decision memo analyzing the 14 Critic-flagged structural ceiling items and recommending the highest-leverage expansion for enabling complexity ratchet and open-ended novelty generation. The memo should evaluate each item against three criteria: (1) unblocks cumulative innovation (not just parameter retuning), (2) aligns with recent ALife literature on complexity ratchet and open-endedness, (3) implementable within one-month horizon without full architecture redesign.
 
 #### Success Evidence
-- Factorial artifact comparing four conditions: (1) dominant + composition-agnostic, (2) dominant + composition-dependent, (3) non-transitive + composition-agnostic, (4) non-transitive + composition-dependent.
-- Uses dual-resource substrate (`maxResource2 > 0`, `resource2Regen > 0`).
-- Reports active-clade deltas, trajectory metrics (area under curve, regime switches), and abundance-weighted persistence.
+- Markdown document at `docs/structural_expansion_decision_memo_2026-03-18.md`.
+- Evaluates at least the top 5 ceiling items from backlog against stated criteria.
+- Proposes one concrete expansion with implementation sketch, expected impact on complexity ratchet, and connection to open-endedness literature.
 
 #### Stop Conditions
-- Stop after one 2×2 factorial artifact, even if results show no interaction effect.
-- Stop if Bet 1 is incomplete; defer to next session.
+- Only execute if Bet 1 shows null results.
+- Stop after recommending one expansion; do not begin implementation.
 
-### Bet 3: [validate] Run Non-Transitive Operator Long-Horizon Validation
-The non-transitive operator is implemented and unit-tested but not validated at canonical 4000-step horizon. Run a comparative study (non-transitive vs dominant) with matched null to test whether intransitivity breaks dominance-hierarchy convergence under the current substrate.
+### Bet 3: [investigate] Analyze Factorial Mechanism Interactions if Non-Null
+If Bet 1 shows non-null interaction effects or absolute gains, write diagnostic analysis explaining which mechanism combination produced gains, why the interaction was synergistic, and what substrate or physiological properties enabled the partitioning tradeoffs to express. Compare internal pool composition, aggression hierarchy stability, and spatial clustering across the four conditions to identify causal channels.
 
 #### Success Evidence
-- Canonical-horizon artifact comparing non-transitive versus dominant operators with species-conditioned relabel null.
-- Uses founder-grace configuration (matched to existing canonical artifacts).
-- Reports active-clade deltas, aggression hierarchy stability, and trajectory metrics.
+- Markdown document at `docs/factorial_mechanism_interaction_analysis_2026-03-18.md`.
+- Compares pool-composition metrics, encounter-transfer distributions, and aggression hierarchies across all four conditions.
+- Identifies which physiological or behavioral channel enabled composition-dependent costs to differentiate outcomes.
 
 #### Stop Conditions
-- Stop after one comparative horizon artifact, even if non-transitive shows zero delta versus dominant.
-- Stop if the run reveals that non-transitive is structurally equivalent to pairwise under current physiology; document findings.
+- Only execute if Bet 1 shows non-null results (interaction effect or absolute gain > 0).
+- Stop after identifying causal channel; do not begin follow-up experiments.
 
-### Bet 4: [expand] Add Substrate-Specific Observability Metrics to Study Exports
-Current study exports report `meanEnergy`, activity, and turnover but do not distinguish internal pool composition, per-layer harvest dependence, or taxon-level substrate specialization. Add substrate-specific metrics (mean primary-energy share, per-clade substrate dependence, specialization-stratified pool balance) so mechanism-combination studies can detect partitioning invisible to scalar summaries.
+### Bet 4: [validate] Refresh Canonical Baseline Artifact with Substrate Metrics
+The canonical founder-grace artifact predates substrate observability (commit fc23956). Refresh the baseline to include pool-composition, per-clade substrate dependence, and specialization-stratified metrics, ensuring future comparisons can detect resource-partitioning signals invisible to scalar energy summaries.
 
 #### Success Evidence
-- New `StepSummary` or analytics fields: `meanPrimaryEnergyShare`, `meanSecondaryEnergyShare`, per-clade harvest-efficiency distributions.
-- Existing relabel-null or factorial artifacts re-exported with substrate metrics included.
-- All existing tests pass.
+- Updated artifact at `docs/clade_activity_relabel_null_founder_grace_ecology_gate_horizon_2026-03-18.json`.
+- Includes new substrate metrics: mean primary/secondary energy share, per-clade harvest-efficiency distributions.
+- Uses same configuration as March 15 baseline (founder grace, ecology gate, canonical 4000-step horizon).
 
 #### Stop Conditions
-- Stop after substrate observability metrics are wired and one baseline artifact is refreshed.
-- Stop if the work starts redesigning the entire export surface instead of adding 2-3 new substrate-focused fields.
+- Stop after one refreshed artifact.
+- Stop if Bet 1 or Bet 2 consume more than 75% of session time; defer to next session.
 
 ## Assumptions / Unknowns
-- Assumption: composition-dependent physiology is a prerequisite for resource-partitioning tradeoffs under the current dual-pool substrate.
-- Unknown: whether composition-dependent costs alone enable coexistence gains, or whether they only express gains when combined with encounter-topology diversity.
-- Unknown: whether non-transitive encounter operator differentiates from dominant under dual-resource substrate or whether it remains structurally equivalent under fungible-energy composition-agnostic costs.
-- Observation: mechanism-combination experiments remain at zero commits despite literature emphasis and March 17 agenda pivot, while mechanism implementation (4/10) and structural diagnosis (3/10) dominate recent activity.
+- Assumption: The factorial is the critical decision point—null results across all conditions justify pivoting from mechanism-combination tuning to structural expansion.
+- Assumption: If the factorial shows null, the highest-leverage expansion targets Representational Capacity, Behavioral Control, or Inheritance Architecture (the three dimensions that directly control what agents can evolve, not just how existing mechanisms interact).
+- Unknown: Whether the complexity ratchet requires recombination (sexual reproduction, horizontal transfer) or whether mutable controller architecture (evolvable policies, internal state) suffices for cumulative innovation.
+- Unknown: Whether the ASAL automated-search paradigm could be adapted to this system, or whether search requires a richer genotype-phenotype map first.
+- Observation: Mechanism implementation has dominated recent work (5/10 commits), while structural expansion remains at zero commits despite literature emphasis and Critic flagging 14 ceiling items.
