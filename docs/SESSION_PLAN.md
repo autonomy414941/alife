@@ -1,100 +1,100 @@
-# Session Plan — 2026-03-16
+# Session Plan — 2026-03-17
 
 ## Compact Context
-- Dual-resource substrate landed (`0a069b9`): cells have `resources` and `resources2` with independent regeneration, agents have `harvestEfficiency2` genome axis, harvest operates through efficiency-weighted shares.
-- Canonical 4000-step pairwise comparison confirmed zero differentiation (`1d4c357`): both dominant and pairwise operators produce identical active-clade deltas (0 at all thresholds).
-- Nullity diagnostics (`55f33e7`) identified the cause: energy transfers identical (delta 0.005), aggression hierarchies stable (Kendall tau ~0.65), spatial clustering unchanged — encounter order does not affect who wins under fungible energy.
-- No tested configuration beats species-conditioned relabel null in absolute active clades; canonical founder-grace sits at `-25.75`.
+- Agents now have internal dual-resource pools (`energyPrimary`, `energySecondary`) that preserve source identity through metabolism and reproduction (`c5cb3eb`).
+- Metabolism and reproduction costs are composition-agnostic (equal scalar scaling regardless of pool mix).
+- Non-transitive encounter operator implemented (`4bd9349`), pairwise and dominant operators validated at canonical horizon.
+- Trajectory metrics (area under curve, innovation median lifespan, regime switches) now exported (`891b38c`, `766c205`).
+- No configuration beats species-conditioned relabel null in absolute active clades; canonical founder-grace sits at `-25.75`.
 - Package manager is npm (`package-lock.json`).
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Structural diagnosis / Critic | 2 | 5b7056a, a949e26 |
-| Mechanism validation (long-horizon comparative) | 1 | 1d4c357 |
-| Diagnostic investigation | 1 | 55f33e7 |
-| Substrate expansion (dual-resource) | 1 | 0a069b9 |
-| Planner governance | 1 | 8f6d22f |
-| Code modularization | 1 | b68d34d |
+| Mechanism implementation (substrate / operators) | 4 | 4bd9349, c5cb3eb, 0a069b9, 242d31b |
+| Structural diagnosis (Critic / diagnostics) | 3 | 56a58f8, 85a4c34, 55f33e7, 5b7056a |
+| Validation study (comparative / horizon) | 2 | 1d4c357, 886e509 |
+| Trajectory metrics / export | 2 | 766c205, 891b38c |
+| Planner governance | 2 | 8f6d22f, 973a230 |
+| Code refactoring | 1 | b68d34d |
 | Scalability measurement | 1 | 24820b3 |
-| Mechanism validation (micro-horizon) | 1 | 886e509 |
-| Alternative mechanism implementation | 1 | 242d31b |
 
-Dominant axis: Structural diagnosis / Critic (2/10)
-Underexplored axes: mechanism-combination experiments (0 commits despite literature emphasis and agenda pivot), trajectory metrics, non-transitive encounter operators
+Dominant axis: Mechanism implementation (4/10)
+Underexplored axes: mechanism-combination experiments (0 commits), factorial comparative studies, composition-dependent physiology
 
 ## Project State
-- The encounter operator seam is stable with two implementations (dominant, pairwise), validated at canonical 4000-step horizon.
-- The dual-resource substrate is implemented but untested in comparative studies — no 2×2 factorial (topology × substrate) has been run.
-- The Critic identified Energy Metabolism Fungibility and Encounter Resolution Invariance as structural ceilings: under one fungible internal energy pool, encounter topology changes accounting sequence but not outcomes.
-- Recent sessions built two mechanism slots (encounter operators, resource substrates) but have not yet tested whether their combination produces synergistic coexistence gains.
+- The dual-resource substrate now preserves source identity internally (agents retain separate `energyPrimary` and `energySecondary` pools), but downstream physiology (metabolism, reproduction) remains composition-agnostic.
+- Three encounter operators exist (dominant, pairwise, non-transitive), but comparative studies confirm pairwise produces zero delta versus dominant at canonical 4000-step horizon.
+- Trajectory metrics are implemented but not yet used in mechanism-combination experiments.
+- Recent sessions built substrate and operator diversity but have not tested whether combinations produce synergistic gains.
 
 ## External Context
-- [Species coexistence as an emergent effect of interacting mechanisms](https://www.sciencedirect.com/science/article/pii/S0040580924001084) (Theoretical Population Biology, 2025): Significant emergent effects occur for mechanism combinations, with coexistence times extended more than tenfold compared to individual mechanisms. Studies of individual coexistence mechanisms might be insufficient and misleading for quantifying their overall impact on biodiversity.
-- [Multispecies Coexistence Emerges From Pairwise Exclusions in Communities With Competitive Hierarchy](https://onlinelibrary.wiley.com/doi/10.1111/ele.70206) (Ecology Letters, 2025): Emergent coexistence—where multispecies persistence occurs without pairwise coexistence—can arise without intransitivity, with competitive hierarchy and simple trade-offs producing emergent multispecies persistence.
-- [Functional coexistence theory: Identifying mechanisms linking biodiversity and ecosystem function](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecm.70033) (Ecological Monographs, Jan 2025): Three coexistence mechanisms are supported: storage effect, intransitivity, and resource partitioning.
+- [Species coexistence as an emergent effect of interacting mechanisms](https://www.sciencedirect.com/science/article/pii/S0040580924001084) (Theoretical Population Biology, 2025): Mechanism combinations extend coexistence more than tenfold compared to singular mechanisms. The particular combination of mechanisms and their interactions appears vital for biodiversity.
+- [Functional coexistence theory: Identifying mechanisms linking biodiversity and ecosystem function](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecm.70033) (Ecological Monographs, 2025): Three core coexistence mechanisms—storage effect, intransitivity, and resource partitioning—are supported.
+- [A practical guide to characterising ecological coexistence](https://doi.org/10.1111/brv.70079) (Biological Reviews, 2026): Recent integrative framework for characterizing coexistence mechanisms.
 
 ## Research Gaps
-- Does the combination of pairwise encounter topology plus dual-resource partitioning produce synergistic coexistence gains that neither mechanism produces alone?
-- Is the dual-resource substrate implemented with fungible internal energy (harvested resources immediately collapse into one scalar), or does it preserve resource-type identity through metabolism to enable genuine partitioning tradeoffs?
+- Does composition-dependent metabolism or reproduction (e.g., requiring minimum primary and secondary thresholds, or penalizing imbalanced pools) enable resource-partitioning tradeoffs that composition-agnostic physiology cannot express?
+- Do mechanism combinations (encounter topology × resource substrate × composition-dependent costs) produce emergent coexistence gains at canonical horizon?
 
 ## Current Anti-Evidence
-- Pairwise encounter operator produced zero delta versus dominant at canonical 4000-step horizon with matched null.
-- The Critic's backlog item [Encounter Resolution Invariance Under Fungible Energy] states: "Under fungible internal energy, encounter topology only changes accounting sequence, not who wins or loses — aggressive agents always extract energy from less-aggressive agents at the same per-encounter rate regardless of resolution order, and extracted energy is indistinguishable from harvested energy once inside the winner."
-- The backlog item [Energy Metabolism Fungibility] states: "Energy gained from resource1 is indistinguishable from energy gained from resource2 once inside the agent — specialists and generalists converge to the same internal state if total energy income matches."
-- No configuration has yet produced positive absolute active-clade deltas versus species-conditioned null.
+- Internal pool preservation alone is insufficient: the diagnostics confirmed that "metabolism and reproduction costs are still composition-agnostic, so the redesign preserves source identity without yet imposing source-specific physiological tradeoffs."
+- Pairwise versus dominant encounter operators produce zero delta at canonical horizon (both converge to single active clade).
+- Non-transitive operator is implemented but untested in long-horizon comparative studies.
+- No configuration has produced positive absolute active-clade deltas versus species-conditioned null.
 
 ## Bet Queue
 
-### Bet 1: [investigate] Verify Resource-Identity Preservation Through Metabolism
-The dual-resource substrate is implemented, but the Critic flagged that agents have only one fungible `energy` scalar. Verify whether harvested resource1 and resource2 remain distinct through metabolism or collapse into one indistinguishable pool, and measure whether specialists versus generalists show metabolic differentiation beyond harvest timing.
+### Bet 1: [expand] Implement Composition-Dependent Physiology to Enable Partitioning Tradeoffs
+The dual-resource substrate preserves internal pool identity, but metabolism and reproduction remain composition-agnostic. Implement composition-dependent costs (e.g., reproduction requires minimum thresholds in both pools, or metabolism penalizes imbalanced compositions based on genome-defined target ratios) to enable genuine partitioning tradeoffs where specialists and generalists face different viability constraints.
 
 #### Success Evidence
-- One diagnostic artifact measuring: (1) whether agents retain separate energy pools derived from resource1 versus resource2, (2) whether metabolism/reproduction costs differ by internal resource composition, (3) whether specialist (high `harvestEfficiency2`) versus generalist (balanced `harvest` and `harvestEfficiency2`) phenotypes show distinct internal states at matched total energy.
-- Clear statement of whether the current implementation supports metabolic partitioning tradeoffs or collapses to fungible energy.
+- New `SimulationConfig` field (e.g., `compositionDependentReproduction` or `metabolicBalancePenalty`) that makes reproduction or metabolism depend on internal pool structure, not just total energy.
+- Unit tests demonstrating that specialists with imbalanced pools face different viability than generalists with matched total energy.
+- Existing tests pass.
 
 #### Stop Conditions
-- Stop after one diagnostic artifact with clear structural assessment.
-- Stop if the investigation reveals that the substrate requires redesign; document findings and defer implementation to next session.
+- Stop after one composition-dependent mechanism is implemented and tested.
+- Stop if the implementation starts redesigning the entire physiology layer instead of adding one targeted constraint.
 
-### Bet 2: [validate] Run 2×2 Factorial Pilot: Encounter Topology × Resource Substrate At Canonical Horizon
-Run a minimal factorial comparison (dominant vs. pairwise encounter × single-resource vs. dual-resource) at the canonical 4000-step horizon with matched founder-grace configuration and species-conditioned relabel null, testing whether mechanism combinations produce synergistic gains.
+### Bet 2: [validate] Run 2×2 Factorial: Encounter Topology × Composition-Dependent Costs at Canonical Horizon
+Test whether the combination of non-transitive encounter topology plus composition-dependent reproduction produces synergistic coexistence gains that neither mechanism produces alone, using canonical 4000-step horizon with matched null.
 
 #### Success Evidence
-- One artifact comparing four conditions with active-clade deltas, persistence, and abundance-weighted metrics.
-- Dual-resource condition uses non-zero `maxResource2` and `resource2Regen` with agents carrying `harvestEfficiency2`.
-- Includes species-conditioned relabel null for each condition.
+- Factorial artifact comparing four conditions: (1) dominant + composition-agnostic, (2) dominant + composition-dependent, (3) non-transitive + composition-agnostic, (4) non-transitive + composition-dependent.
+- Uses dual-resource substrate (`maxResource2 > 0`, `resource2Regen > 0`).
+- Reports active-clade deltas, trajectory metrics (area under curve, regime switches), and abundance-weighted persistence.
 
 #### Stop Conditions
 - Stop after one 2×2 factorial artifact, even if results show no interaction effect.
-- Stop if Bet 1 reveals that dual-resource requires structural changes; defer to next session.
+- Stop if Bet 1 is incomplete; defer to next session.
 
-### Bet 3: [expand] Add Trajectory Quality Metrics Beyond Final-State Summaries
-Current studies export final active-clade counts, persistence windows, and turnover. Add first-class trajectory metrics (area under active-clade diversity curve, innovation survival curves, regime-switch counts) to detect interventions that create repeated innovations or long transient scaffolding invisible to endpoint snapshots.
+### Bet 3: [validate] Run Non-Transitive Operator Long-Horizon Validation
+The non-transitive operator is implemented and unit-tested but not validated at canonical 4000-step horizon. Run a comparative study (non-transitive vs dominant) with matched null to test whether intransitivity breaks dominance-hierarchy convergence under the current substrate.
 
 #### Success Evidence
-- New study export fields: `activeCladeAreaUnderCurve`, `innovationSurvivalCurve` (e.g., median lifespan by birth cohort), `regimeSwitchCount` (count of tick-to-tick increases in active clades after drops).
-- Existing relabel-null artifacts re-exported with trajectory metrics included.
+- Canonical-horizon artifact comparing non-transitive versus dominant operators with species-conditioned relabel null.
+- Uses founder-grace configuration (matched to existing canonical artifacts).
+- Reports active-clade deltas, aggression hierarchy stability, and trajectory metrics.
+
+#### Stop Conditions
+- Stop after one comparative horizon artifact, even if non-transitive shows zero delta versus dominant.
+- Stop if the run reveals that non-transitive is structurally equivalent to pairwise under current physiology; document findings.
+
+### Bet 4: [expand] Add Substrate-Specific Observability Metrics to Study Exports
+Current study exports report `meanEnergy`, activity, and turnover but do not distinguish internal pool composition, per-layer harvest dependence, or taxon-level substrate specialization. Add substrate-specific metrics (mean primary-energy share, per-clade substrate dependence, specialization-stratified pool balance) so mechanism-combination studies can detect partitioning invisible to scalar summaries.
+
+#### Success Evidence
+- New `StepSummary` or analytics fields: `meanPrimaryEnergyShare`, `meanSecondaryEnergyShare`, per-clade harvest-efficiency distributions.
+- Existing relabel-null or factorial artifacts re-exported with substrate metrics included.
 - All existing tests pass.
 
 #### Stop Conditions
-- Stop after trajectory metrics are wired and one baseline artifact is refreshed.
-- Stop if the work starts redesigning the entire study surface instead of adding 2-3 new summary fields.
-
-### Bet 4: [feat] Implement Non-Transitive Encounter Operator to Stress-Test Mechanism Slot
-The encounter operator seam has two implementations (dominant, pairwise) that produce identical outcomes. Add a third operator with fundamentally different structure (e.g., Rock-Paper-Scissors non-transitivity based on genome distance or trait thresholds) to verify the abstraction is stable and test whether intransitivity breaks dominance-hierarchy convergence.
-
-#### Success Evidence
-- New `EncounterOperator` implementation in `src/encounter.ts` with non-transitive resolution logic.
-- Unit tests demonstrating that A beats B, B beats C, C beats A under specific genome configurations.
-- Existing dominant and pairwise operators unchanged, all tests pass.
-
-#### Stop Conditions
-- Stop after the third operator is implemented and tested, even if no comparative study artifact is produced yet.
-- Stop if non-transitivity cannot be cleanly expressed within the current `EncounterOperator` interface; document the blocker.
+- Stop after substrate observability metrics are wired and one baseline artifact is refreshed.
+- Stop if the work starts redesigning the entire export surface instead of adding 2-3 new substrate-focused fields.
 
 ## Assumptions / Unknowns
-- Assumption: verifying resource-identity preservation is cheaper than implementing a 2×2 factorial on potentially-broken substrate.
-- Unknown: whether the dual-resource substrate preserves resource-type identity through metabolism or immediately collapses harvested resources into fungible energy.
-- Unknown: whether a 2×2 factorial at canonical horizon will show interaction effects or whether both mechanisms remain individually and jointly null under the current physiology.
-- Observation: mechanism-combination experiments remain at zero commits despite literature emphasis and the March 17 research agenda pivot, while planner governance and critic diagnostics dominate recent activity (3/10 commits).
+- Assumption: composition-dependent physiology is a prerequisite for resource-partitioning tradeoffs under the current dual-pool substrate.
+- Unknown: whether composition-dependent costs alone enable coexistence gains, or whether they only express gains when combined with encounter-topology diversity.
+- Unknown: whether non-transitive encounter operator differentiates from dominant under dual-resource substrate or whether it remains structurally equivalent under fungible-energy composition-agnostic costs.
+- Observation: mechanism-combination experiments remain at zero commits despite literature emphasis and March 17 agenda pivot, while mechanism implementation (4/10) and structural diagnosis (3/10) dominate recent activity.
