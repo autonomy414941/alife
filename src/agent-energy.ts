@@ -1,6 +1,7 @@
 import { Agent, AgentSeed } from './types';
+import { getTrait } from './genome-v2';
 
-type EnergyCarrier = Pick<Agent, 'energy' | 'energyPrimary' | 'energySecondary'>;
+type EnergyCarrier = Pick<Agent, 'energy' | 'energyPrimary' | 'energySecondary' | 'genomeV2'>;
 
 export interface AgentEnergyPools {
   primary: number;
@@ -88,9 +89,23 @@ export function spendAgentEnergy(
     return { primary: 0, secondary: 0, total: 0 };
   }
 
+  let primaryEfficiency = 1.0;
+  let secondaryEfficiency = 1.0;
+
+  if (agent.genomeV2 && agent.genomeV2.traits.has('metabolic_efficiency_primary')) {
+    primaryEfficiency = 2.0 - agent.genomeV2.traits.get('metabolic_efficiency_primary')!;
+  }
+  if (agent.genomeV2 && agent.genomeV2.traits.has('metabolic_efficiency_secondary')) {
+    secondaryEfficiency = 2.0 - agent.genomeV2.traits.get('metabolic_efficiency_secondary')!;
+  }
+
   const spentTotal = Math.min(current.total, requested);
-  const primarySpent = spentTotal * (current.primary / current.total);
-  const secondarySpent = spentTotal - primarySpent;
+  const rawPrimarySpent = spentTotal * (current.primary / current.total);
+  const rawSecondarySpent = spentTotal - rawPrimarySpent;
+
+  const primarySpent = rawPrimarySpent * primaryEfficiency;
+  const secondarySpent = rawSecondarySpent * secondaryEfficiency;
+
   assignAgentEnergy(agent, {
     primary: current.primary - primarySpent,
     secondary: current.secondary - secondarySpent
@@ -98,7 +113,7 @@ export function spendAgentEnergy(
   return {
     primary: primarySpent,
     secondary: secondarySpent,
-    total: spentTotal
+    total: primarySpent + secondarySpent
   };
 }
 
