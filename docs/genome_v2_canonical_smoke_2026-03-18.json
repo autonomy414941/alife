@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-03-18T03:57:05.011Z",
+  "config": {
+    "steps": 500,
+    "seed": 12345,
+    "founderGrace": true,
+    "newCladeSettlementCrowdingGraceTicks": 80,
+    "newCladeEncounterRestraintGraceBoost": 0.6,
+    "cladogenesisThreshold": 1
+  },
+  "results": {
+    "finalAgentCount": 2197,
+    "finalActiveCladeCount": 12,
+    "finalActiveSpeciesCount": 209,
+    "lociCountDistribution": {
+      "3": 2197
+    },
+    "traitSummaries": {
+      "habitat_preference": {
+        "mean": 1,
+        "min": 1,
+        "max": 1
+      },
+      "trophic_level": {
+        "mean": 0.5,
+        "min": 0.5,
+        "max": 0.5
+      },
+      "defense_level": {
+        "mean": 0.5,
+        "min": 0.5,
+        "max": 0.5
+      },
+      "metabolic_efficiency_primary": {
+        "mean": 0.5,
+        "min": 0.5,
+        "max": 0.5
+      },
+      "metabolic_efficiency_secondary": {
+        "mean": 0.5,
+        "min": 0.5,
+        "max": 0.5
+      }
+    },
+    "genomeV2Agents": 2197,
+    "conversionSuccess": true
+  }
+}
