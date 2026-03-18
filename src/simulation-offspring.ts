@@ -3,6 +3,7 @@ import {
   getSpeciesHabitatPreference as lookupSpeciesHabitatPreference,
   habitatMatchEfficiency as calculateHabitatMatchEfficiency
 } from './clade-habitat';
+import { cloneGenomeV2, fromGenome } from './genome-v2';
 import { LineageOccupancyGrid, SettlementAgent, SettlementPosition } from './reproduction';
 import { reproduceAgent } from './simulation-reproduction';
 import { resolveSettlementEcologyScore } from './settlement-cladogenesis';
@@ -13,7 +14,7 @@ import {
   sameLineageNeighborhoodCrowdingAt
 } from './settlement-spatial';
 import { combinedResourceAvailability, secondaryHarvestEfficiency } from './resource-harvest';
-import { Agent, Genome, SimulationConfig } from './types';
+import { Agent, Genome, GenomeV2, SimulationConfig } from './types';
 
 interface ReproduceInSimulationOptions {
   parent: Agent;
@@ -29,6 +30,7 @@ interface ReproduceInSimulationOptions {
   speciesTrophicLevel: Map<number, number>;
   speciesDefenseLevel: Map<number, number>;
   cladeFounderGenome: Map<number, Genome>;
+  cladeFounderGenomeV2: Map<number, GenomeV2>;
   cladeHabitatPreference: Map<number, number>;
   cladeHistory: ReadonlyMap<number, { firstSeenTick: number }>;
   resources: number[][];
@@ -61,6 +63,7 @@ export function reproduceInSimulation({
   speciesTrophicLevel,
   speciesDefenseLevel,
   cladeFounderGenome,
+  cladeFounderGenomeV2,
   cladeHabitatPreference,
   cladeHistory,
   resources,
@@ -89,6 +92,7 @@ export function reproduceInSimulation({
     speciesTrophicLevel,
     speciesDefenseLevel,
     cladeFounderGenome,
+    cladeFounderGenomeV2,
     cladeHabitatPreference,
     allocateAgentId,
     allocateSpeciesId,
@@ -139,16 +143,24 @@ export function reproduceInSimulation({
         excludedPosition
       }),
     effectiveBiomeFertilityAt,
-    getCladeFounderGenome: (lineage) =>
-      getCladeFounderGenome(lineage, cladeFounderGenome, agents, minGenome),
+    getCladeFounderGenome: (lineage, preferGenomeV2 = false) =>
+      getCladeFounderGenome(lineage, preferGenomeV2, cladeFounderGenome, cladeFounderGenomeV2, agents, minGenome),
     getSpeciesHabitatPreference: (species) => lookupSpeciesHabitatPreference(speciesHabitatPreference, species),
     getCladeHabitatPreference: (lineage) => lookupCladeHabitatPreference(cladeHabitatPreference, lineage),
     getSpeciesTrophicLevel: (species) => getSpeciesMetric(speciesTrophicLevel, species),
     getCladeTrophicLevel: (lineage) =>
-      genomeTrophicSignal(getCladeFounderGenome(lineage, cladeFounderGenome, agents, minGenome), minGenome, maxGenome),
+      genomeTrophicSignal(
+        getCladeFounderGenome(lineage, false, cladeFounderGenome, cladeFounderGenomeV2, agents, minGenome) as Genome,
+        minGenome,
+        maxGenome
+      ),
     getSpeciesDefenseLevel: (species) => getSpeciesMetric(speciesDefenseLevel, species),
     getCladeDefenseLevel: (lineage) =>
-      genomeDefenseSignal(getCladeFounderGenome(lineage, cladeFounderGenome, agents, minGenome), minGenome, maxGenome)
+      genomeDefenseSignal(
+        getCladeFounderGenome(lineage, false, cladeFounderGenome, cladeFounderGenomeV2, agents, minGenome) as Genome,
+        minGenome,
+        maxGenome
+      )
   });
 }
 
@@ -250,18 +262,43 @@ export function resolveSimulationLocalEcologyScore({
 
 function getCladeFounderGenome(
   lineage: number,
+  preferGenomeV2: boolean,
   cladeFounderGenome: Map<number, Genome>,
+  cladeFounderGenomeV2: Map<number, GenomeV2>,
   agents: Agent[],
   minGenome: Genome
-): Genome {
+): Genome | GenomeV2 {
+  if (preferGenomeV2) {
+    const existingV2 = cladeFounderGenomeV2.get(lineage);
+    if (existingV2 !== undefined) {
+      return existingV2;
+    }
+  }
+
   const existing = cladeFounderGenome.get(lineage);
   if (existing !== undefined) {
+    if (preferGenomeV2) {
+      const converted = fromGenome(existing);
+      cladeFounderGenomeV2.set(lineage, converted);
+      return converted;
+    }
     return existing;
   }
 
-  const founder = agents.find((agent) => agent.lineage === lineage)?.genome ?? minGenome;
-  const genome = copyGenome(founder);
+  const founder = agents.find((agent) => agent.lineage === lineage);
+  if (preferGenomeV2 && founder?.genomeV2) {
+    const genomeV2 = cloneGenomeV2(founder.genomeV2);
+    cladeFounderGenomeV2.set(lineage, genomeV2);
+    return genomeV2;
+  }
+
+  const genome = copyGenome(founder?.genome ?? minGenome);
   cladeFounderGenome.set(lineage, genome);
+  if (preferGenomeV2) {
+    const converted = fromGenome(genome);
+    cladeFounderGenomeV2.set(lineage, converted);
+    return converted;
+  }
   return genome;
 }
 

@@ -1,6 +1,7 @@
-import { Agent, Genome, SimulationConfig } from './types';
+import { getTrait } from './genome-v2';
+import { Agent, Genome, GenomeV2, SimulationConfig } from './types';
 
-type HabitatAgent = Pick<Agent, 'lineage' | 'species' | 'x' | 'y'>;
+type HabitatAgent = Pick<Agent, 'lineage' | 'species' | 'x' | 'y' | 'genomeV2'>;
 
 const DEFAULT_HABITAT_PREFERENCE = 1;
 const MIN_HABITAT_PREFERENCE = 0.1;
@@ -15,8 +16,8 @@ interface InitializeHabitatPreferencesOptions {
 
 interface ResolveMutatedSpeciesHabitatPreferenceOptions {
   parentSpecies: number;
-  parentGenome: Genome;
-  childGenome: Genome;
+  parentGenome: Genome | GenomeV2;
+  childGenome: Genome | GenomeV2;
   speciesHabitatPreference: Map<number, number>;
   config: Pick<SimulationConfig, 'habitatPreferenceMutation'>;
 }
@@ -25,6 +26,7 @@ interface SetFoundCladeHabitatPreferenceOptions {
   cladeHabitatPreference: Map<number, number>;
   lineage: number;
   fertility: number;
+  genomeV2?: GenomeV2;
 }
 
 interface AdaptCladeHabitatPreferenceOptions {
@@ -35,7 +37,7 @@ interface AdaptCladeHabitatPreferenceOptions {
 }
 
 interface HabitatMatchEfficiencyOptions {
-  agent: Pick<Agent, 'species' | 'lineage'>;
+  agent: Pick<Agent, 'species' | 'lineage' | 'genomeV2'>;
   fertility: number;
   speciesHabitatPreference: Map<number, number>;
   cladeHabitatPreference: Map<number, number>;
@@ -86,14 +88,21 @@ export function resolveMutatedSpeciesHabitatPreference({
   speciesHabitatPreference,
   config
 }: ResolveMutatedSpeciesHabitatPreferenceOptions): number {
+  const directPreference = habitatPreferenceTrait(childGenome);
+  if (directPreference !== undefined) {
+    return directPreference;
+  }
+
   const parentPreference = getSpeciesHabitatPreference(speciesHabitatPreference, parentSpecies);
   const mutationScale = Math.max(0, config.habitatPreferenceMutation);
   if (mutationScale === 0) {
     return parentPreference;
   }
 
-  const harvestShift = childGenome.harvest - parentGenome.harvest;
-  const metabolismShift = parentGenome.metabolism - childGenome.metabolism;
+  const parentLegacyGenome = asLegacyGenome(parentGenome);
+  const childLegacyGenome = asLegacyGenome(childGenome);
+  const harvestShift = childLegacyGenome.harvest - parentLegacyGenome.harvest;
+  const metabolismShift = parentLegacyGenome.metabolism - childLegacyGenome.metabolism;
   const signal = harvestShift * 0.65 + metabolismShift * 0.35;
   return clampHabitatPreference(parentPreference + clamp(signal, -1, 1) * mutationScale);
 }
@@ -101,9 +110,10 @@ export function resolveMutatedSpeciesHabitatPreference({
 export function setFoundCladeHabitatPreference({
   cladeHabitatPreference,
   lineage,
-  fertility
+  fertility,
+  genomeV2
 }: SetFoundCladeHabitatPreferenceOptions): void {
-  cladeHabitatPreference.set(lineage, clampHabitatPreference(fertility));
+  cladeHabitatPreference.set(lineage, explicitHabitatPreferenceTrait(genomeV2) ?? clampHabitatPreference(fertility));
 }
 
 export function adaptCladeHabitatPreference({
@@ -137,13 +147,9 @@ export function habitatMatchEfficiency({
     return 1;
   }
 
-  const preference = blendedHabitatPreference(
-    agent.species,
-    agent.lineage,
-    speciesHabitatPreference,
-    cladeHabitatPreference,
-    config
-  );
+  const preference =
+    habitatPreferenceTraitWithFallback(agent.genomeV2) ??
+    blendedHabitatPreference(agent.species, agent.lineage, speciesHabitatPreference, cladeHabitatPreference, config);
   const mismatch = fertility - preference;
   return Math.max(0.05, Math.exp(-strength * mismatch * mismatch));
 }
@@ -158,7 +164,7 @@ function initializeHabitatPreferences({
   for (const agent of agents) {
     const taxon = taxonOf(agent);
     const current = sums.get(taxon) ?? { total: 0, count: 0 };
-    current.total += fertilityAt(agent);
+    current.total += explicitHabitatPreferenceTrait(agent.genomeV2) ?? fertilityAt(agent);
     current.count += 1;
     sums.set(taxon, current);
   }
@@ -200,6 +206,43 @@ function blendedHabitatPreference(
 
 function clampHabitatPreference(value: number): number {
   return clamp(value, MIN_HABITAT_PREFERENCE, MAX_HABITAT_PREFERENCE);
+}
+
+function habitatPreferenceTrait(genome: Genome | GenomeV2): number | undefined {
+  if (!isGenomeV2(genome) || !genome.traits.has('habitat_preference')) {
+    return undefined;
+  }
+  return clampHabitatPreference(getTrait(genome, 'habitat_preference'));
+}
+
+function explicitHabitatPreferenceTrait(genomeV2: GenomeV2 | undefined): number | undefined {
+  if (genomeV2 === undefined || !genomeV2.traits.has('habitat_preference')) {
+    return undefined;
+  }
+  return clampHabitatPreference(getTrait(genomeV2, 'habitat_preference'));
+}
+
+function habitatPreferenceTraitWithFallback(genomeV2: GenomeV2 | undefined): number | undefined {
+  if (genomeV2 === undefined) {
+    return undefined;
+  }
+  return clampHabitatPreference(getTrait(genomeV2, 'habitat_preference'));
+}
+
+function asLegacyGenome(genome: Genome | GenomeV2): Genome {
+  if (!isGenomeV2(genome)) {
+    return genome;
+  }
+  return {
+    metabolism: getTrait(genome, 'metabolism'),
+    harvest: getTrait(genome, 'harvest'),
+    aggression: getTrait(genome, 'aggression'),
+    harvestEfficiency2: genome.traits.has('harvestEfficiency2') ? getTrait(genome, 'harvestEfficiency2') : undefined
+  };
+}
+
+function isGenomeV2(genome: Genome | GenomeV2): genome is GenomeV2 {
+  return 'traits' in genome;
 }
 
 function clamp(value: number, min: number, max: number): number {

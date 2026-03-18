@@ -1,5 +1,7 @@
 import { spendAgentEnergy, getAgentEnergyPools } from './agent-energy';
 import { disturbanceSettlementOpenUntilTickAt, resolveDisturbanceSettlementOpeningConfig } from './disturbance';
+import { mutateGenomeV2WithConfig } from './genome-v2-adapter';
+import { getTrait, genomeV2Distance, toGenome } from './genome-v2';
 import {
   LineageOccupancyGrid,
   OffspringSettlementContext,
@@ -21,9 +23,7 @@ import {
   usesOffspringSettlementLineageOccupancy
 } from './settlement-cladogenesis';
 import { secondaryHarvestEfficiency } from './resource-harvest';
-import { Agent, Genome, SimulationConfig } from './types';
-
-type SpeciesData = Pick<Agent, 'species' | 'genome' | 'lineage' | 'x' | 'y'>;
+import { Agent, Genome, GenomeV2, SimulationConfig } from './types';
 
 type LocalEcologyScore = (
   agent: SettlementAgent,
@@ -73,6 +73,7 @@ interface ReproduceAgentOptions {
   speciesTrophicLevel: Map<number, number>;
   speciesDefenseLevel: Map<number, number>;
   cladeFounderGenome: Map<number, Genome>;
+  cladeFounderGenomeV2: Map<number, GenomeV2>;
   cladeHabitatPreference: Map<number, number>;
   allocateAgentId: () => number;
   allocateSpeciesId: () => number;
@@ -94,7 +95,7 @@ interface ReproduceAgentOptions {
     excludedPosition: SettlementPosition | undefined
   ) => number;
   effectiveBiomeFertilityAt: (x: number, y: number, tick: number) => number;
-  getCladeFounderGenome: (lineage: number) => Genome;
+  getCladeFounderGenome: (lineage: number, preferGenomeV2?: boolean) => Genome | GenomeV2;
   getSpeciesHabitatPreference: (species: number) => number;
   getCladeHabitatPreference: (lineage: number) => number;
   getSpeciesTrophicLevel: (species: number) => number;
@@ -180,6 +181,7 @@ export function reproduceAgent({
   speciesTrophicLevel,
   speciesDefenseLevel,
   cladeFounderGenome,
+  cladeFounderGenomeV2,
   cladeHabitatPreference,
   allocateAgentId,
   allocateSpeciesId,
@@ -207,15 +209,19 @@ export function reproduceAgent({
   const childEnergy = parent.energy * config.offspringEnergyFraction;
   const childPools = spendAgentEnergy(parent, childEnergy);
 
-  const childGenome = mutateGenome(parent.genome);
-  const diverged = genomeDistance(parent.genome, childGenome) >= config.speciationThreshold;
+  const childGenomeV2 = parent.genomeV2
+    ? mutateGenomeV2WithConfig(parent.genomeV2, config, randomFloat)
+    : undefined;
+  const childGenome = childGenomeV2 ? toGenome(childGenomeV2) : mutateGenome(parent.genome);
+  const diverged =
+    genomeDistance(parent.genomeV2 ?? parent.genome, childGenomeV2 ?? childGenome) >= config.speciationThreshold;
   const childSpecies = diverged ? allocateSpeciesId() : parent.species;
   if (diverged) {
     initializeDivergentSpecies({
       childSpecies,
       parentSpecies: parent.species,
-      parentGenome: parent.genome,
-      childGenome,
+      parentGenome: parent.genomeV2 ?? parent.genome,
+      childGenome: childGenomeV2 ?? childGenome,
       config,
       speciesHabitatPreference,
       speciesTrophicLevel,
@@ -232,7 +238,8 @@ export function reproduceAgent({
   const settlementAgent = {
     ...parent,
     species: childSpecies,
-    genome: childGenome
+    genome: childGenome,
+    genomeV2: childGenomeV2
   };
   const buildSettlementContext = buildOffspringSettlementContextBuilder({
     config,
@@ -270,6 +277,7 @@ export function reproduceAgent({
     parent,
     diverged,
     childGenome,
+    childGenomeV2,
     childPos,
     settlementContext,
     buildSettlementContext,
@@ -289,7 +297,9 @@ export function reproduceAgent({
         founderX: childPos.x,
         founderY: childPos.y,
         cladeFounderGenome,
+        cladeFounderGenomeV2,
         cladeHabitatPreference,
+        founderGenomeV2: childGenomeV2,
         nextLineageId: allocateLineageId(),
         effectiveBiomeFertilityAt,
         currentStepTick
@@ -315,41 +325,68 @@ export function reproduceAgent({
     energyPrimary: childPools.primary,
     energySecondary: childPools.secondary,
     age: 0,
-    genome: childGenome
+    genome: childGenome,
+    genomeV2: childGenomeV2
   };
 }
 
-function trophicDeltaFromMutation(config: SimulationConfig, parent: Genome, child: Genome): number {
+function trophicDeltaFromMutation(config: SimulationConfig, parent: Genome | GenomeV2, child: Genome | GenomeV2): number {
   const mutationScale = Math.max(0, config.trophicMutation);
   if (mutationScale === 0) {
     return 0;
   }
 
-  const aggressionShift = child.aggression - parent.aggression;
-  const harvestShift = parent.harvest - child.harvest;
+  const parentLegacy = toLegacyGenome(parent);
+  const childLegacy = toLegacyGenome(child);
+  const aggressionShift = childLegacy.aggression - parentLegacy.aggression;
+  const harvestShift = parentLegacy.harvest - childLegacy.harvest;
   const signal = aggressionShift * 0.7 + harvestShift * 0.3;
   return clamp(signal, -1, 1) * mutationScale;
 }
 
-function defenseDeltaFromMutation(config: SimulationConfig, parent: Genome, child: Genome): number {
+function defenseDeltaFromMutation(config: SimulationConfig, parent: Genome | GenomeV2, child: Genome | GenomeV2): number {
   const mutationScale = Math.max(0, config.defenseMutation);
   if (mutationScale === 0) {
     return 0;
   }
 
-  const aggressionShift = parent.aggression - child.aggression;
-  const metabolismShift = child.metabolism - parent.metabolism;
+  const parentLegacy = toLegacyGenome(parent);
+  const childLegacy = toLegacyGenome(child);
+  const aggressionShift = parentLegacy.aggression - childLegacy.aggression;
+  const metabolismShift = childLegacy.metabolism - parentLegacy.metabolism;
   const signal = aggressionShift * 0.65 + metabolismShift * 0.35;
   return clamp(signal, -1, 1) * mutationScale;
 }
 
-function genomeDistance(a: Genome, b: Genome): number {
+function genomeDistance(a: Genome | GenomeV2, b: Genome | GenomeV2): number {
+  if (isGenomeV2(a) && isGenomeV2(b)) {
+    return genomeV2Distance(a, b);
+  }
+
+  const left = toLegacyGenome(a);
+  const right = toLegacyGenome(b);
   return (
-    Math.abs(a.metabolism - b.metabolism) +
-    Math.abs(a.harvest - b.harvest) +
-    Math.abs(secondaryHarvestEfficiency(a) - secondaryHarvestEfficiency(b)) +
-    Math.abs(a.aggression - b.aggression)
+    Math.abs(left.metabolism - right.metabolism) +
+    Math.abs(left.harvest - right.harvest) +
+    Math.abs(secondaryHarvestEfficiency(left) - secondaryHarvestEfficiency(right)) +
+    Math.abs(left.aggression - right.aggression)
   );
+}
+
+function toLegacyGenome(genome: Genome | GenomeV2): Genome {
+  if (!isGenomeV2(genome)) {
+    return genome;
+  }
+  return {
+    metabolism: getTrait(genome, 'metabolism'),
+    harvest: getTrait(genome, 'harvest'),
+    aggression: getTrait(genome, 'aggression'),
+    harvestEfficiency2: genome.traits.has('harvestEfficiency2') ? getTrait(genome, 'harvestEfficiency2') : undefined
+  };
+}
+
+function isGenomeV2(genome: Genome | GenomeV2): genome is GenomeV2 {
+  return 'traits' in genome;
 }
 
 function clamp(value: number, min: number, max: number): number {

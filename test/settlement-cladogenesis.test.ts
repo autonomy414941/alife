@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { createGenomeV2, genomeV2Distance, setTrait } from '../src/genome-v2';
 import {
   resolveEncounterLineageTransferMultiplier,
   resolveNewCladeEncounterRestraintGraceBoost,
   resolveNewCladeSettlementCrowdingRelief,
   resolveOffspringSettlementContext,
   resolveSettlementEcologyScore,
+  shouldFoundNewClade,
   usesCladogenesisEcologyGate,
   usesNewCladeSettlementGrace,
   usesOffspringSettlementContext,
@@ -201,5 +203,63 @@ describe('settlement/cladogenesis helpers', () => {
         sameLineageNeighborhoodCrowdingAt: () => 3
       })
     ).toBe(-8);
+  });
+
+  it('uses GenomeV2 distance for cladogenesis when a child carries genomeV2 traits', () => {
+    const parentGenome = { metabolism: 0.5, harvest: 0.5, aggression: 0.5 };
+    const founderGenomeV2 = createGenomeV2();
+    setTrait(founderGenomeV2, 'metabolism', 0.5);
+    setTrait(founderGenomeV2, 'harvest', 0.5);
+    setTrait(founderGenomeV2, 'aggression', 0.5);
+    setTrait(founderGenomeV2, 'habitat_preference', 0.2);
+
+    const childGenomeV2 = createGenomeV2();
+    setTrait(childGenomeV2, 'metabolism', 0.6);
+    setTrait(childGenomeV2, 'harvest', 0.5);
+    setTrait(childGenomeV2, 'aggression', 0.5);
+    setTrait(childGenomeV2, 'habitat_preference', 0.8);
+
+    const legacyGenomeDistance = (a: typeof parentGenome, b: typeof parentGenome) =>
+      Math.abs(a.metabolism - b.metabolism) +
+      Math.abs(a.harvest - b.harvest) +
+      Math.abs(a.aggression - b.aggression);
+    const genomeDistance = (
+      a: typeof parentGenome | typeof founderGenomeV2,
+      b: typeof parentGenome | typeof founderGenomeV2
+    ) => ('traits' in a && 'traits' in b ? genomeV2Distance(a, b) : legacyGenomeDistance(a as typeof parentGenome, b as typeof parentGenome));
+
+    expect(
+      shouldFoundNewClade({
+        config: {
+          cladogenesisThreshold: 0.3,
+          cladogenesisTraitNoveltyThreshold: -1,
+          cladogenesisEcologyAdvantageThreshold: -1
+        },
+        parentLineage: 1,
+        diverged: true,
+        childGenome: childGenomeV2,
+        settlementAgent: {
+          lineage: 1,
+          species: 1,
+          x: 0,
+          y: 0,
+          genome: { metabolism: 0.6, harvest: 0.5, aggression: 0.5 },
+          genomeV2: childGenomeV2
+        },
+        childPos: { x: 0, y: 0 },
+        settlementContext: undefined,
+        genomeDistance,
+        getCladeFounderGenome: (_lineage, preferGenomeV2 = false) =>
+          preferGenomeV2 ? founderGenomeV2 : parentGenome,
+        getSpeciesHabitatPreference: () => 1,
+        getCladeHabitatPreference: () => 1,
+        getSpeciesTrophicLevel: () => 0.5,
+        getCladeTrophicLevel: () => 0.5,
+        getSpeciesDefenseLevel: () => 0.5,
+        getCladeDefenseLevel: () => 0.5,
+        resolveSettlementContext: () => undefined,
+        localEcologyScore: () => 0
+      })
+    ).toBe(true);
   });
 });

@@ -4,7 +4,8 @@ export const DEFAULT_TRAIT_VALUES: Record<string, number> = {
   metabolism: 0.6,
   harvest: 0.6,
   aggression: 0.4,
-  harvestEfficiency2: 0.5
+  harvestEfficiency2: 0.5,
+  habitat_preference: 1
 };
 
 export function createGenomeV2(traits: Map<string, number> = new Map()): GenomeV2 {

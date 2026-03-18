@@ -8,7 +8,7 @@ import {
   shouldFoundClade
 } from './reproduction';
 import { resolveDisturbanceSettlementOpeningConfig } from './disturbance';
-import { Agent, Genome, SimulationConfig } from './types';
+import { Agent, Genome, GenomeV2, SimulationConfig } from './types';
 
 type SettlementScoringConfig = Pick<
   SimulationConfig,
@@ -123,12 +123,12 @@ interface ShouldFoundNewCladeOptions {
   config: CladogenesisConfig;
   parentLineage: number;
   diverged: boolean;
-  childGenome: Genome;
+  childGenome: Genome | GenomeV2;
   settlementAgent: SettlementAgent;
   childPos: SettlementPosition;
   settlementContext: OffspringSettlementContext | undefined;
-  genomeDistance: (a: Genome, b: Genome) => number;
-  getCladeFounderGenome: (lineage: number) => Genome;
+  genomeDistance: (a: Genome | GenomeV2, b: Genome | GenomeV2) => number;
+  getCladeFounderGenome: (lineage: number, preferGenomeV2?: boolean) => Genome | GenomeV2;
   getSpeciesHabitatPreference: (species: number) => number;
   getCladeHabitatPreference: (lineage: number) => number;
   getSpeciesTrophicLevel: (species: number) => number;
@@ -333,7 +333,7 @@ export function shouldFoundNewClade({
     diverged,
     threshold: config.cladogenesisThreshold,
     childGenome,
-    founderGenome: getCladeFounderGenome(parentLineage),
+    founderGenome: getCladeFounderGenome(parentLineage, settlementAgent.genomeV2 !== undefined),
     genomeDistance,
     passesTraitNoveltyGate: () =>
       passesCladogenesisTraitNoveltyGate({

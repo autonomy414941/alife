@@ -15,23 +15,23 @@ import {
 } from './settlement-cladogenesis';
 import { resolveMutatedSpeciesHabitatPreference, setFoundCladeHabitatPreference, adaptCladeHabitatPreference } from './clade-habitat';
 import { resolveDisturbanceSettlementOpeningConfig } from './disturbance';
-import { Agent, Genome, SimulationConfig } from './types';
+import { Agent, Genome, GenomeV2, SimulationConfig } from './types';
 
-type SpeciesData = Pick<Agent, 'species' | 'genome' | 'lineage' | 'x' | 'y'>;
+type SpeciesData = Pick<Agent, 'species' | 'genome' | 'genomeV2' | 'lineage' | 'x' | 'y'>;
 
 interface InitializeDivergentSpeciesOptions {
   childSpecies: number;
   parentSpecies: number;
-  parentGenome: Genome;
-  childGenome: Genome;
+  parentGenome: Genome | GenomeV2;
+  childGenome: Genome | GenomeV2;
   config: SimulationConfig;
   speciesHabitatPreference: Map<number, number>;
   speciesTrophicLevel: Map<number, number>;
   speciesDefenseLevel: Map<number, number>;
   getSpeciesTrophicLevel: (species: number) => number;
   getSpeciesDefenseLevel: (species: number) => number;
-  trophicDeltaFromMutation: (parentGenome: Genome, childGenome: Genome) => number;
-  defenseDeltaFromMutation: (parentGenome: Genome, childGenome: Genome) => number;
+  trophicDeltaFromMutation: (parentGenome: Genome | GenomeV2, childGenome: Genome | GenomeV2) => number;
+  defenseDeltaFromMutation: (parentGenome: Genome | GenomeV2, childGenome: Genome | GenomeV2) => number;
 }
 
 interface OffspringSettlementContextBuilderOptions {
@@ -48,11 +48,12 @@ interface ResolveCladogenesisDecisionOptions {
   parent: SpeciesData;
   diverged: boolean;
   childGenome: Genome;
+  childGenomeV2?: GenomeV2;
   childPos: SettlementPosition;
   settlementContext: OffspringSettlementContext | undefined;
   buildSettlementContext: (required?: boolean) => OffspringSettlementContext | undefined;
-  genomeDistance: (a: Genome, b: Genome) => number;
-  getCladeFounderGenome: (lineage: number) => Genome;
+  genomeDistance: (a: Genome | GenomeV2, b: Genome | GenomeV2) => number;
+  getCladeFounderGenome: (lineage: number, preferGenomeV2?: boolean) => Genome | GenomeV2;
   getSpeciesHabitatPreference: (species: number) => number;
   getCladeHabitatPreference: (lineage: number) => number;
   getSpeciesTrophicLevel: (species: number) => number;
@@ -95,9 +96,11 @@ interface PickOffspringSettlementOptions {
 
 interface FoundCladeOptions {
   founderGenome: Genome;
+  founderGenomeV2?: GenomeV2;
   founderX: number;
   founderY: number;
   cladeFounderGenome: Map<number, Genome>;
+  cladeFounderGenomeV2?: Map<number, GenomeV2>;
   cladeHabitatPreference: Map<number, number>;
   nextLineageId: number;
   effectiveBiomeFertilityAt: (x: number, y: number, tick: number) => number;
@@ -173,6 +176,7 @@ export function resolveCladogenesisDecision({
   parent,
   diverged,
   childGenome,
+  childGenomeV2,
   childPos,
   settlementContext,
   buildSettlementContext,
@@ -189,6 +193,7 @@ export function resolveCladogenesisDecision({
   const cladogenesisContext = settlementContext ?? buildSettlementContext(usesCladogenesisEcologyGate(config));
   const settlementAgent: SettlementAgent = {
     genome: childGenome,
+    genomeV2: childGenomeV2,
     lineage: parent.lineage,
     species: parent.species,
     x: parent.x,
@@ -198,7 +203,7 @@ export function resolveCladogenesisDecision({
     config,
     parentLineage: parent.lineage,
     diverged,
-    childGenome,
+    childGenome: childGenomeV2 ?? childGenome,
     settlementAgent,
     childPos,
     settlementContext: cladogenesisContext,
@@ -244,9 +249,11 @@ export function pickOffspringSettlement({
 
 export function foundClade({
   founderGenome,
+  founderGenomeV2,
   founderX,
   founderY,
   cladeFounderGenome,
+  cladeFounderGenomeV2,
   cladeHabitatPreference,
   nextLineageId,
   effectiveBiomeFertilityAt,
@@ -259,10 +266,16 @@ export function foundClade({
     aggression: founderGenome.aggression,
     harvestEfficiency2: founderGenome.harvestEfficiency2
   });
+  if (founderGenomeV2 !== undefined) {
+    cladeFounderGenomeV2?.set(lineage, {
+      traits: new Map(founderGenomeV2.traits)
+    });
+  }
   setFoundCladeHabitatPreference({
     cladeHabitatPreference,
     lineage,
-    fertility: effectiveBiomeFertilityAt(founderX, founderY, currentStepTick)
+    fertility: effectiveBiomeFertilityAt(founderX, founderY, currentStepTick),
+    genomeV2: founderGenomeV2
   });
   return lineage;
 }

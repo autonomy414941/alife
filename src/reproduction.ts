@@ -1,8 +1,8 @@
-import { Agent, Genome } from './types';
+import { Agent, Genome, GenomeV2 } from './types';
 
 export type LineageOccupancyGrid = Map<number, number[][]>;
 
-export type SettlementAgent = Pick<Agent, 'genome' | 'lineage' | 'species' | 'x' | 'y'>;
+export type SettlementAgent = Pick<Agent, 'genome' | 'genomeV2' | 'lineage' | 'species' | 'x' | 'y'>;
 
 export interface SettlementPosition {
   x: number;
@@ -77,9 +77,9 @@ interface CladogenesisEcologyGateOptions {
 interface ShouldFoundCladeOptions {
   diverged: boolean;
   threshold: number;
-  childGenome: Genome;
-  founderGenome: Genome;
-  genomeDistance: (a: Genome, b: Genome) => number;
+  childGenome: Genome | GenomeV2;
+  founderGenome: Genome | GenomeV2;
+  genomeDistance: (a: Genome | GenomeV2, b: Genome | GenomeV2) => number;
   passesTraitNoveltyGate: () => boolean;
   passesEcologyGate: () => boolean;
 }

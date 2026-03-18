@@ -198,6 +198,7 @@ export interface Agent {
   energySecondary?: number;
   age: number;
   genome: Genome;
+  genomeV2?: GenomeV2;
 }
 
 export interface AgentSeed {
@@ -207,6 +208,7 @@ export interface AgentSeed {
   energyPrimary?: number;
   energySecondary?: number;
   genome: Genome;
+  genomeV2?: GenomeV2;
   age?: number;
   lineage?: number;
   species?: number;

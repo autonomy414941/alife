@@ -13,6 +13,7 @@ import {
   initializeCladeHabitatPreferences as seedInitialCladeHabitatPreferences,
   initializeSpeciesHabitatPreferences as seedInitialSpeciesHabitatPreferences
 } from './clade-habitat';
+import { cloneGenomeV2 } from './genome-v2';
 import {
   DisturbanceEventState,
   buildDisturbanceCellSets,
@@ -63,6 +64,7 @@ import {
   ForcingAnalytics,
   EvolutionHistorySnapshot,
   Genome,
+  GenomeV2,
   ResilienceAnalytics,
   LocalityRadiusAnalytics,
   LocalityRadiusTurnoverAnalytics,
@@ -216,6 +218,8 @@ export class LifeSimulation {
   private readonly evolutionHistory = new SimulationEvolutionHistory();
 
   private readonly cladeFounderGenome = new Map<number, Genome>();
+
+  private readonly cladeFounderGenomeV2 = new Map<number, GenomeV2>();
 
   private readonly cladeHabitatPreference = new Map<number, number>();
 
@@ -392,7 +396,8 @@ export class LifeSimulation {
       extinctSpecies: this.evolutionHistory.getExtinctSpecies(),
       agents: this.agents.map((agent) => ({
         ...agent,
-        genome: { ...agent.genome }
+        genome: { ...agent.genome },
+        genomeV2: agent.genomeV2 ? cloneGenomeV2(agent.genomeV2) : undefined
       }))
     };
   }
@@ -1116,6 +1121,9 @@ export class LifeSimulation {
         continue;
       }
       this.cladeFounderGenome.set(agent.lineage, copyGenome(agent.genome));
+      if (agent.genomeV2 !== undefined) {
+        this.cladeFounderGenomeV2.set(agent.lineage, cloneGenomeV2(agent.genomeV2));
+      }
     }
   }
 
@@ -1277,6 +1285,9 @@ export class LifeSimulation {
       age: seed.age ?? 0,
       genome
     };
+    if (seed.genomeV2 !== undefined) {
+      agent.genomeV2 = cloneGenomeV2(seed.genomeV2);
+    }
     initializeAgentEnergy(agent, seed);
     return agent;
   }
@@ -1511,6 +1522,7 @@ export class LifeSimulation {
       speciesTrophicLevel: this.speciesTrophicLevel,
       speciesDefenseLevel: this.speciesDefenseLevel,
       cladeFounderGenome: this.cladeFounderGenome,
+      cladeFounderGenomeV2: this.cladeFounderGenomeV2,
       cladeHabitatPreference: this.cladeHabitatPreference,
       cladeHistory: this.cladeHistory,
       resources: this.resources,
@@ -1563,7 +1575,7 @@ export class LifeSimulation {
     return min + this.rng.float() * (max - min);
   }
 
-  private habitatMatchEfficiency(agent: Pick<Agent, 'species' | 'lineage'>, x: number, y: number): number {
+  private habitatMatchEfficiency(agent: Pick<Agent, 'species' | 'lineage' | 'genomeV2'>, x: number, y: number): number {
     return calculateHabitatMatchEfficiency({
       agent,
       fertility: this.effectiveBiomeFertilityAt(x, y, this.tickCount + 1),
