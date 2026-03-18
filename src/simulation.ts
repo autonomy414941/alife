@@ -15,6 +15,12 @@ import {
 } from './clade-habitat';
 import { cloneGenomeV2 } from './genome-v2';
 import {
+  DEFAULT_DEFENSE_LEVEL,
+  DEFAULT_TROPHIC_LEVEL,
+  defenseLevelTraitWithFallback,
+  trophicLevelTraitWithFallback
+} from './interaction-traits';
+import {
   DisturbanceEventState,
   buildDisturbanceCellSets,
   countDisturbanceEventsInWindow,
@@ -1146,7 +1152,7 @@ export class LifeSimulation {
   private initializeSpeciesTrophicLevels(): void {
     const sums = new Map<number, { total: number; count: number }>();
     for (const agent of this.agents) {
-      const signal = this.genomeTrophicSignal(agent.genome);
+      const signal = trophicLevelTraitWithFallback(agent.genomeV2) ?? this.genomeTrophicSignal(agent.genome);
       const current = sums.get(agent.species) ?? { total: 0, count: 0 };
       current.total += signal;
       current.count += 1;
@@ -1161,7 +1167,7 @@ export class LifeSimulation {
   private initializeSpeciesDefenseLevels(): void {
     const sums = new Map<number, { total: number; count: number }>();
     for (const agent of this.agents) {
-      const signal = this.genomeDefenseSignal(agent.genome);
+      const signal = defenseLevelTraitWithFallback(agent.genomeV2) ?? this.genomeDefenseSignal(agent.genome);
       const current = sums.get(agent.species) ?? { total: 0, count: 0 };
       current.total += signal;
       current.count += 1;
@@ -1624,10 +1630,20 @@ export class LifeSimulation {
   }
 
   private getCladeTrophicLevel(lineage: number): number {
+    const founderGenomeV2 = this.cladeFounderGenomeV2.get(lineage);
+    const directLevel = trophicLevelTraitWithFallback(founderGenomeV2);
+    if (directLevel !== undefined) {
+      return directLevel;
+    }
     return this.genomeTrophicSignal(this.getCladeFounderGenome(lineage));
   }
 
   private getCladeDefenseLevel(lineage: number): number {
+    const founderGenomeV2 = this.cladeFounderGenomeV2.get(lineage);
+    const directLevel = defenseLevelTraitWithFallback(founderGenomeV2);
+    if (directLevel !== undefined) {
+      return directLevel;
+    }
     return this.genomeDefenseSignal(this.getCladeFounderGenome(lineage));
   }
 
@@ -1636,8 +1652,8 @@ export class LifeSimulation {
     if (existing !== undefined) {
       return existing;
     }
-    this.speciesTrophicLevel.set(species, 0);
-    return 0;
+    this.speciesTrophicLevel.set(species, DEFAULT_TROPHIC_LEVEL);
+    return DEFAULT_TROPHIC_LEVEL;
   }
 
   private getSpeciesDefenseLevel(species: number): number {
@@ -1645,8 +1661,8 @@ export class LifeSimulation {
     if (existing !== undefined) {
       return existing;
     }
-    this.speciesDefenseLevel.set(species, 0);
-    return 0;
+    this.speciesDefenseLevel.set(species, DEFAULT_DEFENSE_LEVEL);
+    return DEFAULT_DEFENSE_LEVEL;
   }
 
   private specializationMetabolicPenalty(agent: Agent): number {

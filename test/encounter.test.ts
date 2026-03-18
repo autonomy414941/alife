@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
+import { createGenomeV2, setTrait } from '../src/genome-v2';
 import {
   dominantEncounterOperator,
   pairwiseEncounterOperator,
   nonTransitiveEncounterOperator,
   EncounterOperatorContext
 } from '../src/encounter';
-import { Agent, Genome } from '../src/types';
+import { Agent, Genome, GenomeV2 } from '../src/types';
 import { LifeSimulation } from '../src/simulation';
 
 function createAgent(
@@ -14,7 +15,8 @@ function createAgent(
   energy: number,
   species = 1,
   lineage = 1,
-  genomeOverrides: Partial<Genome> = {}
+  genomeOverrides: Partial<Genome> = {},
+  genomeV2?: GenomeV2
 ): Agent {
   return {
     id,
@@ -29,6 +31,7 @@ function createAgent(
       aggression,
       ...genomeOverrides
     },
+    genomeV2,
     age: 0,
     generation: 1,
     parentId: null
@@ -111,6 +114,66 @@ describe('dominantEncounterOperator', () => {
     expect(subordinate1.energy).toBeLessThan(100);
     expect(subordinate2.energy).toBeLessThan(100);
     expect(subordinate3.energy).toBeLessThan(100);
+  });
+
+  it('uses GenomeV2 trophic traits instead of blended species levels when present', () => {
+    const dominantGenomeV2 = createGenomeV2();
+    setTrait(dominantGenomeV2, 'metabolism', 0.5);
+    setTrait(dominantGenomeV2, 'harvest', 0.5);
+    setTrait(dominantGenomeV2, 'aggression', 0.9);
+    setTrait(dominantGenomeV2, 'trophic_level', 1);
+
+    const targetGenomeV2 = createGenomeV2();
+    setTrait(targetGenomeV2, 'metabolism', 0.5);
+    setTrait(targetGenomeV2, 'harvest', 0.5);
+    setTrait(targetGenomeV2, 'aggression', 0.1);
+    setTrait(targetGenomeV2, 'trophic_level', 0);
+
+    const agents = [
+      createAgent(1, 0.9, 100, 1, 1, {}, dominantGenomeV2),
+      createAgent(2, 0.1, 100, 2, 2, {}, targetGenomeV2)
+    ];
+    const context: EncounterOperatorContext = {
+      config: {
+        predationPressure: 1,
+        defenseMitigation: 0
+      },
+      blendedTrophicLevel: () => 0,
+      blendedDefenseLevel: () => 0,
+      lineageTransferMultiplier: () => 1
+    };
+
+    dominantEncounterOperator(agents, context);
+
+    expect(agents[0].energy).toBeCloseTo(145, 5);
+    expect(agents[1].energy).toBeCloseTo(55, 5);
+  });
+
+  it('uses GenomeV2 defense traits instead of blended species levels when present', () => {
+    const targetGenomeV2 = createGenomeV2();
+    setTrait(targetGenomeV2, 'metabolism', 0.5);
+    setTrait(targetGenomeV2, 'harvest', 0.5);
+    setTrait(targetGenomeV2, 'aggression', 0.1);
+    setTrait(targetGenomeV2, 'defense_level', 1);
+
+    const agents = [
+      createAgent(1, 0.9, 100),
+      createAgent(2, 0.1, 100, 2, 2, {}, targetGenomeV2)
+    ];
+    const context: EncounterOperatorContext = {
+      config: {
+        predationPressure: 0,
+        defenseMitigation: 0.9
+      },
+      blendedTrophicLevel: () => 0,
+      blendedDefenseLevel: () => 0,
+      lineageTransferMultiplier: () => 1
+    };
+
+    dominantEncounterOperator(agents, context);
+
+    expect(agents[0].energy).toBeCloseTo(102.25, 5);
+    expect(agents[1].energy).toBeCloseTo(97.75, 5);
   });
 });
 

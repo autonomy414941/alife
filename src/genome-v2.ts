@@ -5,7 +5,9 @@ export const DEFAULT_TRAIT_VALUES: Record<string, number> = {
   harvest: 0.6,
   aggression: 0.4,
   harvestEfficiency2: 0.5,
-  habitat_preference: 1
+  habitat_preference: 1,
+  trophic_level: 0.5,
+  defense_level: 0.5
 };
 
 export function createGenomeV2(traits: Map<string, number> = new Map()): GenomeV2 {
@@ -75,7 +77,7 @@ export interface MutateGenomeV2Options {
 
 const CORE_TRAITS = ['metabolism', 'harvest', 'aggression'];
 const OPTIONAL_TRAITS = ['harvestEfficiency2'];
-const EXTENDED_TRAITS: string[] = [];
+const EXTENDED_TRAITS: string[] = ['trophic_level', 'defense_level'];
 
 export function mutateGenomeV2(
   genome: GenomeV2,

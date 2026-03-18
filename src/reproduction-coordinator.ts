@@ -15,6 +15,7 @@ import {
 } from './settlement-cladogenesis';
 import { resolveMutatedSpeciesHabitatPreference, setFoundCladeHabitatPreference, adaptCladeHabitatPreference } from './clade-habitat';
 import { resolveDisturbanceSettlementOpeningConfig } from './disturbance';
+import { defenseLevelTraitForGenome, trophicLevelTraitForGenome } from './interaction-traits';
 import { Agent, Genome, GenomeV2, SimulationConfig } from './types';
 
 type SpeciesData = Pick<Agent, 'species' | 'genome' | 'genomeV2' | 'lineage' | 'x' | 'y'>;
@@ -141,12 +142,22 @@ export function initializeDivergentSpecies({
       config
     })
   );
-  const parentTrophic = getSpeciesTrophicLevel(parentSpecies);
-  const trophicDelta = trophicDeltaFromMutation(parentGenome, childGenome);
-  speciesTrophicLevel.set(childSpecies, clamp(parentTrophic + trophicDelta, 0, 1));
-  const parentDefense = getSpeciesDefenseLevel(parentSpecies);
-  const defenseDelta = defenseDeltaFromMutation(parentGenome, childGenome);
-  speciesDefenseLevel.set(childSpecies, clamp(parentDefense + defenseDelta, 0, 1));
+  const directTrophic = trophicLevelTraitForGenome(childGenome);
+  if (directTrophic !== undefined) {
+    speciesTrophicLevel.set(childSpecies, directTrophic);
+  } else {
+    const parentTrophic = getSpeciesTrophicLevel(parentSpecies);
+    const trophicDelta = trophicDeltaFromMutation(parentGenome, childGenome);
+    speciesTrophicLevel.set(childSpecies, clamp(parentTrophic + trophicDelta, 0, 1));
+  }
+  const directDefense = defenseLevelTraitForGenome(childGenome);
+  if (directDefense !== undefined) {
+    speciesDefenseLevel.set(childSpecies, directDefense);
+  } else {
+    const parentDefense = getSpeciesDefenseLevel(parentSpecies);
+    const defenseDelta = defenseDeltaFromMutation(parentGenome, childGenome);
+    speciesDefenseLevel.set(childSpecies, clamp(parentDefense + defenseDelta, 0, 1));
+  }
 }
 
 export function buildOffspringSettlementContextBuilder({

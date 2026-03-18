@@ -1,4 +1,5 @@
 import { transferAgentEnergy } from './agent-energy';
+import { getTrait } from './genome-v2';
 import { Agent, SimulationConfig } from './types';
 
 type EncounterConfig = Pick<SimulationConfig, 'predationPressure' | 'defenseMitigation'>;
@@ -56,16 +57,11 @@ function resolveEncounterTransfer(
   dominanceBonus = 0
 ): number {
   const pressure = Math.max(0, dominant.genome.aggression + dominanceBonus - target.genome.aggression + 0.1);
-  const trophicGap =
-    context.blendedTrophicLevel(dominant.species, dominant.lineage) -
-    context.blendedTrophicLevel(target.species, target.lineage);
+  const trophicGap = trophicLevel(dominant, context) - trophicLevel(target, context);
   const predationMultiplier =
     1 + Math.max(0, context.config.predationPressure) * Math.max(0, trophicGap);
   const mitigation = clamp(context.config.defenseMitigation, 0, 0.95);
-  const defenseMultiplier = Math.max(
-    0.05,
-    1 - mitigation * context.blendedDefenseLevel(target.species, target.lineage)
-  );
+  const defenseMultiplier = Math.max(0.05, 1 - mitigation * defenseLevel(target, context));
   const lineageMultiplier = context.lineageTransferMultiplier(dominant, target);
 
   return Math.min(
@@ -164,6 +160,20 @@ function resolveAggressionDominance(a: Agent, b: Agent): [Agent, Agent] {
     (a.genome.aggression === b.genome.aggression && a.energy >= b.energy)
     ? [a, b]
     : [b, a];
+}
+
+function trophicLevel(agent: Agent, context: EncounterOperatorContext): number {
+  if (agent.genomeV2 !== undefined) {
+    return clamp(getTrait(agent.genomeV2, 'trophic_level'), 0, 1);
+  }
+  return clamp(context.blendedTrophicLevel(agent.species, agent.lineage), 0, 1);
+}
+
+function defenseLevel(agent: Agent, context: EncounterOperatorContext): number {
+  if (agent.genomeV2 !== undefined) {
+    return clamp(getTrait(agent.genomeV2, 'defense_level'), 0, 1);
+  }
+  return clamp(context.blendedDefenseLevel(agent.species, agent.lineage), 0, 1);
 }
 
 function clamp(value: number, min: number, max: number): number {

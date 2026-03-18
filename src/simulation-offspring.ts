@@ -4,6 +4,12 @@ import {
   habitatMatchEfficiency as calculateHabitatMatchEfficiency
 } from './clade-habitat';
 import { cloneGenomeV2, fromGenome } from './genome-v2';
+import {
+  DEFAULT_DEFENSE_LEVEL,
+  DEFAULT_TROPHIC_LEVEL,
+  defenseLevelTraitWithFallback,
+  trophicLevelTraitWithFallback
+} from './interaction-traits';
 import { LineageOccupancyGrid, SettlementAgent, SettlementPosition } from './reproduction';
 import { reproduceAgent } from './simulation-reproduction';
 import { resolveSettlementEcologyScore } from './settlement-cladogenesis';
@@ -147,20 +153,36 @@ export function reproduceInSimulation({
       getCladeFounderGenome(lineage, preferGenomeV2, cladeFounderGenome, cladeFounderGenomeV2, agents, minGenome),
     getSpeciesHabitatPreference: (species) => lookupSpeciesHabitatPreference(speciesHabitatPreference, species),
     getCladeHabitatPreference: (lineage) => lookupCladeHabitatPreference(cladeHabitatPreference, lineage),
-    getSpeciesTrophicLevel: (species) => getSpeciesMetric(speciesTrophicLevel, species),
-    getCladeTrophicLevel: (lineage) =>
-      genomeTrophicSignal(
+    getSpeciesTrophicLevel: (species) =>
+      getSpeciesMetric(speciesTrophicLevel, species, DEFAULT_TROPHIC_LEVEL),
+    getCladeTrophicLevel: (lineage) => {
+      const founderGenomeV2 =
+        cladeFounderGenomeV2.get(lineage) ?? agents.find((agent) => agent.lineage === lineage)?.genomeV2;
+      const directLevel = trophicLevelTraitWithFallback(founderGenomeV2);
+      if (directLevel !== undefined) {
+        return directLevel;
+      }
+      return genomeTrophicSignal(
         getCladeFounderGenome(lineage, false, cladeFounderGenome, cladeFounderGenomeV2, agents, minGenome) as Genome,
         minGenome,
         maxGenome
-      ),
-    getSpeciesDefenseLevel: (species) => getSpeciesMetric(speciesDefenseLevel, species),
-    getCladeDefenseLevel: (lineage) =>
-      genomeDefenseSignal(
+      );
+    },
+    getSpeciesDefenseLevel: (species) =>
+      getSpeciesMetric(speciesDefenseLevel, species, DEFAULT_DEFENSE_LEVEL),
+    getCladeDefenseLevel: (lineage) => {
+      const founderGenomeV2 =
+        cladeFounderGenomeV2.get(lineage) ?? agents.find((agent) => agent.lineage === lineage)?.genomeV2;
+      const directLevel = defenseLevelTraitWithFallback(founderGenomeV2);
+      if (directLevel !== undefined) {
+        return directLevel;
+      }
+      return genomeDefenseSignal(
         getCladeFounderGenome(lineage, false, cladeFounderGenome, cladeFounderGenomeV2, agents, minGenome) as Genome,
         minGenome,
         maxGenome
-      )
+      );
+    }
   });
 }
 
@@ -302,13 +324,13 @@ function getCladeFounderGenome(
   return genome;
 }
 
-function getSpeciesMetric(metric: Map<number, number>, id: number): number {
+function getSpeciesMetric(metric: Map<number, number>, id: number, defaultValue: number): number {
   const existing = metric.get(id);
   if (existing !== undefined) {
     return existing;
   }
-  metric.set(id, 0);
-  return 0;
+  metric.set(id, defaultValue);
+  return defaultValue;
 }
 
 function mutateGenome(

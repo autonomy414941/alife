@@ -89,6 +89,8 @@ describe('GenomeV2', () => {
     it('returns default for missing traits', () => {
       const genome = createGenomeV2();
       expect(getTrait(genome, 'metabolism')).toBe(0.6);
+      expect(getTrait(genome, 'trophic_level')).toBe(0.5);
+      expect(getTrait(genome, 'defense_level')).toBe(0.5);
       expect(getTrait(genome, 'unknown')).toBe(0.5);
     });
 
@@ -218,6 +220,29 @@ describe('GenomeV2', () => {
         }
       }
       expect(addedLocus).toBe(true);
+    });
+
+    it('includes trophic and defense in the default extended loci list', () => {
+      const genome = createGenomeV2();
+      setTrait(genome, 'metabolism', 0.5);
+      setTrait(genome, 'harvest', 0.5);
+      setTrait(genome, 'aggression', 0.5);
+
+      let addedExtendedLocus = false;
+      for (let i = 0; i < 250; i++) {
+        const mutated = mutateGenomeV2(genome, {
+          mutationAmount: 0.2,
+          randomFloat: Math.random,
+          addLociProbability: 1,
+          removeLociProbability: 0
+        });
+        if (hasTrait(mutated, 'trophic_level') || hasTrait(mutated, 'defense_level')) {
+          addedExtendedLocus = true;
+          break;
+        }
+      }
+
+      expect(addedExtendedLocus).toBe(true);
     });
 
     it('can remove optional loci', () => {
