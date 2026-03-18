@@ -8,8 +8,8 @@ export const DEFAULT_TRAIT_VALUES: Record<string, number> = {
   habitat_preference: 1,
   trophic_level: 0.5,
   defense_level: 0.5,
-  metabolic_efficiency_primary: 0.6,
-  metabolic_efficiency_secondary: 0.6
+  metabolic_efficiency_primary: 0.5,
+  metabolic_efficiency_secondary: 0.5
 };
 
 export function createGenomeV2(traits: Map<string, number> = new Map()): GenomeV2 {

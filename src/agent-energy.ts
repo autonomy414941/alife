@@ -93,10 +93,12 @@ export function spendAgentEnergy(
   let secondaryEfficiency = 1.0;
 
   if (agent.genomeV2 && agent.genomeV2.traits.has('metabolic_efficiency_primary')) {
-    primaryEfficiency = 2.0 - agent.genomeV2.traits.get('metabolic_efficiency_primary')!;
+    const eff = agent.genomeV2.traits.get('metabolic_efficiency_primary')!;
+    primaryEfficiency = 2.0 - 2.0 * eff;
   }
   if (agent.genomeV2 && agent.genomeV2.traits.has('metabolic_efficiency_secondary')) {
-    secondaryEfficiency = 2.0 - agent.genomeV2.traits.get('metabolic_efficiency_secondary')!;
+    const eff = agent.genomeV2.traits.get('metabolic_efficiency_secondary')!;
+    secondaryEfficiency = 2.0 - 2.0 * eff;
   }
 
   const spentTotal = Math.min(current.total, requested);

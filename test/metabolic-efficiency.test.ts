@@ -42,16 +42,16 @@ describe('metabolic efficiency loci', () => {
     const specialistSpent = spendAgentEnergy(specialist, 10);
     const generalistSpent = spendAgentEnergy(generalist, 10);
 
-    expect(specialistSpent.primary).toBeCloseTo(5.0, 5);
-    expect(specialistSpent.secondary).toBeCloseTo(9.0, 5);
-    expect(specialistSpent.total).toBeCloseTo(14.0, 5);
+    expect(specialistSpent.primary).toBeCloseTo(0.0, 5);
+    expect(specialistSpent.secondary).toBeCloseTo(8.0, 5);
+    expect(specialistSpent.total).toBeCloseTo(8.0, 5);
 
     expect(generalistSpent.primary).toBeCloseTo(5.0, 5);
     expect(generalistSpent.secondary).toBeCloseTo(5.0, 5);
     expect(generalistSpent.total).toBeCloseTo(10.0, 5);
 
-    expect(specialist.energyPrimary).toBeCloseTo(45.0, 5);
-    expect(specialist.energySecondary).toBeCloseTo(41.0, 5);
+    expect(specialist.energyPrimary).toBeCloseTo(50.0, 5);
+    expect(specialist.energySecondary).toBeCloseTo(42.0, 5);
 
     expect(generalist.energyPrimary).toBeCloseTo(45.0, 5);
     expect(generalist.energySecondary).toBeCloseTo(45.0, 5);
@@ -118,10 +118,10 @@ describe('metabolic efficiency loci', () => {
     const specialistSpent = spendAgentEnergy(specialist, 20);
     const baselineSpent = spendAgentEnergy(baselineAgent, 20);
 
-    expect(specialistSpent.primary).toBeCloseTo(22.0, 5);
+    expect(specialistSpent.primary).toBeCloseTo(4.0, 5);
     expect(baselineSpent.primary).toBeCloseTo(20.0, 5);
 
-    expect(specialist.energyPrimary).toBeCloseTo(78.0, 5);
+    expect(specialist.energyPrimary).toBeCloseTo(96.0, 5);
     expect(baselineAgent.energyPrimary).toBeCloseTo(80.0, 5);
   });
 });
