@@ -10,8 +10,21 @@ import {
   getAggressionV2,
   getHarvestEfficiency2V2
 } from '../src/genome-v2-adapter';
-import { createGenomeV2, setTrait, getTrait } from '../src/genome-v2';
+import { DEFAULT_MUTATION_CANDIDATE_NEW_LOCI, createGenomeV2, setTrait, getTrait } from '../src/genome-v2';
 import { Agent, SimulationConfig } from '../src/types';
+
+function createCoreGenomeV2() {
+  const genome = createGenomeV2();
+  setTrait(genome, 'metabolism', 0.5);
+  setTrait(genome, 'harvest', 0.5);
+  setTrait(genome, 'aggression', 0.5);
+  return genome;
+}
+
+function scriptedRandom(values: number[]): () => number {
+  let index = 0;
+  return () => values[index++] ?? 0.5;
+}
 
 describe('GenomeV2 Adapter', () => {
   describe('agent conversion', () => {
@@ -117,6 +130,33 @@ describe('GenomeV2 Adapter', () => {
         }
       }
       expect(anyMutated).toBe(true);
+    });
+
+    it.each([
+      'habitat_preference',
+      'trophic_level',
+      'defense_level',
+      'metabolic_efficiency_primary',
+      'metabolic_efficiency_secondary'
+    ])('can add %s through the live mutation adapter', (locus) => {
+      const targetIndex = DEFAULT_MUTATION_CANDIDATE_NEW_LOCI.indexOf(locus);
+      expect(targetIndex).toBeGreaterThanOrEqual(0);
+
+      const mutated = mutateGenomeV2WithConfig(
+        createCoreGenomeV2(),
+        {
+          mutationAmount: 0
+        } as SimulationConfig,
+        scriptedRandom([
+          0.5,
+          0.5,
+          0.5,
+          0,
+          (targetIndex + 0.01) / DEFAULT_MUTATION_CANDIDATE_NEW_LOCI.length
+        ])
+      );
+
+      expect(mutated.traits.has(locus)).toBe(true);
     });
   });
 

@@ -1,5 +1,6 @@
 import { Agent, Genome, GenomeV2, SimulationConfig } from './types';
 import {
+  DEFAULT_MUTATION_CANDIDATE_NEW_LOCI,
   fromGenome,
   toGenome,
   mutateGenomeV2,
@@ -39,7 +40,7 @@ export function mutateGenomeV2WithConfig(
     removeLociProbability: 0.01,
     minTraits: 3,
     maxTraits: 20,
-    candidateNewLoci: ['harvestEfficiency2']
+    candidateNewLoci: DEFAULT_MUTATION_CANDIDATE_NEW_LOCI
   });
 }
 

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  DEFAULT_MUTATION_CANDIDATE_NEW_LOCI,
   createGenomeV2,
   fromGenome,
   toGenome,
@@ -13,6 +14,19 @@ import {
   genomeV2Distance
 } from '../src/genome-v2';
 import { Genome } from '../src/types';
+
+function createCoreGenomeV2() {
+  const genome = createGenomeV2();
+  setTrait(genome, 'metabolism', 0.5);
+  setTrait(genome, 'harvest', 0.5);
+  setTrait(genome, 'aggression', 0.5);
+  return genome;
+}
+
+function scriptedRandom(values: number[]): () => number {
+  let index = 0;
+  return () => values[index++] ?? 0.5;
+}
 
 describe('GenomeV2', () => {
   describe('creation and conversion', () => {
@@ -222,27 +236,30 @@ describe('GenomeV2', () => {
       expect(addedLocus).toBe(true);
     });
 
-    it('includes trophic and defense in the default extended loci list', () => {
-      const genome = createGenomeV2();
-      setTrait(genome, 'metabolism', 0.5);
-      setTrait(genome, 'harvest', 0.5);
-      setTrait(genome, 'aggression', 0.5);
+    it.each([
+      'habitat_preference',
+      'trophic_level',
+      'defense_level',
+      'metabolic_efficiency_primary',
+      'metabolic_efficiency_secondary'
+    ])('includes %s in the default mutation loci list', (locus) => {
+      const targetIndex = DEFAULT_MUTATION_CANDIDATE_NEW_LOCI.indexOf(locus);
+      expect(targetIndex).toBeGreaterThanOrEqual(0);
 
-      let addedExtendedLocus = false;
-      for (let i = 0; i < 250; i++) {
-        const mutated = mutateGenomeV2(genome, {
-          mutationAmount: 0.2,
-          randomFloat: Math.random,
-          addLociProbability: 1,
-          removeLociProbability: 0
-        });
-        if (hasTrait(mutated, 'trophic_level') || hasTrait(mutated, 'defense_level')) {
-          addedExtendedLocus = true;
-          break;
-        }
-      }
+      const mutated = mutateGenomeV2(createCoreGenomeV2(), {
+        mutationAmount: 0,
+        randomFloat: scriptedRandom([
+          0.5,
+          0.5,
+          0.5,
+          0,
+          (targetIndex + 0.01) / DEFAULT_MUTATION_CANDIDATE_NEW_LOCI.length
+        ]),
+        addLociProbability: 1,
+        removeLociProbability: 0
+      });
 
-      expect(addedExtendedLocus).toBe(true);
+      expect(hasTrait(mutated, locus)).toBe(true);
     });
 
     it('can remove optional loci', () => {

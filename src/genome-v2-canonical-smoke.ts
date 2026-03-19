@@ -106,7 +106,7 @@ function runGenomeV2CanonicalSmoke(seed = 12345): GenomeV2SmokeArtifact {
       ...founderGraceConfig
     },
     results: {
-      finalTick: snapshot.tickCount,
+      finalTick: snapshot.tick,
       finalAgentCount: agents.length,
       finalActiveCladeCount: activeClades.length,
       finalActiveSpeciesCount: activeSpecies.length,

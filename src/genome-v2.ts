@@ -80,11 +80,13 @@ export interface MutateGenomeV2Options {
 const CORE_TRAITS = ['metabolism', 'harvest', 'aggression'];
 const OPTIONAL_TRAITS = ['harvestEfficiency2'];
 const EXTENDED_TRAITS: string[] = [
+  'habitat_preference',
   'trophic_level',
   'defense_level',
   'metabolic_efficiency_primary',
   'metabolic_efficiency_secondary'
 ];
+export const DEFAULT_MUTATION_CANDIDATE_NEW_LOCI = [...OPTIONAL_TRAITS, ...EXTENDED_TRAITS];
 
 export function mutateGenomeV2(
   genome: GenomeV2,
@@ -97,7 +99,7 @@ export function mutateGenomeV2(
     removeLociProbability = 0.01,
     minTraits = 3,
     maxTraits = 20,
-    candidateNewLoci = [...OPTIONAL_TRAITS, ...EXTENDED_TRAITS]
+    candidateNewLoci = DEFAULT_MUTATION_CANDIDATE_NEW_LOCI
   } = options;
 
   const mutated = cloneGenomeV2(genome);
