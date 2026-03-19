@@ -1,102 +1,94 @@
-# Session Plan — 2026-03-18
+# Session Plan — 2026-03-19
 
 ## Compact Context
-- GenomeV2 Phase 1 complete: extensible trait architecture with 33 passing tests (commits 2a6ee11, cc72116)
-- Adapter layer exists: bidirectional conversion between `Genome` and `GenomeV2` with `agentToV2()` / `agentFromV2()`
-- Live simulator still hard-coded to three-axis physiology: habitat/trophic/defense derived from metabolism/harvest/aggression
-- Factorial confirmed composition-dependent reproduction causes extinction; decision memo recommends Representational Capacity expansion
-- Package manager: npm. All tests passing (264 total).
+- GenomeV2 Phase 1 and Phase 2 wiring landed on 2026-03-18: live physiology can read `habitat_preference`, `trophic_level`, `defense_level`, and metabolic-efficiency loci when they are present.
+- Live GenomeV2 reproduction only uses `mutateGenomeV2WithConfig()` when agents already carry `genomeV2`.
+- `mutateGenomeV2WithConfig()` still hard-codes `candidateNewLoci` to `['harvestEfficiency2']`, so the newly wired ecological loci cannot arise in normal live runs.
+- The current GenomeV2 smoke artifact converted agents with `agentToV2()` after a legacy run; it proved fallback equivalence, not live loci discovery.
+- `StepSummary` and CSV exports still report the legacy triad (`metabolism`, `harvest`, `aggression`) instead of generic GenomeV2 observability.
+- Package manager is `npm`; recent session summaries report 273 tests passing after the 2026-03-18 GenomeV2 work.
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Documentation/synthesis | 4 | 77017d4, b23ff55, a2ba40e, 459a65c |
-| GenomeV2 infrastructure | 3 | cc72116, 2a6ee11, b23ff55 |
-| Validation/refresh | 2 | 354952d, 35341c1 |
-| Critic/backlog | 1 | a5563cd |
+| Documentation / backlog management | 4 | cd27b2a |
+| GenomeV2 ecological wiring | 2 | d63b1e6 |
+| GenomeV2 efficiency / cost semantics | 2 | 195d6da |
+| Validation / baseline artifacts | 2 | c7de483 |
 
-Dominant axis: Documentation/synthesis (40%)
-Underexplored axes: GenomeV2 implementation wiring (0 commits — Phase 2 not started), complexity-ratchet metrics (0 commits — Phase 3 not started)
+Dominant axis: Documentation / backlog management (4/10)
+Underexplored axes: live GenomeV2 evolution validation, generic trait observability, taxon-inflation safeguards
 
 ## Project State
-- **GenomeV2 exists but is not wired into live runs**: `src/genome-v2.ts` and `src/genome-v2-adapter.ts` provide extensible trait storage with add/remove mutation, but `src/simulation.ts`, `src/settlement-cladogenesis.ts`, and `src/encounter.ts` still compute habitat/trophic/defense from derived scalars (`metabolism * (1 - harvest)`, etc.)
-- **Trait Decoder Bottleneck active**: backlog item 45 flags that "any newly added locus is selectively inert baggage until a human wires it into a specific operator"
-- **Legacy Metric Surface active**: backlog item 49 flags that "strategy analytics remain restricted to habitat/trophic/defense summaries" — even if loci evolve, the feedback loop cannot see them
-- **Zero Phase 2 progress**: decision memo sketched four-phase plan, but only Phase 1 (infrastructure) landed; Phase 2 (first-class ecological traits) has not started despite being the minimum viable expansion to test whether representational capacity unblocks cumulative innovation
+- GenomeV2 infrastructure and first-class ecological trait reads exist in code (`src/clade-habitat.ts`, `src/encounter.ts`, `src/agent-energy.ts`), so the project is past pure representational scaffolding.
+- The live discovery path is still blocked: `src/genome-v2-adapter.ts` only allows `harvestEfficiency2` as a new locus, and the only validation artifact uses post-hoc conversion instead of live GenomeV2 descent.
+- The study surface still cannot see generic trait evolution, loci growth, or phenotype-weighted novelty, so even a successful GenomeV2 run would mostly disappear into legacy summaries.
 
 ## External Context
-- [The Complexity Ratchet: Stronger than Selection, Stronger than Evolvability, Weaker than Robustness](https://direct.mit.edu/artl/article/26/1/38/93265/The-Complexity-Ratchet-Stronger-than-Selection) (Artificial Life, 2020): "organisms become complex although such organisms are less fit than simple ones" — requires genomes that can *become* more complex, not just optimize within fixed dimensionality
-- [Automating the Search for Artificial Life with Foundation Models](https://arxiv.org/html/2412.17799v2) (arXiv, 2024): ASAL "discovered previously unseen lifeforms" — impossible when genome schema fixes all possible phenotypes at compile time
-- [Towards open-ended dynamics in Artificial Life](https://theses.hal.science/tel-05137835v1/file/HAMON_GAUTIER_2025.pdf) (PhD thesis, 2025): "unbounded increase in complexity" structurally impossible when genome dimensionality is compile-time fixed
+- [A speciation simulation that partly passes open-endedness tests](https://arxiv.org/abs/2603.01701) (arXiv, 2026): ToLSim showed unbounded total cumulative evolutionary activity while normalized cumulative activity stayed bounded and new evolutionary activity stayed null. This is a direct warning not to treat raw clade/species gains or raw loci counts as sufficient evidence of open-endedness.
+- [Non-Spatial Hash Chemistry as a Minimalistic Open-Ended Evolutionary System](https://arxiv.org/abs/2404.18027) (arXiv / IEEE CEC, 2024): stronger open-ended growth appeared only when the live substrate could actually access the expanded possibility space efficiently. Relevance here: GenomeV2 only matters if real descendants can reach the new loci during evolution.
 
 ## Research Gaps
-- Does GenomeV2 with first-class ecological traits (habitat/trophic/defense as mutable loci instead of derived scalars) enable agents to specialize on independent ecological axes, or does the current physiology still collapse to three-axis optimization?
-- Can substrate-aware metabolic efficiency loci (primary vs secondary) unblock resource partitioning when wired into metabolism/harvest cost functions?
+- If live GenomeV2 descendants can actually add ecological loci, do those loci persist and shift settlement / encounter energetics, or are they immediately selected out or rendered invisible by the current metric surface?
+- How much of any future diversification gain is real ecological differentiation versus raw locus-count-sensitive taxon inflation?
 
 ## Current Anti-Evidence
-- GenomeV2 infrastructure exists but no live simulation has run with it; the adapter layer was tested but the main simulator still uses fixed `Genome` type
-- `settlement-cladogenesis.ts` line ~85: `habitatPreference(genome)` computes `metabolism * (1 - harvest)`, treating habitat as a derived summary not mutable state
-- `encounter.ts` lines ~120-140: `trophicLevel()` and `defenseLevel()` compute from `harvest * aggression` and `(1 - harvest) * (1 - aggression)`
-- Even if `mutateGenomeV2()` adds `habitat_preference` locus, physiology will ignore it and continue using derived scalar
+- `src/genome-v2-adapter.ts:42` limits live candidate loci to `['harvestEfficiency2']`, so the newly wired ecological traits cannot be discovered in normal reproduction.
+- `src/genome-v2-canonical-smoke.ts` converts agents after a legacy run rather than running a live GenomeV2 population from tick 0, so current evidence says nothing about trait emergence or selection.
+- `src/types.ts:281` and `src/export.ts:30` still encode only legacy-triad summaries, so even a successful GenomeV2 run would be mostly invisible to the main feedback loop.
+- `src/genome-v2.ts` plus `src/reproduction.ts` still tie taxon birth thresholds to raw summed trait distance, creating a path for locus-count-driven inflation without ecological novelty.
 
 ## Bet Queue
 
-### Bet 1: [expand] Wire GenomeV2 Into Settlement and Cladogenesis
-Replace derived habitat-preference computation with direct GenomeV2 trait reads. Update `settlement-cladogenesis.ts` to read `habitat_preference` locus from trait map instead of computing from `metabolism * (1 - harvest)`. Update `shouldFoundClade()` and related gates to use GenomeV2 distance when agent uses GenomeV2. This unblocks habitat from being conflated with metabolic strategy, enabling agents to independently evolve resource-use versus habitat-preference axes.
+### Bet 1: [expand] Unblock Live GenomeV2 Loci Discovery
+Extend the live mutation path so descendants can actually acquire the ecological loci that were wired on 2026-03-18. The immediate target is `mutateGenomeV2WithConfig()` and any seeding/helper paths that still constrain live populations to the old trait menu, because no downstream validation matters if the reachable search space is still the legacy genome plus `harvestEfficiency2`.
 
 #### Success Evidence
-- `settlement-cladogenesis.ts` reads `genome.getTrait('habitat_preference')` with default fallback
-- Tests confirm agents with GenomeV2 can have habitat preference decoupled from metabolism
-- Smoke test shows genomes with custom `habitat_preference` locus settle in expected biomes
+- Live GenomeV2 reproduction can add `habitat_preference`, `trophic_level`, `defense_level`, and metabolic-efficiency loci
+- Tests cover the live adapter path, not just `mutateGenomeV2()` in isolation
+- A minimal seeded run or deterministic test produces at least one descendant with a non-core ecological locus
 
 #### Stop Conditions
-- Stop after settlement/cladogenesis physiology reads from trait map
-- Stop if test failures require > 2 hours debugging; document and defer
-- Do not add new loci to `EXTENDED_TRAITS` yet — that's Bet 2
+- Stop once live offspring can reach the extended loci set and the path is covered by tests
+- Do not redesign the trait-module factory here; keep the change scoped to unblocking the current extended trait menu
 
-### Bet 2: [expand] Promote Trophic and Defense to GenomeV2 Loci
-Remove derived `trophicLevel()` and `defenseLevel()` functions from `encounter.ts`. Add `trophic_level` and `defense_level` to `EXTENDED_TRAITS` candidate list in `genome-v2.ts`. Update encounter physiology to read from trait map with defaults matching current derived semantics (trophic default 0.5, defense default 0.5). Update species-level caches to compute from per-agent GenomeV2 traits instead of founder-genome derived scalars. This enables agents to evolve interaction strategies independently from harvest/aggression axes.
+### Bet 2: [validate] Add Generic GenomeV2 Observability
+Make the feedback loop capable of seeing live GenomeV2 evolution. Add generic metrics to `StepSummary`, experiment exports, and CSV output so the project can observe loci-count growth, explicit trait prevalence, and phenotype-weighted novelty instead of relying on raw taxon counts plus the legacy triad.
 
 #### Success Evidence
-- `encounter.ts` reads `genome.getTrait('trophic_level')` and `genome.getTrait('defense_level')`
-- `EXTENDED_TRAITS` in `genome-v2.ts` includes both trait keys
-- Agents with GenomeV2 can have trophic/defense values independent of harvest/aggression
-- Species-level maps (`speciesTrophicLevel`, `speciesDefenseLevel`) populated from living agents, not derived scalars
+- `StepSummary` and/or experiment exports include loci-count and generic trait metrics
+- CSV/export tests cover the new fields
+- At least one summary path reports explicit extended-trait presence separately from fallback defaults
 
 #### Stop Conditions
-- Stop after encounter physiology reads from trait map
-- Stop if species-level cache refactoring exceeds 1 hour; document simplification path
-- Do not run validation experiments yet — that's Bet 4
+- Stop after a minimal but reusable generic surface exists; do not attempt full genealogy or innovation-graph work in this bet
+- Do not add metrics that depend on large new storage structures unless required for the selected export
 
-### Bet 3: [expand] Add Metabolic Efficiency Loci for Substrate Awareness
-Add `metabolic_efficiency_primary` and `metabolic_efficiency_secondary` to `EXTENDED_TRAITS`. Update `spendAgentEnergy()` in `agent-energy.ts` to apply per-substrate efficiency multipliers when loci are present: if genome has `metabolic_efficiency_primary`, multiply primary-pool debit by `(2.0 - efficiency)` to allow specialists to reduce substrate-specific costs. Wire into movement, metabolism, and encounter costs. This enables resource partitioning by allowing agents to evolve differential efficiency on primary vs secondary substrates.
+### Bet 3: [validate] Run A High-Add-Rate Live GenomeV2 Pilot
+Run a short, intentionally amplified GenomeV2 experiment from tick 0 to falsify the core hypothesis cheaply: can the newly reachable loci appear, persist for more than a transient blip, and measurably perturb ecology? A high-add-rate pilot is the fastest way to separate "mutation path still ineffective" from "traits arise but selection suppresses them" before spending time on canonical multi-seed runs.
 
 #### Success Evidence
-- `EXTENDED_TRAITS` includes `metabolic_efficiency_primary` and `metabolic_efficiency_secondary`
-- `spendAgentEnergy()` checks for efficiency loci and applies substrate-specific cost modifiers
-- Smoke test confirms specialist with high primary-efficiency has lower primary-pool drain than generalist
+- Artifact under `docs/` with live GenomeV2 runs, loci adoption metrics, and at least one per-trait prevalence time series or endpoint summary
+- Clear outcome: either extended loci appear and persist, or they still fail and the failure mode is documented with measurements
 
 #### Stop Conditions
-- Stop after cost modifier wired into `agent-energy.ts`
-- Stop if efficiency semantics unclear; document open question for next session
-- Do not optimize multiplier formula beyond basic `(2.0 - efficiency)` linear scaling
+- Stop after one focused pilot configuration and analysis note
+- Do not interpret pilot results as canonical performance; this bet is for falsification and mechanism confirmation only
 
-### Bet 4: [validate] Run GenomeV2 Canonical Baseline Smoke Test
-Create minimal study script that runs 500-step simulation with GenomeV2-converted agents (using `agentToV2()` adapter) and founder-grace configuration. Export loci-count distribution, habitat/trophic/defense trait summaries, and final active-clade count. Compare to fixed-genome baseline to detect emergent differentiation or confirm behavioral equivalence. This is the first falsifiable test of whether GenomeV2 wiring changes ecological dynamics.
+### Bet 4: [validate] Run Canonical GenomeV2 Versus Fixed-Genome Comparison
+If Bets 1-3 succeed, run the real comparison: a canonical 4000-step, multi-seed GenomeV2 baseline seeded from tick 0 against the fixed-genome baseline, using the new observability fields to measure live trait adoption, phenotype-weighted novelty, and diversification outcomes. This is the first honest test of whether representational expansion is producing ecologically consequential novelty rather than just preserving fallback-equivalent behavior.
 
 #### Success Evidence
-- Study script at `src/genome-v2-canonical-smoke.ts` runs without errors
-- Artifact at `docs/genome_v2_canonical_smoke_2026-03-18.json` includes loci-count stats
-- Comparison note documents whether GenomeV2 run differs from fixed-genome baseline
+- Canonical multi-seed artifact under `docs/` comparing live GenomeV2 against fixed genome
+- Comparison note states whether extended loci appeared, whether they spread, and whether diversification or novelty metrics improved
+- Results clearly separate ecological novelty from raw taxon-count inflation
 
 #### Stop Conditions
-- Only execute if Bets 1-3 complete
-- Stop after one 500-step smoke run; full canonical 4000-step deferred to Phase 4
-- Stop if adapter conversion causes runtime errors; document blocker
+- Only execute if Bets 1-3 land cleanly
+- Cap scope at one canonical comparison batch; defer factorial re-runs until the baseline result is understood
 
 ## Assumptions / Unknowns
-- Assumption: Phase 2 wiring (first-class ecological traits) is the minimum viable expansion to test representational capacity hypothesis; skipping to Phase 3 (metrics) or Phase 4 (validation) without wiring would leave GenomeV2 as unused infrastructure
-- Assumption: Defaults (habitat 0.0, trophic 0.5, defense 0.5, efficiency 0.6) match current derived-scalar semantics closely enough to avoid catastrophic behavior changes in baseline runs
-- Unknown: Whether metabolic efficiency should be multiplicative `(2.0 - efficiency)` or additive `baselineCost - efficiency`; decision deferred to Bet 3 based on value range
-- Unknown: Whether substrate-aware efficiency alone is sufficient for partitioning, or whether composition-dependent reproduction gate (30/30 threshold) needs relaxation when efficiency loci present
-- Observation: 70% of last 10 commits were docs/infrastructure; this session shifts to implementation wiring to convert GenomeV2 from infrastructure into falsifiable mechanism
+- Assumption: once the live mutation path exposes the extended loci, at least some of them will appear often enough to measure within pilot horizons.
+- Assumption: generic observability can be added without rewriting the full analytics stack this session.
+- Unknown: whether raw GenomeV2 distance thresholds will inflate species or clade births enough to require normalization before canonical comparison.
+- Unknown: whether high-add-rate pilots need temporary mutation-rate overrides beyond the current adapter defaults to reveal signal quickly.
