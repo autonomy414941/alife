@@ -1,0 +1,346 @@
+{
+  "generatedAt": "2026-03-19T03:33:45.707Z",
+  "config": {
+    "steps": 1000,
+    "seed": 54321,
+    "addLociProbability": 0.02,
+    "removeLociProbability": 0.01,
+    "initialPopulationSize": 40,
+    "founderGrace": true,
+    "newCladeSettlementCrowdingGraceTicks": 80,
+    "newCladeEncounterRestraintGraceBoost": 0.6,
+    "cladogenesisThreshold": 1
+  },
+  "results": {
+    "finalTick": 1000,
+    "finalAgentCount": 2235,
+    "finalActiveCladeCount": 4,
+    "finalActiveSpeciesCount": 4,
+    "lociCountTimeSeries": [
+      {
+        "tick": 1,
+        "mean": 3,
+        "min": 3,
+        "max": 3
+      },
+      {
+        "tick": 51,
+        "mean": 3.0443896424167693,
+        "min": 3,
+        "max": 4
+      },
+      {
+        "tick": 101,
+        "mean": 3.061849710982659,
+        "min": 3,
+        "max": 4
+      },
+      {
+        "tick": 151,
+        "mean": 3.0948228882833786,
+        "min": 3,
+        "max": 4
+      },
+      {
+        "tick": 201,
+        "mean": 3.099009900990099,
+        "min": 3,
+        "max": 4
+      },
+      {
+        "tick": 251,
+        "mean": 3.1229792147806004,
+        "min": 3,
+        "max": 4
+      },
+      {
+        "tick": 301,
+        "mean": 3.2231655548817466,
+        "min": 3,
+        "max": 5
+      },
+      {
+        "tick": 351,
+        "mean": 3.2552648372686663,
+        "min": 3,
+        "max": 5
+      },
+      {
+        "tick": 401,
+        "mean": 3.234948604992658,
+        "min": 3,
+        "max": 5
+      },
+      {
+        "tick": 451,
+        "mean": 3.2049689440993787,
+        "min": 3,
+        "max": 5
+      },
+      {
+        "tick": 501,
+        "mean": 3.163280662151994,
+        "min": 3,
+        "max": 5
+      },
+      {
+        "tick": 551,
+        "mean": 3.124913254684247,
+        "min": 3,
+        "max": 5
+      },
+      {
+        "tick": 601,
+        "mean": 3.121501272264631,
+        "min": 3,
+        "max": 6
+      },
+      {
+        "tick": 651,
+        "mean": 3.1160822249093107,
+        "min": 3,
+        "max": 6
+      },
+      {
+        "tick": 701,
+        "mean": 3.1253713606654783,
+        "min": 3,
+        "max": 7
+      },
+      {
+        "tick": 751,
+        "mean": 3.133219954648526,
+        "min": 3,
+        "max": 7
+      },
+      {
+        "tick": 801,
+        "mean": 3.1508620689655173,
+        "min": 3,
+        "max": 6
+      },
+      {
+        "tick": 851,
+        "mean": 3.1662390969728067,
+        "min": 3,
+        "max": 5
+      },
+      {
+        "tick": 901,
+        "mean": 3.1963220675944335,
+        "min": 3,
+        "max": 5
+      },
+      {
+        "tick": 951,
+        "mean": 3.2309133489461357,
+        "min": 3,
+        "max": 5
+      },
+      {
+        "tick": 1000,
+        "mean": 3.2492170022371365,
+        "min": 3,
+        "max": 5
+      }
+    ],
+    "extendedTraitPrevalence": [
+      {
+        "tick": 1,
+        "habitat_preference": 0,
+        "trophic_level": 0,
+        "defense_level": 0,
+        "metabolic_efficiency_primary": 0,
+        "metabolic_efficiency_secondary": 0
+      },
+      {
+        "tick": 51,
+        "habitat_preference": 0.0012330456226880395,
+        "trophic_level": 0.036991368680641186,
+        "defense_level": 0.0012330456226880395,
+        "metabolic_efficiency_primary": 0.0012330456226880395,
+        "metabolic_efficiency_secondary": 0
+      },
+      {
+        "tick": 101,
+        "habitat_preference": 0.005202312138728324,
+        "trophic_level": 0.04277456647398844,
+        "defense_level": 0.002890173410404624,
+        "metabolic_efficiency_primary": 0.003468208092485549,
+        "metabolic_efficiency_secondary": 0.005780346820809248
+      },
+      {
+        "tick": 151,
+        "habitat_preference": 0.013623978201634877,
+        "trophic_level": 0.03923705722070845,
+        "defense_level": 0.008174386920980926,
+        "metabolic_efficiency_primary": 0.005994550408719346,
+        "metabolic_efficiency_secondary": 0.020163487738419618
+      },
+      {
+        "tick": 201,
+        "habitat_preference": 0.009318578916715201,
+        "trophic_level": 0.016307513104251603,
+        "defense_level": 0.011648223645894,
+        "metabolic_efficiency_primary": 0.009318578916715201,
+        "metabolic_efficiency_secondary": 0.034944670937682006
+      },
+      {
+        "tick": 251,
+        "habitat_preference": 0.002886836027713626,
+        "trophic_level": 0.06062355658198614,
+        "defense_level": 0.005773672055427252,
+        "metabolic_efficiency_primary": 0.010392609699769052,
+        "metabolic_efficiency_secondary": 0.03002309468822171
+      },
+      {
+        "tick": 301,
+        "habitat_preference": 0.007883565797453002,
+        "trophic_level": 0.16979987871437235,
+        "defense_level": 0.007883565797453002,
+        "metabolic_efficiency_primary": 0.010309278350515464,
+        "metabolic_efficiency_secondary": 0.022437841115827774
+      },
+      {
+        "tick": 351,
+        "habitat_preference": 0.01723037651563497,
+        "trophic_level": 0.17740906190172304,
+        "defense_level": 0.013401403956604978,
+        "metabolic_efficiency_primary": 0.008934269304403318,
+        "metabolic_efficiency_secondary": 0.035737077217613274
+      },
+      {
+        "tick": 401,
+        "habitat_preference": 0.032305433186490456,
+        "trophic_level": 0.12041116005873716,
+        "defense_level": 0.020558002936857563,
+        "metabolic_efficiency_primary": 0.012481644640234948,
+        "metabolic_efficiency_secondary": 0.04698972099853157
+      },
+      {
+        "tick": 451,
+        "habitat_preference": 0.042701863354037264,
+        "trophic_level": 0.07686335403726709,
+        "defense_level": 0.018633540372670808,
+        "metabolic_efficiency_primary": 0.017857142857142856,
+        "metabolic_efficiency_secondary": 0.04580745341614907
+      },
+      {
+        "tick": 501,
+        "habitat_preference": 0.04288939051918736,
+        "trophic_level": 0.05041384499623777,
+        "defense_level": 0.012791572610985704,
+        "metabolic_efficiency_primary": 0.022573363431151242,
+        "metabolic_efficiency_secondary": 0.03160270880361174
+      },
+      {
+        "tick": 551,
+        "habitat_preference": 0.03747397640527411,
+        "trophic_level": 0.027758501040943788,
+        "defense_level": 0.006939625260235947,
+        "metabolic_efficiency_primary": 0.0263705759888966,
+        "metabolic_efficiency_secondary": 0.024288688410825817
+      },
+      {
+        "tick": 601,
+        "habitat_preference": 0.030534351145038167,
+        "trophic_level": 0.027353689567430027,
+        "defense_level": 0.003816793893129771,
+        "metabolic_efficiency_primary": 0.03689567430025445,
+        "metabolic_efficiency_secondary": 0.02099236641221374
+      },
+      {
+        "tick": 651,
+        "habitat_preference": 0.02539298669891173,
+        "trophic_level": 0.03083434099153567,
+        "defense_level": 0.0048367593712212815,
+        "metabolic_efficiency_primary": 0.03869407496977025,
+        "metabolic_efficiency_secondary": 0.015114873035066506
+      },
+      {
+        "tick": 701,
+        "habitat_preference": 0.0285204991087344,
+        "trophic_level": 0.026143790849673203,
+        "defense_level": 0.015448603683897801,
+        "metabolic_efficiency_primary": 0.038027332144979206,
+        "metabolic_efficiency_secondary": 0.016042780748663103
+      },
+      {
+        "tick": 751,
+        "habitat_preference": 0.02834467120181406,
+        "trophic_level": 0.024943310657596373,
+        "defense_level": 0.024376417233560092,
+        "metabolic_efficiency_primary": 0.036848072562358274,
+        "metabolic_efficiency_secondary": 0.017573696145124718
+      },
+      {
+        "tick": 801,
+        "habitat_preference": 0.02209051724137931,
+        "trophic_level": 0.02586206896551724,
+        "defense_level": 0.03825431034482758,
+        "metabolic_efficiency_primary": 0.03879310344827586,
+        "metabolic_efficiency_secondary": 0.023706896551724137
+      },
+      {
+        "tick": 851,
+        "habitat_preference": 0.018471010774756286,
+        "trophic_level": 0.027706516162134428,
+        "defense_level": 0.04002052334530529,
+        "metabolic_efficiency_primary": 0.04002052334530529,
+        "metabolic_efficiency_secondary": 0.03796818881477681
+      },
+      {
+        "tick": 901,
+        "habitat_preference": 0.02286282306163022,
+        "trophic_level": 0.023359840954274354,
+        "defense_level": 0.03876739562624255,
+        "metabolic_efficiency_primary": 0.04324055666003976,
+        "metabolic_efficiency_secondary": 0.06461232604373758
+      },
+      {
+        "tick": 951,
+        "habitat_preference": 0.024824355971896955,
+        "trophic_level": 0.01639344262295082,
+        "defense_level": 0.04964871194379391,
+        "metabolic_efficiency_primary": 0.04449648711943794,
+        "metabolic_efficiency_secondary": 0.09086651053864168
+      },
+      {
+        "tick": 1000,
+        "habitat_preference": 0.021029082774049218,
+        "trophic_level": 0.01476510067114094,
+        "defense_level": 0.056375838926174496,
+        "metabolic_efficiency_primary": 0.042505592841163314,
+        "metabolic_efficiency_secondary": 0.11051454138702461
+      }
+    ],
+    "finalLociCountDistribution": {
+      "3": 1689,
+      "4": 535,
+      "5": 11
+    },
+    "anyExtendedTraitAppeared": true,
+    "extendedTraitPersistence": {
+      "habitat_preference": {
+        "appeared": true,
+        "sustainedTicks": 949
+      },
+      "trophic_level": {
+        "appeared": true,
+        "sustainedTicks": 949
+      },
+      "defense_level": {
+        "appeared": true,
+        "sustainedTicks": 949
+      },
+      "metabolic_efficiency_primary": {
+        "appeared": true,
+        "sustainedTicks": 949
+      },
+      "metabolic_efficiency_secondary": {
+        "appeared": true,
+        "sustainedTicks": 899
+      }
+    }
+  }
+}
