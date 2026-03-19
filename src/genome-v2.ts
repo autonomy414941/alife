@@ -79,7 +79,7 @@ export interface MutateGenomeV2Options {
 
 const CORE_TRAITS = ['metabolism', 'harvest', 'aggression'];
 const OPTIONAL_TRAITS = ['harvestEfficiency2'];
-const EXTENDED_TRAITS: string[] = [
+export const EXTENDED_TRAITS: string[] = [
   'habitat_preference',
   'trophic_level',
   'defense_level',

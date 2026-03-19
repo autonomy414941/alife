@@ -1001,4 +1001,121 @@ describe('run export', () => {
     expect(parsed.results[0].birthScheduleMatchedAllSeeds).toBe(true);
     expect(parsed.results[0].aggregate.actualToNullPersistentWindowFractionRatio.definedSeeds).toBe(2);
   });
+
+  it('includes GenomeV2 metrics in CSV when agents have genomeV2', () => {
+    const sim = new LifeSimulation({
+      seed: 999,
+      config: {
+        width: 2,
+        height: 2,
+        maxResource: 10,
+        resourceRegen: 1,
+        metabolismCostBase: 0.1,
+        moveCost: 0.01,
+        harvestCap: 2,
+        reproduceProbability: 0.5,
+        reproduceThreshold: 5,
+        offspringEnergyFraction: 0.5,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 0.6, harvest: 0.6, aggression: 0.4 },
+          genomeV2: {
+            traits: new Map([
+              ['metabolism', 0.6],
+              ['harvest', 0.6],
+              ['aggression', 0.4],
+              ['habitat_preference', 1.2]
+            ])
+          }
+        },
+        {
+          x: 1,
+          y: 1,
+          energy: 10,
+          genome: { metabolism: 0.5, harvest: 0.5, aggression: 0.5 },
+          genomeV2: {
+            traits: new Map([
+              ['metabolism', 0.5],
+              ['harvest', 0.5],
+              ['aggression', 0.5],
+              ['trophic_level', 0.7],
+              ['defense_level', 0.3]
+            ])
+          }
+        }
+      ]
+    });
+
+    const runData = sim.runWithAnalytics(3, 2);
+    const csv = metricsToCsv(runData.summaries, runData.analytics);
+    const lines = csv.trimEnd().split('\n');
+
+    expect(lines).toHaveLength(4);
+    expect(lines[0]).toBe(METRICS_CSV_COLUMNS.join(','));
+
+    const lociCountIndex = METRICS_CSV_COLUMNS.indexOf('genome_v2_loci_count');
+    const explicitTraitCountIndex = METRICS_CSV_COLUMNS.indexOf('genome_v2_explicit_trait_count');
+    const extendedTraitFractionIndex = METRICS_CSV_COLUMNS.indexOf('genome_v2_extended_trait_agent_fraction');
+
+    expect(lociCountIndex).toBeGreaterThan(-1);
+    expect(explicitTraitCountIndex).toBeGreaterThan(-1);
+    expect(extendedTraitFractionIndex).toBeGreaterThan(-1);
+
+    const row1 = lines[1].split(',');
+    expect(row1[lociCountIndex]).not.toBe('');
+    expect(row1[explicitTraitCountIndex]).not.toBe('');
+    expect(row1[extendedTraitFractionIndex]).not.toBe('');
+
+    const lociCount = Number(row1[lociCountIndex]);
+    const explicitTraitCount = Number(row1[explicitTraitCountIndex]);
+    const extendedTraitFraction = Number(row1[extendedTraitFractionIndex]);
+
+    expect(lociCount).toBeGreaterThan(0);
+    expect(explicitTraitCount).toBeGreaterThan(0);
+    expect(extendedTraitFraction).toBeGreaterThanOrEqual(0);
+    expect(extendedTraitFraction).toBeLessThanOrEqual(1);
+  });
+
+  it('includes empty GenomeV2 metrics in CSV when no agents have genomeV2', () => {
+    const sim = new LifeSimulation({
+      seed: 998,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0 }
+        }
+      ]
+    });
+
+    const runData = sim.runWithAnalytics(2, 2);
+    const csv = metricsToCsv(runData.summaries, runData.analytics);
+    const lines = csv.trimEnd().split('\n');
+
+    const lociCountIndex = METRICS_CSV_COLUMNS.indexOf('genome_v2_loci_count');
+    const explicitTraitCountIndex = METRICS_CSV_COLUMNS.indexOf('genome_v2_explicit_trait_count');
+    const extendedTraitFractionIndex = METRICS_CSV_COLUMNS.indexOf('genome_v2_extended_trait_agent_fraction');
+
+    const row1 = lines[1].split(',');
+    expect(row1[lociCountIndex]).toBe('');
+    expect(row1[explicitTraitCountIndex]).toBe('');
+    expect(row1[extendedTraitFractionIndex]).toBe('');
+  });
 });

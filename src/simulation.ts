@@ -13,7 +13,7 @@ import {
   initializeCladeHabitatPreferences as seedInitialCladeHabitatPreferences,
   initializeSpeciesHabitatPreferences as seedInitialSpeciesHabitatPreferences
 } from './clade-habitat';
-import { cloneGenomeV2 } from './genome-v2';
+import { cloneGenomeV2, hasTrait, traitCount, EXTENDED_TRAITS } from './genome-v2';
 import {
   DEFAULT_DEFENSE_LEVEL,
   DEFAULT_TROPHIC_LEVEL,
@@ -349,6 +349,9 @@ export class LifeSimulation {
     this.recordLocalityFrame(this.tickCount);
     updateDisturbanceEventState(this.disturbanceEvents, this.tickCount, afterCount, diversity.activeSpecies);
 
+    const genomeV2Metrics = this.genomeV2Metrics();
+    const hasGenomeV2Agents = this.agents.some((agent) => agent.genomeV2 !== undefined);
+
     return {
       tick: this.tickCount,
       population: afterCount,
@@ -363,7 +366,12 @@ export class LifeSimulation {
       cladeExtinctions: Math.max(0, cladeExtinctionDelta),
       speciesExtinctions: Math.max(0, speciesExtinctionDelta),
       cumulativeExtinctClades: this.evolutionHistory.getExtinctClades(),
-      cumulativeExtinctSpecies: this.evolutionHistory.getExtinctSpecies()
+      cumulativeExtinctSpecies: this.evolutionHistory.getExtinctSpecies(),
+      genomeV2LociCount: hasGenomeV2Agents ? genomeV2Metrics.lociCount : undefined,
+      genomeV2ExplicitTraitCount: hasGenomeV2Agents ? genomeV2Metrics.explicitTraitCount : undefined,
+      genomeV2ExtendedTraitAgentFraction: hasGenomeV2Agents
+        ? genomeV2Metrics.extendedTraitAgentFraction
+        : undefined
     };
   }
 
@@ -2004,6 +2012,32 @@ export class LifeSimulation {
       metabolism: weightedTotals.metabolism / totalEnergy - meanGenome.metabolism,
       harvest: weightedTotals.harvest / totalEnergy - meanGenome.harvest,
       aggression: weightedTotals.aggression / totalEnergy - meanGenome.aggression
+    };
+  }
+
+  private genomeV2Metrics(): {
+    lociCount: number;
+    explicitTraitCount: number;
+    extendedTraitAgentFraction: number;
+  } {
+    const agentsWithV2 = this.agents.filter((agent) => agent.genomeV2 !== undefined);
+    if (agentsWithV2.length === 0) {
+      return { lociCount: 0, explicitTraitCount: 0, extendedTraitAgentFraction: 0 };
+    }
+
+    const totalLociCount = agentsWithV2.reduce((sum, agent) => sum + traitCount(agent.genomeV2!), 0);
+    const totalExplicitTraitCount = agentsWithV2.reduce((sum, agent) => {
+      return sum + agent.genomeV2!.traits.size;
+    }, 0);
+
+    const agentsWithExtendedTraits = agentsWithV2.filter((agent) => {
+      return EXTENDED_TRAITS.some((trait) => hasTrait(agent.genomeV2!, trait));
+    });
+
+    return {
+      lociCount: totalLociCount / agentsWithV2.length,
+      explicitTraitCount: totalExplicitTraitCount / agentsWithV2.length,
+      extendedTraitAgentFraction: agentsWithExtendedTraits.length / this.agents.length
     };
   }
 

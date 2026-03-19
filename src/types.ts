@@ -293,6 +293,9 @@ export interface StepSummary {
   speciesExtinctions: number;
   cumulativeExtinctClades: number;
   cumulativeExtinctSpecies: number;
+  genomeV2LociCount?: number;
+  genomeV2ExplicitTraitCount?: number;
+  genomeV2ExtendedTraitAgentFraction?: number;
 }
 
 export interface SimulationSnapshot {
