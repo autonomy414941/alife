@@ -1,0 +1,249 @@
+{
+  "generatedAt": "2026-03-20T03:26:50.138Z",
+  "config": {
+    "steps": 1000,
+    "seed": 55555,
+    "addLociProbability": 0.02,
+    "removeLociProbability": 0.01,
+    "initialPopulationSize": 40,
+    "founderGrace": true,
+    "newCladeSettlementCrowdingGraceTicks": 80,
+    "newCladeEncounterRestraintGraceBoost": 0.6,
+    "cladogenesisThreshold": 1,
+    "fertilityBins": 4,
+    "crowdingBins": 4
+  },
+  "results": {
+    "finalTick": 1000,
+    "finalAgentCount": 2571,
+    "finalActiveCladeCount": 1,
+    "finalActiveSpeciesCount": 1,
+    "finalExtendedTraitAgentFraction": 0.20614546868922598,
+    "fertilityBinMetrics": {
+      "0": {
+        "agentCount": 0,
+        "extendedTraitAgentCount": 0,
+        "extendedTraitFraction": 0,
+        "traitPrevalence": {
+          "habitat_preference": 0,
+          "trophic_level": 0,
+          "defense_level": 0,
+          "metabolic_efficiency_primary": 0,
+          "metabolic_efficiency_secondary": 0
+        }
+      },
+      "1": {
+        "agentCount": 1279,
+        "extendedTraitAgentCount": 234,
+        "extendedTraitFraction": 0.18295543393275998,
+        "traitPrevalence": {
+          "habitat_preference": 0.07427677873338545,
+          "trophic_level": 0.04300234558248632,
+          "defense_level": 0.014855355746677092,
+          "metabolic_efficiency_primary": 0.07740422204847537,
+          "metabolic_efficiency_secondary": 0.0007818608287724785
+        }
+      },
+      "2": {
+        "agentCount": 1292,
+        "extendedTraitAgentCount": 296,
+        "extendedTraitFraction": 0.22910216718266255,
+        "traitPrevalence": {
+          "habitat_preference": 0.08281733746130031,
+          "trophic_level": 0.043343653250773995,
+          "defense_level": 0.014705882352941176,
+          "metabolic_efficiency_primary": 0.11377708978328173,
+          "metabolic_efficiency_secondary": 0.007739938080495356
+        }
+      },
+      "3": {
+        "agentCount": 0,
+        "extendedTraitAgentCount": 0,
+        "extendedTraitFraction": 0,
+        "traitPrevalence": {
+          "habitat_preference": 0,
+          "trophic_level": 0,
+          "defense_level": 0,
+          "metabolic_efficiency_primary": 0,
+          "metabolic_efficiency_secondary": 0
+        }
+      }
+    },
+    "crowdingBinMetrics": {
+      "0": {
+        "agentCount": 0,
+        "extendedTraitAgentCount": 0,
+        "extendedTraitFraction": 0,
+        "traitPrevalence": {
+          "habitat_preference": 0,
+          "trophic_level": 0,
+          "defense_level": 0,
+          "metabolic_efficiency_primary": 0,
+          "metabolic_efficiency_secondary": 0
+        }
+      },
+      "1": {
+        "agentCount": 0,
+        "extendedTraitAgentCount": 0,
+        "extendedTraitFraction": 0,
+        "traitPrevalence": {
+          "habitat_preference": 0,
+          "trophic_level": 0,
+          "defense_level": 0,
+          "metabolic_efficiency_primary": 0,
+          "metabolic_efficiency_secondary": 0
+        }
+      },
+      "2": {
+        "agentCount": 0,
+        "extendedTraitAgentCount": 0,
+        "extendedTraitFraction": 0,
+        "traitPrevalence": {
+          "habitat_preference": 0,
+          "trophic_level": 0,
+          "defense_level": 0,
+          "metabolic_efficiency_primary": 0,
+          "metabolic_efficiency_secondary": 0
+        }
+      },
+      "3": {
+        "agentCount": 2571,
+        "extendedTraitAgentCount": 530,
+        "extendedTraitFraction": 0.20614546868922598,
+        "traitPrevalence": {
+          "habitat_preference": 0.07856865033061065,
+          "trophic_level": 0.043173862310385065,
+          "defense_level": 0.014780241151302996,
+          "metabolic_efficiency_primary": 0.09568261376896149,
+          "metabolic_efficiency_secondary": 0.004278490859587709
+        }
+      }
+    },
+    "traitContextCorrelations": [
+      {
+        "trait": "habitat_preference",
+        "overallPrevalence": 0.07856865033061065,
+        "byFertilityBin": {
+          "0": 0,
+          "1": 0.07427677873338545,
+          "2": 0.08281733746130031,
+          "3": 0
+        },
+        "byCrowdingBin": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0.07856865033061065
+        },
+        "enrichmentScore": 1.6481424088905108,
+        "contextSpecific": true
+      },
+      {
+        "trait": "trophic_level",
+        "overallPrevalence": 0.043173862310385065,
+        "byFertilityBin": {
+          "0": 0,
+          "1": 0.04300234558248632,
+          "2": 0.043343653250773995,
+          "3": 0
+        },
+        "byCrowdingBin": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0.043173862310385065
+        },
+        "enrichmentScore": 1.5851855120225704,
+        "contextSpecific": true
+      },
+      {
+        "trait": "defense_level",
+        "overallPrevalence": 0.014780241151302996,
+        "byFertilityBin": {
+          "0": 0,
+          "1": 0.014855355746677092,
+          "2": 0.014705882352941176,
+          "3": 0
+        },
+        "byCrowdingBin": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0.014780241151302996
+        },
+        "enrichmentScore": 1.3631416346536605,
+        "contextSpecific": true
+      },
+      {
+        "trait": "metabolic_efficiency_primary",
+        "overallPrevalence": 0.09568261376896149,
+        "byFertilityBin": {
+          "0": 0,
+          "1": 0.07740422204847537,
+          "2": 0.11377708978328173,
+          "3": 0
+        },
+        "byCrowdingBin": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0.09568261376896149
+        },
+        "enrichmentScore": 1.6625481835071398,
+        "contextSpecific": true
+      },
+      {
+        "trait": "metabolic_efficiency_secondary",
+        "overallPrevalence": 0.004278490859587709,
+        "byFertilityBin": {
+          "0": 0,
+          "1": 0.0007818608287724785,
+          "2": 0.007739938080495356,
+          "3": 0
+        },
+        "byCrowdingBin": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 0.004278490859587709
+        },
+        "enrichmentScore": 1.0395730279564035,
+        "contextSpecific": true
+      }
+    ],
+    "anyExtendedTraitAppeared": true,
+    "extendedTraitPersistence": {
+      "habitat_preference": {
+        "appeared": true,
+        "sustainedTicks": 949
+      },
+      "trophic_level": {
+        "appeared": true,
+        "sustainedTicks": 949
+      },
+      "defense_level": {
+        "appeared": true,
+        "sustainedTicks": 949
+      },
+      "metabolic_efficiency_primary": {
+        "appeared": true,
+        "sustainedTicks": 949
+      },
+      "metabolic_efficiency_secondary": {
+        "appeared": true,
+        "sustainedTicks": 949
+      }
+    },
+    "contextInterpretation": {
+      "anyTraitShowsContextSpecificity": true,
+      "contextSpecificTraits": [
+        "habitat_preference",
+        "trophic_level",
+        "defense_level",
+        "metabolic_efficiency_primary",
+        "metabolic_efficiency_secondary"
+      ],
+      "uniformDistributionTraits": []
+    }
+  }
+}
