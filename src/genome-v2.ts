@@ -87,6 +87,7 @@ export const EXTENDED_TRAITS: string[] = [
   'metabolic_efficiency_secondary'
 ];
 export const DEFAULT_MUTATION_CANDIDATE_NEW_LOCI = [...OPTIONAL_TRAITS, ...EXTENDED_TRAITS];
+const DISTANCE_BASELINE_TRAIT_COUNT = CORE_TRAITS.length;
 
 export function mutateGenomeV2(
   genome: GenomeV2,
@@ -134,9 +135,15 @@ export function mutateGenomeV2(
 
 export function genomeV2Distance(a: GenomeV2, b: GenomeV2): number {
   const allKeys = new Set([...listTraits(a), ...listTraits(b)]);
+  if (allKeys.size === 0) {
+    return 0;
+  }
+
   let sum = 0;
   for (const key of allKeys) {
     sum += Math.abs(getTrait(a, key) - getTrait(b, key));
   }
-  return sum;
+
+  const normalizationCount = Math.max(allKeys.size, DISTANCE_BASELINE_TRAIT_COUNT);
+  return (sum * DISTANCE_BASELINE_TRAIT_COUNT) / normalizationCount;
 }

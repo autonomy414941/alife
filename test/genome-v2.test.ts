@@ -323,7 +323,7 @@ describe('GenomeV2', () => {
   });
 
   describe('distance', () => {
-    it('calculates distance between genomes', () => {
+    it('preserves the legacy scale for core-trait-only genomes', () => {
       const a = createGenomeV2();
       setTrait(a, 'metabolism', 0.5);
       setTrait(a, 'harvest', 0.5);
@@ -337,7 +337,7 @@ describe('GenomeV2', () => {
       expect(genomeV2Distance(a, b)).toBeCloseTo(0.2);
     });
 
-    it('considers traits in one but not the other', () => {
+    it('down-weights optional loci contributions by expressed trait count', () => {
       const a = createGenomeV2();
       setTrait(a, 'metabolism', 0.5);
       setTrait(a, 'harvest', 0.5);
@@ -350,7 +350,27 @@ describe('GenomeV2', () => {
       setTrait(b, 'harvestEfficiency2', 0.8);
 
       const distance = genomeV2Distance(a, b);
-      expect(distance).toBeGreaterThan(0);
+      expect(distance).toBeCloseTo(0.225);
+    });
+
+    it('prevents identical extra loci from inflating core-trait divergence', () => {
+      const a = createGenomeV2();
+      setTrait(a, 'metabolism', 0.5);
+      setTrait(a, 'harvest', 0.5);
+      setTrait(a, 'aggression', 0.5);
+
+      const b = cloneGenomeV2(a);
+      setTrait(b, 'metabolism', 0.7);
+
+      const baseDistance = genomeV2Distance(a, b);
+
+      setTrait(a, 'harvestEfficiency2', 0.6);
+      setTrait(a, 'habitat_preference', 0.4);
+      setTrait(b, 'harvestEfficiency2', 0.6);
+      setTrait(b, 'habitat_preference', 0.4);
+
+      expect(genomeV2Distance(a, b)).toBeLessThan(baseDistance);
+      expect(genomeV2Distance(a, b)).toBeCloseTo(0.12);
     });
 
     it('returns zero for identical genomes', () => {

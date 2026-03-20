@@ -1,0 +1,108 @@
+{
+  "generatedAt": "2026-03-20T03:19:42.341Z",
+  "config": {
+    "steps": 500,
+    "seeds": [
+      12345,
+      23456
+    ],
+    "distanceMetric": "baseline_scaled_mean_absolute_difference",
+    "founderGrace": true,
+    "newCladeSettlementCrowdingGraceTicks": 80,
+    "newCladeEncounterRestraintGraceBoost": 0.6,
+    "cladogenesisThreshold": 1
+  },
+  "genomeV2Runs": [
+    {
+      "seed": 12345,
+      "finalTick": 500,
+      "finalPopulation": 1771,
+      "finalActiveClades": 5,
+      "finalActiveSpecies": 7,
+      "finalCumulativeExtinctClades": 35,
+      "finalCumulativeExtinctSpecies": 36,
+      "meanLociCount": 3.7086391869000566,
+      "extendedTraitAgentFraction": 0.5200451722190853,
+      "extendedTraitsPresent": [
+        "defense_level",
+        "habitat_preference",
+        "metabolic_efficiency_primary",
+        "metabolic_efficiency_secondary",
+        "trophic_level"
+      ],
+      "lociCountGrowth": 0.690120668381538
+    },
+    {
+      "seed": 23456,
+      "finalTick": 500,
+      "finalPopulation": 2297,
+      "finalActiveClades": 4,
+      "finalActiveSpecies": 4,
+      "finalCumulativeExtinctClades": 36,
+      "finalCumulativeExtinctSpecies": 36,
+      "meanLociCount": 3.2890727035263385,
+      "extendedTraitAgentFraction": 0.2581628210709621,
+      "extendedTraitsPresent": [
+        "defense_level",
+        "habitat_preference",
+        "metabolic_efficiency_primary",
+        "metabolic_efficiency_secondary",
+        "trophic_level"
+      ],
+      "lociCountGrowth": 0.2890727035263385
+    }
+  ],
+  "fixedGenomeRuns": [
+    {
+      "seed": 12345,
+      "finalTick": 500,
+      "finalPopulation": 2150,
+      "finalActiveClades": 1,
+      "finalActiveSpecies": 1,
+      "finalCumulativeExtinctClades": 23,
+      "finalCumulativeExtinctSpecies": 23
+    },
+    {
+      "seed": 23456,
+      "finalTick": 500,
+      "finalPopulation": 2214,
+      "finalActiveClades": 3,
+      "finalActiveSpecies": 3,
+      "finalCumulativeExtinctClades": 21,
+      "finalCumulativeExtinctSpecies": 21
+    }
+  ],
+  "comparison": {
+    "genomeV2Aggregate": {
+      "runs": 2,
+      "meanFinalPopulation": 2034,
+      "meanActiveClades": 4.5,
+      "meanActiveSpecies": 5.5,
+      "meanCumulativeExtinctClades": 35.5,
+      "meanCumulativeExtinctSpecies": 36,
+      "meanCladogenesisEvents": 40,
+      "meanSpeciationEvents": 41.5,
+      "meanLociCount": 3.4988559452131973,
+      "meanExtendedTraitAgentFraction": 0.3891039966450237,
+      "extendedTraitEmergenceRate": 1,
+      "extendedTraitPersistenceRate": 1
+    },
+    "fixedGenomeAggregate": {
+      "runs": 2,
+      "meanFinalPopulation": 2182,
+      "meanActiveClades": 2,
+      "meanActiveSpecies": 2,
+      "meanCumulativeExtinctClades": 22,
+      "meanCumulativeExtinctSpecies": 22,
+      "meanCladogenesisEvents": 24,
+      "meanSpeciationEvents": 24
+    },
+    "interpretation": {
+      "extendedLociEmergenceRate": 1,
+      "extendedLociPersistenceRate": 1,
+      "diversificationAdvantage": 0.6979166666666666,
+      "noveltyAdvantage": 1,
+      "ecologicalNoveltyEvidence": "strong: extended traits persisted and diversification increased beyond baseline"
+    }
+  }
+}

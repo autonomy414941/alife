@@ -8,6 +8,7 @@ interface CanonicalComparisonArtifact {
   config: {
     steps: number;
     seeds: number[];
+    distanceMetric: string;
     founderGrace: boolean;
     newCladeSettlementCrowdingGraceTicks: number;
     newCladeEncounterRestraintGraceBoost: number;
@@ -287,6 +288,7 @@ function runCanonicalComparison(
     config: {
       steps,
       seeds,
+      distanceMetric: 'baseline_scaled_mean_absolute_difference',
       founderGrace: true,
       ...founderGraceConfig
     },

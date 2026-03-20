@@ -1,6 +1,6 @@
 # GenomeV2 Implementation Status
 
-**Last updated**: 2026-03-18
+**Last updated**: 2026-03-20
 **Status**: Phase 1 complete, Phase 2-4 pending
 
 ## Overview
@@ -23,21 +23,21 @@ Implementing extensible genome architecture to unblock cumulative innovation and
 ✓ **Remove loci mutation**: `removeLociProbability` (default 1%) removes optional traits
 ✓ **Core trait protection**: metabolism, harvest, aggression never removed
 ✓ **Trait count constraints**: `minTraits` (default 3), `maxTraits` (default 20)
-✓ **Distance metric**: `genomeV2Distance()` sums absolute differences across all traits
+✓ **Distance metric**: `genomeV2Distance()` uses baseline-scaled mean absolute difference across expressed traits to avoid raw loci-count inflation
 ✓ **Bidirectional conversion**: `fromGenome()`, `toGenome()` for gradual migration
 ✓ **Agent adapters**: `agentToV2()`, `agentFromV2()` preserve all agent fields
 ✓ **Config-based mutation**: `mutateGenomeV2WithConfig()` uses SimulationConfig
 ✓ **Threshold checks**: `shouldSpeciateV2()`, `shouldFoundCladeV2()`
 
 ### Test Coverage
-- **Total tests**: 264 (33 GenomeV2-specific, 231 existing)
+- **Total tests**: 286 (39 GenomeV2-specific, 247 existing)
 - **All passing**: ✓
 - **Coverage areas**:
   - Creation and conversion (6 tests)
   - Trait access (5 tests)
   - Cloning (1 test)
   - Mutation (8 tests)
-  - Distance calculation (3 tests)
+  - Distance calculation (4 tests)
   - Agent conversion (3 tests)
   - Config-based mutation (1 test)
   - Speciation/cladogenesis (3 tests)
