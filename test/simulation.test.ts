@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import {
+  INTERNAL_STATE_LAST_HARVEST,
+  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
+} from '../src/behavioral-control';
 import { EncounterOperator } from '../src/encounter';
 import { shouldFoundNewClade } from '../src/settlement-cladogenesis';
 import { LifeSimulation } from '../src/simulation';
@@ -74,6 +78,95 @@ describe('LifeSimulation', () => {
       Math.abs(child!.genome.aggression - before.aggression);
 
     expect(delta).toBeGreaterThan(0);
+  });
+
+  it('preserves default reproduction behavior when no behavioral policy is configured', () => {
+    const sim = new LifeSimulation({
+      seed: 17,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0,
+        speciationThreshold: 10,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 30,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    });
+
+    const summary = sim.step();
+    const agents = sim.snapshot().agents;
+
+    expect(summary.births).toBe(1);
+    expect(agents).toHaveLength(2);
+    expect(agents.every((agent) => agent.internalState === undefined)).toBe(true);
+  });
+
+  it('can gate reproduction on per-agent last-harvest state', () => {
+    const policyState = new Map([[INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 1]]);
+    const createSimulation = (resource: number) => {
+      const sim = new LifeSimulation({
+        seed: 19,
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 2,
+          resourceRegen: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 2,
+          reproduceThreshold: 10,
+          reproduceProbability: 1,
+          offspringEnergyFraction: 0.5,
+          mutationAmount: 0,
+          speciationThreshold: 10,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 20,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+            internalState: policyState
+          }
+        ]
+      });
+      sim.setResource(0, 0, resource);
+      return sim;
+    };
+
+    const blocked = createSimulation(0);
+    const blockedSummary = blocked.step();
+    const blockedParent = blocked.snapshot().agents[0];
+
+    expect(blockedSummary.births).toBe(0);
+    expect(blockedParent.internalState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
+
+    const enabled = createSimulation(2);
+    const enabledSummary = enabled.step();
+    const enabledAgents = enabled.snapshot().agents;
+    const enabledParent = enabledAgents.find((agent) => agent.age === 1);
+    const child = enabledAgents.find((agent) => agent.age === 0);
+
+    expect(enabledSummary.births).toBe(1);
+    expect(enabledParent?.internalState?.get(INTERNAL_STATE_LAST_HARVEST) ?? 0).toBeGreaterThanOrEqual(1);
+    expect(child?.internalState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD)).toBe(1);
+    expect(child?.internalState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
   });
 
   it('records founder habitat context for initial and newly founded taxa in history exports', () => {

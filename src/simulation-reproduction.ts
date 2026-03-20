@@ -1,4 +1,10 @@
 import { spendAgentEnergy, getAgentEnergyPools } from './agent-energy';
+import {
+  getInternalStateValue,
+  inheritInternalState,
+  INTERNAL_STATE_LAST_HARVEST,
+  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
+} from './behavioral-control';
 import { disturbanceSettlementOpenUntilTickAt, resolveDisturbanceSettlementOpeningConfig } from './disturbance';
 import { mutateGenomeV2WithConfig } from './genome-v2-adapter';
 import { getTrait, genomeV2Distance, toGenome } from './genome-v2';
@@ -106,6 +112,17 @@ interface ReproduceAgentOptions {
 
 function canReproduce(agent: Agent, config: SimulationConfig): boolean {
   if (agent.energy < config.reproduceThreshold) {
+    return false;
+  }
+
+  const reproductionHarvestThreshold = getInternalStateValue(
+    agent,
+    INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
+  );
+  if (
+    reproductionHarvestThreshold > 0 &&
+    getInternalStateValue(agent, INTERNAL_STATE_LAST_HARVEST) < reproductionHarvestThreshold
+  ) {
     return false;
   }
 
@@ -326,7 +343,8 @@ export function reproduceAgent({
     energySecondary: childPools.secondary,
     age: 0,
     genome: childGenome,
-    genomeV2: childGenomeV2
+    genomeV2: childGenomeV2,
+    internalState: inheritInternalState(parent)
   };
 }
 

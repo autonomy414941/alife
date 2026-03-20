@@ -6,6 +6,7 @@ import {
   spendAgentEnergy,
   syncAgentEnergy
 } from './agent-energy';
+import { cloneInternalState, INTERNAL_STATE_LAST_HARVEST, setInternalStateValue } from './behavioral-control';
 import {
   getCladeHabitatPreference as lookupCladeHabitatPreference,
   getSpeciesHabitatPreference as lookupSpeciesHabitatPreference,
@@ -411,7 +412,8 @@ export class LifeSimulation {
       agents: this.agents.map((agent) => ({
         ...agent,
         genome: { ...agent.genome },
-        genomeV2: agent.genomeV2 ? cloneGenomeV2(agent.genomeV2) : undefined
+        genomeV2: agent.genomeV2 ? cloneGenomeV2(agent.genomeV2) : undefined,
+        internalState: cloneInternalState(agent.internalState)
       }))
     };
   }
@@ -1302,6 +1304,7 @@ export class LifeSimulation {
     if (seed.genomeV2 !== undefined) {
       agent.genomeV2 = cloneGenomeV2(seed.genomeV2);
     }
+    agent.internalState = cloneInternalState(seed.internalState);
     initializeAgentEnergy(agent, seed);
     return agent;
   }
@@ -1403,6 +1406,7 @@ export class LifeSimulation {
       primary: harvest.primaryHarvest,
       secondary: harvest.secondaryHarvest
     });
+    setInternalStateValue(agent, INTERNAL_STATE_LAST_HARVEST, harvest.primaryHarvest + harvest.secondaryHarvest);
   }
 
   private pickDestination(
