@@ -10,6 +10,7 @@ import {
   cloneInternalState,
   getInternalStateValue,
   INTERNAL_STATE_LAST_HARVEST,
+  POLICY_PARAMETER_KEYS,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
   resolveBehavioralPolicyFlags,
@@ -61,6 +62,7 @@ import {
   PolicyFitnessRecord,
   PolicyFitnessRunSeries
 } from './policy-fitness';
+import { PolicyDecisionStats, summarizePolicyObservability } from './policy-observability';
 import { Rng } from './rng';
 import {
   countExtinctionsInWindow,
@@ -291,6 +293,12 @@ export class LifeSimulation {
   step(): StepSummary {
     const beforeCount = this.agents.length;
     const nextTick = this.tickCount + 1;
+    const policyDecisionStats: PolicyDecisionStats = {
+      movementDecisions: 0,
+      movementPolicyGated: 0,
+      reproductionDecisions: 0,
+      reproductionPolicyGated: 0
+    };
 
     this.regenerateResources();
     this.applyDisturbanceIfScheduled(nextTick);
@@ -305,12 +313,13 @@ export class LifeSimulation {
       if (!this.isAlive(agent.id)) {
         continue;
       }
-      this.processAgentTurn(agent, occupancy, lineageOccupancy, policyFitnessByAgentId);
+      this.processAgentTurn(agent, occupancy, lineageOccupancy, policyFitnessByAgentId, policyDecisionStats);
     }
 
     this.resolveEncounters();
 
-    const { offspring, founderOccupancy, birthsByParentId } = runReproductionPhase({
+    const { offspring, founderOccupancy, birthsByParentId, decisionStats: reproductionDecisionStats } =
+      runReproductionPhase({
       agents: this.agents,
       config: this.config,
       isAlive: (agentId) => this.isAlive(agentId),
@@ -329,7 +338,9 @@ export class LifeSimulation {
           delta
         }),
       reproduce: (parent, occupancy, lineageOccupancy) => this.reproduce(parent, occupancy, lineageOccupancy)
-    });
+      });
+    policyDecisionStats.reproductionDecisions = reproductionDecisionStats.evaluated;
+    policyDecisionStats.reproductionPolicyGated = reproductionDecisionStats.policyGated;
     this.recordPolicyFitnessBirths(policyFitnessByAgentId, birthsByParentId);
     const births = offspring.length;
     this.agents.push(...offspring);
@@ -374,6 +385,11 @@ export class LifeSimulation {
 
     const genomeV2Metrics = this.genomeV2Metrics();
     const hasGenomeV2Agents = this.agents.some((agent) => agent.genomeV2 !== undefined);
+    const policyObservability = summarizePolicyObservability(
+      this.agents,
+      this.lastStepPolicyFitnessRecords,
+      policyDecisionStats
+    );
 
     return {
       tick: this.tickCount,
@@ -394,7 +410,8 @@ export class LifeSimulation {
       genomeV2ExplicitTraitCount: hasGenomeV2Agents ? genomeV2Metrics.explicitTraitCount : undefined,
       genomeV2ExtendedTraitAgentFraction: hasGenomeV2Agents
         ? genomeV2Metrics.extendedTraitAgentFraction
-        : undefined
+        : undefined,
+      policyObservability
     };
   }
 
@@ -1353,7 +1370,8 @@ export class LifeSimulation {
     agent: Agent,
     occupancy: number[][],
     lineageOccupancy: LineageOccupancyGrid | undefined,
-    policyFitnessByAgentId: Map<number, PolicyFitnessRecord>
+    policyFitnessByAgentId: Map<number, PolicyFitnessRecord>,
+    policyDecisionStats: PolicyDecisionStats
   ): void {
     agent.age += 1;
     spendAgentEnergy(agent, this.config.metabolismCostBase * agent.genome.metabolism);
@@ -1376,7 +1394,9 @@ export class LifeSimulation {
 
     const previousX = agent.x;
     const previousY = agent.y;
+    policyDecisionStats.movementDecisions += 1;
     const destination = this.pickDestination(agent, occupancy, lineageOccupancy);
+    policyDecisionStats.movementPolicyGated += Number(destination.policyGated);
     const moved = destination.x !== agent.x || destination.y !== agent.y;
     agent.x = destination.x;
     agent.y = destination.y;
@@ -1459,7 +1479,7 @@ export class LifeSimulation {
     agent: Agent,
     occupancy: number[][],
     lineageOccupancy: LineageOccupancyGrid | undefined
-  ): { x: number; y: number } {
+  ): { x: number; y: number; policyGated: boolean } {
     const energyReserveThreshold = getInternalStateValue(
       agent,
       INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD
@@ -1467,14 +1487,14 @@ export class LifeSimulation {
     const minRecentHarvest = getInternalStateValue(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
 
     if (energyReserveThreshold > 0 && agent.energy < energyReserveThreshold) {
-      return { x: agent.x, y: agent.y };
+      return { x: agent.x, y: agent.y, policyGated: true };
     }
 
     if (
       minRecentHarvest > 0 &&
       getInternalStateValue(agent, INTERNAL_STATE_LAST_HARVEST) < minRecentHarvest
     ) {
-      return { x: agent.x, y: agent.y };
+      return { x: agent.x, y: agent.y, policyGated: true };
     }
 
     const options = [
@@ -1519,7 +1539,10 @@ export class LifeSimulation {
       }
     }
 
-    return best;
+    return {
+      ...best,
+      policyGated: false
+    };
   }
 
   private initializePolicyFitnessTracking(
@@ -1561,6 +1584,9 @@ export class LifeSimulation {
         harvestIntake: 0,
         survived: false,
         offspringProduced: 0,
+        policyValues: Object.fromEntries(
+          POLICY_PARAMETER_KEYS.map((key) => [key, Math.max(0, agent.internalState?.get(key) ?? 0)])
+        ),
         ...policyFlags
       });
     }

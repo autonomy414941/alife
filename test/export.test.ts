@@ -272,6 +272,69 @@ describe('run export', () => {
     );
   });
 
+  it('exports policy observability columns alongside step metrics', () => {
+    const sim = new LifeSimulation({
+      seed: 42,
+      config: {
+        width: 2,
+        height: 1,
+        maxResource: 5,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 5,
+        reproduceThreshold: 1,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          internalState: new Map([
+            ['reproduction_harvest_threshold', 2],
+            ['movement_energy_reserve_threshold', 15],
+            ['movement_min_recent_harvest', 2]
+          ])
+        },
+        {
+          x: 1,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    });
+
+    sim.setResource(0, 0, 1);
+    sim.setResource(1, 0, 5);
+
+    const runData = sim.runWithAnalytics(1, 1);
+    const csv = metricsToCsv(runData.summaries, runData.analytics);
+    const lines = csv.trimEnd().split('\n');
+    const row = lines[1].split(',');
+
+    expect(lines[0]).toBe(METRICS_CSV_COLUMNS.join(','));
+
+    const anyPolicyIndex = METRICS_CSV_COLUMNS.indexOf('policy_agents_any_fraction');
+    const decisionGateIndex = METRICS_CSV_COLUMNS.indexOf('policy_decisions_gated_fraction');
+    const movementGateIndex = METRICS_CSV_COLUMNS.indexOf('policy_movement_decisions_gated_fraction');
+    const reproductionGateIndex = METRICS_CSV_COLUMNS.indexOf('policy_reproduction_decisions_gated_fraction');
+    const reproductionMeanIndex = METRICS_CSV_COLUMNS.indexOf('policy_reproduction_harvest_threshold_mean');
+    const reproductionHarvestCorrelationIndex = METRICS_CSV_COLUMNS.indexOf(
+      'policy_reproduction_harvest_threshold_harvest_correlation'
+    );
+
+    expect(Number(row[anyPolicyIndex])).toBeCloseTo(0.5, 10);
+    expect(Number(row[decisionGateIndex])).toBeCloseTo(0.5, 10);
+    expect(Number(row[movementGateIndex])).toBeCloseTo(0.5, 10);
+    expect(Number(row[reproductionGateIndex])).toBeCloseTo(0.5, 10);
+    expect(Number(row[reproductionMeanIndex])).toBeCloseTo(2, 10);
+    expect(Number(row[reproductionHarvestCorrelationIndex])).toBeCloseTo(-1, 10);
+  });
+
   it('renders aggregate experiment metrics to one-row CSV', () => {
     const experiment = runExperiment({
       runs: 2,

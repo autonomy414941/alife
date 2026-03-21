@@ -18,6 +18,7 @@ import {
   SimulationRunExport,
   StepSummary
 } from './types';
+import { POLICY_PARAMETER_KEYS } from './behavioral-control';
 
 export interface BuildRunExportInput {
   analyticsWindow: number;
@@ -26,6 +27,15 @@ export interface BuildRunExportInput {
   history: EvolutionHistorySnapshot;
   generatedAt?: string;
 }
+
+const POLICY_METRICS_CSV_COLUMNS = POLICY_PARAMETER_KEYS.flatMap((key) => [
+  `policy_${key}_prevalence`,
+  `policy_${key}_mean`,
+  `policy_${key}_variance`,
+  `policy_${key}_harvest_correlation`,
+  `policy_${key}_survival_correlation`,
+  `policy_${key}_reproduction_correlation`
+]);
 
 export const METRICS_CSV_COLUMNS = [
   'tick',
@@ -49,6 +59,13 @@ export const METRICS_CSV_COLUMNS = [
   'genome_v2_loci_count',
   'genome_v2_explicit_trait_count',
   'genome_v2_extended_trait_agent_fraction',
+  'policy_agents_any_fraction',
+  'policy_agents_movement_fraction',
+  'policy_agents_reproduction_fraction',
+  'policy_decisions_gated_fraction',
+  'policy_movement_decisions_gated_fraction',
+  'policy_reproduction_decisions_gated_fraction',
+  ...POLICY_METRICS_CSV_COLUMNS,
   'window_start_tick',
   'window_end_tick',
   'window_size',
@@ -384,6 +401,13 @@ export function metricsToCsv(summaries: StepSummary[], analytics: EvolutionAnaly
         summary.genomeV2LociCount ?? '',
         summary.genomeV2ExplicitTraitCount ?? '',
         summary.genomeV2ExtendedTraitAgentFraction ?? '',
+        summary.policyObservability?.activation.anyPolicyAgentFraction ?? '',
+        summary.policyObservability?.activation.movementPolicyAgentFraction ?? '',
+        summary.policyObservability?.activation.reproductionPolicyAgentFraction ?? '',
+        summary.policyObservability?.activation.decisionGatedFraction ?? '',
+        summary.policyObservability?.activation.movementDecisionGatedFraction ?? '',
+        summary.policyObservability?.activation.reproductionDecisionGatedFraction ?? '',
+        ...policyObservabilityToCsvValues(summary),
         point.window.startTick,
         point.window.endTick,
         point.window.size,
@@ -629,6 +653,20 @@ export function disturbanceGridStudyToCsv(exportData: DisturbanceGridStudyExport
   }
 
   return `${rows.join('\n')}\n`;
+}
+
+function policyObservabilityToCsvValues(summary: StepSummary): Array<number | string> {
+  return POLICY_PARAMETER_KEYS.flatMap((key) => {
+    const parameter = summary.policyObservability?.parameters.find((entry) => entry.key === key);
+    return [
+      parameter?.prevalence ?? '',
+      parameter?.mean ?? '',
+      parameter?.variance ?? '',
+      parameter?.outcomeCorrelation.harvestIntake ?? '',
+      parameter?.outcomeCorrelation.survivalRate ?? '',
+      parameter?.outcomeCorrelation.reproductionRate ?? ''
+    ];
+  });
 }
 
 function normalizeWindow(value: number): number {

@@ -12,6 +12,7 @@ export interface PolicyFitnessRecord extends BehavioralPolicyFlags {
   harvestIntake: number;
   survived: boolean;
   offspringProduced: number;
+  policyValues?: Record<string, number>;
 }
 
 export interface PolicyFitnessRunSeries {

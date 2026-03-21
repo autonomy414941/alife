@@ -67,6 +67,12 @@ interface RunReproductionPhaseResult {
   offspring: Agent[];
   founderOccupancy: number[][] | undefined;
   birthsByParentId: Map<number, number>;
+  decisionStats: ReproductionDecisionStats;
+}
+
+interface ReproductionDecisionStats {
+  evaluated: number;
+  policyGated: number;
 }
 
 interface ReproduceAgentOptions {
@@ -111,9 +117,12 @@ interface ReproduceAgentOptions {
   getCladeDefenseLevel: (lineage: number) => number;
 }
 
-function canReproduce(agent: Agent, config: SimulationConfig): boolean {
+function evaluateReproductionEligibility(
+  agent: Agent,
+  config: SimulationConfig
+): { canReproduce: boolean; policyGated: boolean } {
   if (agent.energy < config.reproduceThreshold) {
-    return false;
+    return { canReproduce: false, policyGated: false };
   }
 
   const reproductionHarvestThreshold = getInternalStateValue(
@@ -124,25 +133,28 @@ function canReproduce(agent: Agent, config: SimulationConfig): boolean {
     reproductionHarvestThreshold > 0 &&
     getInternalStateValue(agent, INTERNAL_STATE_LAST_HARVEST) < reproductionHarvestThreshold
   ) {
-    return false;
+    return { canReproduce: false, policyGated: true };
   }
 
   const minPrimaryFraction = config.reproductionMinPrimaryFraction;
   const minSecondaryFraction = config.reproductionMinSecondaryFraction;
 
   if (minPrimaryFraction <= 0 && minSecondaryFraction <= 0) {
-    return true;
+    return { canReproduce: true, policyGated: false };
   }
 
   const pools = getAgentEnergyPools(agent);
   if (pools.total <= 0) {
-    return false;
+    return { canReproduce: false, policyGated: false };
   }
 
   const primaryFraction = pools.primary / pools.total;
   const secondaryFraction = pools.secondary / pools.total;
 
-  return primaryFraction >= minPrimaryFraction && secondaryFraction >= minSecondaryFraction;
+  return {
+    canReproduce: primaryFraction >= minPrimaryFraction && secondaryFraction >= minSecondaryFraction,
+    policyGated: false
+  };
 }
 
 export function runReproductionPhase({
@@ -165,11 +177,18 @@ export function runReproductionPhase({
 
   const offspring: Agent[] = [];
   const birthsByParentId = new Map<number, number>();
+  const decisionStats: ReproductionDecisionStats = {
+    evaluated: 0,
+    policyGated: 0
+  };
   for (const agent of [...agents]) {
     if (!isAlive(agent.id)) {
       continue;
     }
-    if (!canReproduce(agent, config) || randomFloat() >= config.reproduceProbability) {
+    const reproductionDecision = evaluateReproductionEligibility(agent, config);
+    decisionStats.evaluated += 1;
+    decisionStats.policyGated += Number(reproductionDecision.policyGated);
+    if (!reproductionDecision.canReproduce || randomFloat() >= config.reproduceProbability) {
       continue;
     }
 
@@ -187,7 +206,8 @@ export function runReproductionPhase({
   return {
     offspring,
     founderOccupancy: offspring.length === 0 ? undefined : buildOccupancyGrid([...agents, ...offspring]),
-    birthsByParentId
+    birthsByParentId,
+    decisionStats
   };
 }
 

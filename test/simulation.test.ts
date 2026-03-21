@@ -444,6 +444,86 @@ describe('LifeSimulation', () => {
     expect(agent.x).toBeGreaterThan(0);
   });
 
+  it('summarizes policy prevalence, gate rates, and outcome correlations in step summaries', () => {
+    const sim = new LifeSimulation({
+      seed: 42,
+      config: {
+        width: 2,
+        height: 1,
+        maxResource: 5,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 5,
+        reproduceThreshold: 1,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          internalState: new Map([
+            [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 2],
+            [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 15],
+            [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2]
+          ])
+        },
+        {
+          x: 1,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    });
+
+    sim.setResource(0, 0, 1);
+    sim.setResource(1, 0, 5);
+
+    const summary = sim.step();
+    const policyObservability = summary.policyObservability;
+
+    expect(policyObservability).toBeDefined();
+    expect(policyObservability?.activation.anyPolicyAgentFraction).toBeCloseTo(0.5, 10);
+    expect(policyObservability?.activation.movementPolicyAgentFraction).toBeCloseTo(0.5, 10);
+    expect(policyObservability?.activation.reproductionPolicyAgentFraction).toBeCloseTo(0.5, 10);
+    expect(policyObservability?.activation.decisionGatedFraction).toBeCloseTo(0.5, 10);
+    expect(policyObservability?.activation.movementDecisionGatedFraction).toBeCloseTo(0.5, 10);
+    expect(policyObservability?.activation.reproductionDecisionGatedFraction).toBeCloseTo(0.5, 10);
+
+    const reproductionThreshold = policyObservability?.parameters.find(
+      (parameter) => parameter.key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
+    );
+    const movementReserveThreshold = policyObservability?.parameters.find(
+      (parameter) => parameter.key === INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD
+    );
+    const movementHarvestThreshold = policyObservability?.parameters.find(
+      (parameter) => parameter.key === INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST
+    );
+
+    expect(reproductionThreshold).toMatchObject({
+      prevalence: 0.5,
+      mean: 2,
+      variance: 0
+    });
+    expect(movementReserveThreshold).toMatchObject({
+      prevalence: 0.5,
+      mean: 15,
+      variance: 0
+    });
+    expect(movementHarvestThreshold).toMatchObject({
+      prevalence: 0.5,
+      mean: 2,
+      variance: 0
+    });
+    expect(reproductionThreshold?.outcomeCorrelation.harvestIntake).toBeCloseTo(-1, 10);
+    expect(reproductionThreshold?.outcomeCorrelation.survivalRate).toBe(0);
+    expect(reproductionThreshold?.outcomeCorrelation.reproductionRate).toBe(0);
+  });
+
   it('records founder habitat context for initial and newly founded taxa in history exports', () => {
     const sim = new LifeSimulation({
       seed: 7,
