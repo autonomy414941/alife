@@ -5,13 +5,19 @@ export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD = 'reproduction_harve
 export const INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD = 'movement_energy_reserve_threshold';
 export const INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST = 'movement_min_recent_harvest';
 
+export interface BehavioralPolicyFlags {
+  hasAnyPolicy: boolean;
+  hasMovementPolicy: boolean;
+  hasReproductionPolicy: boolean;
+}
+
 export function cloneInternalState(
   internalState: ReadonlyMap<string, number> | undefined
 ): Map<string, number> | undefined {
   return internalState ? new Map(internalState) : undefined;
 }
 
-const POLICY_PARAMETER_KEYS = [
+export const POLICY_PARAMETER_KEYS = [
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST
@@ -76,4 +82,18 @@ export function setInternalStateValue(agent: Agent, key: string, value: number):
 
 export function getInternalStateValue(agent: Pick<Agent, 'internalState'>, key: string, fallback = 0): number {
   return agent.internalState?.get(key) ?? fallback;
+}
+
+export function resolveBehavioralPolicyFlags(agent: Pick<Agent, 'internalState'>): BehavioralPolicyFlags {
+  const hasReproductionPolicy =
+    getInternalStateValue(agent, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD) > 0;
+  const hasMovementPolicy =
+    getInternalStateValue(agent, INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD) > 0 ||
+    getInternalStateValue(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST) > 0;
+
+  return {
+    hasAnyPolicy: hasReproductionPolicy || hasMovementPolicy,
+    hasMovementPolicy,
+    hasReproductionPolicy
+  };
 }

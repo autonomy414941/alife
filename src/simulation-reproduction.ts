@@ -66,6 +66,7 @@ interface RunReproductionPhaseOptions {
 interface RunReproductionPhaseResult {
   offspring: Agent[];
   founderOccupancy: number[][] | undefined;
+  birthsByParentId: Map<number, number>;
 }
 
 interface ReproduceAgentOptions {
@@ -163,6 +164,7 @@ export function runReproductionPhase({
       : undefined;
 
   const offspring: Agent[] = [];
+  const birthsByParentId = new Map<number, number>();
   for (const agent of [...agents]) {
     if (!isAlive(agent.id)) {
       continue;
@@ -173,6 +175,7 @@ export function runReproductionPhase({
 
     const child = reproduce(agent, reproductionOccupancy, reproductionLineageOccupancy);
     offspring.push(child);
+    birthsByParentId.set(agent.id, (birthsByParentId.get(agent.id) ?? 0) + 1);
     if (reproductionOccupancy) {
       reproductionOccupancy[child.y][child.x] += 1;
     }
@@ -183,7 +186,8 @@ export function runReproductionPhase({
 
   return {
     offspring,
-    founderOccupancy: offspring.length === 0 ? undefined : buildOccupancyGrid([...agents, ...offspring])
+    founderOccupancy: offspring.length === 0 ? undefined : buildOccupancyGrid([...agents, ...offspring]),
+    birthsByParentId
   };
 }
 

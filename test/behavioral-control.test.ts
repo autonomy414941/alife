@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   inheritInternalState,
   mutatePolicyParameters,
+  resolveBehavioralPolicyFlags,
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
@@ -133,6 +134,43 @@ describe('behavioral-control', () => {
       });
 
       expect(state.has(INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD)).toBe(false);
+    });
+  });
+
+  describe('resolveBehavioralPolicyFlags', () => {
+    it('detects movement and reproduction policies independently', () => {
+      const movementOnly = resolveBehavioralPolicyFlags({
+        internalState: new Map([[INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 8]])
+      });
+      const reproductionOnly = resolveBehavioralPolicyFlags({
+        internalState: new Map([[INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 0.5]])
+      });
+
+      expect(movementOnly).toEqual({
+        hasAnyPolicy: true,
+        hasMovementPolicy: true,
+        hasReproductionPolicy: false
+      });
+      expect(reproductionOnly).toEqual({
+        hasAnyPolicy: true,
+        hasMovementPolicy: false,
+        hasReproductionPolicy: true
+      });
+    });
+
+    it('treats non-positive thresholds as default behavior', () => {
+      const flags = resolveBehavioralPolicyFlags({
+        internalState: new Map([
+          [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 0],
+          [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, -1]
+        ])
+      });
+
+      expect(flags).toEqual({
+        hasAnyPolicy: false,
+        hasMovementPolicy: false,
+        hasReproductionPolicy: false
+      });
     });
   });
 });

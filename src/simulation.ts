@@ -12,6 +12,7 @@ import {
   INTERNAL_STATE_LAST_HARVEST,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
+  resolveBehavioralPolicyFlags,
   setInternalStateValue
 } from './behavioral-control';
 import {
@@ -53,6 +54,13 @@ import {
   resolveDualResourceHarvest,
   resolveResourceHarvestShares
 } from './resource-harvest';
+import {
+  binPolicyFitnessValue,
+  DEFAULT_POLICY_FITNESS_CROWDING_BINS,
+  DEFAULT_POLICY_FITNESS_FERTILITY_BINS,
+  PolicyFitnessRecord,
+  PolicyFitnessRunSeries
+} from './policy-fitness';
 import { Rng } from './rng';
 import {
   countExtinctionsInWindow,
@@ -251,6 +259,8 @@ export class LifeSimulation {
 
   private readonly disturbanceSettlementOpenUntilTick: number[][];
 
+  private lastStepPolicyFitnessRecords: PolicyFitnessRecord[] = [];
+
   constructor(options: LifeSimulationOptions = {}) {
     this.config = resolveSimulationConfig(options.config);
     this.encounterOperator = options.encounterOperator ?? dominantEncounterOperator;
@@ -280,25 +290,27 @@ export class LifeSimulation {
 
   step(): StepSummary {
     const beforeCount = this.agents.length;
+    const nextTick = this.tickCount + 1;
 
     this.regenerateResources();
-    this.applyDisturbanceIfScheduled(this.tickCount + 1);
+    this.applyDisturbanceIfScheduled(nextTick);
 
     const occupancy = buildOccupancyGrid(this.config.width, this.config.height, this.agents);
     const lineageOccupancy = this.usesAdultLineageOccupancy()
       ? buildLineageOccupancyGrid(this.config.width, this.config.height, this.agents)
       : undefined;
+    const policyFitnessByAgentId = this.initializePolicyFitnessTracking(nextTick, occupancy);
     const turnOrder = this.rng.shuffle([...this.agents]);
     for (const agent of turnOrder) {
       if (!this.isAlive(agent.id)) {
         continue;
       }
-      this.processAgentTurn(agent, occupancy, lineageOccupancy);
+      this.processAgentTurn(agent, occupancy, lineageOccupancy, policyFitnessByAgentId);
     }
 
     this.resolveEncounters();
 
-    const { offspring, founderOccupancy } = runReproductionPhase({
+    const { offspring, founderOccupancy, birthsByParentId } = runReproductionPhase({
       agents: this.agents,
       config: this.config,
       isAlive: (agentId) => this.isAlive(agentId),
@@ -318,9 +330,9 @@ export class LifeSimulation {
         }),
       reproduce: (parent, occupancy, lineageOccupancy) => this.reproduce(parent, occupancy, lineageOccupancy)
     });
+    this.recordPolicyFitnessBirths(policyFitnessByAgentId, birthsByParentId);
     const births = offspring.length;
     this.agents.push(...offspring);
-    const nextTick = this.tickCount + 1;
 
     const survivors: Agent[] = [];
     const deadAgents: Agent[] = [];
@@ -333,6 +345,7 @@ export class LifeSimulation {
     }
     this.recycleDeadAgents(deadAgents);
     this.agents = survivors;
+    this.completePolicyFitnessTracking(policyFitnessByAgentId, survivors);
 
     const afterCount = this.agents.length;
     const meanEnergy = this.meanEnergy();
@@ -405,6 +418,24 @@ export class LifeSimulation {
       }
     }
     return { summaries, analytics };
+  }
+
+  runWithPolicyFitness(steps: number, stopWhenExtinct = false): PolicyFitnessRunSeries {
+    const summaries: StepSummary[] = [];
+    const records: PolicyFitnessRecord[] = [];
+    for (let i = 0; i < steps; i += 1) {
+      const summary = this.step();
+      summaries.push(summary);
+      records.push(...this.policyFitnessRecords());
+      if (stopWhenExtinct && summary.population === 0) {
+        break;
+      }
+    }
+    return { summaries, records };
+  }
+
+  policyFitnessRecords(): PolicyFitnessRecord[] {
+    return this.lastStepPolicyFitnessRecords.map((record) => ({ ...record }));
   }
 
   snapshot(): SimulationSnapshot {
@@ -1321,7 +1352,8 @@ export class LifeSimulation {
   private processAgentTurn(
     agent: Agent,
     occupancy: number[][],
-    lineageOccupancy: LineageOccupancyGrid | undefined
+    lineageOccupancy: LineageOccupancyGrid | undefined,
+    policyFitnessByAgentId: Map<number, PolicyFitnessRecord>
   ): void {
     agent.age += 1;
     spendAgentEnergy(agent, this.config.metabolismCostBase * agent.genome.metabolism);
@@ -1415,7 +1447,12 @@ export class LifeSimulation {
       primary: harvest.primaryHarvest,
       secondary: harvest.secondaryHarvest
     });
-    setInternalStateValue(agent, INTERNAL_STATE_LAST_HARVEST, harvest.primaryHarvest + harvest.secondaryHarvest);
+    const totalHarvest = harvest.primaryHarvest + harvest.secondaryHarvest;
+    setInternalStateValue(agent, INTERNAL_STATE_LAST_HARVEST, totalHarvest);
+    const policyFitness = policyFitnessByAgentId.get(agent.id);
+    if (policyFitness) {
+      policyFitness.harvestIntake = totalHarvest;
+    }
   }
 
   private pickDestination(
@@ -1483,6 +1520,75 @@ export class LifeSimulation {
     }
 
     return best;
+  }
+
+  private initializePolicyFitnessTracking(
+    tick: number,
+    occupancy: number[][]
+  ): Map<number, PolicyFitnessRecord> {
+    const records = new Map<number, PolicyFitnessRecord>();
+    for (const agent of this.agents) {
+      if (agent.energy <= 0) {
+        continue;
+      }
+
+      const fertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, tick);
+      const crowding = neighborhoodCrowding({
+        x: agent.x,
+        y: agent.y,
+        occupancy,
+        dispersalRadius: this.normalizedDispersalRadius(),
+        wrapX: (x) => this.wrapX(x),
+        wrapY: (y) => this.wrapY(y)
+      });
+      const policyFlags = resolveBehavioralPolicyFlags(agent);
+
+      records.set(agent.id, {
+        tick,
+        agentId: agent.id,
+        fertilityBin: binPolicyFitnessValue(
+          fertility,
+          0.1,
+          2,
+          DEFAULT_POLICY_FITNESS_FERTILITY_BINS
+        ),
+        crowdingBin: binPolicyFitnessValue(
+          crowding,
+          0,
+          Math.max(1, this.agents.length),
+          DEFAULT_POLICY_FITNESS_CROWDING_BINS
+        ),
+        harvestIntake: 0,
+        survived: false,
+        offspringProduced: 0,
+        ...policyFlags
+      });
+    }
+
+    return records;
+  }
+
+  private recordPolicyFitnessBirths(
+    policyFitnessByAgentId: Map<number, PolicyFitnessRecord>,
+    birthsByParentId: ReadonlyMap<number, number>
+  ): void {
+    for (const [agentId, births] of birthsByParentId) {
+      const record = policyFitnessByAgentId.get(agentId);
+      if (record) {
+        record.offspringProduced += births;
+      }
+    }
+  }
+
+  private completePolicyFitnessTracking(
+    policyFitnessByAgentId: Map<number, PolicyFitnessRecord>,
+    survivors: ReadonlyArray<Pick<Agent, 'id'>>
+  ): void {
+    const survivorIds = new Set(survivors.map((agent) => agent.id));
+    this.lastStepPolicyFitnessRecords = [...policyFitnessByAgentId.values()].map((record) => ({
+      ...record,
+      survived: survivorIds.has(record.agentId)
+    }));
   }
 
   private lineageHarvestCrowdingEfficiency(
