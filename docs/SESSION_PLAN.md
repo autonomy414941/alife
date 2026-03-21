@@ -1,110 +1,109 @@
-# Session Plan — 2026-03-20
+# Session Plan — 2026-03-21
 
 ## Compact Context
-- GenomeV2 live discovery, observability, pilot, and canonical validation all landed on 2026-03-19 (commits 449f5ab, 23f6718, 28bf60a, 9699b44).
-- Canonical comparison shows strong evidence: all 4 seeds had 100% extended trait emergence and persistence, mean loci count grew from 3.0 to 3.38, and diversification advantage was +83.9% over fixed-genome baseline.
-- On 2026-03-20, `genomeV2Distance()` was normalized with baseline-preserving scaling; the established 500-step, 2-seed comparison retained strong diversification advantage (+69.8% vs +78.1% pre-normalization on the same subset).
-- Package manager is `npm`; all 285 tests pass as of 2026-03-19.
-- Research agenda shifted from GenomeV2 wiring to end-to-end validation of evolvable ecological novelty on 2026-03-19.
+- GenomeV2 validation completed 2026-03-19–20: extended traits emerge (100% in canonical runs), persist, and show spatial/fertility enrichment (1.04–1.66)
+- Structural ceiling prioritization (2026-03-20) ranked behavioral control #1: high innovation potential, strong literature support, one-month feasible
+- Behavioral control feasibility spike (2026-03-20) confirmed low coupling risk: internal state + threshold policies work without breaking default behavior
+- Package manager is npm; all tests pass as of 2026-03-20
+- Research agenda shifted from GenomeV2 validation to behavioral control implementation on 2026-03-21
 
-## Exploration Axes (last 30 commits)
+## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Documentation / backlog management | 14 | e9c8a25 |
-| Validation / baseline artifacts | 5 | 9699b44 |
-| Other | 3 | 449f5ab |
-| Ecological mechanisms | 3 | af31ee3 |
-| Observability infrastructure | 2 | 23f6718 |
-| Energetics / efficiency | 2 | 195d6da |
-| Bug fixes / refactoring | 1 | - |
+| Validation (ecological context, distance normalization, canonical comparison) | 4 | ac699f9 |
+| Structural analysis (critic, synthesis) | 3 | 52d5541 |
+| Feature implementation (behavioral control, observability, loci discovery) | 3 | 83a82f4 |
 
-Dominant axis: Documentation / backlog management (14/30)
-Underexplored axes: loci-count inflation safeguards, ecological-context correlation for traits, behavioral control, inheritance architecture
+Dominant axis: Validation (4/10)
+Underexplored axes: Movement/harvest policy expansion, policy inheritance, fitness decomposition
 
 ## Project State
-- GenomeV2 representational capacity expansion is complete: extended traits can emerge, persist, and are observable in standard summaries.
-- The distance metric no longer has a direct raw loci-count inflation path, and the normalized 500-step subset still shows strong diversification gains; the remaining uncertainty is whether that robustness holds at the full 4000-step horizon.
-- The backlog contains 14 structural ceiling items identified by the critic agent, spanning behavioral control, inheritance architecture, interaction richness, environmental complexity, evolutionary mechanisms, and observability depth.
-- Recent sessions heavily skewed toward documentation (14/30 commits), while code changes focused narrowly on GenomeV2 validation.
+- Behavioral control infrastructure exists: `Agent.internalState: Map<string, number>`, `last_harvest_total` signal, `reproduction_harvest_threshold` policy parameter, and reproduction gating in `src/behavioral-control.ts`
+- Only reproduction reads policy state; movement, harvest, encounters, and settlement operators remain memoryless and hard-coded
+- Extended traits show enrichment but simulation collapsed to 1 clade/1 species despite 20.6% trait prevalence, suggesting ecological advantage requires active behavioral adaptation beyond passive trait expression
+- The backlog now focuses on behavioral control expansion as the monthly priority
 
 ## External Context
-- [Editorial Introduction to the 2024 Special Issue on Open-Ended Evolution](https://direct.mit.edu/artl/article/30/3/300/123431/) (Artificial Life, MIT Press, 2024): Open-endedness metrics include novelty, diversity, and complexity. Systems must continuously produce novel organisms, not just optimize within fixed architectures.
-- [Open-Endedness in Genelife](https://direct.mit.edu/artl/article/30/3/356/119274/) (Artificial Life, MIT Press, 2024): Evolutionary activity statistics measure change, novelty, and diversity by tracking all new structures. Innovation is quantified using activity statistics that distinguish cumulative from normalized growth.
-- [The Future of AI is Open-Ended](https://richardcsuwandi.github.io/blog/2025/open-endedness/) (2025): Current AI approaches optimized for specific tasks and efficiency won't reach superintelligence; open-ended systems require exploration over optimization.
+- [Towards open-ended dynamics in Artificial Life and Artificial Intelligence: an eco-evo-devo perspective](https://theses.hal.science/tel-05137835) (Université de Bordeaux, 2025): Continual environmental changes foster faster adaptation mechanisms; variable environments facilitate efficient exploratory behaviors within groups of agents. Environment-agent interplay is critical for open-ended dynamics.
+- [Automated Search for Artificial Life with Foundation Models](https://arxiv.org/html/2412.17799v2) (May 2025): Open-ended evolution requires systems that never settle into stable equilibrium; decisions about how and where individuals interact should be made by individuals themselves.
+- [The Future of AI is Open-Ended](https://richardcsuwandi.github.io/blog/2025/open-endedness/) (2025): Current AI approaches optimized for specific tasks won't reach superintelligence; open-ended systems require exploration over optimization and adaptive agents with learning-like dynamics.
 
 ## Research Gaps
-- Does the normalized distance result from the 500-step subset persist at the full 4000-step horizon, or does longer-run diversification depend more strongly on the old raw-sum metric than the short-horizon rerun suggests?
-- Do high-prevalence extended traits (e.g., `metabolic_efficiency_secondary` at 11.1% in pilot) actually correlate with distinct ecological contexts (fertility, crowding, encounter outcomes), or are they selectively neutral baggage?
-- Which structural ceiling from the backlog (behavioral control, inheritance architecture, interaction richness, environmental complexity, evolutionary mechanisms, descent observability, temporal credit assignment) would unblock the next ratchet in complexity after GenomeV2 validation is complete?
+- Can movement decisions conditioned on internal state (energy reserves, recent-harvest history) produce spatial patterns or niche separation that passive trait expression cannot?
+- Does policy inheritance and mutation create heritable behavioral strategies that compete and diversify alongside morphological traits?
+- Will fitness decomposition reveal whether extended traits actually provide harvest/survival/reproduction advantage in matched ecological contexts, or whether they remain neutral baggage?
 
 ## Current Anti-Evidence
-- The normalized rerun completed only on the established 500-step, 2-seed subset (`docs/genome_v2_canonical_comparison_2026-03-20_normalized_500step.json`), because a full 4000-step rerun exceeded the session budget.
-- Diversification advantage on the 500-step subset declined from +78.1% to +69.8% after normalization, so loci-count inflation mattered somewhat even though it did not collapse the effect.
-- The 2026-03-19 pilot artifact shows `metabolic_efficiency_secondary` reached 11.1% prevalence, but the artifact does not track per-agent ecological context (fertility, crowding, encounter outcomes), so the correlation between trait presence and ecological success remains unmeasured.
-- The backlog contains 14 structural ceiling items spanning 6 dimensions, but no systematic comparison or prioritization has been done to identify which ceiling is the next highest-leverage break after GenomeV2.
+- Extended traits persist and show enrichment (1.04–1.66) but simulation collapsed to 1 clade/1 species by tick 1000, suggesting spatial correlation does not prove ecological advantage
+- Current `internalState: Map<string, number>` is stringly typed and mixes policy parameters with transient memory; brittleness risk increases as more decisions become stateful
+- Movement, harvest, and encounter operators touch the main turn loop heavily; policy expansion requires careful boundary design to avoid breaking existing ecology
+- No fitness decomposition exists yet to validate whether behavioral policies or extended traits actually improve harvest/survival/reproduction in matched contexts
 
 ## Bet Queue
 
-### Bet 1: [validate] Normalize GenomeV2 Taxonomic Distance to Prevent Loci-Count Inflation
+### Bet 1: [feat] Extend behavioral control to movement decisions
 
-Modify `genomeV2Distance()` to normalize by the number of expressed loci (or use a weighted scheme) so that taxonomic thresholds measure genuine phenotypic divergence rather than raw trait-count growth. Then re-run a subset of the 2026-03-19 canonical comparison to verify whether diversification gains persist under normalized distance.
-
-#### Success Evidence
-- `genomeV2Distance()` normalizes by loci count or uses effect-weighted distance
-- Tests cover the normalization logic
-- A re-run of 2-4 seeds from the canonical comparison confirms whether diversification advantage persists under normalized distance
-- Artifact under `docs/` documents the comparison result
-
-#### Stop Conditions
-- Stop after implementing normalization and running a focused re-validation
-- Do not redesign the entire taxonomic distance scheme; keep the change scoped to preventing mechanical inflation
-- If normalized distance collapses diversification gains to near-zero, document that outcome clearly and stop
-
-### Bet 2: [validate] Correlate Extended Trait Prevalence With Ecological Context
-
-Add per-agent ecological context tracking (fertility bin, local crowding, recent encounter outcomes) to a GenomeV2 pilot run, then measure whether high-prevalence extended traits (e.g., `metabolic_efficiency_secondary`, `defense_level`) actually concentrate in distinct contexts or are uniformly distributed (indicating neutral drift).
+Add heritable policy parameters for movement (e.g., `movement_energy_reserve_threshold`, `movement_min_recent_harvest`) and wire movement operators to read internal state. Agents can condition movement on energy reserves or recent-harvest history. Verify existing movement tests pass under default (no-policy) behavior and add focused tests for policy-gated movement.
 
 #### Success Evidence
-- Pilot run tracks per-agent fertility, crowding, and/or encounter outcomes
-- Analysis artifact under `docs/` compares trait prevalence across ecological context bins
-- Clear result: either extended traits correlate with specific contexts (evidence of ecological relevance) or they are context-agnostic (evidence of neutral baggage)
+- Movement operators read policy parameters from `internalState`
+- Agents with policy parameters condition movement on energy/harvest thresholds
+- Existing movement tests pass under default behavior
+- New focused tests confirm policy-gated movement works as expected
+- Code in `src/simulation.ts` or new `src/movement-policy.ts`
 
 #### Stop Conditions
-- Stop after one focused pilot with context tracking and analysis
-- Do not build a full genealogy or innovation graph here; limit scope to trait-context correlation
-- If context data shows no correlation, document that outcome and move on
+- Stop after implementing movement policy for 1-2 threshold types (energy reserve, recent-harvest)
+- Do not attempt full spatial pattern analysis or niche-separation validation in this bet
+- If existing tests break or coupling risk is high, document and stop
 
-### Bet 3: [synthesize] Prioritize Structural Ceiling Items for Next Ratchet
+### Bet 2: [feat] Add policy inheritance and mutation
 
-Review the 14 structural ceiling items in the backlog (behavioral control, inheritance architecture, interaction richness, environmental complexity, evolutionary mechanisms, descent observability, temporal credit assignment, trait granularity, dispersal kinematics, taxonomic proxy leakage, matched-null fidelity, mechanistic causality, trait decoder bottleneck, finite locus catalog, shared scalar geometry, taxon inflation, legacy metric surface, one-dimensional habitat axis, diet-choice compression, energy-as-fitness proxy, life-history compression, single-offspring reproduction, space without exclusion, globally synchronous forcing). Compare them systematically against three criteria: (1) unblocks cumulative innovation, (2) aligns with ALife complexity-ratchet literature, (3) implementable within one-month horizon. Produce a ranked shortlist of the top 3-5 candidates for the next monthly research direction.
+Make behavioral policy parameters heritable and mutable like genome traits. When an agent reproduces, offspring inherit parent policy parameters with mutation probability. Add mutation operators for policy parameters (additive noise, threshold drift). Verify offspring inherit and mutate policy state correctly.
 
 #### Success Evidence
-- Analysis artifact under `docs/` comparing ceiling items against the three criteria
-- Ranked shortlist of top 3-5 candidates with clear rationale for each
-- Recommendation states which ceiling to tackle next and why
+- Policy parameters are heritable: offspring copy parent `internalState` policy keys
+- Policy parameters mutate during reproduction with configurable probability/magnitude
+- Tests confirm policy inheritance and mutation work correctly
+- Code in `src/reproduction.ts` and/or `src/behavioral-control.ts`
 
 #### Stop Conditions
-- Stop after producing a clear, decision-ready ranking
-- Do not implement any structural changes in this bet; this is pure synthesis and prioritization
-- If the ranking is ambiguous or multiple ceilings tie, state that clearly and recommend further falsification tests
+- Stop after implementing inheritance + mutation for existing policy parameters
+- Do not add new policy types in this bet; focus on making existing policies evolvable
+- If mutation breaks reproduction or tests fail, document and stop
 
-### Bet 4: [investigate] Run Behavioral-Control Feasibility Spike
+### Bet 3: [validate] Add fitness decomposition by behavioral policy
 
-If Bet 3 ranks behavioral control as a top-3 candidate, run a minimal feasibility spike: add per-agent `internalState: Map<string, number>` to `Agent`, implement a simple threshold-based policy for one decision (e.g., movement or reproduction), and measure whether the change preserves existing test behavior while enabling new contingent strategies. This spike tests implementation risk and API surface before committing to a month-long expansion.
+Track harvest intake, survival probability, and reproductive output conditional on policy state vs default behavior in matched ecological bins (fertility, crowding). Run a pilot with movement + reproduction policies enabled and measure whether policy-positive agents show measurable advantage over policy-negative agents under the same local conditions.
 
 #### Success Evidence
-- Spike branch with minimal behavioral-control prototype
-- Tests confirm existing behavior is preserved under default policy
-- Analysis note under `docs/` documents feasibility, API surface, and coupling risks
+- Pilot run tracks per-agent fitness components (harvest, survival, reproduction) by policy presence
+- Analysis artifact under `docs/` compares fitness by policy state within matched ecological bins
+- Clear result: either policies provide measurable advantage or they are neutral/detrimental
 
 #### Stop Conditions
-- Only execute if Bet 3 recommends behavioral control as a top candidate
-- Stop after a minimal spike; do not attempt full policy evolution or multi-decision wiring
-- If the spike reveals high coupling risk or breaking changes, document that and stop
+- Stop after one focused pilot with fitness decomposition
+- Do not build full genealogy or long-term trajectory analysis here
+- If fitness data shows no advantage, document outcome and move on
+
+### Bet 4: [feat] Add policy observability to StepSummary and CSV exports
+
+Add policy parameter distributions (mean, variance, prevalence), policy activation rates (fraction of agents with non-default policy, fraction of decisions gated by policy), and policy-outcome correlations to `StepSummary` and CSV exports. This makes behavioral control visible in standard experiment feedback loops.
+
+#### Success Evidence
+- `StepSummary` includes policy-related metrics (prevalence, activation rates)
+- CSV exports include policy parameter distributions
+- Tests confirm new metrics compute correctly
+- Code in `src/export.ts`, `src/types.ts`, and simulation summary logic
+
+#### Stop Conditions
+- Stop after adding observability for existing policy parameters
+- Do not add full policy-genealogy tracking or innovation graphs in this bet
+- If observability couples too tightly to specific policy keys, use generic `internalState` iteration instead
 
 ## Assumptions / Unknowns
-- Assumption: the 500-step normalized rerun is directionally informative for the full 4000-step horizon, even though the longer rerun was not completed in this session.
-- Assumption: per-agent context tracking can be added to a pilot run without requiring major refactoring of the simulation loop.
-- Unknown: whether the current diversification advantage remains as robust at 4000 steps under normalized distance as it does on the 500-step subset.
-- Unknown: which structural ceiling will yield the highest-leverage complexity ratchet after GenomeV2 validation is complete.
-- Unknown: whether behavioral control is implementable within a one-month horizon without breaking existing ecology.
+- Assumption: movement policy can be wired with low coupling risk similar to reproduction policy (feasibility spike confirmed for reproduction)
+- Assumption: policy inheritance can reuse existing genome mutation patterns without major refactoring
+- Unknown: whether movement policies will produce measurable fitness advantage or remain neutral in current ecological contexts
+- Unknown: whether policy parameter mutation rates should differ from genome trait mutation rates
+- Unknown: how to best separate heritable policy parameters from transient ephemeral state in the `internalState` map (deferred to later refactor if brittleness becomes a problem)
