@@ -152,6 +152,8 @@ const DEFAULT_CONFIG: SimulationConfig = {
   reproductionMinPrimaryFraction: 0,
   reproductionMinSecondaryFraction: 0,
   mutationAmount: 0.2,
+  policyMutationProbability: 0.5,
+  policyMutationMagnitude: 0.3,
   speciationThreshold: 0.25,
   cladogenesisThreshold: -1,
   maxAge: 120

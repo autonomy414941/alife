@@ -167,8 +167,112 @@ describe('LifeSimulation', () => {
 
     expect(enabledSummary.births).toBe(1);
     expect(enabledParent?.internalState?.get(INTERNAL_STATE_LAST_HARVEST) ?? 0).toBeGreaterThanOrEqual(1);
-    expect(child?.internalState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD)).toBe(1);
+    const childPolicyThreshold = child?.internalState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD);
+    expect(childPolicyThreshold).toBeDefined();
+    expect(childPolicyThreshold).toBeGreaterThan(0);
     expect(child?.internalState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
+  });
+
+  it('inherits and mutates policy parameters during reproduction', () => {
+    const policyState = new Map([
+      [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 0.5],
+      [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 10.0],
+      [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 0.5]
+    ]);
+
+    const sim = new LifeSimulation({
+      seed: 123,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 10,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 10,
+        reproduceThreshold: 10,
+        reproduceProbability: 1.0,
+        offspringEnergyFraction: 0.4,
+        policyMutationProbability: 1.0,
+        policyMutationMagnitude: 0.5,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 20,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          internalState: policyState
+        }
+      ]
+    });
+
+    sim.setResource(0, 0, 10);
+    sim.step();
+
+    const agents = sim.snapshot().agents;
+    const parent = agents.find((agent) => agent.age === 1);
+    const child = agents.find((agent) => agent.age === 0);
+
+    expect(agents).toHaveLength(2);
+    expect(child).toBeDefined();
+
+    const childRepThreshold = child?.internalState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD);
+    const childMoveReserve = child?.internalState?.get(INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD);
+    const childMoveHarvest = child?.internalState?.get(INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
+
+    expect(childRepThreshold).toBeDefined();
+    expect(childMoveReserve).toBeDefined();
+    expect(childMoveHarvest).toBeDefined();
+
+    expect(childRepThreshold).not.toBe(0.5);
+    expect(childMoveReserve).not.toBe(10.0);
+    expect(childMoveHarvest).not.toBe(0.5);
+
+    expect(childRepThreshold).toBeGreaterThan(0);
+    expect(childMoveReserve).toBeGreaterThan(0);
+    expect(childMoveHarvest).toBeGreaterThan(0);
+
+    expect(child?.internalState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
+  });
+
+  it('skips policy mutation when probability is zero', () => {
+    const policyState = new Map([[INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 0.5]]);
+
+    const sim = new LifeSimulation({
+      seed: 456,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 10,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 10,
+        reproduceThreshold: 10,
+        reproduceProbability: 1.0,
+        offspringEnergyFraction: 0.4,
+        policyMutationProbability: 0,
+        policyMutationMagnitude: 10.0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 20,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          internalState: policyState
+        }
+      ]
+    });
+
+    sim.setResource(0, 0, 10);
+    sim.step();
+
+    const child = sim.snapshot().agents.find((agent) => agent.age === 0);
+    expect(child?.internalState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD)).toBe(0.5);
   });
 
   it('preserves default movement behavior when no movement policy is configured', () => {

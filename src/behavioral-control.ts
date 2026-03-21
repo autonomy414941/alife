@@ -11,12 +11,59 @@ export function cloneInternalState(
   return internalState ? new Map(internalState) : undefined;
 }
 
-export function inheritInternalState(parent: Pick<Agent, 'internalState'>): Map<string, number> | undefined {
+const POLICY_PARAMETER_KEYS = [
+  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
+  INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
+  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST
+];
+
+const TRANSIENT_MEMORY_KEYS = [INTERNAL_STATE_LAST_HARVEST];
+
+export interface MutatePolicyOptions {
+  mutationProbability: number;
+  mutationMagnitude: number;
+  randomFloat: () => number;
+}
+
+export function mutatePolicyParameters(
+  internalState: Map<string, number>,
+  options: MutatePolicyOptions
+): void {
+  const { mutationProbability, mutationMagnitude, randomFloat } = options;
+
+  for (const key of POLICY_PARAMETER_KEYS) {
+    if (!internalState.has(key)) {
+      continue;
+    }
+
+    if (randomFloat() < mutationProbability) {
+      const currentValue = internalState.get(key)!;
+      const delta = (randomFloat() - 0.5) * 2 * mutationMagnitude;
+      const mutatedValue = Math.max(0, currentValue + delta);
+      internalState.set(key, mutatedValue);
+    }
+  }
+}
+
+export function inheritInternalState(
+  parent: Pick<Agent, 'internalState'>,
+  mutationOptions?: MutatePolicyOptions
+): Map<string, number> | undefined {
   const nextState = cloneInternalState(parent.internalState);
   if (!nextState) {
     return undefined;
   }
-  nextState.set(INTERNAL_STATE_LAST_HARVEST, 0);
+
+  for (const key of TRANSIENT_MEMORY_KEYS) {
+    if (nextState.has(key)) {
+      nextState.set(key, 0);
+    }
+  }
+
+  if (mutationOptions) {
+    mutatePolicyParameters(nextState, mutationOptions);
+  }
+
   return nextState;
 }
 

@@ -275,6 +275,8 @@ export interface SimulationConfig {
   reproductionMinPrimaryFraction: number;
   reproductionMinSecondaryFraction: number;
   mutationAmount: number;
+  policyMutationProbability: number;
+  policyMutationMagnitude: number;
   speciationThreshold: number;
   cladogenesisThreshold: number;
   maxAge: number;

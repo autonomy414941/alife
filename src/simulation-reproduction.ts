@@ -332,6 +332,15 @@ export function reproduceAgent({
     currentStepTick
   });
 
+  const policyMutationOptions =
+    config.policyMutationProbability > 0
+      ? {
+          mutationProbability: config.policyMutationProbability,
+          mutationMagnitude: config.policyMutationMagnitude,
+          randomFloat
+        }
+      : undefined;
+
   return {
     id: allocateAgentId(),
     lineage: nextLineage,
@@ -344,7 +353,7 @@ export function reproduceAgent({
     age: 0,
     genome: childGenome,
     genomeV2: childGenomeV2,
-    internalState: inheritInternalState(parent)
+    internalState: inheritInternalState(parent, policyMutationOptions)
   };
 }
 
