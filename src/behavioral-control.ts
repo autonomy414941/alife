@@ -2,6 +2,8 @@ import { Agent } from './types';
 
 export const INTERNAL_STATE_LAST_HARVEST = 'last_harvest_total';
 export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD = 'reproduction_harvest_threshold';
+export const INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD = 'movement_energy_reserve_threshold';
+export const INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST = 'movement_min_recent_harvest';
 
 export function cloneInternalState(
   internalState: ReadonlyMap<string, number> | undefined

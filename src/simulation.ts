@@ -6,7 +6,14 @@ import {
   spendAgentEnergy,
   syncAgentEnergy
 } from './agent-energy';
-import { cloneInternalState, INTERNAL_STATE_LAST_HARVEST, setInternalStateValue } from './behavioral-control';
+import {
+  cloneInternalState,
+  getInternalStateValue,
+  INTERNAL_STATE_LAST_HARVEST,
+  INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
+  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
+  setInternalStateValue
+} from './behavioral-control';
 import {
   getCladeHabitatPreference as lookupCladeHabitatPreference,
   getSpeciesHabitatPreference as lookupSpeciesHabitatPreference,
@@ -1414,6 +1421,23 @@ export class LifeSimulation {
     occupancy: number[][],
     lineageOccupancy: LineageOccupancyGrid | undefined
   ): { x: number; y: number } {
+    const energyReserveThreshold = getInternalStateValue(
+      agent,
+      INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD
+    );
+    const minRecentHarvest = getInternalStateValue(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
+
+    if (energyReserveThreshold > 0 && agent.energy < energyReserveThreshold) {
+      return { x: agent.x, y: agent.y };
+    }
+
+    if (
+      minRecentHarvest > 0 &&
+      getInternalStateValue(agent, INTERNAL_STATE_LAST_HARVEST) < minRecentHarvest
+    ) {
+      return { x: agent.x, y: agent.y };
+    }
+
     const options = [
       { x: agent.x, y: agent.y },
       { x: this.wrapX(agent.x + 1), y: agent.y },

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   INTERNAL_STATE_LAST_HARVEST,
-  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
+  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
+  INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
+  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST
 } from '../src/behavioral-control';
 import { EncounterOperator } from '../src/encounter';
 import { shouldFoundNewClade } from '../src/settlement-cladogenesis';
@@ -167,6 +169,175 @@ describe('LifeSimulation', () => {
     expect(enabledParent?.internalState?.get(INTERNAL_STATE_LAST_HARVEST) ?? 0).toBeGreaterThanOrEqual(1);
     expect(child?.internalState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD)).toBe(1);
     expect(child?.internalState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
+  });
+
+  it('preserves default movement behavior when no movement policy is configured', () => {
+    const sim = new LifeSimulation({
+      seed: 42,
+      config: {
+        width: 3,
+        height: 1,
+        maxResource: 5,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0.1,
+        harvestCap: 5,
+        reproduceThreshold: 100,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    });
+
+    sim.setResource(2, 0, 5);
+    sim.step();
+
+    const agent = sim.snapshot().agents[0];
+    expect(agent.x).toBeGreaterThan(0);
+  });
+
+  it('blocks movement when energy is below the energy reserve threshold', () => {
+    const policyState = new Map([[INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 15]]);
+    const sim = new LifeSimulation({
+      seed: 42,
+      config: {
+        width: 3,
+        height: 1,
+        maxResource: 5,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0.1,
+        harvestCap: 5,
+        reproduceThreshold: 100,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          internalState: policyState
+        }
+      ]
+    });
+
+    sim.setResource(2, 0, 5);
+    sim.step();
+
+    const agent = sim.snapshot().agents[0];
+    expect(agent.x).toBe(0);
+    expect(agent.energy).toBeLessThan(15);
+  });
+
+  it('allows movement when energy exceeds the energy reserve threshold', () => {
+    const policyState = new Map([[INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 5]]);
+    const sim = new LifeSimulation({
+      seed: 42,
+      config: {
+        width: 3,
+        height: 1,
+        maxResource: 5,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0.1,
+        harvestCap: 5,
+        reproduceThreshold: 100,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          internalState: policyState
+        }
+      ]
+    });
+
+    sim.setResource(2, 0, 5);
+    sim.step();
+
+    const agent = sim.snapshot().agents[0];
+    expect(agent.x).toBeGreaterThan(0);
+  });
+
+  it('blocks movement when recent harvest is below the minimum threshold', () => {
+    const policyState = new Map([[INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 3]]);
+    const sim = new LifeSimulation({
+      seed: 42,
+      config: {
+        width: 3,
+        height: 1,
+        maxResource: 1,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0.1,
+        harvestCap: 5,
+        reproduceThreshold: 100,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          internalState: policyState
+        }
+      ]
+    });
+
+    sim.setResource(0, 0, 1);
+    sim.setResource(2, 0, 5);
+    sim.step();
+
+    const agent = sim.snapshot().agents[0];
+    expect(agent.x).toBe(0);
+    expect(agent.internalState?.get(INTERNAL_STATE_LAST_HARVEST) ?? 0).toBeLessThan(3);
+  });
+
+  it('allows movement when recent harvest exceeds the minimum threshold', () => {
+    const policyState = new Map([
+      [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2],
+      [INTERNAL_STATE_LAST_HARVEST, 3]
+    ]);
+    const sim = new LifeSimulation({
+      seed: 42,
+      config: {
+        width: 3,
+        height: 1,
+        maxResource: 5,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0.1,
+        harvestCap: 5,
+        reproduceThreshold: 100,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          internalState: policyState
+        }
+      ]
+    });
+
+    sim.setResource(2, 0, 5);
+    sim.step();
+
+    const agent = sim.snapshot().agents[0];
+    expect(agent.x).toBeGreaterThan(0);
   });
 
   it('records founder habitat context for initial and newly founded taxa in history exports', () => {
