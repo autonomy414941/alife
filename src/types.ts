@@ -199,7 +199,8 @@ export interface Agent {
   age: number;
   genome: Genome;
   genomeV2?: GenomeV2;
-  internalState?: Map<string, number>;
+  policyState?: Map<string, number>;
+  transientState?: Map<string, number>;
 }
 
 export interface AgentSeed {
@@ -210,6 +211,8 @@ export interface AgentSeed {
   energySecondary?: number;
   genome: Genome;
   genomeV2?: GenomeV2;
+  policyState?: Map<string, number>;
+  transientState?: Map<string, number>;
   internalState?: Map<string, number>;
   age?: number;
   lineage?: number;

@@ -14,7 +14,7 @@ export interface PolicyDecisionStats {
 }
 
 export function summarizePolicyObservability(
-  agents: ReadonlyArray<Pick<Agent, 'internalState'>>,
+  agents: ReadonlyArray<Pick<Agent, 'policyState'>>,
   records: ReadonlyArray<PolicyFitnessRecord>,
   decisionStats: PolicyDecisionStats
 ): PolicyObservabilitySummary {
@@ -54,11 +54,11 @@ export function summarizePolicyObservability(
 
 function summarizePolicyParameter(
   key: string,
-  agents: ReadonlyArray<Pick<Agent, 'internalState'>>,
+  agents: ReadonlyArray<Pick<Agent, 'policyState'>>,
   records: ReadonlyArray<PolicyFitnessRecord>
 ): PolicyParameterObservability {
   const values = agents
-    .map((agent) => agent.internalState?.get(key) ?? 0)
+    .map((agent) => agent.policyState?.get(key) ?? 0)
     .filter((value) => value > 0);
   const mean = arithmeticMean(values);
 

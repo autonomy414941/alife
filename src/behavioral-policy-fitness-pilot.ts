@@ -198,14 +198,15 @@ function buildPilotInitialAgents(seed: number): AgentSeed[] {
     species: agent.species,
     genome: { ...agent.genome },
     genomeV2: agent.genomeV2,
-    internalState: undefined
+    policyState: undefined,
+    transientState: undefined
   }));
   const policyCount = Math.round(agents.length * POLICY_SHARE);
   const rng = new Rng(seed + 10_001);
   const shuffledIndices = rng.shuffle(Array.from({ length: agents.length }, (_, index) => index));
 
   for (const index of shuffledIndices.slice(0, policyCount)) {
-    agents[index].internalState = new Map([
+    agents[index].policyState = new Map([
       [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, POLICY_THRESHOLDS.reproductionHarvestThreshold],
       [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, POLICY_THRESHOLDS.movementEnergyReserveThreshold],
       [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, POLICY_THRESHOLDS.movementMinRecentHarvest]

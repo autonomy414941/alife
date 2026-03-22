@@ -33,7 +33,7 @@ describe('policy fitness', () => {
           y: 0,
           energy: 20,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          internalState: new Map([
+          policyState: new Map([
             [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 0.5],
             [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 8],
             [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 0.5]

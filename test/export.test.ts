@@ -293,7 +293,7 @@ describe('run export', () => {
           y: 0,
           energy: 10,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          internalState: new Map([
+          policyState: new Map([
             ['reproduction_harvest_threshold', 2],
             ['movement_energy_reserve_threshold', 15],
             ['movement_min_recent_harvest', 2]

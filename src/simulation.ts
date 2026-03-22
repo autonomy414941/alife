@@ -7,14 +7,17 @@ import {
   syncAgentEnergy
 } from './agent-energy';
 import {
-  cloneInternalState,
-  getInternalStateValue,
+  clonePolicyState,
+  cloneTransientState,
+  getPolicyStateValue,
+  getTransientStateValue,
   INTERNAL_STATE_LAST_HARVEST,
   POLICY_PARAMETER_KEYS,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
+  normalizeSeedBehavioralState,
   resolveBehavioralPolicyFlags,
-  setInternalStateValue
+  setTransientStateValue
 } from './behavioral-control';
 import {
   getCladeHabitatPreference as lookupCladeHabitatPreference,
@@ -472,7 +475,8 @@ export class LifeSimulation {
         ...agent,
         genome: { ...agent.genome },
         genomeV2: agent.genomeV2 ? cloneGenomeV2(agent.genomeV2) : undefined,
-        internalState: cloneInternalState(agent.internalState)
+        policyState: clonePolicyState(agent.policyState),
+        transientState: cloneTransientState(agent.transientState)
       }))
     };
   }
@@ -1363,7 +1367,9 @@ export class LifeSimulation {
     if (seed.genomeV2 !== undefined) {
       agent.genomeV2 = cloneGenomeV2(seed.genomeV2);
     }
-    agent.internalState = cloneInternalState(seed.internalState);
+    const behavioralState = normalizeSeedBehavioralState(seed);
+    agent.policyState = behavioralState.policyState;
+    agent.transientState = behavioralState.transientState;
     initializeAgentEnergy(agent, seed);
     return agent;
   }
@@ -1470,7 +1476,7 @@ export class LifeSimulation {
       secondary: harvest.secondaryHarvest
     });
     const totalHarvest = harvest.primaryHarvest + harvest.secondaryHarvest;
-    setInternalStateValue(agent, INTERNAL_STATE_LAST_HARVEST, totalHarvest);
+    setTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST, totalHarvest);
     const policyFitness = policyFitnessByAgentId.get(agent.id);
     if (policyFitness) {
       policyFitness.harvestIntake = totalHarvest;
@@ -1517,11 +1523,11 @@ export class LifeSimulation {
     occupancy: number[][],
     lineageOccupancy: LineageOccupancyGrid | undefined
   ): { x: number; y: number; policyGated: boolean } {
-    const energyReserveThreshold = getInternalStateValue(
+    const energyReserveThreshold = getPolicyStateValue(
       agent,
       INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD
     );
-    const minRecentHarvest = getInternalStateValue(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
+    const minRecentHarvest = getPolicyStateValue(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
 
     if (energyReserveThreshold > 0 && agent.energy < energyReserveThreshold) {
       return { x: agent.x, y: agent.y, policyGated: true };
@@ -1529,7 +1535,7 @@ export class LifeSimulation {
 
     if (
       minRecentHarvest > 0 &&
-      getInternalStateValue(agent, INTERNAL_STATE_LAST_HARVEST) < minRecentHarvest
+      getTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST) < minRecentHarvest
     ) {
       return { x: agent.x, y: agent.y, policyGated: true };
     }
@@ -1605,7 +1611,7 @@ export class LifeSimulation {
         survived: false,
         offspringProduced: 0,
         policyValues: Object.fromEntries(
-          POLICY_PARAMETER_KEYS.map((key) => [key, Math.max(0, agent.internalState?.get(key) ?? 0)])
+          POLICY_PARAMETER_KEYS.map((key) => [key, Math.max(0, agent.policyState?.get(key) ?? 0)])
         ),
         ...policyFlags
       });

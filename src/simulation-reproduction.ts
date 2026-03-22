@@ -1,7 +1,8 @@
 import { spendAgentEnergy, getAgentEnergyPools } from './agent-energy';
 import {
-  getInternalStateValue,
-  inheritInternalState,
+  getPolicyStateValue,
+  getTransientStateValue,
+  inheritBehavioralState,
   INTERNAL_STATE_LAST_HARVEST,
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
 } from './behavioral-control';
@@ -125,13 +126,13 @@ function evaluateReproductionEligibility(
     return { canReproduce: false, policyGated: false };
   }
 
-  const reproductionHarvestThreshold = getInternalStateValue(
+  const reproductionHarvestThreshold = getPolicyStateValue(
     agent,
     INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
   );
   if (
     reproductionHarvestThreshold > 0 &&
-    getInternalStateValue(agent, INTERNAL_STATE_LAST_HARVEST) < reproductionHarvestThreshold
+    getTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST) < reproductionHarvestThreshold
   ) {
     return { canReproduce: false, policyGated: true };
   }
@@ -364,6 +365,7 @@ export function reproduceAgent({
           randomFloat
         }
       : undefined;
+  const childBehavioralState = inheritBehavioralState(parent, policyMutationOptions);
 
   return {
     id: allocateAgentId(),
@@ -377,7 +379,8 @@ export function reproduceAgent({
     age: 0,
     genome: childGenome,
     genomeV2: childGenomeV2,
-    internalState: inheritInternalState(parent, policyMutationOptions)
+    policyState: childBehavioralState.policyState,
+    transientState: childBehavioralState.transientState
   };
 }
 

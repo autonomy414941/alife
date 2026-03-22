@@ -115,7 +115,41 @@ describe('LifeSimulation', () => {
 
     expect(summary.births).toBe(1);
     expect(agents).toHaveLength(2);
-    expect(agents.every((agent) => agent.internalState === undefined)).toBe(true);
+    expect(agents.every((agent) => agent.policyState === undefined)).toBe(true);
+    expect(agents.every((agent) => agent.transientState === undefined)).toBe(true);
+  });
+
+  it('splits legacy internal state seeds into policy and transient state', () => {
+    const sim = new LifeSimulation({
+      seed: 17,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          internalState: new Map([
+            [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 2],
+            [INTERNAL_STATE_LAST_HARVEST, 3]
+          ])
+        }
+      ]
+    });
+
+    const agent = sim.snapshot().agents[0];
+
+    expect(agent.policyState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD)).toBe(2);
+    expect(agent.transientState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(3);
   });
 
   it('can gate reproduction on per-agent last-harvest state', () => {
@@ -144,7 +178,7 @@ describe('LifeSimulation', () => {
             y: 0,
             energy: 20,
             genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-            internalState: policyState
+            policyState
           }
         ]
       });
@@ -157,7 +191,7 @@ describe('LifeSimulation', () => {
     const blockedParent = blocked.snapshot().agents[0];
 
     expect(blockedSummary.births).toBe(0);
-    expect(blockedParent.internalState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
+    expect(blockedParent.transientState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
 
     const enabled = createSimulation(2);
     const enabledSummary = enabled.step();
@@ -166,11 +200,11 @@ describe('LifeSimulation', () => {
     const child = enabledAgents.find((agent) => agent.age === 0);
 
     expect(enabledSummary.births).toBe(1);
-    expect(enabledParent?.internalState?.get(INTERNAL_STATE_LAST_HARVEST) ?? 0).toBeGreaterThanOrEqual(1);
-    const childPolicyThreshold = child?.internalState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD);
+    expect(enabledParent?.transientState?.get(INTERNAL_STATE_LAST_HARVEST) ?? 0).toBeGreaterThanOrEqual(1);
+    const childPolicyThreshold = child?.policyState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD);
     expect(childPolicyThreshold).toBeDefined();
     expect(childPolicyThreshold).toBeGreaterThan(0);
-    expect(child?.internalState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
+    expect(child?.transientState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
   });
 
   it('inherits and mutates policy parameters during reproduction', () => {
@@ -203,7 +237,7 @@ describe('LifeSimulation', () => {
           y: 0,
           energy: 20,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          internalState: policyState
+          policyState
         }
       ]
     });
@@ -218,9 +252,9 @@ describe('LifeSimulation', () => {
     expect(agents).toHaveLength(2);
     expect(child).toBeDefined();
 
-    const childRepThreshold = child?.internalState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD);
-    const childMoveReserve = child?.internalState?.get(INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD);
-    const childMoveHarvest = child?.internalState?.get(INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
+    const childRepThreshold = child?.policyState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD);
+    const childMoveReserve = child?.policyState?.get(INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD);
+    const childMoveHarvest = child?.policyState?.get(INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
 
     expect(childRepThreshold).toBeDefined();
     expect(childMoveReserve).toBeDefined();
@@ -234,7 +268,7 @@ describe('LifeSimulation', () => {
     expect(childMoveReserve).toBeGreaterThan(0);
     expect(childMoveHarvest).toBeGreaterThan(0);
 
-    expect(child?.internalState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
+    expect(child?.transientState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
   });
 
   it('skips policy mutation when probability is zero', () => {
@@ -263,7 +297,7 @@ describe('LifeSimulation', () => {
           y: 0,
           energy: 20,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          internalState: policyState
+          policyState
         }
       ]
     });
@@ -272,7 +306,7 @@ describe('LifeSimulation', () => {
     sim.step();
 
     const child = sim.snapshot().agents.find((agent) => agent.age === 0);
-    expect(child?.internalState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD)).toBe(0.5);
+    expect(child?.policyState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD)).toBe(0.5);
   });
 
   it('preserves default movement behavior when no movement policy is configured', () => {
@@ -327,7 +361,7 @@ describe('LifeSimulation', () => {
           y: 0,
           energy: 10,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          internalState: policyState
+          policyState
         }
       ]
     });
@@ -361,7 +395,7 @@ describe('LifeSimulation', () => {
           y: 0,
           energy: 10,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          internalState: policyState
+          policyState
         }
       ]
     });
@@ -394,7 +428,7 @@ describe('LifeSimulation', () => {
           y: 0,
           energy: 10,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          internalState: policyState
+          policyState
         }
       ]
     });
@@ -405,14 +439,11 @@ describe('LifeSimulation', () => {
 
     const agent = sim.snapshot().agents[0];
     expect(agent.x).toBe(0);
-    expect(agent.internalState?.get(INTERNAL_STATE_LAST_HARVEST) ?? 0).toBeLessThan(3);
+    expect(agent.transientState?.get(INTERNAL_STATE_LAST_HARVEST) ?? 0).toBeLessThan(3);
   });
 
   it('allows movement when recent harvest exceeds the minimum threshold', () => {
-    const policyState = new Map([
-      [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2],
-      [INTERNAL_STATE_LAST_HARVEST, 3]
-    ]);
+    const policyState = new Map([[INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2]]);
     const sim = new LifeSimulation({
       seed: 42,
       config: {
@@ -432,7 +463,8 @@ describe('LifeSimulation', () => {
           y: 0,
           energy: 10,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          internalState: policyState
+          policyState,
+          transientState: new Map([[INTERNAL_STATE_LAST_HARVEST, 3]])
         }
       ]
     });
@@ -465,7 +497,7 @@ describe('LifeSimulation', () => {
           y: 0,
           energy: 10,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          internalState: new Map([
+          policyState: new Map([
             [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 2],
             [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 15],
             [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2]
