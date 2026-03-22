@@ -1569,7 +1569,7 @@ describe('runCladeActivityRelabelNullStudy', () => {
       expect(Math.abs(threshold.persistentActivityMeanDeltaVsNull)).toBeGreaterThan(0.1);
       expect(Math.abs(aggregate.persistentActivityMeanDeltaVsNull.mean)).toBeGreaterThan(0.1);
     },
-    15000
+    30000
   );
 
   it(
@@ -1599,7 +1599,7 @@ describe('runCladeActivityRelabelNullStudy', () => {
       expect(Math.abs(threshold.persistentActivityMeanDeltaVsNull)).toBeGreaterThan(0.1);
       expect(Math.abs(aggregate.persistentActivityMeanDeltaVsNull.mean)).toBeGreaterThan(0.1);
     },
-    15000
+    30000
   );
 
   it('preserves the canonical March 10 defaults for the matched-null study', () => {

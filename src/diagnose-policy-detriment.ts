@@ -258,6 +258,7 @@ function computeMatchedBinAdvantage(
     combined.map((r) => ({
       ...r,
       hasAnyPolicy: policyRecords.includes(r),
+      hasHarvestPolicy: policyRecords.includes(r) && r.hasHarvestPolicy,
       hasMovementPolicy: policyRecords.includes(r) && r.hasMovementPolicy,
       hasReproductionPolicy: policyRecords.includes(r) && r.hasReproductionPolicy
     }))

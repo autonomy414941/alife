@@ -1,0 +1,131 @@
+{
+  "generatedAt": "2026-03-22T00:00:00.000Z",
+  "question": "Does a heritable harvest-allocation preference actually redirect live harvest effort across resource layers in the running simulation?",
+  "prediction": "If harvest preference is a real control surface, policy carriers should show non-zero harvest-guided decisions and end with a different secondary-energy mix than otherwise similar control agents.",
+  "config": {
+    "steps": 40,
+    "seed": 460321,
+    "initialAgents": 24,
+    "policyShare": 0.5,
+    "policySecondaryPreference": 0.85,
+    "simulation": {
+      "width": 12,
+      "height": 12,
+      "initialAgents": 24,
+      "initialEnergy": 12,
+      "maxResource": 8,
+      "maxResource2": 8,
+      "resourceRegen": 0.7,
+      "resource2Regen": 0.7,
+      "metabolismCostBase": 0.25,
+      "moveCost": 0.15,
+      "harvestCap": 2.5,
+      "reproduceThreshold": 24,
+      "reproduceProbability": 0,
+      "offspringEnergyFraction": 0.45,
+      "mutationAmount": 0.2,
+      "policyMutationProbability": 0,
+      "policyMutationMagnitude": 0,
+      "biomeBands": 4,
+      "biomeContrast": 0.45,
+      "maxAge": 120
+    }
+  },
+  "run": {
+    "stepsExecuted": 40,
+    "finalSummary": {
+      "tick": 40,
+      "population": 24,
+      "births": 0,
+      "deaths": 0,
+      "meanEnergy": 104.69672230621092,
+      "meanGenome": {
+        "metabolism": 1.3650531900881713,
+        "harvest": 1.450665551912971,
+        "aggression": 0.5998211478387626
+      },
+      "activeClades": 24,
+      "activeSpecies": 24,
+      "dominantSpeciesShare": 0.041666666666666664,
+      "selectionDifferential": {
+        "metabolism": 0.017648009134155984,
+        "harvest": 0.09000149083015385,
+        "aggression": 0.002339618764513718
+      },
+      "cladeExtinctions": 0,
+      "speciesExtinctions": 0,
+      "cumulativeExtinctClades": 0,
+      "cumulativeExtinctSpecies": 0,
+      "policyObservability": {
+        "activation": {
+          "anyPolicyAgentFraction": 0.5,
+          "harvestPolicyAgentFraction": 0.5,
+          "movementPolicyAgentFraction": 0,
+          "reproductionPolicyAgentFraction": 0,
+          "decisionGatedFraction": 0,
+          "harvestDecisionGuidedFraction": 0.5,
+          "movementDecisionGatedFraction": 0,
+          "reproductionDecisionGatedFraction": 0
+        },
+        "parameters": [
+          {
+            "key": "reproduction_harvest_threshold",
+            "prevalence": 0,
+            "mean": 0,
+            "variance": 0,
+            "outcomeCorrelation": {
+              "harvestIntake": 0,
+              "survivalRate": 0,
+              "reproductionRate": 0
+            }
+          },
+          {
+            "key": "movement_energy_reserve_threshold",
+            "prevalence": 0,
+            "mean": 0,
+            "variance": 0,
+            "outcomeCorrelation": {
+              "harvestIntake": 0,
+              "survivalRate": 0,
+              "reproductionRate": 0
+            }
+          },
+          {
+            "key": "movement_min_recent_harvest",
+            "prevalence": 0,
+            "mean": 0,
+            "variance": 0,
+            "outcomeCorrelation": {
+              "harvestIntake": 0,
+              "survivalRate": 0,
+              "reproductionRate": 0
+            }
+          },
+          {
+            "key": "harvest_secondary_preference",
+            "prevalence": 0.5,
+            "mean": 0.8499999999999998,
+            "variance": 4.930380657631324e-32,
+            "outcomeCorrelation": {
+              "harvestIntake": 0.20365185287614668,
+              "survivalRate": 0,
+              "reproductionRate": 0
+            }
+          }
+        ]
+      }
+    },
+    "meanHarvestPolicyAgentFraction": 0.5,
+    "meanHarvestDecisionGuidedFraction": 0.5,
+    "finalPolicyCarrierPopulation": 12,
+    "finalControlPopulation": 12,
+    "finalPolicyCarrierMeanEnergy": 110.66462413719267,
+    "finalControlMeanEnergy": 98.72882047522917,
+    "finalPolicyCarrierSecondaryEnergyShare": 0.7828310169214151,
+    "finalControlSecondaryEnergyShare": 0.4792973718853595
+  },
+  "interpretation": {
+    "activated": true,
+    "summary": "Harvest guidance averaged 0.500 per decision, with policy carriers ending +0.304 higher secondary-energy share than controls."
+  }
+}

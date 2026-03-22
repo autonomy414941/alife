@@ -1,4 +1,8 @@
-import { POLICY_PARAMETER_KEYS, resolveBehavioralPolicyFlags } from './behavioral-control';
+import {
+  isActivePolicyParameter,
+  POLICY_PARAMETER_KEYS,
+  resolveBehavioralPolicyFlags
+} from './behavioral-control';
 import { PolicyFitnessRecord } from './policy-fitness';
 import {
   Agent,
@@ -7,6 +11,8 @@ import {
 } from './types';
 
 export interface PolicyDecisionStats {
+  harvestDecisions: number;
+  harvestPolicyGuided: number;
   movementDecisions: number;
   movementPolicyGated: number;
   reproductionDecisions: number;
@@ -20,12 +26,14 @@ export function summarizePolicyObservability(
 ): PolicyObservabilitySummary {
   const population = agents.length;
   let anyPolicyAgents = 0;
+  let harvestPolicyAgents = 0;
   let movementPolicyAgents = 0;
   let reproductionPolicyAgents = 0;
 
   for (const agent of agents) {
     const flags = resolveBehavioralPolicyFlags(agent);
     anyPolicyAgents += Number(flags.hasAnyPolicy);
+    harvestPolicyAgents += Number(flags.hasHarvestPolicy);
     movementPolicyAgents += Number(flags.hasMovementPolicy);
     reproductionPolicyAgents += Number(flags.hasReproductionPolicy);
   }
@@ -33,11 +41,16 @@ export function summarizePolicyObservability(
   return {
     activation: {
       anyPolicyAgentFraction: population === 0 ? 0 : anyPolicyAgents / population,
+      harvestPolicyAgentFraction: population === 0 ? 0 : harvestPolicyAgents / population,
       movementPolicyAgentFraction: population === 0 ? 0 : movementPolicyAgents / population,
       reproductionPolicyAgentFraction: population === 0 ? 0 : reproductionPolicyAgents / population,
       decisionGatedFraction: gatedFraction(
         decisionStats.movementPolicyGated + decisionStats.reproductionPolicyGated,
         decisionStats.movementDecisions + decisionStats.reproductionDecisions
+      ),
+      harvestDecisionGuidedFraction: gatedFraction(
+        decisionStats.harvestPolicyGuided,
+        decisionStats.harvestDecisions
       ),
       movementDecisionGatedFraction: gatedFraction(
         decisionStats.movementPolicyGated,
@@ -58,8 +71,8 @@ function summarizePolicyParameter(
   records: ReadonlyArray<PolicyFitnessRecord>
 ): PolicyParameterObservability {
   const values = agents
-    .map((agent) => agent.policyState?.get(key) ?? 0)
-    .filter((value) => value > 0);
+    .filter((agent) => isActivePolicyParameter(agent.policyState, key))
+    .map((agent) => agent.policyState?.get(key) ?? 0);
   const mean = arithmeticMean(values);
 
   return {

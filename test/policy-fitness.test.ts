@@ -51,6 +51,7 @@ describe('policy fitness', () => {
       tick: 1,
       agentId: 1,
       hasAnyPolicy: true,
+      hasHarvestPolicy: false,
       hasMovementPolicy: true,
       hasReproductionPolicy: true,
       survived: true,
@@ -72,6 +73,7 @@ describe('policy fitness', () => {
         survived: true,
         offspringProduced: 1,
         hasAnyPolicy: true,
+        hasHarvestPolicy: false,
         hasMovementPolicy: true,
         hasReproductionPolicy: true
       },
@@ -84,6 +86,7 @@ describe('policy fitness', () => {
         survived: false,
         offspringProduced: 0,
         hasAnyPolicy: false,
+        hasHarvestPolicy: false,
         hasMovementPolicy: false,
         hasReproductionPolicy: false
       },
@@ -96,6 +99,7 @@ describe('policy fitness', () => {
         survived: true,
         offspringProduced: 0,
         hasAnyPolicy: true,
+        hasHarvestPolicy: false,
         hasMovementPolicy: true,
         hasReproductionPolicy: false
       },
@@ -108,6 +112,7 @@ describe('policy fitness', () => {
         survived: true,
         offspringProduced: 0,
         hasAnyPolicy: false,
+        hasHarvestPolicy: false,
         hasMovementPolicy: false,
         hasReproductionPolicy: false
       }

@@ -322,9 +322,11 @@ export interface PolicyParameterObservability {
 
 export interface PolicyActivationObservability {
   anyPolicyAgentFraction: number;
+  harvestPolicyAgentFraction: number;
   movementPolicyAgentFraction: number;
   reproductionPolicyAgentFraction: number;
   decisionGatedFraction: number;
+  harvestDecisionGuidedFraction: number;
   movementDecisionGatedFraction: number;
   reproductionDecisionGatedFraction: number;
 }

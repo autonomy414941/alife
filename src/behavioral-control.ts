@@ -4,6 +4,8 @@ export const INTERNAL_STATE_LAST_HARVEST = 'last_harvest_total';
 export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD = 'reproduction_harvest_threshold';
 export const INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD = 'movement_energy_reserve_threshold';
 export const INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST = 'movement_min_recent_harvest';
+export const INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE = 'harvest_secondary_preference';
+export const DEFAULT_HARVEST_SECONDARY_PREFERENCE = 0.5;
 
 export interface BehavioralStateCarrier {
   policyState?: ReadonlyMap<string, number>;
@@ -17,6 +19,7 @@ export interface MutableBehavioralStateCarrier {
 
 export interface BehavioralPolicyFlags {
   hasAnyPolicy: boolean;
+  hasHarvestPolicy: boolean;
   hasMovementPolicy: boolean;
   hasReproductionPolicy: boolean;
 }
@@ -24,7 +27,8 @@ export interface BehavioralPolicyFlags {
 export const POLICY_PARAMETER_KEYS = [
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
-  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST
+  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
+  INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE
 ];
 
 export const TRANSIENT_MEMORY_KEYS = [INTERNAL_STATE_LAST_HARVEST];
@@ -99,7 +103,7 @@ export function mutatePolicyParameters(
     if (randomFloat() < mutationProbability) {
       const currentValue = policyState.get(key)!;
       const delta = (randomFloat() - 0.5) * 2 * mutationMagnitude;
-      const mutatedValue = Math.max(0, currentValue + delta);
+      const mutatedValue = clampPolicyParameterValue(key, currentValue + delta);
       policyState.set(key, mutatedValue);
     }
   }
@@ -158,17 +162,33 @@ export function getTransientStateValue(
   return agent.transientState?.get(key) ?? fallback;
 }
 
+export function resolveHarvestSecondaryPreference(
+  agent: Pick<BehavioralStateCarrier, 'policyState'>
+): number | undefined {
+  if (!agent.policyState?.has(INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE)) {
+    return undefined;
+  }
+
+  return clampPolicyParameterValue(
+    INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE,
+    agent.policyState.get(INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE) ?? DEFAULT_HARVEST_SECONDARY_PREFERENCE
+  );
+}
+
 export function resolveBehavioralPolicyFlags(
   agent: Pick<BehavioralStateCarrier, 'policyState'>
 ): BehavioralPolicyFlags {
   const hasReproductionPolicy =
-    getPolicyStateValue(agent, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD) > 0;
+    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD);
   const hasMovementPolicy =
-    getPolicyStateValue(agent, INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD) > 0 ||
-    getPolicyStateValue(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST) > 0;
+    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD) ||
+    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
+  const hasHarvestPolicy =
+    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE);
 
   return {
-    hasAnyPolicy: hasReproductionPolicy || hasMovementPolicy,
+    hasAnyPolicy: hasHarvestPolicy || hasReproductionPolicy || hasMovementPolicy,
+    hasHarvestPolicy,
     hasMovementPolicy,
     hasReproductionPolicy
   };
@@ -190,4 +210,31 @@ export function mergeBehavioralState(
   }
 
   return merged;
+}
+
+export function isActivePolicyParameter(
+  policyState: ReadonlyMap<string, number> | undefined,
+  key: string
+): boolean {
+  if (!policyState) {
+    return false;
+  }
+
+  if (key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE) {
+    return policyState.has(key);
+  }
+
+  return (policyState.get(key) ?? 0) > 0;
+}
+
+function clampPolicyParameterValue(key: string, value: number): number {
+  if (key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE) {
+    return clamp(value, 0, 1);
+  }
+
+  return Math.max(0, value);
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }

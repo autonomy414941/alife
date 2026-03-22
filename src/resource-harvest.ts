@@ -4,16 +4,29 @@ export interface DualResourceHarvestResult {
   primaryHarvest: number;
   secondaryHarvest: number;
   totalHarvest: number;
+  primaryShare: number;
+  secondaryShare: number;
 }
 
 export function secondaryHarvestEfficiency(genome: Genome): number {
   return Math.max(0, genome.harvestEfficiency2 ?? 0);
 }
 
-export function resolveResourceHarvestShares(genome: Genome): {
+export function resolveResourceHarvestShares(
+  genome: Genome,
+  secondaryPreferenceShare?: number
+): {
   primaryShare: number;
   secondaryShare: number;
 } {
+  if (secondaryPreferenceShare !== undefined) {
+    const secondaryShare = clamp(secondaryPreferenceShare, 0, 1);
+    return {
+      primaryShare: 1 - secondaryShare,
+      secondaryShare
+    };
+  }
+
   const primaryEfficiency = Math.max(0, genome.harvest);
   const secondaryEfficiency = secondaryHarvestEfficiency(genome);
   const totalEfficiency = primaryEfficiency + secondaryEfficiency;
@@ -39,19 +52,22 @@ export function resolveDualResourceHarvest({
   primaryAvailable,
   secondaryAvailable,
   genome,
-  baseCapacity
+  baseCapacity,
+  secondaryPreferenceShare
 }: {
   primaryAvailable: number;
   secondaryAvailable: number;
   genome: Genome;
   baseCapacity: number;
+  secondaryPreferenceShare?: number;
 }): DualResourceHarvestResult {
   const capacity = Math.max(0, baseCapacity);
   if (capacity <= 0) {
-    return { primaryHarvest: 0, secondaryHarvest: 0, totalHarvest: 0 };
+    const shares = resolveResourceHarvestShares(genome, secondaryPreferenceShare);
+    return { primaryHarvest: 0, secondaryHarvest: 0, totalHarvest: 0, ...shares };
   }
 
-  const { primaryShare, secondaryShare } = resolveResourceHarvestShares(genome);
+  const { primaryShare, secondaryShare } = resolveResourceHarvestShares(genome, secondaryPreferenceShare);
   const primaryHarvest = Math.min(
     Math.max(0, primaryAvailable),
     capacity * primaryShare * Math.max(0, genome.harvest)
@@ -64,6 +80,12 @@ export function resolveDualResourceHarvest({
   return {
     primaryHarvest,
     secondaryHarvest,
-    totalHarvest: primaryHarvest + secondaryHarvest
+    totalHarvest: primaryHarvest + secondaryHarvest,
+    primaryShare,
+    secondaryShare
   };
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
 }

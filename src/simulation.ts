@@ -10,6 +10,7 @@ import {
   clonePolicyState,
   cloneTransientState,
   getPolicyStateValue,
+  resolveHarvestSecondaryPreference,
   getTransientStateValue,
   INTERNAL_STATE_LAST_HARVEST,
   POLICY_PARAMETER_KEYS,
@@ -299,6 +300,8 @@ export class LifeSimulation {
     const beforeCount = this.agents.length;
     const nextTick = this.tickCount + 1;
     const policyDecisionStats: PolicyDecisionStats = {
+      harvestDecisions: 0,
+      harvestPolicyGuided: 0,
       movementDecisions: 0,
       movementPolicyGated: 0,
       reproductionDecisions: 0,
@@ -1458,10 +1461,13 @@ export class LifeSimulation {
     const lineageCrowdingEfficiency = lineageOccupancy
       ? this.lineageHarvestCrowdingEfficiency(agent, lineageOccupancy)
       : 1;
+    const harvestSecondaryPreference = resolveHarvestSecondaryPreference(agent);
+    const defaultHarvestShares = resolveResourceHarvestShares(agent.genome);
     const harvest = resolveDualResourceHarvest({
       primaryAvailable: available,
       secondaryAvailable: available2,
       genome: agent.genome,
+      secondaryPreferenceShare: harvestSecondaryPreference,
       baseCapacity:
       this.config.harvestCap *
         habitatEfficiency *
@@ -1469,6 +1475,12 @@ export class LifeSimulation {
         defenseEfficiency *
         lineageCrowdingEfficiency
     });
+    policyDecisionStats.harvestDecisions += 1;
+    policyDecisionStats.harvestPolicyGuided += Number(
+      harvestSecondaryPreference !== undefined &&
+      (Math.abs(harvest.primaryShare - defaultHarvestShares.primaryShare) > 1e-9 ||
+        Math.abs(harvest.secondaryShare - defaultHarvestShares.secondaryShare) > 1e-9)
+    );
     this.resources[agent.y][agent.x] -= harvest.primaryHarvest;
     this.resources2[agent.y][agent.x] -= harvest.secondaryHarvest;
     addAgentEnergy(agent, {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE,
   INTERNAL_STATE_LAST_HARVEST,
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
@@ -117,6 +118,85 @@ describe('LifeSimulation', () => {
     expect(agents).toHaveLength(2);
     expect(agents.every((agent) => agent.policyState === undefined)).toBe(true);
     expect(agents.every((agent) => agent.transientState === undefined)).toBe(true);
+  });
+
+  it('preserves default harvest allocation when no harvest policy is configured', () => {
+    const sim = new LifeSimulation({
+      seed: 101,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 10,
+        maxResource2: 10,
+        resourceRegen: 0,
+        resource2Regen: 0,
+        habitatPreferenceStrength: 0,
+        trophicForagingPenalty: 0,
+        defenseForagingPenalty: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 2,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5, harvestEfficiency2: 1 }
+        }
+      ]
+    });
+
+    sim.setResource(0, 0, 10);
+    sim.setResource2(0, 0, 10);
+    sim.step();
+
+    const agent = sim.snapshot().agents[0];
+    expect(agent.energyPrimary).toBeCloseTo(2, 10);
+    expect(agent.energySecondary).toBeCloseTo(1, 10);
+  });
+
+  it('reallocates harvest effort across resource layers when harvest policy is enabled', () => {
+    const sim = new LifeSimulation({
+      seed: 102,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 10,
+        maxResource2: 10,
+        resourceRegen: 0,
+        resource2Regen: 0,
+        habitatPreferenceStrength: 0,
+        trophicForagingPenalty: 0,
+        defenseForagingPenalty: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 2,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 1,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5, harvestEfficiency2: 1 },
+          policyState: new Map([[INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 1]])
+        }
+      ]
+    });
+
+    sim.setResource(0, 0, 10);
+    sim.setResource2(0, 0, 10);
+    const summary = sim.step();
+
+    const agent = sim.snapshot().agents[0];
+    expect(agent.energyPrimary).toBeCloseTo(1, 10);
+    expect(agent.energySecondary).toBeCloseTo(2, 10);
+    expect(summary.policyObservability?.activation.harvestPolicyAgentFraction).toBeCloseTo(1, 10);
+    expect(summary.policyObservability?.activation.harvestDecisionGuidedFraction).toBeCloseTo(1, 10);
   });
 
   it('splits legacy internal state seeds into policy and transient state', () => {
@@ -520,9 +600,11 @@ describe('LifeSimulation', () => {
 
     expect(policyObservability).toBeDefined();
     expect(policyObservability?.activation.anyPolicyAgentFraction).toBeCloseTo(0.5, 10);
+    expect(policyObservability?.activation.harvestPolicyAgentFraction).toBeCloseTo(0, 10);
     expect(policyObservability?.activation.movementPolicyAgentFraction).toBeCloseTo(0.5, 10);
     expect(policyObservability?.activation.reproductionPolicyAgentFraction).toBeCloseTo(0.5, 10);
     expect(policyObservability?.activation.decisionGatedFraction).toBeCloseTo(0.5, 10);
+    expect(policyObservability?.activation.harvestDecisionGuidedFraction).toBeCloseTo(0, 10);
     expect(policyObservability?.activation.movementDecisionGatedFraction).toBeCloseTo(0.5, 10);
     expect(policyObservability?.activation.reproductionDecisionGatedFraction).toBeCloseTo(0.5, 10);
 
