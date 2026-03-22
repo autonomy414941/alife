@@ -1,109 +1,97 @@
-# Session Plan — 2026-03-21
+# Session Plan — 2026-03-22
 
 ## Compact Context
-- GenomeV2 validation completed 2026-03-19–20: extended traits emerge (100% in canonical runs), persist, and show spatial/fertility enrichment (1.04–1.66)
-- Structural ceiling prioritization (2026-03-20) ranked behavioral control #1: high innovation potential, strong literature support, one-month feasible
-- Behavioral control feasibility spike (2026-03-20) confirmed low coupling risk: internal state + threshold policies work without breaking default behavior
-- Package manager is npm; all tests pass as of 2026-03-20
-- Research agenda shifted from GenomeV2 validation to behavioral control implementation on 2026-03-21
+- `internalState`-based behavioral control is live and heritable: movement reads `movement_energy_reserve_threshold` / `movement_min_recent_harvest`, and reproduction reads `reproduction_harvest_threshold`
+- `StepSummary` and CSV exports now include policy observability, and per-tick `PolicyFitnessRecord`s capture harvest, survival, reproduction, and policy values
+- The 2026-03-21 behavioral policy pilot was negative overall: across 6 x 300-step runs, policy-positive agents had aggregate matched-bin deltas of harvest `-0.0596`, survival `-0.00255`, and reproduction `+0.00077`
+- That same pilot matched only two occupied fertility/crowding bins and records ecology at tick start, so causal attribution is still weak
+- Harvest allocation and encounter resolution remain policy-agnostic, and `internalState` still mixes heritable parameters with transient memory
+- Package manager is npm; the recent behavioral-control tranche landed on `main` on 2026-03-21
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Validation (ecological context, distance normalization, canonical comparison) | 4 | ac699f9 |
-| Structural analysis (critic, synthesis) | 3 | 52d5541 |
-| Feature implementation (behavioral control, observability, loci discovery) | 3 | 83a82f4 |
+| Planning and structural ceiling analysis | 4 | 2a71446 |
+| Behavioral control surface implementation | 3 | 61460a3 |
+| Policy measurement and observability | 2 | 2dbb07d |
+| GenomeV2 ecological validation | 1 | ac699f9 |
+| Harvest / encounter policy expansion | 0 | none |
+| Policy architecture refactor | 0 | none |
 
-Dominant axis: Validation (4/10)
-Underexplored axes: Movement/harvest policy expansion, policy inheritance, fitness decomposition
+Dominant axis: Planning and structural ceiling analysis (4/10)
+Underexplored axes: GenomeV2 ecological validation, harvest / encounter policy expansion, policy architecture refactor
 
 ## Project State
-- Behavioral control infrastructure exists: `Agent.internalState: Map<string, number>`, `last_harvest_total` signal, `reproduction_harvest_threshold` policy parameter, and reproduction gating in `src/behavioral-control.ts`
-- Only reproduction reads policy state; movement, harvest, encounters, and settlement operators remain memoryless and hard-coded
-- Extended traits show enrichment but simulation collapsed to 1 clade/1 species despite 20.6% trait prevalence, suggesting ecological advantage requires active behavioral adaptation beyond passive trait expression
-- The backlog now focuses on behavioral control expansion as the monthly priority
+- The first behavioral-control tranche is complete: feasibility spike, movement gating, inheritance / mutation, policy fitness pilot, and policy observability all landed on 2026-03-20 to 2026-03-21
+- The code now has enough instrumentation to reject weak mechanisms, and the first pilot currently points to a harmful or badly measured policy surface rather than a clear adaptive gain
+- The main mechanistic gap is that policies can currently veto movement and reproduction but cannot yet steer harvest or encounters, where direct ecological advantage should emerge if the direction is viable
+- The main measurement gap is that policy fitness attribution still uses coarse tick-start context instead of richer decision-time ecology and policy-specific strata
 
 ## External Context
-- [Towards open-ended dynamics in Artificial Life and Artificial Intelligence: an eco-evo-devo perspective](https://theses.hal.science/tel-05137835) (Université de Bordeaux, 2025): Continual environmental changes foster faster adaptation mechanisms; variable environments facilitate efficient exploratory behaviors within groups of agents. Environment-agent interplay is critical for open-ended dynamics.
-- [Automated Search for Artificial Life with Foundation Models](https://arxiv.org/html/2412.17799v2) (May 2025): Open-ended evolution requires systems that never settle into stable equilibrium; decisions about how and where individuals interact should be made by individuals themselves.
-- [The Future of AI is Open-Ended](https://richardcsuwandi.github.io/blog/2025/open-endedness/) (2025): Current AI approaches optimized for specific tasks won't reach superintelligence; open-ended systems require exploration over optimization and adaptive agents with learning-like dynamics.
+- Gautier Hamon, *Towards open-ended dynamics in Artificial Life and Artificial Intelligence: an eco-evo-devo perspective* (PhD thesis, defended March 17, 2025): argues for open-ended systems built around rich agent-environment interaction and adaptation across multiple scales, not genome expansion alone. Source: https://reytuag.github.io/gautier-hamon/data/thesis_hamon_gautier.pdf
+- Maxence Faldor and Antoine Cully, *Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity* (arXiv:2406.04235, June 6, 2024): sustained diversity came from maintaining niche-adapted stepping stones instead of collapsing search onto one optimum. Source: https://arxiv.org/abs/2406.04235
 
 ## Research Gaps
-- Can movement decisions conditioned on internal state (energy reserves, recent-harvest history) produce spatial patterns or niche separation that passive trait expression cannot?
-- Does policy inheritance and mutation create heritable behavioral strategies that compete and diversify alongside morphological traits?
-- Will fitness decomposition reveal whether extended traits actually provide harvest/survival/reproduction advantage in matched ecological contexts, or whether they remain neutral baggage?
+- Is the 2026-03-21 policy detriment real after measuring ecology at decision time and stratifying by policy type, age, and disturbance / seasonal phase?
+- Can a policy surface that controls resource acquisition or encounters generate positive fitness deltas where movement / reproduction gates alone did not?
 
 ## Current Anti-Evidence
-- Extended traits persist and show enrichment (1.04–1.66) but simulation collapsed to 1 clade/1 species by tick 1000, suggesting spatial correlation does not prove ecological advantage
-- Current `internalState: Map<string, number>` is stringly typed and mixes policy parameters with transient memory; brittleness risk increases as more decisions become stateful
-- Movement, harvest, and encounter operators touch the main turn loop heavily; policy expansion requires careful boundary design to avoid breaking existing ecology
-- No fitness decomposition exists yet to validate whether behavioral policies or extended traits actually improve harvest/survival/reproduction in matched contexts
+- On 2026-03-21, the only policy pilot returned a detrimental aggregate result: weighted matched-bin harvest `-0.0596`, survival `-0.00255`, reproduction `+0.00077`, so behavioral control has not yet shown adaptive value
+- Policy divergence still sits outside `GenomeV2` distance and null-model machinery, so even real ecological policy effects will be undercounted by the current taxonomic evidence surface
 
 ## Bet Queue
 
-### Bet 1: [feat] Extend behavioral control to movement decisions
+### Bet 1: [investigate] Diagnose the current policy pilot detriment
 
-Add heritable policy parameters for movement (e.g., `movement_energy_reserve_threshold`, `movement_min_recent_harvest`) and wire movement operators to read internal state. Agents can condition movement on energy reserves or recent-harvest history. Verify existing movement tests pass under default (no-policy) behavior and add focused tests for policy-gated movement.
-
-#### Success Evidence
-- Movement operators read policy parameters from `internalState`
-- Agents with policy parameters condition movement on energy/harvest thresholds
-- Existing movement tests pass under default behavior
-- New focused tests confirm policy-gated movement works as expected
-- Code in `src/simulation.ts` or new `src/movement-policy.ts`
-
-#### Stop Conditions
-- Stop after implementing movement policy for 1-2 threshold types (energy reserve, recent-harvest)
-- Do not attempt full spatial pattern analysis or niche-separation validation in this bet
-- If existing tests break or coupling risk is high, document and stop
-
-### Bet 2: [feat] Add policy inheritance and mutation
-
-Make behavioral policy parameters heritable and mutable like genome traits. When an agent reproduces, offspring inherit parent policy parameters with mutation probability. Add mutation operators for policy parameters (additive noise, threshold drift). Verify offspring inherit and mutate policy state correctly.
+Audit the 2026-03-21 policy pilot at the per-policy level instead of treating all policy-enabled agents as one group. The goal is to identify whether the negative signal comes from threshold calibration, one harmful decision surface (movement vs reproduction), or a simple activation imbalance before more behavior-control code is added.
 
 #### Success Evidence
-- Policy parameters are heritable: offspring copy parent `internalState` policy keys
-- Policy parameters mutate during reproduction with configurable probability/magnitude
-- Tests confirm policy inheritance and mutation work correctly
-- Code in `src/reproduction.ts` and/or `src/behavioral-control.ts`
+- Analysis artifact under `docs/` reporting movement-gated and reproduction-gated activation rates, threshold distributions, and per-policy marginal fitness deltas across the existing pilot seeds
+- Clear diagnosis naming one dominant failure mode or explicitly ruling out obvious threshold-calibration failure
 
 #### Stop Conditions
-- Stop after implementing inheritance + mutation for existing policy parameters
-- Do not add new policy types in this bet; focus on making existing policies evolvable
-- If mutation breaks reproduction or tests fail, document and stop
+- Stop once one bounded analysis pass over the existing pilot or a closely matched rerun isolates the main negative contributor
+- Do not redesign the policy architecture or add new policy surfaces in this bet
 
-### Bet 3: [validate] Add fitness decomposition by behavioral policy
+### Bet 2: [validate] Improve policy fitness attribution granularity
 
-Track harvest intake, survival probability, and reproductive output conditional on policy state vs default behavior in matched ecological bins (fertility, crowding). Run a pilot with movement + reproduction policies enabled and measure whether policy-positive agents show measurable advantage over policy-negative agents under the same local conditions.
+Tighten policy fitness attribution so results are interpretable. Record ecology at decision time rather than only at tick start, add a small number of meaningful strata such as age class and disturbance or seasonal phase, and rerun a bounded pilot to see whether the current detrimental signal survives better matching.
 
 #### Success Evidence
-- Pilot run tracks per-agent fitness components (harvest, survival, reproduction) by policy presence
-- Analysis artifact under `docs/` compares fitness by policy state within matched ecological bins
-- Clear result: either policies provide measurable advantage or they are neutral/detrimental
+- Updated records or derived artifacts capture decision-time context and at least one new informative stratum beyond coarse fertility / crowding
+- A new pilot artifact under `docs/` compares the old aggregate with the refined attribution surface
 
 #### Stop Conditions
-- Stop after one focused pilot with fitness decomposition
-- Do not build full genealogy or long-term trajectory analysis here
-- If fitness data shows no advantage, document outcome and move on
+- Stop after one bounded rerun with refined attribution
+- Do not build full genealogy or long-horizon trajectory analytics in this bet
 
-### Bet 4: [feat] Add policy observability to StepSummary and CSV exports
+### Bet 3: [refactor] Separate heritable policy parameters from transient observations
 
-Add policy parameter distributions (mean, variance, prevalence), policy activation rates (fraction of agents with non-default policy, fraction of decisions gated by policy), and policy-outcome correlations to `StepSummary` and CSV exports. This makes behavioral control visible in standard experiment feedback loops.
+Split policy state so future rollout is less brittle. Keep true ephemeral memory separate from inherited policy parameters, and preserve default behavior while making it clearer which numbers are observations, which are heritable controls, and which should reset at birth.
 
 #### Success Evidence
-- `StepSummary` includes policy-related metrics (prevalence, activation rates)
-- CSV exports include policy parameter distributions
-- Tests confirm new metrics compute correctly
-- Code in `src/export.ts`, `src/types.ts`, and simulation summary logic
+- `internalState` responsibilities are split into heritable policy parameters and transient observations without changing default simulation behavior
+- Focused tests cover inheritance semantics and reset semantics for the new state boundary
 
 #### Stop Conditions
-- Stop after adding observability for existing policy parameters
-- Do not add full policy-genealogy tracking or innovation graphs in this bet
-- If observability couples too tightly to specific policy keys, use generic `internalState` iteration instead
+- Stop after the state boundary is explicit and existing policy behavior still passes
+- Do not unify policies into `GenomeV2` or extend speciation distance in this bet
+
+### Bet 4: [feat] Extend behavioral control to harvest allocation
+
+Add the first policy surface that can improve resource gain directly instead of only vetoing actions. Separate harvest preference from harvest efficiency and let agents reallocate effort across resource layers from internal state so policy has a plausible path to raising harvest and survival rather than only constraining movement or reproduction.
+
+#### Success Evidence
+- Harvest-choice policy parameters affect resource-layer effort allocation in the live simulation
+- Focused tests show default behavior is unchanged when no policy is present and altered allocation occurs when policy is enabled
+- A small pilot or smoke artifact shows the new policy surface actually activates in nontrivial ecological contexts
+
+#### Stop Conditions
+- Stop after one bounded harvest-allocation policy surface works end to end
+- Do not add encounter policies, multi-resource metabolic spending rules, or probabilistic activation in this bet
 
 ## Assumptions / Unknowns
-- Assumption: movement policy can be wired with low coupling risk similar to reproduction policy (feasibility spike confirmed for reproduction)
-- Assumption: policy inheritance can reuse existing genome mutation patterns without major refactoring
-- Unknown: whether movement policies will produce measurable fitness advantage or remain neutral in current ecological contexts
-- Unknown: whether policy parameter mutation rates should differ from genome trait mutation rates
-- Unknown: how to best separate heritable policy parameters from transient ephemeral state in the `internalState` map (deferred to later refactor if brittleness becomes a problem)
+- Assumption: the 2026-03-21 negative pilot is still worth diagnosing rather than discarding, because the current measurement surface is too coarse to separate bad thresholds from bad mechanisms
+- Assumption: harvest allocation is the most direct next policy surface because current anti-evidence is strongest on harvest and survival, not reproduction
+- Unknown: whether the present policy detriment is caused mainly by movement gating, reproduction gating, or ecological mismatching in the fitness analysis
+- Unknown: how much state-boundary cleanup is needed before harvest policies can land without creating another stringly typed control layer
