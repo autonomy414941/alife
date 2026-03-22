@@ -3,12 +3,16 @@ import { StepSummary } from './types';
 
 export const DEFAULT_POLICY_FITNESS_FERTILITY_BINS = 4;
 export const DEFAULT_POLICY_FITNESS_CROWDING_BINS = 4;
+export const DEFAULT_POLICY_FITNESS_AGE_BINS = 3;
+export const DISTURBANCE_PHASE_RECENT_WINDOW = 40;
 
 export interface PolicyFitnessRecord extends BehavioralPolicyFlags {
   tick: number;
   agentId: number;
   fertilityBin: number;
   crowdingBin: number;
+  ageBin: number;
+  disturbancePhase: number;
   harvestIntake: number;
   survived: boolean;
   offspringProduced: number;
@@ -36,6 +40,8 @@ export interface PolicyFitnessDeltaMetrics {
 export interface PolicyFitnessMatchedBinComparison {
   fertilityBin: number;
   crowdingBin: number;
+  ageBin: number;
+  disturbancePhase: number;
   weight: number;
   policyPositive: PolicyFitnessGroupMetrics;
   policyNegative: PolicyFitnessGroupMetrics;
@@ -72,13 +78,24 @@ export function binPolicyFitnessValue(value: number, min: number, max: number, b
   return Math.min(normalizedBins - 1, scaled);
 }
 
+export function resolveDisturbancePhase(
+  currentTick: number,
+  lastDisturbanceTick: number | null
+): number {
+  if (lastDisturbanceTick === null) {
+    return 1;
+  }
+  const ticksSinceDisturbance = currentTick - lastDisturbanceTick;
+  return ticksSinceDisturbance <= DISTURBANCE_PHASE_RECENT_WINDOW ? 0 : 1;
+}
+
 export function analyzePolicyFitnessRecords(records: ReadonlyArray<PolicyFitnessRecord>): PolicyFitnessAnalysis {
   const policyPositiveRecords = records.filter((record) => record.hasAnyPolicy);
   const policyNegativeRecords = records.filter((record) => !record.hasAnyPolicy);
   const bins = new Map<string, PolicyFitnessRecord[]>();
 
   for (const record of records) {
-    const key = `${record.fertilityBin}:${record.crowdingBin}`;
+    const key = `${record.fertilityBin}:${record.crowdingBin}:${record.ageBin}:${record.disturbancePhase}`;
     const binRecords = bins.get(key);
     if (binRecords) {
       binRecords.push(record);
@@ -95,11 +112,13 @@ export function analyzePolicyFitnessRecords(records: ReadonlyArray<PolicyFitness
       continue;
     }
 
-    const [fertilityBinValue, crowdingBinValue] = key.split(':');
+    const [fertilityBinValue, crowdingBinValue, ageBinValue, disturbancePhaseValue] = key.split(':');
     const weight = Math.min(policyPositive.exposures, policyNegative.exposures);
     matchedBins.push({
       fertilityBin: Number(fertilityBinValue),
       crowdingBin: Number(crowdingBinValue),
+      ageBin: Number(ageBinValue),
+      disturbancePhase: Number(disturbancePhaseValue),
       weight,
       policyPositive,
       policyNegative,
@@ -111,11 +130,12 @@ export function analyzePolicyFitnessRecords(records: ReadonlyArray<PolicyFitness
     });
   }
 
-  matchedBins.sort((left, right) =>
-    left.fertilityBin === right.fertilityBin
-      ? left.crowdingBin - right.crowdingBin
-      : left.fertilityBin - right.fertilityBin
-  );
+  matchedBins.sort((left, right) => {
+    if (left.fertilityBin !== right.fertilityBin) return left.fertilityBin - right.fertilityBin;
+    if (left.crowdingBin !== right.crowdingBin) return left.crowdingBin - right.crowdingBin;
+    if (left.ageBin !== right.ageBin) return left.ageBin - right.ageBin;
+    return left.disturbancePhase - right.disturbancePhase;
+  });
 
   const totalWeight = matchedBins.reduce((sum, bin) => sum + bin.weight, 0);
 

@@ -57,10 +57,12 @@ import {
 } from './resource-harvest';
 import {
   binPolicyFitnessValue,
+  DEFAULT_POLICY_FITNESS_AGE_BINS,
   DEFAULT_POLICY_FITNESS_CROWDING_BINS,
   DEFAULT_POLICY_FITNESS_FERTILITY_BINS,
   PolicyFitnessRecord,
-  PolicyFitnessRunSeries
+  PolicyFitnessRunSeries,
+  resolveDisturbancePhase
 } from './policy-fitness';
 import { PolicyDecisionStats, summarizePolicyObservability } from './policy-observability';
 import { Rng } from './rng';
@@ -1472,6 +1474,41 @@ export class LifeSimulation {
     const policyFitness = policyFitnessByAgentId.get(agent.id);
     if (policyFitness) {
       policyFitness.harvestIntake = totalHarvest;
+
+      const decisionTimeFertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, this.tickCount + 1);
+      const decisionTimeCrowding = neighborhoodCrowding({
+        x: agent.x,
+        y: agent.y,
+        occupancy,
+        dispersalRadius: this.normalizedDispersalRadius(),
+        wrapX: (x) => this.wrapX(x),
+        wrapY: (y) => this.wrapY(y)
+      });
+
+      policyFitness.fertilityBin = binPolicyFitnessValue(
+        decisionTimeFertility,
+        0.1,
+        2,
+        DEFAULT_POLICY_FITNESS_FERTILITY_BINS
+      );
+      policyFitness.crowdingBin = binPolicyFitnessValue(
+        decisionTimeCrowding,
+        0,
+        Math.max(1, this.agents.length),
+        DEFAULT_POLICY_FITNESS_CROWDING_BINS
+      );
+      policyFitness.ageBin = binPolicyFitnessValue(
+        agent.age,
+        0,
+        this.config.maxAge,
+        DEFAULT_POLICY_FITNESS_AGE_BINS
+      );
+
+      const lastDisturbance = latestDisturbanceEvent(this.disturbanceEvents);
+      policyFitness.disturbancePhase = resolveDisturbancePhase(
+        this.tickCount + 1,
+        lastDisturbance?.tick ?? null
+      );
     }
   }
 
@@ -1555,32 +1592,15 @@ export class LifeSimulation {
         continue;
       }
 
-      const fertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, tick);
-      const crowding = neighborhoodCrowding({
-        x: agent.x,
-        y: agent.y,
-        occupancy,
-        dispersalRadius: this.normalizedDispersalRadius(),
-        wrapX: (x) => this.wrapX(x),
-        wrapY: (y) => this.wrapY(y)
-      });
       const policyFlags = resolveBehavioralPolicyFlags(agent);
 
       records.set(agent.id, {
         tick,
         agentId: agent.id,
-        fertilityBin: binPolicyFitnessValue(
-          fertility,
-          0.1,
-          2,
-          DEFAULT_POLICY_FITNESS_FERTILITY_BINS
-        ),
-        crowdingBin: binPolicyFitnessValue(
-          crowding,
-          0,
-          Math.max(1, this.agents.length),
-          DEFAULT_POLICY_FITNESS_CROWDING_BINS
-        ),
+        fertilityBin: -1,
+        crowdingBin: -1,
+        ageBin: -1,
+        disturbancePhase: -1,
         harvestIntake: 0,
         survived: false,
         offspringProduced: 0,
