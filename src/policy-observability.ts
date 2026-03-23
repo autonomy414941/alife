@@ -13,10 +13,23 @@ import {
 export interface PolicyDecisionStats {
   harvestDecisions: number;
   harvestPolicyGuided: number;
-  movementDecisions: number;
-  movementPolicyGated: number;
-  reproductionDecisions: number;
-  reproductionPolicyGated: number;
+  movement: {
+    decisions: number;
+    policyGated: number;
+    energyReservePolicyActive: number;
+    recentHarvestPolicyActive: number;
+    blockedByEnergyReserve: number;
+    blockedByRecentHarvest: number;
+    energyReserveNearThreshold: number;
+    recentHarvestNearThreshold: number;
+  };
+  reproduction: {
+    decisions: number;
+    policyGated: number;
+    harvestThresholdPolicyActive: number;
+    suppressedByHarvestThreshold: number;
+    harvestThresholdNearThreshold: number;
+  };
 }
 
 export function summarizePolicyObservability(
@@ -45,21 +58,38 @@ export function summarizePolicyObservability(
       movementPolicyAgentFraction: population === 0 ? 0 : movementPolicyAgents / population,
       reproductionPolicyAgentFraction: population === 0 ? 0 : reproductionPolicyAgents / population,
       decisionGatedFraction: gatedFraction(
-        decisionStats.movementPolicyGated + decisionStats.reproductionPolicyGated,
-        decisionStats.movementDecisions + decisionStats.reproductionDecisions
+        decisionStats.movement.policyGated + decisionStats.reproduction.policyGated,
+        decisionStats.movement.decisions + decisionStats.reproduction.decisions
       ),
       harvestDecisionGuidedFraction: gatedFraction(
         decisionStats.harvestPolicyGuided,
         decisionStats.harvestDecisions
       ),
       movementDecisionGatedFraction: gatedFraction(
-        decisionStats.movementPolicyGated,
-        decisionStats.movementDecisions
+        decisionStats.movement.policyGated,
+        decisionStats.movement.decisions
       ),
       reproductionDecisionGatedFraction: gatedFraction(
-        decisionStats.reproductionPolicyGated,
-        decisionStats.reproductionDecisions
+        decisionStats.reproduction.policyGated,
+        decisionStats.reproduction.decisions
       )
+    },
+    movement: {
+      decisions: decisionStats.movement.decisions,
+      gatedDecisions: decisionStats.movement.policyGated,
+      energyReservePolicyActiveDecisions: decisionStats.movement.energyReservePolicyActive,
+      recentHarvestPolicyActiveDecisions: decisionStats.movement.recentHarvestPolicyActive,
+      blockedByEnergyReserve: decisionStats.movement.blockedByEnergyReserve,
+      blockedByRecentHarvest: decisionStats.movement.blockedByRecentHarvest,
+      energyReserveNearThreshold: decisionStats.movement.energyReserveNearThreshold,
+      recentHarvestNearThreshold: decisionStats.movement.recentHarvestNearThreshold
+    },
+    reproduction: {
+      decisions: decisionStats.reproduction.decisions,
+      gatedDecisions: decisionStats.reproduction.policyGated,
+      harvestThresholdPolicyActiveDecisions: decisionStats.reproduction.harvestThresholdPolicyActive,
+      suppressedByHarvestThreshold: decisionStats.reproduction.suppressedByHarvestThreshold,
+      harvestThresholdNearThreshold: decisionStats.reproduction.harvestThresholdNearThreshold
     },
     parameters: POLICY_PARAMETER_KEYS.map((key) => summarizePolicyParameter(key, agents, records))
   };

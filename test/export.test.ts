@@ -322,6 +322,16 @@ describe('run export', () => {
     const decisionGateIndex = METRICS_CSV_COLUMNS.indexOf('policy_decisions_gated_fraction');
     const movementGateIndex = METRICS_CSV_COLUMNS.indexOf('policy_movement_decisions_gated_fraction');
     const reproductionGateIndex = METRICS_CSV_COLUMNS.indexOf('policy_reproduction_decisions_gated_fraction');
+    const movementBlockedByEnergyIndex = METRICS_CSV_COLUMNS.indexOf('policy_movement_blocked_by_energy_reserve');
+    const movementRecentHarvestActiveIndex = METRICS_CSV_COLUMNS.indexOf(
+      'policy_movement_recent_harvest_active_decisions'
+    );
+    const reproductionSuppressedIndex = METRICS_CSV_COLUMNS.indexOf(
+      'policy_reproduction_suppressed_by_harvest_threshold'
+    );
+    const reproductionNearThresholdIndex = METRICS_CSV_COLUMNS.indexOf(
+      'policy_reproduction_harvest_threshold_near_threshold'
+    );
     const reproductionMeanIndex = METRICS_CSV_COLUMNS.indexOf('policy_reproduction_harvest_threshold_mean');
     const reproductionHarvestCorrelationIndex = METRICS_CSV_COLUMNS.indexOf(
       'policy_reproduction_harvest_threshold_harvest_correlation'
@@ -331,6 +341,10 @@ describe('run export', () => {
     expect(Number(row[decisionGateIndex])).toBeCloseTo(0.5, 10);
     expect(Number(row[movementGateIndex])).toBeCloseTo(0.5, 10);
     expect(Number(row[reproductionGateIndex])).toBeCloseTo(0.5, 10);
+    expect(Number(row[movementBlockedByEnergyIndex])).toBe(1);
+    expect(Number(row[movementRecentHarvestActiveIndex])).toBe(1);
+    expect(Number(row[reproductionSuppressedIndex])).toBe(1);
+    expect(Number(row[reproductionNearThresholdIndex])).toBe(1);
     expect(Number(row[reproductionMeanIndex])).toBeCloseTo(2, 10);
     expect(Number(row[reproductionHarvestCorrelationIndex])).toBeCloseTo(-1, 10);
   });

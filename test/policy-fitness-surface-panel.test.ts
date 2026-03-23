@@ -22,6 +22,8 @@ describe('policy fitness surface panel', () => {
     expect(artifact.arms.every((arm) => arm.runs.length === 1)).toBe(true);
     expect(artifact.arms.every((arm) => arm.overall.armMetrics.exposures > 0)).toBe(true);
     expect(artifact.noPolicy.overall.metrics.exposures).toBeGreaterThan(0);
+    expect(artifact.arms[0]?.runs[0]?.finalSummary.policyObservability?.movement.decisions).toBeGreaterThan(0);
+    expect(artifact.arms[0]?.runs[0]?.finalSummary.policyObservability?.reproduction.decisions).toBeGreaterThan(0);
     expect(['movement_only', 'reproduction_only', 'harvest_only', 'combined', 'combination', 'none', 'mixed']).toContain(
       artifact.interpretation.dominantHarm
     );

@@ -10,6 +10,7 @@ import {
   clonePolicyState,
   cloneTransientState,
   getPolicyStateValue,
+  isNearPolicyThreshold,
   resolveHarvestSecondaryPreference,
   getTransientStateValue,
   INTERNAL_STATE_LAST_HARVEST,
@@ -211,6 +212,19 @@ interface LocalityFrame {
   occupiedCells: number;
 }
 
+type MovementGateReason = 'none' | 'energy_reserve' | 'recent_harvest';
+
+interface MovementDecisionOutcome {
+  x: number;
+  y: number;
+  policyGated: boolean;
+  gateReason: MovementGateReason;
+  energyReservePolicyActive: boolean;
+  recentHarvestPolicyActive: boolean;
+  energyReserveNearThreshold: boolean;
+  recentHarvestNearThreshold: boolean;
+}
+
 export interface SimulationStorageDiagnostics {
   cladeHistories: number;
   speciesHistories: number;
@@ -302,10 +316,23 @@ export class LifeSimulation {
     const policyDecisionStats: PolicyDecisionStats = {
       harvestDecisions: 0,
       harvestPolicyGuided: 0,
-      movementDecisions: 0,
-      movementPolicyGated: 0,
-      reproductionDecisions: 0,
-      reproductionPolicyGated: 0
+      movement: {
+        decisions: 0,
+        policyGated: 0,
+        energyReservePolicyActive: 0,
+        recentHarvestPolicyActive: 0,
+        blockedByEnergyReserve: 0,
+        blockedByRecentHarvest: 0,
+        energyReserveNearThreshold: 0,
+        recentHarvestNearThreshold: 0
+      },
+      reproduction: {
+        decisions: 0,
+        policyGated: 0,
+        harvestThresholdPolicyActive: 0,
+        suppressedByHarvestThreshold: 0,
+        harvestThresholdNearThreshold: 0
+      }
     };
 
     this.regenerateResources();
@@ -353,8 +380,14 @@ export class LifeSimulation {
         }),
       reproduce: (parent, occupancy, lineageOccupancy) => this.reproduce(parent, occupancy, lineageOccupancy)
       });
-    policyDecisionStats.reproductionDecisions = reproductionDecisionStats.evaluated;
-    policyDecisionStats.reproductionPolicyGated = reproductionDecisionStats.policyGated;
+    policyDecisionStats.reproduction.decisions = reproductionDecisionStats.evaluated;
+    policyDecisionStats.reproduction.policyGated = reproductionDecisionStats.policyGated;
+    policyDecisionStats.reproduction.harvestThresholdPolicyActive =
+      reproductionDecisionStats.harvestThresholdPolicyActive;
+    policyDecisionStats.reproduction.suppressedByHarvestThreshold =
+      reproductionDecisionStats.suppressedByHarvestThreshold;
+    policyDecisionStats.reproduction.harvestThresholdNearThreshold =
+      reproductionDecisionStats.harvestThresholdNearThreshold;
     this.recordPolicyFitnessBirths(policyFitnessByAgentId, birthsByParentId);
     this.recordPolicyFitnessReproductionGating(policyFitnessByAgentId, policyGatedAgentIds);
     const births = offspring.length;
@@ -1412,9 +1445,15 @@ export class LifeSimulation {
 
     const previousX = agent.x;
     const previousY = agent.y;
-    policyDecisionStats.movementDecisions += 1;
+    policyDecisionStats.movement.decisions += 1;
     const destination = this.pickDestination(agent, occupancy, lineageOccupancy);
-    policyDecisionStats.movementPolicyGated += Number(destination.policyGated);
+    policyDecisionStats.movement.policyGated += Number(destination.policyGated);
+    policyDecisionStats.movement.energyReservePolicyActive += Number(destination.energyReservePolicyActive);
+    policyDecisionStats.movement.recentHarvestPolicyActive += Number(destination.recentHarvestPolicyActive);
+    policyDecisionStats.movement.blockedByEnergyReserve += Number(destination.gateReason === 'energy_reserve');
+    policyDecisionStats.movement.blockedByRecentHarvest += Number(destination.gateReason === 'recent_harvest');
+    policyDecisionStats.movement.energyReserveNearThreshold += Number(destination.energyReserveNearThreshold);
+    policyDecisionStats.movement.recentHarvestNearThreshold += Number(destination.recentHarvestNearThreshold);
     const moved = destination.x !== agent.x || destination.y !== agent.y;
     agent.x = destination.x;
     agent.y = destination.y;
@@ -1546,22 +1585,42 @@ export class LifeSimulation {
     agent: Agent,
     occupancy: number[][],
     lineageOccupancy: LineageOccupancyGrid | undefined
-  ): { x: number; y: number; policyGated: boolean } {
+  ): MovementDecisionOutcome {
     const energyReserveThreshold = getPolicyStateValue(
       agent,
       INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD
     );
     const minRecentHarvest = getPolicyStateValue(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
+    const recentHarvest = getTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST);
+    const energyReservePolicyActive = energyReserveThreshold > 0;
+    const recentHarvestPolicyActive = minRecentHarvest > 0;
+    const energyReserveNearThreshold = isNearPolicyThreshold(agent.energy, energyReserveThreshold);
+    const recentHarvestNearThreshold = isNearPolicyThreshold(recentHarvest, minRecentHarvest);
 
-    if (energyReserveThreshold > 0 && agent.energy < energyReserveThreshold) {
-      return { x: agent.x, y: agent.y, policyGated: true };
+    if (energyReservePolicyActive && agent.energy < energyReserveThreshold) {
+      return {
+        x: agent.x,
+        y: agent.y,
+        policyGated: true,
+        gateReason: 'energy_reserve',
+        energyReservePolicyActive,
+        recentHarvestPolicyActive,
+        energyReserveNearThreshold,
+        recentHarvestNearThreshold
+      };
     }
 
-    if (
-      minRecentHarvest > 0 &&
-      getTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST) < minRecentHarvest
-    ) {
-      return { x: agent.x, y: agent.y, policyGated: true };
+    if (recentHarvestPolicyActive && recentHarvest < minRecentHarvest) {
+      return {
+        x: agent.x,
+        y: agent.y,
+        policyGated: true,
+        gateReason: 'recent_harvest',
+        energyReservePolicyActive,
+        recentHarvestPolicyActive,
+        energyReserveNearThreshold,
+        recentHarvestNearThreshold
+      };
     }
 
     const options = [
@@ -1608,7 +1667,12 @@ export class LifeSimulation {
 
     return {
       ...best,
-      policyGated: false
+      policyGated: false,
+      gateReason: 'none',
+      energyReservePolicyActive,
+      recentHarvestPolicyActive,
+      energyReserveNearThreshold,
+      recentHarvestNearThreshold
     };
   }
 

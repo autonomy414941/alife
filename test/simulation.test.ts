@@ -607,6 +607,23 @@ describe('LifeSimulation', () => {
     expect(policyObservability?.activation.harvestDecisionGuidedFraction).toBeCloseTo(0, 10);
     expect(policyObservability?.activation.movementDecisionGatedFraction).toBeCloseTo(0.5, 10);
     expect(policyObservability?.activation.reproductionDecisionGatedFraction).toBeCloseTo(0.5, 10);
+    expect(policyObservability?.movement).toMatchObject({
+      decisions: 2,
+      gatedDecisions: 1,
+      energyReservePolicyActiveDecisions: 1,
+      recentHarvestPolicyActiveDecisions: 1,
+      blockedByEnergyReserve: 1,
+      blockedByRecentHarvest: 0,
+      energyReserveNearThreshold: 0,
+      recentHarvestNearThreshold: 0
+    });
+    expect(policyObservability?.reproduction).toMatchObject({
+      decisions: 2,
+      gatedDecisions: 1,
+      harvestThresholdPolicyActiveDecisions: 1,
+      suppressedByHarvestThreshold: 1,
+      harvestThresholdNearThreshold: 1
+    });
 
     const reproductionThreshold = policyObservability?.parameters.find(
       (parameter) => parameter.key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
@@ -636,6 +653,60 @@ describe('LifeSimulation', () => {
     expect(reproductionThreshold?.outcomeCorrelation.harvestIntake).toBeCloseTo(-1, 10);
     expect(reproductionThreshold?.outcomeCorrelation.survivalRate).toBe(0);
     expect(reproductionThreshold?.outcomeCorrelation.reproductionRate).toBe(0);
+  });
+
+  it('distinguishes movement blocks caused by energy reserve and recent harvest thresholds', () => {
+    const sim = new LifeSimulation({
+      seed: 99,
+      config: {
+        width: 3,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 100,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          policyState: new Map([[INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 11]])
+        },
+        {
+          x: 1,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          policyState: new Map([[INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2]]),
+          transientState: new Map([[INTERNAL_STATE_LAST_HARVEST, 1]])
+        },
+        {
+          x: 2,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 }
+        }
+      ]
+    });
+
+    const summary = sim.step();
+
+    expect(summary.policyObservability?.movement).toMatchObject({
+      decisions: 3,
+      gatedDecisions: 2,
+      energyReservePolicyActiveDecisions: 1,
+      recentHarvestPolicyActiveDecisions: 1,
+      blockedByEnergyReserve: 1,
+      blockedByRecentHarvest: 1,
+      energyReserveNearThreshold: 1,
+      recentHarvestNearThreshold: 1
+    });
   });
 
   it('records founder habitat context for initial and newly founded taxa in history exports', () => {

@@ -331,8 +331,29 @@ export interface PolicyActivationObservability {
   reproductionDecisionGatedFraction: number;
 }
 
+export interface PolicyMovementDecisionObservability {
+  decisions: number;
+  gatedDecisions: number;
+  energyReservePolicyActiveDecisions: number;
+  recentHarvestPolicyActiveDecisions: number;
+  blockedByEnergyReserve: number;
+  blockedByRecentHarvest: number;
+  energyReserveNearThreshold: number;
+  recentHarvestNearThreshold: number;
+}
+
+export interface PolicyReproductionDecisionObservability {
+  decisions: number;
+  gatedDecisions: number;
+  harvestThresholdPolicyActiveDecisions: number;
+  suppressedByHarvestThreshold: number;
+  harvestThresholdNearThreshold: number;
+}
+
 export interface PolicyObservabilitySummary {
   activation: PolicyActivationObservability;
+  movement: PolicyMovementDecisionObservability;
+  reproduction: PolicyReproductionDecisionObservability;
   parameters: PolicyParameterObservability[];
 }
 

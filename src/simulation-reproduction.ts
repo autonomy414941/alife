@@ -1,6 +1,7 @@
 import { spendAgentEnergy, getAgentEnergyPools } from './agent-energy';
 import {
   getPolicyStateValue,
+  isNearPolicyThreshold,
   getTransientStateValue,
   inheritBehavioralState,
   INTERNAL_STATE_LAST_HARVEST,
@@ -75,6 +76,9 @@ interface RunReproductionPhaseResult {
 interface ReproductionDecisionStats {
   evaluated: number;
   policyGated: number;
+  harvestThresholdPolicyActive: number;
+  suppressedByHarvestThreshold: number;
+  harvestThresholdNearThreshold: number;
 }
 
 interface ReproduceAgentOptions {
@@ -122,32 +126,60 @@ interface ReproduceAgentOptions {
 function evaluateReproductionEligibility(
   agent: Agent,
   config: SimulationConfig
-): { canReproduce: boolean; policyGated: boolean } {
+): {
+  canReproduce: boolean;
+  policyGated: boolean;
+  harvestThresholdPolicyActive: boolean;
+  harvestThresholdNearThreshold: boolean;
+} {
   if (agent.energy < config.reproduceThreshold) {
-    return { canReproduce: false, policyGated: false };
+    return {
+      canReproduce: false,
+      policyGated: false,
+      harvestThresholdPolicyActive: false,
+      harvestThresholdNearThreshold: false
+    };
   }
 
   const reproductionHarvestThreshold = getPolicyStateValue(
     agent,
     INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
   );
+  const recentHarvest = getTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST);
+  const harvestThresholdPolicyActive = reproductionHarvestThreshold > 0;
+  const harvestThresholdNearThreshold = isNearPolicyThreshold(recentHarvest, reproductionHarvestThreshold);
   if (
-    reproductionHarvestThreshold > 0 &&
-    getTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST) < reproductionHarvestThreshold
+    harvestThresholdPolicyActive &&
+    recentHarvest < reproductionHarvestThreshold
   ) {
-    return { canReproduce: false, policyGated: true };
+    return {
+      canReproduce: false,
+      policyGated: true,
+      harvestThresholdPolicyActive,
+      harvestThresholdNearThreshold
+    };
   }
 
   const minPrimaryFraction = config.reproductionMinPrimaryFraction;
   const minSecondaryFraction = config.reproductionMinSecondaryFraction;
 
   if (minPrimaryFraction <= 0 && minSecondaryFraction <= 0) {
-    return { canReproduce: true, policyGated: false };
+    return {
+      canReproduce: true,
+      policyGated: false,
+      harvestThresholdPolicyActive,
+      harvestThresholdNearThreshold
+    };
   }
 
   const pools = getAgentEnergyPools(agent);
   if (pools.total <= 0) {
-    return { canReproduce: false, policyGated: false };
+    return {
+      canReproduce: false,
+      policyGated: false,
+      harvestThresholdPolicyActive,
+      harvestThresholdNearThreshold
+    };
   }
 
   const primaryFraction = pools.primary / pools.total;
@@ -155,7 +187,9 @@ function evaluateReproductionEligibility(
 
   return {
     canReproduce: primaryFraction >= minPrimaryFraction && secondaryFraction >= minSecondaryFraction,
-    policyGated: false
+    policyGated: false,
+    harvestThresholdPolicyActive,
+    harvestThresholdNearThreshold
   };
 }
 
@@ -182,7 +216,10 @@ export function runReproductionPhase({
   const policyGatedAgentIds = new Set<number>();
   const decisionStats: ReproductionDecisionStats = {
     evaluated: 0,
-    policyGated: 0
+    policyGated: 0,
+    harvestThresholdPolicyActive: 0,
+    suppressedByHarvestThreshold: 0,
+    harvestThresholdNearThreshold: 0
   };
   for (const agent of [...agents]) {
     if (!isAlive(agent.id)) {
@@ -191,6 +228,9 @@ export function runReproductionPhase({
     const reproductionDecision = evaluateReproductionEligibility(agent, config);
     decisionStats.evaluated += 1;
     decisionStats.policyGated += Number(reproductionDecision.policyGated);
+    decisionStats.harvestThresholdPolicyActive += Number(reproductionDecision.harvestThresholdPolicyActive);
+    decisionStats.suppressedByHarvestThreshold += Number(reproductionDecision.policyGated);
+    decisionStats.harvestThresholdNearThreshold += Number(reproductionDecision.harvestThresholdNearThreshold);
     if (reproductionDecision.policyGated) {
       policyGatedAgentIds.add(agent.id);
     }

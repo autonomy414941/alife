@@ -6,6 +6,7 @@ export const INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD = 'movement_energy
 export const INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST = 'movement_min_recent_harvest';
 export const INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE = 'harvest_secondary_preference';
 export const DEFAULT_HARVEST_SECONDARY_PREFERENCE = 0.5;
+export const POLICY_NEAR_THRESHOLD_MARGIN = 1;
 
 export interface BehavioralStateCarrier {
   policyState?: ReadonlyMap<string, number>;
@@ -225,6 +226,14 @@ export function isActivePolicyParameter(
   }
 
   return (policyState.get(key) ?? 0) > 0;
+}
+
+export function isNearPolicyThreshold(
+  value: number,
+  threshold: number,
+  margin = POLICY_NEAR_THRESHOLD_MARGIN
+): boolean {
+  return threshold > 0 && Math.abs(value - threshold) <= Math.max(0, margin);
 }
 
 function clampPolicyParameterValue(key: string, value: number): number {
