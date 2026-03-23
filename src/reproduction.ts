@@ -2,7 +2,7 @@ import { Agent, Genome, GenomeV2 } from './types';
 
 export type LineageOccupancyGrid = Map<number, number[][]>;
 
-export type SettlementAgent = Pick<Agent, 'genome' | 'genomeV2' | 'lineage' | 'species' | 'x' | 'y'>;
+export type SettlementAgent = Pick<Agent, 'genome' | 'genomeV2' | 'lineage' | 'species' | 'x' | 'y' | 'policyState'>;
 
 export interface SettlementPosition {
   x: number;

@@ -38,6 +38,7 @@
     "study:policy-fitness-surface-panel": "tsx src/policy-fitness-surface-panel.ts",
     "study:policy-fitness-threshold-regime-panel": "tsx src/policy-fitness-threshold-regime-panel.ts",
     "study:behavioral-harvest-allocation-smoke": "tsx src/behavioral-harvest-allocation-smoke.ts",
+    "study:behavioral-harvest-navigation-smoke": "tsx src/behavioral-harvest-navigation-smoke.ts",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-smoke": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-smoke-study.ts",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-horizon": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-horizon-study.ts",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-review": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-review.ts",

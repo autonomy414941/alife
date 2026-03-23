@@ -42,9 +42,10 @@ export function resolveResourceHarvestShares(
 export function combinedResourceAvailability(
   primaryAvailable: number,
   secondaryAvailable: number,
-  genome: Genome
+  genome: Genome,
+  secondaryPreferenceShare?: number
 ): number {
-  const { primaryShare, secondaryShare } = resolveResourceHarvestShares(genome);
+  const { primaryShare, secondaryShare } = resolveResourceHarvestShares(genome, secondaryPreferenceShare);
   return Math.max(0, primaryAvailable) * primaryShare + Math.max(0, secondaryAvailable) * secondaryShare;
 }
 

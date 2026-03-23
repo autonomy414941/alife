@@ -420,6 +420,58 @@ describe('LifeSimulation', () => {
     expect(agent.x).toBeGreaterThan(0);
   });
 
+  it('shifts movement toward secondary-rich cells when harvest policy is enabled', () => {
+    const createSimulation = (policyState?: Map<string, number>) => {
+      const sim = new LifeSimulation({
+        seed: 212,
+        config: {
+          width: 3,
+          height: 1,
+          maxResource: 10,
+          maxResource2: 10,
+          resourceRegen: 0,
+          resource2Regen: 0,
+          habitatPreferenceStrength: 0,
+          dispersalPressure: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 0,
+          reproduceProbability: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 1,
+            y: 0,
+            energy: 10,
+            genome: { metabolism: 1, harvest: 2, aggression: 0.5, harvestEfficiency2: 1 },
+            policyState
+          }
+        ]
+      });
+
+      sim.setResource(0, 0, 10);
+      sim.setResource(1, 0, 0);
+      sim.setResource(2, 0, 0);
+      sim.setResource2(0, 0, 0);
+      sim.setResource2(1, 0, 0);
+      sim.setResource2(2, 0, 10);
+
+      return sim;
+    };
+
+    const defaultSim = createSimulation();
+    defaultSim.step();
+
+    const policySim = createSimulation(
+      new Map([[INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 1]])
+    );
+    policySim.step();
+
+    expect(defaultSim.snapshot().agents[0]?.x).toBe(0);
+    expect(policySim.snapshot().agents[0]?.x).toBe(2);
+  });
+
   it('blocks movement when energy is below the energy reserve threshold', () => {
     const policyState = new Map([[INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 15]]);
     const sim = new LifeSimulation({

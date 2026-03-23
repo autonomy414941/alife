@@ -1,0 +1,140 @@
+{
+  "generatedAt": "2026-03-23T00:00:00.000Z",
+  "question": "Does harvest preference change live movement targets once navigation scoring sees the policy-selected diet mix?",
+  "prediction": "If navigation is aligned with harvest preference, secondary-preferring carriers should move into the secondary-rich cell while controls keep favoring the primary-rich cell.",
+  "config": {
+    "steps": 1,
+    "seed": 460522,
+    "initialAgents": 16,
+    "policyShare": 0.5,
+    "policySecondaryPreference": 1,
+    "simulation": {
+      "width": 3,
+      "height": 1,
+      "initialAgents": 16,
+      "initialEnergy": 10,
+      "maxResource": 12,
+      "maxResource2": 12,
+      "resourceRegen": 0,
+      "resource2Regen": 0,
+      "habitatPreferenceStrength": 0,
+      "dispersalPressure": 0,
+      "metabolismCostBase": 0,
+      "moveCost": 0,
+      "harvestCap": 0,
+      "reproduceProbability": 0,
+      "maxAge": 100
+    }
+  },
+  "run": {
+    "stepsExecuted": 1,
+    "finalSummary": {
+      "tick": 1,
+      "population": 16,
+      "births": 0,
+      "deaths": 0,
+      "meanEnergy": 9.999999999999998,
+      "meanGenome": {
+        "metabolism": 1,
+        "harvest": 2,
+        "aggression": 0.5
+      },
+      "activeClades": 16,
+      "activeSpecies": 16,
+      "dominantSpeciesShare": 0.0625,
+      "selectionDifferential": {
+        "metabolism": 0,
+        "harvest": 0,
+        "aggression": 0
+      },
+      "cladeExtinctions": 0,
+      "speciesExtinctions": 0,
+      "cumulativeExtinctClades": 0,
+      "cumulativeExtinctSpecies": 0,
+      "policyObservability": {
+        "activation": {
+          "anyPolicyAgentFraction": 0.5,
+          "harvestPolicyAgentFraction": 0.5,
+          "movementPolicyAgentFraction": 0,
+          "reproductionPolicyAgentFraction": 0,
+          "decisionGatedFraction": 0,
+          "harvestDecisionGuidedFraction": 0.5,
+          "movementDecisionGatedFraction": 0,
+          "reproductionDecisionGatedFraction": 0
+        },
+        "movement": {
+          "decisions": 16,
+          "gatedDecisions": 0,
+          "energyReservePolicyActiveDecisions": 0,
+          "recentHarvestPolicyActiveDecisions": 0,
+          "blockedByEnergyReserve": 0,
+          "blockedByRecentHarvest": 0,
+          "energyReserveNearThreshold": 0,
+          "recentHarvestNearThreshold": 0
+        },
+        "reproduction": {
+          "decisions": 16,
+          "gatedDecisions": 0,
+          "harvestThresholdPolicyActiveDecisions": 0,
+          "suppressedByHarvestThreshold": 0,
+          "harvestThresholdNearThreshold": 0
+        },
+        "parameters": [
+          {
+            "key": "reproduction_harvest_threshold",
+            "prevalence": 0,
+            "mean": 0,
+            "variance": 0,
+            "outcomeCorrelation": {
+              "harvestIntake": 0,
+              "survivalRate": 0,
+              "reproductionRate": 0
+            }
+          },
+          {
+            "key": "movement_energy_reserve_threshold",
+            "prevalence": 0,
+            "mean": 0,
+            "variance": 0,
+            "outcomeCorrelation": {
+              "harvestIntake": 0,
+              "survivalRate": 0,
+              "reproductionRate": 0
+            }
+          },
+          {
+            "key": "movement_min_recent_harvest",
+            "prevalence": 0,
+            "mean": 0,
+            "variance": 0,
+            "outcomeCorrelation": {
+              "harvestIntake": 0,
+              "survivalRate": 0,
+              "reproductionRate": 0
+            }
+          },
+          {
+            "key": "harvest_secondary_preference",
+            "prevalence": 0.5,
+            "mean": 1,
+            "variance": 0,
+            "outcomeCorrelation": {
+              "harvestIntake": 0,
+              "survivalRate": 0,
+              "reproductionRate": 0
+            }
+          }
+        ]
+      }
+    },
+    "policyCarrierCount": 8,
+    "controlCount": 8,
+    "policyCarrierSecondaryRichFraction": 1,
+    "controlSecondaryRichFraction": 0,
+    "controlPrimaryRichFraction": 1
+  },
+  "interpretation": {
+    "activated": true,
+    "summary": "Policy carriers reached the secondary-rich cell at 100.0%, while controls reached the primary-rich cell at 100.0%."
+  }
+}

@@ -1,4 +1,7 @@
 import {
+  resolveHarvestSecondaryPreference
+} from './behavioral-control';
+import {
   getCladeHabitatPreference as lookupCladeHabitatPreference,
   getSpeciesHabitatPreference as lookupSpeciesHabitatPreference,
   habitatMatchEfficiency as calculateHabitatMatchEfficiency
@@ -247,7 +250,8 @@ export function resolveSimulationLocalEcologyScore({
       combinedResourceAvailability(
         resources[wrapY(cellY)][wrapX(cellX)],
         resources2[wrapY(cellY)][wrapX(cellX)],
-        agent.genome
+        agent.genome,
+        resolveHarvestSecondaryPreference(agent)
       ),
     habitatMatchEfficiencyAt: (nextAgent, cellX, cellY) =>
       calculateHabitatMatchEfficiency({

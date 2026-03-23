@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE } from '../src/behavioral-control';
 import { createGenomeV2, setTrait } from '../src/genome-v2';
 import { pickOffspringSettlement } from '../src/reproduction-coordinator';
 import { resolveSimulationLocalEcologyScore } from '../src/simulation-offspring';
@@ -122,5 +123,73 @@ describe('simulation offspring settlement', () => {
         disturbanceSettlementOpeningBonusAt: () => 0
       })
     ).toEqual({ x: 1, y: 0 });
+  });
+
+  it('shifts settlement scoring toward policy-aligned secondary-rich cells', () => {
+    const config = resolveSimulationConfig({
+      habitatPreferenceStrength: 0,
+      dispersalPressure: 0,
+      offspringSettlementEcologyScoring: true
+    });
+    const resources = [[10, 0, 0]];
+    const resources2 = [[0, 0, 10]];
+    const speciesHabitatPreference = new Map([[1, 1]]);
+    const cladeHabitatPreference = new Map([[1, 1]]);
+    const wrapX = (x: number) => ((x % 3) + 3) % 3;
+    const wrapY = () => 0;
+    const cellIndex = (x: number) => wrapX(x);
+    const makeSettlement = (policyState?: Map<string, number>) =>
+      pickOffspringSettlement({
+        parent: {
+          lineage: 1,
+          species: 1,
+          x: 1,
+          y: 0,
+          genome: { metabolism: 1, harvest: 2, aggression: 0.5, harvestEfficiency2: 1 },
+          policyState
+        },
+        settlementContext: {
+          occupancy: [[0, 0, 0]],
+          lineageOccupancy: undefined,
+          lineagePenalty: 0
+        },
+        config,
+        currentStepTick: 1,
+        wrapX,
+        wrapY,
+        pickRandomNeighbor: (neighbors) => neighbors[0],
+        randomJitter: () => 0,
+        localEcologyScore: (agent, x, y, occupancy, lineageOccupancy, lineagePenalty, excludedPosition, jitter) =>
+          resolveSimulationLocalEcologyScore({
+            config,
+            tickCount: 0,
+            dispersalRadius: 1,
+            width: 3,
+            cladeHistory: new Map(),
+            resources,
+            resources2,
+            speciesHabitatPreference,
+            cladeHabitatPreference,
+            agent,
+            x,
+            y,
+            occupancy,
+            lineageOccupancy,
+            lineagePenalty,
+            excludedPosition,
+            jitter,
+            effectiveBiomeFertilityAt: () => 1,
+            wrapX,
+            wrapY,
+            cellIndex
+          }),
+        disturbanceSettlementOpeningBonusAt: () => 0
+      });
+
+    expect(makeSettlement()).toEqual({ x: 0, y: 0 });
+    expect(makeSettlement(new Map([[INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 1]]))).toEqual({
+      x: 2,
+      y: 0
+    });
   });
 });
