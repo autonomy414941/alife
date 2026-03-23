@@ -16,6 +16,9 @@ export interface PolicyFitnessRecord extends BehavioralPolicyFlags {
   harvestIntake: number;
   survived: boolean;
   offspringProduced: number;
+  movementPolicyGated: boolean;
+  reproductionPolicyGated: boolean;
+  harvestPolicyGuided: boolean;
   policyValues?: Record<string, number>;
 }
 
@@ -29,6 +32,12 @@ export interface PolicyFitnessGroupMetrics {
   meanHarvestIntake: number;
   survivalRate: number;
   reproductionRate: number;
+}
+
+export interface PolicyFitnessCohortMetrics extends PolicyFitnessGroupMetrics {
+  movementPolicyGatedRate: number;
+  reproductionPolicyGatedRate: number;
+  harvestPolicyGuidedRate: number;
 }
 
 export interface PolicyFitnessDeltaMetrics {
@@ -185,6 +194,59 @@ export function summarizePolicyFitnessGroup(records: ReadonlyArray<PolicyFitness
     survivalRate: survivedTotal / records.length,
     reproductionRate: offspringTotal / records.length
   };
+}
+
+export function summarizePolicyFitnessCohort(
+  records: ReadonlyArray<PolicyFitnessRecord>
+): PolicyFitnessCohortMetrics {
+  const base = summarizePolicyFitnessGroup(records);
+  if (records.length === 0) {
+    return {
+      ...base,
+      movementPolicyGatedRate: 0,
+      reproductionPolicyGatedRate: 0,
+      harvestPolicyGuidedRate: 0
+    };
+  }
+
+  let movementPolicyGated = 0;
+  let reproductionPolicyGated = 0;
+  let harvestPolicyGuided = 0;
+  for (const record of records) {
+    movementPolicyGated += Number(record.movementPolicyGated);
+    reproductionPolicyGated += Number(record.reproductionPolicyGated);
+    harvestPolicyGuided += Number(record.harvestPolicyGuided);
+  }
+
+  return {
+    ...base,
+    movementPolicyGatedRate: movementPolicyGated / records.length,
+    reproductionPolicyGatedRate: reproductionPolicyGated / records.length,
+    harvestPolicyGuidedRate: harvestPolicyGuided / records.length
+  };
+}
+
+export function analyzePolicyFitnessComparison(
+  records: ReadonlyArray<PolicyFitnessRecord>,
+  isPolicyPositive: (record: PolicyFitnessRecord) => boolean,
+  isPolicyNegative: (record: PolicyFitnessRecord) => boolean
+): PolicyFitnessAnalysis {
+  const selected: PolicyFitnessRecord[] = [];
+
+  for (const record of records) {
+    const positive = isPolicyPositive(record);
+    const negative = isPolicyNegative(record);
+    if (!positive && !negative) {
+      continue;
+    }
+
+    selected.push({
+      ...record,
+      hasAnyPolicy: positive
+    });
+  }
+
+  return analyzePolicyFitnessRecords(selected);
 }
 
 function weightedMean(values: ReadonlyArray<readonly [number, number]>): number {

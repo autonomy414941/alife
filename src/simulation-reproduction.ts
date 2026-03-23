@@ -68,6 +68,7 @@ interface RunReproductionPhaseResult {
   offspring: Agent[];
   founderOccupancy: number[][] | undefined;
   birthsByParentId: Map<number, number>;
+  policyGatedAgentIds: Set<number>;
   decisionStats: ReproductionDecisionStats;
 }
 
@@ -178,6 +179,7 @@ export function runReproductionPhase({
 
   const offspring: Agent[] = [];
   const birthsByParentId = new Map<number, number>();
+  const policyGatedAgentIds = new Set<number>();
   const decisionStats: ReproductionDecisionStats = {
     evaluated: 0,
     policyGated: 0
@@ -189,6 +191,9 @@ export function runReproductionPhase({
     const reproductionDecision = evaluateReproductionEligibility(agent, config);
     decisionStats.evaluated += 1;
     decisionStats.policyGated += Number(reproductionDecision.policyGated);
+    if (reproductionDecision.policyGated) {
+      policyGatedAgentIds.add(agent.id);
+    }
     if (!reproductionDecision.canReproduce || randomFloat() >= config.reproduceProbability) {
       continue;
     }
@@ -208,6 +213,7 @@ export function runReproductionPhase({
     offspring,
     founderOccupancy: offspring.length === 0 ? undefined : buildOccupancyGrid([...agents, ...offspring]),
     birthsByParentId,
+    policyGatedAgentIds,
     decisionStats
   };
 }

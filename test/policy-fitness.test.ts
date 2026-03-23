@@ -6,7 +6,12 @@ import {
 } from '../src/behavioral-control';
 import { runBehavioralPolicyFitnessPilot } from '../src/behavioral-policy-fitness-pilot';
 import { LifeSimulation } from '../src/simulation';
-import { analyzePolicyFitnessRecords, PolicyFitnessRecord } from '../src/policy-fitness';
+import {
+  analyzePolicyFitnessComparison,
+  analyzePolicyFitnessRecords,
+  PolicyFitnessRecord,
+  summarizePolicyFitnessCohort
+} from '../src/policy-fitness';
 
 describe('policy fitness', () => {
   it('records per-step harvest, survival, and reproduction for policy-bearing agents', () => {
@@ -54,6 +59,9 @@ describe('policy fitness', () => {
       hasHarvestPolicy: false,
       hasMovementPolicy: true,
       hasReproductionPolicy: true,
+      movementPolicyGated: true,
+      reproductionPolicyGated: false,
+      harvestPolicyGuided: false,
       survived: true,
       offspringProduced: 1
     });
@@ -69,9 +77,14 @@ describe('policy fitness', () => {
         agentId: 1,
         fertilityBin: 0,
         crowdingBin: 0,
+        ageBin: 0,
+        disturbancePhase: 1,
         harvestIntake: 1.4,
         survived: true,
         offspringProduced: 1,
+        movementPolicyGated: true,
+        reproductionPolicyGated: false,
+        harvestPolicyGuided: false,
         hasAnyPolicy: true,
         hasHarvestPolicy: false,
         hasMovementPolicy: true,
@@ -82,9 +95,14 @@ describe('policy fitness', () => {
         agentId: 2,
         fertilityBin: 0,
         crowdingBin: 0,
+        ageBin: 0,
+        disturbancePhase: 1,
         harvestIntake: 0.9,
         survived: false,
         offspringProduced: 0,
+        movementPolicyGated: false,
+        reproductionPolicyGated: false,
+        harvestPolicyGuided: false,
         hasAnyPolicy: false,
         hasHarvestPolicy: false,
         hasMovementPolicy: false,
@@ -95,9 +113,14 @@ describe('policy fitness', () => {
         agentId: 3,
         fertilityBin: 1,
         crowdingBin: 2,
+        ageBin: 1,
+        disturbancePhase: 0,
         harvestIntake: 1.1,
         survived: true,
         offspringProduced: 0,
+        movementPolicyGated: false,
+        reproductionPolicyGated: true,
+        harvestPolicyGuided: false,
         hasAnyPolicy: true,
         hasHarvestPolicy: false,
         hasMovementPolicy: true,
@@ -108,9 +131,14 @@ describe('policy fitness', () => {
         agentId: 4,
         fertilityBin: 1,
         crowdingBin: 2,
+        ageBin: 1,
+        disturbancePhase: 0,
         harvestIntake: 0.7,
         survived: true,
         offspringProduced: 0,
+        movementPolicyGated: false,
+        reproductionPolicyGated: false,
+        harvestPolicyGuided: false,
         hasAnyPolicy: false,
         hasHarvestPolicy: false,
         hasMovementPolicy: false,
@@ -126,6 +154,123 @@ describe('policy fitness', () => {
     expect(analysis.aggregate.weightedHarvestAdvantage).toBeCloseTo(0.45, 10);
     expect(analysis.aggregate.weightedSurvivalAdvantage).toBeCloseTo(0.5, 10);
     expect(analysis.aggregate.weightedReproductionAdvantage).toBeCloseTo(0.5, 10);
+  });
+
+  it('summarizes cohort-specific gate and guidance rates', () => {
+    const records: PolicyFitnessRecord[] = [
+      {
+        tick: 1,
+        agentId: 1,
+        fertilityBin: 0,
+        crowdingBin: 0,
+        ageBin: 0,
+        disturbancePhase: 1,
+        harvestIntake: 1.2,
+        survived: true,
+        offspringProduced: 1,
+        movementPolicyGated: true,
+        reproductionPolicyGated: false,
+        harvestPolicyGuided: true,
+        hasAnyPolicy: true,
+        hasHarvestPolicy: true,
+        hasMovementPolicy: true,
+        hasReproductionPolicy: false
+      },
+      {
+        tick: 1,
+        agentId: 2,
+        fertilityBin: 0,
+        crowdingBin: 0,
+        ageBin: 0,
+        disturbancePhase: 1,
+        harvestIntake: 0.8,
+        survived: false,
+        offspringProduced: 0,
+        movementPolicyGated: false,
+        reproductionPolicyGated: true,
+        harvestPolicyGuided: false,
+        hasAnyPolicy: true,
+        hasHarvestPolicy: false,
+        hasMovementPolicy: false,
+        hasReproductionPolicy: true
+      }
+    ];
+
+    const summary = summarizePolicyFitnessCohort(records);
+
+    expect(summary.exposures).toBe(2);
+    expect(summary.movementPolicyGatedRate).toBeCloseTo(0.5, 10);
+    expect(summary.reproductionPolicyGatedRate).toBeCloseTo(0.5, 10);
+    expect(summary.harvestPolicyGuidedRate).toBeCloseTo(0.5, 10);
+  });
+
+  it('can compare a selected policy cohort against controls', () => {
+    const records: PolicyFitnessRecord[] = [
+      {
+        tick: 1,
+        agentId: 1,
+        fertilityBin: 0,
+        crowdingBin: 0,
+        ageBin: 0,
+        disturbancePhase: 1,
+        harvestIntake: 1.2,
+        survived: true,
+        offspringProduced: 0,
+        movementPolicyGated: true,
+        reproductionPolicyGated: false,
+        harvestPolicyGuided: false,
+        hasAnyPolicy: true,
+        hasHarvestPolicy: false,
+        hasMovementPolicy: true,
+        hasReproductionPolicy: false
+      },
+      {
+        tick: 1,
+        agentId: 2,
+        fertilityBin: 0,
+        crowdingBin: 0,
+        ageBin: 0,
+        disturbancePhase: 1,
+        harvestIntake: 1.1,
+        survived: true,
+        offspringProduced: 1,
+        movementPolicyGated: false,
+        reproductionPolicyGated: false,
+        harvestPolicyGuided: false,
+        hasAnyPolicy: true,
+        hasHarvestPolicy: false,
+        hasMovementPolicy: false,
+        hasReproductionPolicy: true
+      },
+      {
+        tick: 1,
+        agentId: 3,
+        fertilityBin: 0,
+        crowdingBin: 0,
+        ageBin: 0,
+        disturbancePhase: 1,
+        harvestIntake: 0.7,
+        survived: false,
+        offspringProduced: 0,
+        movementPolicyGated: false,
+        reproductionPolicyGated: false,
+        harvestPolicyGuided: false,
+        hasAnyPolicy: false,
+        hasHarvestPolicy: false,
+        hasMovementPolicy: false,
+        hasReproductionPolicy: false
+      }
+    ];
+
+    const analysis = analyzePolicyFitnessComparison(
+      records,
+      (record) => record.hasMovementPolicy && !record.hasReproductionPolicy,
+      (record) => !record.hasAnyPolicy
+    );
+
+    expect(analysis.aggregate.policyPositiveExposures).toBe(1);
+    expect(analysis.aggregate.policyNegativeExposures).toBe(1);
+    expect(analysis.aggregate.weightedHarvestAdvantage).toBeCloseTo(0.5, 10);
   });
 
   it('builds a compact pilot artifact with matched-bin comparisons', () => {

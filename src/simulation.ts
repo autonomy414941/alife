@@ -326,7 +326,13 @@ export class LifeSimulation {
 
     this.resolveEncounters();
 
-    const { offspring, founderOccupancy, birthsByParentId, decisionStats: reproductionDecisionStats } =
+    const {
+      offspring,
+      founderOccupancy,
+      birthsByParentId,
+      policyGatedAgentIds,
+      decisionStats: reproductionDecisionStats
+    } =
       runReproductionPhase({
       agents: this.agents,
       config: this.config,
@@ -350,6 +356,7 @@ export class LifeSimulation {
     policyDecisionStats.reproductionDecisions = reproductionDecisionStats.evaluated;
     policyDecisionStats.reproductionPolicyGated = reproductionDecisionStats.policyGated;
     this.recordPolicyFitnessBirths(policyFitnessByAgentId, birthsByParentId);
+    this.recordPolicyFitnessReproductionGating(policyFitnessByAgentId, policyGatedAgentIds);
     const births = offspring.length;
     this.agents.push(...offspring);
 
@@ -1491,6 +1498,11 @@ export class LifeSimulation {
     setTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST, totalHarvest);
     const policyFitness = policyFitnessByAgentId.get(agent.id);
     if (policyFitness) {
+      policyFitness.movementPolicyGated = destination.policyGated;
+      policyFitness.harvestPolicyGuided =
+        harvestSecondaryPreference !== undefined &&
+        (Math.abs(harvest.primaryShare - defaultHarvestShares.primaryShare) > 1e-9 ||
+          Math.abs(harvest.secondaryShare - defaultHarvestShares.secondaryShare) > 1e-9);
       policyFitness.harvestIntake = totalHarvest;
 
       const decisionTimeFertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, this.tickCount + 1);
@@ -1622,6 +1634,9 @@ export class LifeSimulation {
         harvestIntake: 0,
         survived: false,
         offspringProduced: 0,
+        movementPolicyGated: false,
+        reproductionPolicyGated: false,
+        harvestPolicyGuided: false,
         policyValues: Object.fromEntries(
           POLICY_PARAMETER_KEYS.map((key) => [key, Math.max(0, agent.policyState?.get(key) ?? 0)])
         ),
@@ -1640,6 +1655,18 @@ export class LifeSimulation {
       const record = policyFitnessByAgentId.get(agentId);
       if (record) {
         record.offspringProduced += births;
+      }
+    }
+  }
+
+  private recordPolicyFitnessReproductionGating(
+    policyFitnessByAgentId: Map<number, PolicyFitnessRecord>,
+    policyGatedAgentIds: ReadonlySet<number>
+  ): void {
+    for (const agentId of policyGatedAgentIds) {
+      const record = policyFitnessByAgentId.get(agentId);
+      if (record) {
+        record.reproductionPolicyGated = true;
       }
     }
   }

@@ -35,6 +35,7 @@
     "study:resource-metabolism-fungibility": "tsx src/resource-metabolism-fungibility-diagnostics.ts",
     "study:history-memory-scaling": "NODE_OPTIONS=--expose-gc tsx src/history-memory-scaling-study.ts",
     "study:behavioral-policy-fitness": "tsx src/behavioral-policy-fitness-pilot.ts",
+    "study:policy-fitness-surface-panel": "tsx src/policy-fitness-surface-panel.ts",
     "study:behavioral-harvest-allocation-smoke": "tsx src/behavioral-harvest-allocation-smoke.ts",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-smoke": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-smoke-study.ts",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-horizon": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-horizon-study.ts",

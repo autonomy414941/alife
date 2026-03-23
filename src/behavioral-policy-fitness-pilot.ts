@@ -67,24 +67,24 @@ export interface BehavioralPolicyFitnessPilotArtifact {
   };
 }
 
-const POLICY_SHARE = 0.5;
-const INITIAL_AGENTS = 48;
-const DEFAULT_RUNS = 6;
-const DEFAULT_STEPS = 300;
-const DEFAULT_SEED = 90210;
-const DEFAULT_SEED_STEP = 37;
-const DEFAULT_STOP_WHEN_EXTINCT = true;
+export const BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_SHARE = 0.5;
+export const BEHAVIORAL_POLICY_FITNESS_PILOT_INITIAL_AGENTS = 48;
+export const BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_RUNS = 6;
+export const BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_STEPS = 300;
+export const BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_SEED = 90210;
+export const BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_SEED_STEP = 37;
+export const BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_STOP_WHEN_EXTINCT = true;
 
-const POLICY_THRESHOLDS = {
+export const BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS = {
   reproductionHarvestThreshold: 0.6,
   movementEnergyReserveThreshold: 8,
   movementMinRecentHarvest: 0.5
 } as const;
 
-const PILOT_SIMULATION_CONFIG: Partial<SimulationConfig> = {
+export const BEHAVIORAL_POLICY_FITNESS_PILOT_SIMULATION_CONFIG: Partial<SimulationConfig> = {
   width: 20,
   height: 20,
-  initialAgents: INITIAL_AGENTS,
+  initialAgents: BEHAVIORAL_POLICY_FITNESS_PILOT_INITIAL_AGENTS,
   initialEnergy: 12,
   resourceRegen: 0.7,
   maxResource: 8,
@@ -105,11 +105,11 @@ const PILOT_SIMULATION_CONFIG: Partial<SimulationConfig> = {
 export function runBehavioralPolicyFitnessPilot(
   input: BehavioralPolicyFitnessPilotInput = {}
 ): BehavioralPolicyFitnessPilotArtifact {
-  const runs = input.runs ?? DEFAULT_RUNS;
-  const steps = input.steps ?? DEFAULT_STEPS;
-  const seed = input.seed ?? DEFAULT_SEED;
-  const seedStep = input.seedStep ?? DEFAULT_SEED_STEP;
-  const stopWhenExtinct = input.stopWhenExtinct ?? DEFAULT_STOP_WHEN_EXTINCT;
+  const runs = input.runs ?? BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_RUNS;
+  const steps = input.steps ?? BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_STEPS;
+  const seed = input.seed ?? BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_SEED;
+  const seedStep = input.seedStep ?? BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_SEED_STEP;
+  const stopWhenExtinct = input.stopWhenExtinct ?? BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_STOP_WHEN_EXTINCT;
   const runSummaries: BehavioralPolicyFitnessPilotRunSummary[] = [];
   const allRecords: PolicyFitnessRecord[] = [];
 
@@ -117,8 +117,8 @@ export function runBehavioralPolicyFitnessPilot(
     const runSeed = seed + run * seedStep;
     const simulation = new LifeSimulation({
       seed: runSeed,
-      config: PILOT_SIMULATION_CONFIG,
-      initialAgents: buildPilotInitialAgents(runSeed)
+      config: BEHAVIORAL_POLICY_FITNESS_PILOT_SIMULATION_CONFIG,
+      initialAgents: buildBehavioralPolicyFitnessPilotInitialAgents(runSeed)
     });
     const series = simulation.runWithPolicyFitness(steps, stopWhenExtinct);
     const finalSummary = series.summaries[series.summaries.length - 1];
@@ -165,10 +165,10 @@ export function runBehavioralPolicyFitnessPilot(
       seed,
       seedStep,
       stopWhenExtinct,
-      initialAgents: INITIAL_AGENTS,
-      policyShare: POLICY_SHARE,
-      policyThresholds: { ...POLICY_THRESHOLDS },
-      simulation: { ...PILOT_SIMULATION_CONFIG }
+      initialAgents: BEHAVIORAL_POLICY_FITNESS_PILOT_INITIAL_AGENTS,
+      policyShare: BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_SHARE,
+      policyThresholds: { ...BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS },
+      simulation: { ...BEHAVIORAL_POLICY_FITNESS_PILOT_SIMULATION_CONFIG }
     },
     runs: runSummaries,
     overall,
@@ -181,10 +181,10 @@ export function runBehavioralPolicyFitnessPilotCli(args: string[]): void {
   runGeneratedAtStudyCli(args, ({ generatedAt }) => runBehavioralPolicyFitnessPilot({ generatedAt }));
 }
 
-function buildPilotInitialAgents(seed: number): AgentSeed[] {
+export function buildBehavioralPolicyFitnessPilotInitialAgents(seed: number): AgentSeed[] {
   const seeder = new LifeSimulation({
     seed,
-    config: PILOT_SIMULATION_CONFIG
+    config: BEHAVIORAL_POLICY_FITNESS_PILOT_SIMULATION_CONFIG
   });
   const snapshot = seeder.snapshot();
   const agents: AgentSeed[] = snapshot.agents.map((agent) => ({
@@ -201,15 +201,24 @@ function buildPilotInitialAgents(seed: number): AgentSeed[] {
     policyState: undefined,
     transientState: undefined
   }));
-  const policyCount = Math.round(agents.length * POLICY_SHARE);
+  const policyCount = Math.round(agents.length * BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_SHARE);
   const rng = new Rng(seed + 10_001);
   const shuffledIndices = rng.shuffle(Array.from({ length: agents.length }, (_, index) => index));
 
   for (const index of shuffledIndices.slice(0, policyCount)) {
     agents[index].policyState = new Map([
-      [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, POLICY_THRESHOLDS.reproductionHarvestThreshold],
-      [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, POLICY_THRESHOLDS.movementEnergyReserveThreshold],
-      [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, POLICY_THRESHOLDS.movementMinRecentHarvest]
+      [
+        INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
+        BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS.reproductionHarvestThreshold
+      ],
+      [
+        INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
+        BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS.movementEnergyReserveThreshold
+      ],
+      [
+        INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
+        BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS.movementMinRecentHarvest
+      ]
     ]);
   }
 

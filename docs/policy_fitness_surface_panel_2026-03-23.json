@@ -1,0 +1,1342 @@
+{
+  "generatedAt": "2026-03-23T00:00:00.000Z",
+  "question": "Which isolated behavioral policy surface is actually harmful or helpful under the refined March 22 policy-fitness attribution surface once movement, reproduction, and harvest policies are separated?",
+  "prediction": "If one surface dominates the current detriment, its matched-bin harvest and/or survival deltas should stay negative in isolation; if the harm is combinatorial, the combined arm should underperform more than any single-policy arm.",
+  "config": {
+    "runs": 2,
+    "steps": 120,
+    "seed": 90210,
+    "seedStep": 37,
+    "stopWhenExtinct": true,
+    "initialAgents": 48,
+    "policyShare": 0.5,
+    "harvestSecondaryPreference": 0.85,
+    "simulation": {
+      "width": 20,
+      "height": 20,
+      "initialAgents": 48,
+      "initialEnergy": 12,
+      "resourceRegen": 0.7,
+      "maxResource": 8,
+      "metabolismCostBase": 0.25,
+      "moveCost": 0.15,
+      "harvestCap": 2.5,
+      "reproduceThreshold": 20,
+      "reproduceProbability": 0.35,
+      "offspringEnergyFraction": 0.45,
+      "mutationAmount": 0.2,
+      "policyMutationProbability": 0.12,
+      "policyMutationMagnitude": 0.15,
+      "biomeBands": 4,
+      "biomeContrast": 0.45,
+      "maxAge": 120,
+      "maxResource2": 8,
+      "resource2Regen": 0.7
+    }
+  },
+  "arms": [
+    {
+      "arm": "movement_only",
+      "label": "Movement Only",
+      "activePolicyKeys": [
+        "movement_energy_reserve_threshold",
+        "movement_min_recent_harvest"
+      ],
+      "policyValues": {
+        "movement_energy_reserve_threshold": 8,
+        "movement_min_recent_harvest": 0.5
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "finalSummary": {
+            "tick": 120,
+            "population": 2661,
+            "births": 47,
+            "deaths": 22,
+            "meanEnergy": 7.2307122687502545,
+            "meanGenome": {
+              "metabolism": 0.6917303308680661,
+              "harvest": 1.9298771742631244,
+              "aggression": 0.961565397359827
+            },
+            "activeClades": 24,
+            "activeSpecies": 1011,
+            "dominantSpeciesShare": 0.059000375798571966,
+            "selectionDifferential": {
+              "metabolism": -0.018928353360689987,
+              "harvest": -0.01863701909255866,
+              "aggression": 0.011925877691126296
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 6,
+            "cumulativeExtinctClades": 24,
+            "cumulativeExtinctSpecies": 840,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.33070274332957533,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.33070274332957533,
+                "reproductionPolicyAgentFraction": 0,
+                "decisionGatedFraction": 0.15608263198163733,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.31216526396327465,
+                "reproductionDecisionGatedFraction": 0
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.33070274332957533,
+                  "mean": 7.97624658443697,
+                  "variance": 0.0050221272337773355,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.0850635914813258,
+                    "survivalRate": -0.03328805974404783,
+                    "reproductionRate": 0.02094682465355601
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.33070274332957533,
+                  "mean": 0.48676056990683153,
+                  "variance": 0.004333088917095365,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.08291316068284268,
+                    "survivalRate": -0.03752685941122483,
+                    "reproductionRate": 0.028388945197980305
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "armMetrics": {
+            "exposures": 70295,
+            "meanHarvestIntake": 0.29745050522234834,
+            "survivalRate": 0.9878654242833772,
+            "reproductionRate": 0.02431182872181521,
+            "movementPolicyGatedRate": 0.8634895796287075,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 122144,
+            "meanHarvestIntake": 0.3925885574064041,
+            "survivalRate": 0.992173172648677,
+            "reproductionRate": 0.0222114880796437,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.10252402735162006,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.0012161334238758592
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "finalSummary": {
+            "tick": 120,
+            "population": 2833,
+            "births": 41,
+            "deaths": 30,
+            "meanEnergy": 7.3816728900578665,
+            "meanGenome": {
+              "metabolism": 0.6190494544833084,
+              "harvest": 1.7607611518981174,
+              "aggression": 0.9620823220871881
+            },
+            "activeClades": 26,
+            "activeSpecies": 1089,
+            "dominantSpeciesShare": 0.04518178609248147,
+            "selectionDifferential": {
+              "metabolism": -0.021110328604964423,
+              "harvest": 0.012548406258295453,
+              "aggression": 0.012306497460055854
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 17,
+            "cumulativeExtinctClades": 22,
+            "cumulativeExtinctSpecies": 888,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.8111542534415813,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.8111542534415813,
+                "reproductionPolicyAgentFraction": 0,
+                "decisionGatedFraction": 0.38055157593123207,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.7611031518624641,
+                "reproductionDecisionGatedFraction": 0
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.8111542534415813,
+                  "mean": 7.991647998805737,
+                  "variance": 0.005199204312437445,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.1048218729166391,
+                    "survivalRate": 0.029171246856051165,
+                    "reproductionRate": -0.001731603759984188
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.8111542534415813,
+                  "mean": 0.4940034623901917,
+                  "variance": 0.0032934531135069864,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.1066156222922896,
+                    "survivalRate": 0.027519233187852796,
+                    "reproductionRate": 0.0009770547995460086
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "armMetrics": {
+            "exposures": 140804,
+            "meanHarvestIntake": 0.2740999340874892,
+            "survivalRate": 0.9908951450242891,
+            "reproductionRate": 0.02525496434760376,
+            "movementPolicyGatedRate": 0.8769566205505526,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 57711,
+            "meanHarvestIntake": 0.5323147279810158,
+            "survivalRate": 0.9887889657084438,
+            "reproductionRate": 0.0200654987783958,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.273850780332637,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.0038812444366255238
+        }
+      ],
+      "overall": {
+        "armMetrics": {
+          "exposures": 211099,
+          "meanHarvestIntake": 0.2818755673113632,
+          "survivalRate": 0.9898862618960772,
+          "reproductionRate": 0.024940904504521574,
+          "movementPolicyGatedRate": 0.8724721576132526,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 179855,
+          "meanHarvestIntake": 0.4374232132682371,
+          "survivalRate": 0.9910872647410414,
+          "reproductionRate": 0.02152289344193934,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 211099,
+          "policyNegativeExposures": 179855,
+          "weightedHarvestAdvantage": -0.16654590454730647,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.002468512402780358
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 1
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "summary": "Movement Only vs control: matched bins 7, harvest -0.1665, survival +0.0000, reproduction +0.0025."
+      }
+    },
+    {
+      "arm": "reproduction_only",
+      "label": "Reproduction Only",
+      "activePolicyKeys": [
+        "reproduction_harvest_threshold"
+      ],
+      "policyValues": {
+        "reproduction_harvest_threshold": 0.6
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "finalSummary": {
+            "tick": 120,
+            "population": 1924,
+            "births": 22,
+            "deaths": 20,
+            "meanEnergy": 11.416932275966394,
+            "meanGenome": {
+              "metabolism": 0.8630382371719293,
+              "harvest": 1.8536258082210748,
+              "aggression": 0.955441189833008
+            },
+            "activeClades": 22,
+            "activeSpecies": 748,
+            "dominantSpeciesShare": 0.0550935550935551,
+            "selectionDifferential": {
+              "metabolism": 0.09675438904985711,
+              "harvest": 0.11184265839915497,
+              "aggression": 0.0244489910671829
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 10,
+            "cumulativeExtinctClades": 26,
+            "cumulativeExtinctSpecies": 617,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.42255717255717257,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0,
+                "reproductionPolicyAgentFraction": 0.42255717255717257,
+                "decisionGatedFraction": 0.04048370136698212,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0,
+                "reproductionDecisionGatedFraction": 0.08096740273396424
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.42255717255717257,
+                  "mean": 0.606221047047759,
+                  "variance": 0.0027102085070226747,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0.021824097375567116,
+                    "survivalRate": -0.009102614705433925,
+                    "reproductionRate": 0.025754032761680284
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "armMetrics": {
+            "exposures": 61936,
+            "meanHarvestIntake": 0.47900011996333763,
+            "survivalRate": 0.9927990183415139,
+            "reproductionRate": 0.019939938000516664,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0.14587638853009557,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 99177,
+            "meanHarvestIntake": 0.39517288894817293,
+            "survivalRate": 0.9910664771065872,
+            "reproductionRate": 0.019893725359710415,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.07570591512275829,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.00033781011267410086
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "finalSummary": {
+            "tick": 120,
+            "population": 1883,
+            "births": 22,
+            "deaths": 10,
+            "meanEnergy": 13.572913629226827,
+            "meanGenome": {
+              "metabolism": 0.729947786642395,
+              "harvest": 1.7246105042617628,
+              "aggression": 0.9500086928595385
+            },
+            "activeClades": 24,
+            "activeSpecies": 773,
+            "dominantSpeciesShare": 0.056293149229952204,
+            "selectionDifferential": {
+              "metabolism": -0.07487271790856898,
+              "harvest": 0.21321243506403853,
+              "aggression": 0.02991824291430456
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 5,
+            "cumulativeExtinctClades": 24,
+            "cumulativeExtinctSpecies": 615,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.6569304301646309,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0,
+                "reproductionPolicyAgentFraction": 0.6569304301646309,
+                "decisionGatedFraction": 0.054525919957023904,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0,
+                "reproductionDecisionGatedFraction": 0.1090811391724879
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.6569304301646309,
+                  "mean": 0.6313419183259232,
+                  "variance": 0.005088906679845523,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0.002402333399622758,
+                    "survivalRate": 0.052851834247965315,
+                    "reproductionRate": 0.03925296069224411
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "armMetrics": {
+            "exposures": 81930,
+            "meanHarvestIntake": 0.46834702363519276,
+            "survivalRate": 0.9941779567923837,
+            "reproductionRate": 0.020627364823629927,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0.14851702673013548,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 70084,
+            "meanHarvestIntake": 0.44227167720911686,
+            "survivalRate": 0.988713543747503,
+            "reproductionRate": 0.020161520461160893,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.016416850500922762,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.00037941850358245375
+        }
+      ],
+      "overall": {
+        "armMetrics": {
+          "exposures": 143866,
+          "meanHarvestIntake": 0.4729333065246735,
+          "survivalRate": 0.9935843076195905,
+          "reproductionRate": 0.02033141951538237,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0.14738020102039398,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 169261,
+          "meanHarvestIntake": 0.4146745548752209,
+          "survivalRate": 0.9900922244344533,
+          "reproductionRate": 0.020004608267704907,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 143866,
+          "policyNegativeExposures": 169261,
+          "weightedHarvestAdvantage": 0.047938416010970195,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.00048249657361410533
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 1,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 1
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "summary": "Reproduction Only vs control: matched bins 7, harvest +0.0479, survival +0.0000, reproduction +0.0005."
+      }
+    },
+    {
+      "arm": "harvest_only",
+      "label": "Harvest Only",
+      "activePolicyKeys": [
+        "harvest_secondary_preference"
+      ],
+      "policyValues": {
+        "harvest_secondary_preference": 0.85
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "finalSummary": {
+            "tick": 120,
+            "population": 2463,
+            "births": 36,
+            "deaths": 23,
+            "meanEnergy": 7.2911125064236195,
+            "meanGenome": {
+              "metabolism": 0.7460177039179563,
+              "harvest": 1.8114839787338377,
+              "aggression": 0.9608317682553221
+            },
+            "activeClades": 22,
+            "activeSpecies": 935,
+            "dominantSpeciesShare": 0.04790905399918798,
+            "selectionDifferential": {
+              "metabolism": -0.037421040578082376,
+              "harvest": 0.023004483585847835,
+              "aggression": 0.013542900187734519
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 9,
+            "cumulativeExtinctClades": 26,
+            "cumulativeExtinctSpecies": 821,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.22736500203004467,
+                "harvestPolicyAgentFraction": 0.22736500203004467,
+                "movementPolicyAgentFraction": 0,
+                "reproductionPolicyAgentFraction": 0,
+                "decisionGatedFraction": 0,
+                "harvestDecisionGuidedFraction": 0.22702925422332096,
+                "movementDecisionGatedFraction": 0,
+                "reproductionDecisionGatedFraction": 0
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0.22736500203004467,
+                  "mean": 0.8319586159888902,
+                  "variance": 0.0031390375193404733,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.013398093715144384,
+                    "survivalRate": 0.011640845814726566,
+                    "reproductionRate": 0.005139908652836318
+                  }
+                }
+              ]
+            }
+          },
+          "armMetrics": {
+            "exposures": 51301,
+            "meanHarvestIntake": 0.35397114572120064,
+            "survivalRate": 0.9877195376308454,
+            "reproductionRate": 0.022728601781641683,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0.9877195376308454
+          },
+          "controlMetrics": {
+            "exposures": 135492,
+            "meanHarvestIntake": 0.37097591003558145,
+            "survivalRate": 0.9911286275204441,
+            "reproductionRate": 0.022739349924718804,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.006808141415291816,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.0007325991182231672
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "finalSummary": {
+            "tick": 120,
+            "population": 3006,
+            "births": 50,
+            "deaths": 22,
+            "meanEnergy": 6.868639263244501,
+            "meanGenome": {
+              "metabolism": 0.6153565027167052,
+              "harvest": 1.8113938420392746,
+              "aggression": 0.9567389906118065
+            },
+            "activeClades": 18,
+            "activeSpecies": 1148,
+            "dominantSpeciesShare": 0.1027944111776447,
+            "selectionDifferential": {
+              "metabolism": -0.00588221590536897,
+              "harvest": 0.03389827188663341,
+              "aggression": 0.013774260483337963
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 7,
+            "cumulativeExtinctClades": 30,
+            "cumulativeExtinctSpecies": 816,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.8273453093812375,
+                "harvestPolicyAgentFraction": 0.8273453093812375,
+                "movementPolicyAgentFraction": 0,
+                "reproductionPolicyAgentFraction": 0,
+                "decisionGatedFraction": 0,
+                "harvestDecisionGuidedFraction": 0.8281461434370772,
+                "movementDecisionGatedFraction": 0,
+                "reproductionDecisionGatedFraction": 0
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0.8273453093812375,
+                  "mean": 0.8496974779207419,
+                  "variance": 0.003382020588056368,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.02232275447464608,
+                    "survivalRate": 0.04411672787162022,
+                    "reproductionRate": -0.01604143913011855
+                  }
+                }
+              ]
+            }
+          },
+          "armMetrics": {
+            "exposures": 135594,
+            "meanHarvestIntake": 0.2773035385370267,
+            "survivalRate": 0.9945204065076626,
+            "reproductionRate": 0.023644114046344235,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0.9945204065076626
+          },
+          "controlMetrics": {
+            "exposures": 66680,
+            "meanHarvestIntake": 0.46341222712053515,
+            "survivalRate": 0.9855278944211158,
+            "reproductionRate": 0.021895620875824834,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.19208485022951297,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.001552039286497435
+        }
+      ],
+      "overall": {
+        "armMetrics": {
+          "exposures": 186895,
+          "meanHarvestIntake": 0.29834810856916044,
+          "survivalRate": 0.9926536290430455,
+          "reproductionRate": 0.023392814146980925,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0.9926536290430455
+        },
+        "controlMetrics": {
+          "exposures": 202172,
+          "meanHarvestIntake": 0.4014630874054596,
+          "survivalRate": 0.9892814039530696,
+          "reproductionRate": 0.0224610727499357,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 186895,
+          "policyNegativeExposures": 202172,
+          "weightedHarvestAdvantage": -0.10007757753842793,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.0009613303531744089
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 1
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "summary": "Harvest Only vs control: matched bins 7, harvest -0.1001, survival +0.0000, reproduction +0.0010."
+      }
+    },
+    {
+      "arm": "combined",
+      "label": "Combined",
+      "activePolicyKeys": [
+        "reproduction_harvest_threshold",
+        "movement_energy_reserve_threshold",
+        "movement_min_recent_harvest",
+        "harvest_secondary_preference"
+      ],
+      "policyValues": {
+        "reproduction_harvest_threshold": 0.6,
+        "movement_energy_reserve_threshold": 8,
+        "movement_min_recent_harvest": 0.5,
+        "harvest_secondary_preference": 0.85
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "finalSummary": {
+            "tick": 120,
+            "population": 2439,
+            "births": 32,
+            "deaths": 20,
+            "meanEnergy": 9.21467422668444,
+            "meanGenome": {
+              "metabolism": 0.6962750480197544,
+              "harvest": 1.623009543755319,
+              "aggression": 0.9614127991249066
+            },
+            "activeClades": 22,
+            "activeSpecies": 885,
+            "dominantSpeciesShare": 0.06847068470684707,
+            "selectionDifferential": {
+              "metabolism": 0.09209916520050498,
+              "harvest": 0.011170270054061904,
+              "aggression": 0.01712088286733393
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 9,
+            "cumulativeExtinctClades": 26,
+            "cumulativeExtinctSpecies": 653,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.06068060680606806,
+                "harvestPolicyAgentFraction": 0.06068060680606806,
+                "movementPolicyAgentFraction": 0.06068060680606806,
+                "reproductionPolicyAgentFraction": 0.06068060680606806,
+                "decisionGatedFraction": 0.04257528556593977,
+                "harvestDecisionGuidedFraction": 0.060656418778562524,
+                "movementDecisionGatedFraction": 0.057724252491694356,
+                "reproductionDecisionGatedFraction": 0.027420024927295387
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.06068060680606806,
+                  "mean": 0.575582201618896,
+                  "variance": 0.003782705855903074,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.04128365162762889,
+                    "survivalRate": 0.007756366716482553,
+                    "reproductionRate": 0.0022675769093434585
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.06068060680606806,
+                  "mean": 8.008376938760957,
+                  "variance": 0.0031998695512168713,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.042781247474468535,
+                    "survivalRate": 0.004056558320718965,
+                    "reproductionRate": 0.0011554866380705463
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.06068060680606806,
+                  "mean": 0.484065230636593,
+                  "variance": 0.004003345502991482,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.044795309428319836,
+                    "survivalRate": 0.0015076454379805433,
+                    "reproductionRate": -0.002668158923947366
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0.06068060680606806,
+                  "mean": 0.846372991816825,
+                  "variance": 0.001152057919115441,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.04179773686836965,
+                    "survivalRate": 0.00393504719986953,
+                    "reproductionRate": 0.0018952861238071747
+                  }
+                }
+              ]
+            }
+          },
+          "armMetrics": {
+            "exposures": 21523,
+            "meanHarvestIntake": 0.41965243301454913,
+            "survivalRate": 0.9850857222506156,
+            "reproductionRate": 0.020675556381545324,
+            "movementPolicyGatedRate": 0.7934302838823584,
+            "reproductionPolicyGatedRate": 0.1876597128653069,
+            "harvestPolicyGuidedRate": 0.9850857222506156
+          },
+          "controlMetrics": {
+            "exposures": 156021,
+            "meanHarvestIntake": 0.37823194221611456,
+            "survivalRate": 0.9924753719050641,
+            "reproductionRate": 0.022054723402618878,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.04775501325884476,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0009574860322948728
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "finalSummary": {
+            "tick": 120,
+            "population": 2109,
+            "births": 31,
+            "deaths": 11,
+            "meanEnergy": 11.991728142945998,
+            "meanGenome": {
+              "metabolism": 0.6843388641355641,
+              "harvest": 1.6013391074856151,
+              "aggression": 0.9467826776453787
+            },
+            "activeClades": 25,
+            "activeSpecies": 810,
+            "dominantSpeciesShare": 0.09767662399241346,
+            "selectionDifferential": {
+              "metabolism": -0.026197520601898727,
+              "harvest": 0.17057012416877426,
+              "aggression": 0.029456122834126464
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 3,
+            "cumulativeExtinctClades": 23,
+            "cumulativeExtinctSpecies": 566,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.3565670934091987,
+                "harvestPolicyAgentFraction": 0.3565670934091987,
+                "movementPolicyAgentFraction": 0.3565670934091987,
+                "reproductionPolicyAgentFraction": 0.3565670934091987,
+                "decisionGatedFraction": 0.1936026936026936,
+                "harvestDecisionGuidedFraction": 0.35659287776708376,
+                "movementDecisionGatedFraction": 0.32019230769230766,
+                "reproductionDecisionGatedFraction": 0.06689124157844081
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.3565670934091987,
+                  "mean": 0.5979484691453683,
+                  "variance": 0.0037094226708446684,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.0947790639330681,
+                    "survivalRate": 0.026126789023595946,
+                    "reproductionRate": -0.0018773265955724801
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.3565670934091987,
+                  "mean": 8.026307398731053,
+                  "variance": 0.004139568007212064,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09301278587330276,
+                    "survivalRate": 0.026512420596873604,
+                    "reproductionRate": -0.0002881582997676228
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.3565670934091987,
+                  "mean": 0.5008285132489737,
+                  "variance": 0.0017699585500548743,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09097912580913356,
+                    "survivalRate": 0.028757780895846602,
+                    "reproductionRate": -0.0012014594509587818
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0.3565670934091987,
+                  "mean": 0.8416951624925276,
+                  "variance": 0.001998148119045578,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09192595431189748,
+                    "survivalRate": 0.026095327970149396,
+                    "reproductionRate": 0.0006841467366380805
+                  }
+                }
+              ]
+            }
+          },
+          "armMetrics": {
+            "exposures": 52936,
+            "meanHarvestIntake": 0.35361184086095954,
+            "survivalRate": 0.9927648481184826,
+            "reproductionRate": 0.020987607677195104,
+            "movementPolicyGatedRate": 0.8051231675986097,
+            "reproductionPolicyGatedRate": 0.1804443101103219,
+            "harvestPolicyGuidedRate": 0.9927648481184826
+          },
+          "controlMetrics": {
+            "exposures": 106738,
+            "meanHarvestIntake": 0.4670112935613273,
+            "survivalRate": 0.9922989001105511,
+            "reproductionRate": 0.020189623189492027,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.12879372736980868,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.0004466449345779103
+        }
+      ],
+      "overall": {
+        "armMetrics": {
+          "exposures": 74459,
+          "meanHarvestIntake": 0.37270142929112166,
+          "survivalRate": 0.9905451322204166,
+          "reproductionRate": 0.02089740662646557,
+          "movementPolicyGatedRate": 0.8017432412468607,
+          "reproductionPolicyGatedRate": 0.1825299829436334,
+          "harvestPolicyGuidedRate": 0.9905451322204166
+        },
+        "controlMetrics": {
+          "exposures": 262759,
+          "meanHarvestIntake": 0.4142959035033946,
+          "survivalRate": 0.9924036855064907,
+          "reproductionRate": 0.021297082117073058,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 74459,
+          "policyNegativeExposures": 262759,
+          "weightedHarvestAdvantage": -0.043661889640060694,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.00044717651591780346
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0.5,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0.5
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "summary": "Combined vs control: matched bins 7, harvest -0.0437, survival +0.0000, reproduction -0.0004."
+      }
+    }
+  ],
+  "noPolicy": {
+    "arm": "no_policy",
+    "label": "No Policy",
+    "runs": [
+      {
+        "run": 1,
+        "seed": 90210,
+        "stepsExecuted": 120,
+        "extinct": false,
+        "finalSummary": {
+          "tick": 120,
+          "population": 2926,
+          "births": 44,
+          "deaths": 29,
+          "meanEnergy": 7.063625074765536,
+          "meanGenome": {
+            "metabolism": 0.6235691227878031,
+            "harvest": 1.9553617626385607,
+            "aggression": 0.9672204124500624
+          },
+          "activeClades": 19,
+          "activeSpecies": 1078,
+          "dominantSpeciesShare": 0.034518113465481885,
+          "selectionDifferential": {
+            "metabolism": -0.021484052702807288,
+            "harvest": -0.008722415630516123,
+            "aggression": 0.010258109871906895
+          },
+          "cladeExtinctions": 0,
+          "speciesExtinctions": 8,
+          "cumulativeExtinctClades": 29,
+          "cumulativeExtinctSpecies": 775,
+          "policyObservability": {
+            "activation": {
+              "anyPolicyAgentFraction": 0,
+              "harvestPolicyAgentFraction": 0,
+              "movementPolicyAgentFraction": 0,
+              "reproductionPolicyAgentFraction": 0,
+              "decisionGatedFraction": 0,
+              "harvestDecisionGuidedFraction": 0,
+              "movementDecisionGatedFraction": 0,
+              "reproductionDecisionGatedFraction": 0
+            },
+            "parameters": [
+              {
+                "key": "reproduction_harvest_threshold",
+                "prevalence": 0,
+                "mean": 0,
+                "variance": 0,
+                "outcomeCorrelation": {
+                  "harvestIntake": 0,
+                  "survivalRate": 0,
+                  "reproductionRate": 0
+                }
+              },
+              {
+                "key": "movement_energy_reserve_threshold",
+                "prevalence": 0,
+                "mean": 0,
+                "variance": 0,
+                "outcomeCorrelation": {
+                  "harvestIntake": 0,
+                  "survivalRate": 0,
+                  "reproductionRate": 0
+                }
+              },
+              {
+                "key": "movement_min_recent_harvest",
+                "prevalence": 0,
+                "mean": 0,
+                "variance": 0,
+                "outcomeCorrelation": {
+                  "harvestIntake": 0,
+                  "survivalRate": 0,
+                  "reproductionRate": 0
+                }
+              },
+              {
+                "key": "harvest_secondary_preference",
+                "prevalence": 0,
+                "mean": 0,
+                "variance": 0,
+                "outcomeCorrelation": {
+                  "harvestIntake": 0,
+                  "survivalRate": 0,
+                  "reproductionRate": 0
+                }
+              }
+            ]
+          }
+        },
+        "metrics": {
+          "exposures": 206690,
+          "meanHarvestIntake": 0.331707236470968,
+          "survivalRate": 0.9917751221636267,
+          "reproductionRate": 0.022149112197010015,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        }
+      },
+      {
+        "run": 2,
+        "seed": 90247,
+        "stepsExecuted": 120,
+        "extinct": false,
+        "finalSummary": {
+          "tick": 120,
+          "population": 3356,
+          "births": 42,
+          "deaths": 24,
+          "meanEnergy": 6.755092419562057,
+          "meanGenome": {
+            "metabolism": 0.5780849481668249,
+            "harvest": 1.8625262177404942,
+            "aggression": 0.9638323606644468
+          },
+          "activeClades": 19,
+          "activeSpecies": 1259,
+          "dominantSpeciesShare": 0.04886769964243146,
+          "selectionDifferential": {
+            "metabolism": -0.009210470605873433,
+            "harvest": -0.014560171417294043,
+            "aggression": 0.010080647389800745
+          },
+          "cladeExtinctions": 0,
+          "speciesExtinctions": 13,
+          "cumulativeExtinctClades": 29,
+          "cumulativeExtinctSpecies": 814,
+          "policyObservability": {
+            "activation": {
+              "anyPolicyAgentFraction": 0,
+              "harvestPolicyAgentFraction": 0,
+              "movementPolicyAgentFraction": 0,
+              "reproductionPolicyAgentFraction": 0,
+              "decisionGatedFraction": 0,
+              "harvestDecisionGuidedFraction": 0,
+              "movementDecisionGatedFraction": 0,
+              "reproductionDecisionGatedFraction": 0
+            },
+            "parameters": [
+              {
+                "key": "reproduction_harvest_threshold",
+                "prevalence": 0,
+                "mean": 0,
+                "variance": 0,
+                "outcomeCorrelation": {
+                  "harvestIntake": 0,
+                  "survivalRate": 0,
+                  "reproductionRate": 0
+                }
+              },
+              {
+                "key": "movement_energy_reserve_threshold",
+                "prevalence": 0,
+                "mean": 0,
+                "variance": 0,
+                "outcomeCorrelation": {
+                  "harvestIntake": 0,
+                  "survivalRate": 0,
+                  "reproductionRate": 0
+                }
+              },
+              {
+                "key": "movement_min_recent_harvest",
+                "prevalence": 0,
+                "mean": 0,
+                "variance": 0,
+                "outcomeCorrelation": {
+                  "harvestIntake": 0,
+                  "survivalRate": 0,
+                  "reproductionRate": 0
+                }
+              },
+              {
+                "key": "harvest_secondary_preference",
+                "prevalence": 0,
+                "mean": 0,
+                "variance": 0,
+                "outcomeCorrelation": {
+                  "harvestIntake": 0,
+                  "survivalRate": 0,
+                  "reproductionRate": 0
+                }
+              }
+            ]
+          }
+        },
+        "metrics": {
+          "exposures": 216903,
+          "meanHarvestIntake": 0.31728202172845715,
+          "survivalRate": 0.9923836922495309,
+          "reproductionRate": 0.022867364674531935,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        }
+      }
+    ],
+    "overall": {
+      "metrics": {
+        "exposures": 423593,
+        "meanHarvestIntake": 0.3243207301941944,
+        "survivalRate": 0.9920867436430725,
+        "reproductionRate": 0.022516897115863577,
+        "movementPolicyGatedRate": 0,
+        "reproductionPolicyGatedRate": 0,
+        "harvestPolicyGuidedRate": 0
+      }
+    },
+    "interpretation": {
+      "outcome": "baseline",
+      "summary": "Baseline controls recorded harvest +0.3243, survival +0.9921, reproduction +0.0225, with zero policy gating as expected."
+    }
+  },
+  "interpretation": {
+    "dominantHarm": "movement_only",
+    "summary": "Movement Only is the clearest isolated detriment: harvest delta -0.1665, survival +0.0000, reproduction +0.0025. Combined lands at harvest -0.0437."
+  }
+}
