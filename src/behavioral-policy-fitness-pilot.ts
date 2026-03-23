@@ -67,6 +67,12 @@ export interface BehavioralPolicyFitnessPilotArtifact {
   };
 }
 
+export interface BehavioralPolicyThresholds {
+  reproductionHarvestThreshold: number;
+  movementEnergyReserveThreshold: number;
+  movementMinRecentHarvest: number;
+}
+
 export const BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_SHARE = 0.5;
 export const BEHAVIORAL_POLICY_FITNESS_PILOT_INITIAL_AGENTS = 48;
 export const BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_RUNS = 6;
@@ -75,11 +81,11 @@ export const BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_SEED = 90210;
 export const BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_SEED_STEP = 37;
 export const BEHAVIORAL_POLICY_FITNESS_PILOT_DEFAULT_STOP_WHEN_EXTINCT = true;
 
-export const BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS = {
+export const BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS: BehavioralPolicyThresholds = {
   reproductionHarvestThreshold: 0.6,
   movementEnergyReserveThreshold: 8,
   movementMinRecentHarvest: 0.5
-} as const;
+};
 
 export const BEHAVIORAL_POLICY_FITNESS_PILOT_SIMULATION_CONFIG: Partial<SimulationConfig> = {
   width: 20,
@@ -181,7 +187,10 @@ export function runBehavioralPolicyFitnessPilotCli(args: string[]): void {
   runGeneratedAtStudyCli(args, ({ generatedAt }) => runBehavioralPolicyFitnessPilot({ generatedAt }));
 }
 
-export function buildBehavioralPolicyFitnessPilotInitialAgents(seed: number): AgentSeed[] {
+export function buildBehavioralPolicyFitnessPilotInitialAgents(
+  seed: number,
+  thresholds: BehavioralPolicyThresholds = BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS
+): AgentSeed[] {
   const seeder = new LifeSimulation({
     seed,
     config: BEHAVIORAL_POLICY_FITNESS_PILOT_SIMULATION_CONFIG
@@ -209,15 +218,15 @@ export function buildBehavioralPolicyFitnessPilotInitialAgents(seed: number): Ag
     agents[index].policyState = new Map([
       [
         INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
-        BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS.reproductionHarvestThreshold
+        thresholds.reproductionHarvestThreshold
       ],
       [
         INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
-        BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS.movementEnergyReserveThreshold
+        thresholds.movementEnergyReserveThreshold
       ],
       [
         INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
-        BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS.movementMinRecentHarvest
+        thresholds.movementMinRecentHarvest
       ]
     ]);
   }

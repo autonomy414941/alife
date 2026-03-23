@@ -1,0 +1,4232 @@
+{
+  "generatedAt": "2026-03-23T04:13:47.854Z",
+  "question": "Does a bounded sweep of movement and reproduction threshold regimes uncover any non-detrimental binary gate settings under the refined March 22 policy-fitness attribution surface?",
+  "prediction": "If the March 21 detriment was mostly threshold miscalibration, at least one more permissive regime should reduce movement and reproduction gate firing enough to reach near-neutral or positive matched-bin fitness.",
+  "config": {
+    "runs": 2,
+    "steps": 120,
+    "seed": 90210,
+    "seedStep": 37,
+    "stopWhenExtinct": true,
+    "initialAgents": 48,
+    "policyShare": 0.5,
+    "reproductionHarvestThresholds": [
+      0.3,
+      0.6,
+      0.9
+    ],
+    "movementEnergyReserveThresholds": [
+      4,
+      8
+    ],
+    "movementMinRecentHarvestThresholds": [
+      0.25,
+      0.5
+    ],
+    "simulation": {
+      "width": 20,
+      "height": 20,
+      "initialAgents": 48,
+      "initialEnergy": 12,
+      "resourceRegen": 0.7,
+      "maxResource": 8,
+      "metabolismCostBase": 0.25,
+      "moveCost": 0.15,
+      "harvestCap": 2.5,
+      "reproduceThreshold": 20,
+      "reproduceProbability": 0.35,
+      "offspringEnergyFraction": 0.45,
+      "mutationAmount": 0.2,
+      "policyMutationProbability": 0.12,
+      "policyMutationMagnitude": 0.15,
+      "biomeBands": 4,
+      "biomeContrast": 0.45,
+      "maxAge": 120
+    }
+  },
+  "regimes": [
+    {
+      "regimeId": "rh0.3_me4_mh0.25",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.3,
+        "movementEnergyReserveThreshold": 4,
+        "movementMinRecentHarvest": 0.25
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.3,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1198,
+            "births": 15,
+            "deaths": 7,
+            "meanEnergy": 9.872184543211983,
+            "meanGenome": {
+              "metabolism": 0.663874616843915,
+              "harvest": 1.9702449550204213,
+              "aggression": 0.9253759466123324
+            },
+            "activeClades": 22,
+            "activeSpecies": 209,
+            "dominantSpeciesShare": 0.15943238731218698,
+            "selectionDifferential": {
+              "metabolism": -0.00711073615313107,
+              "harvest": 0.017952735842833523,
+              "aggression": 0.044257528576292504
+            },
+            "cladeExtinctions": 1,
+            "speciesExtinctions": 1,
+            "cumulativeExtinctClades": 26,
+            "cumulativeExtinctSpecies": 123,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.3739565943238731,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.3739565943238731,
+                "reproductionPolicyAgentFraction": 0.3739565943238731,
+                "decisionGatedFraction": 0.17371090448013524,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.3043110735418428,
+                "reproductionDecisionGatedFraction": 0.04311073541842773
+              },
+              "movement": {
+                "decisions": 1183,
+                "gatedDecisions": 360,
+                "energyReservePolicyActiveDecisions": 442,
+                "recentHarvestPolicyActiveDecisions": 442,
+                "blockedByEnergyReserve": 95,
+                "blockedByRecentHarvest": 265,
+                "energyReserveNearThreshold": 36,
+                "recentHarvestNearThreshold": 434
+              },
+              "reproduction": {
+                "decisions": 1183,
+                "gatedDecisions": 51,
+                "harvestThresholdPolicyActiveDecisions": 68,
+                "suppressedByHarvestThreshold": 51,
+                "harvestThresholdNearThreshold": 67
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.3739565943238731,
+                  "mean": 0.30415584605907375,
+                  "variance": 0.0031529127307621954,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.14812931536065768,
+                    "survivalRate": -0.013014766126089206,
+                    "reproductionRate": -0.0008751989252485479
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.3739565943238731,
+                  "mean": 4.002648914633186,
+                  "variance": 0.002678970869811771,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.15613032531547807,
+                    "survivalRate": -0.009142033467475502,
+                    "reproductionRate": 0.006002444254807464
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.3739565943238731,
+                  "mean": 0.27517177311612045,
+                  "variance": 0.0071436696879264025,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.1477999023558674,
+                    "survivalRate": -0.0023018693657870432,
+                    "reproductionRate": 0.0036282726107670182
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 35435,
+            "meanHarvestIntake": 0.36920072688428496,
+            "survivalRate": 0.9933681388457739,
+            "reproductionRate": 0.018597431917595598,
+            "movementPolicyGatedRate": 0.6237335967264005,
+            "reproductionPolicyGatedRate": 0.08251728517002963,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 50804,
+            "meanHarvestIntake": 0.43273513390648094,
+            "survivalRate": 0.9956302653334383,
+            "reproductionRate": 0.01865994803558775,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.10857376218929994,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0012756880820637502,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.410337685521061,
+            "decisionGatedFraction": 0.14583151233326924,
+            "movementDecisionGatedFraction": 0.2575180304566162,
+            "blockedByEnergyReserveFraction": 0.062148275018350865,
+            "blockedByRecentHarvestFraction": 0.19536975543826535,
+            "energyReserveNearThresholdFraction": 0.02480571381966048,
+            "recentHarvestNearThresholdFraction": 0.3975555477879921,
+            "reproductionDecisionGatedFraction": 0.03408640507332541,
+            "suppressedByHarvestThresholdFraction": 0.03408640507332541,
+            "harvestThresholdNearThresholdFraction": 0.05262176214124175
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.3,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1000,
+            "births": 14,
+            "deaths": 8,
+            "meanEnergy": 9.864126494433647,
+            "meanGenome": {
+              "metabolism": 0.8392878126160702,
+              "harvest": 2.051712041307988,
+              "aggression": 0.9108519773346844
+            },
+            "activeClades": 19,
+            "activeSpecies": 190,
+            "dominantSpeciesShare": 0.175,
+            "selectionDifferential": {
+              "metabolism": -0.0007602397107190351,
+              "harvest": 0.002516203444405729,
+              "aggression": 0.05190351214981559
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 2,
+            "cumulativeExtinctClades": 29,
+            "cumulativeExtinctSpecies": 135,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.491,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.491,
+                "reproductionPolicyAgentFraction": 0.491,
+                "decisionGatedFraction": 0.21033958438925493,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.375886524822695,
+                "reproductionDecisionGatedFraction": 0.04462474645030426
+              },
+              "movement": {
+                "decisions": 987,
+                "gatedDecisions": 371,
+                "energyReservePolicyActiveDecisions": 486,
+                "recentHarvestPolicyActiveDecisions": 486,
+                "blockedByEnergyReserve": 87,
+                "blockedByRecentHarvest": 284,
+                "energyReserveNearThreshold": 50,
+                "recentHarvestNearThreshold": 484
+              },
+              "reproduction": {
+                "decisions": 986,
+                "gatedDecisions": 44,
+                "harvestThresholdPolicyActiveDecisions": 57,
+                "suppressedByHarvestThreshold": 44,
+                "harvestThresholdNearThreshold": 56
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.491,
+                  "mean": 0.2940172793650464,
+                  "variance": 0.0021578466842474392,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.26882481499110894,
+                    "survivalRate": -0.009464405194261283,
+                    "reproductionRate": -0.03166360794218142
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.491,
+                  "mean": 3.996364025501939,
+                  "variance": 0.002714331089757775,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.2861828062847695,
+                    "survivalRate": -0.025479367472620668,
+                    "reproductionRate": -0.033730500443009764
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.491,
+                  "mean": 0.2556597686873451,
+                  "variance": 0.0015175602819493394,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.27307818047096355,
+                    "survivalRate": -0.025756296676898154,
+                    "reproductionRate": -0.027900646780637497
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 35681,
+            "meanHarvestIntake": 0.38114147604134974,
+            "survivalRate": 0.9934979400801547,
+            "reproductionRate": 0.01959025812056837,
+            "movementPolicyGatedRate": 0.5606905636052801,
+            "reproductionPolicyGatedRate": 0.0629186401726409,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 40847,
+            "meanHarvestIntake": 0.5264984945131701,
+            "survivalRate": 0.9952995324014003,
+            "reproductionRate": 0.016574044605478983,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.14942600306514514,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.0023473967336461103,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.46654620547237996,
+            "decisionGatedFraction": 0.14612474880806967,
+            "movementDecisionGatedFraction": 0.26264933700932125,
+            "blockedByEnergyReserveFraction": 0.053446238676644345,
+            "blockedByRecentHarvestFraction": 0.20920309833267692,
+            "energyReserveNearThresholdFraction": 0.026506498621504528,
+            "recentHarvestNearThresholdFraction": 0.45307863988446895,
+            "reproductionDecisionGatedFraction": 0.029499106485861452,
+            "suppressedByHarvestThresholdFraction": 0.029499106485861452,
+            "harvestThresholdNearThresholdFraction": 0.050693787448754336
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 71116,
+          "meanHarvestIntake": 0.3751917538075013,
+          "survivalRate": 0.9934332639631025,
+          "reproductionRate": 0.01909556218010012,
+          "movementPolicyGatedRate": 0.5921030429157995,
+          "reproductionPolicyGatedRate": 0.07268406547049891,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 91651,
+          "meanHarvestIntake": 0.47452357037412546,
+          "survivalRate": 0.995482864344088,
+          "reproductionRate": 0.017730302997239527,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 71116,
+          "policyNegativeExposures": 91651,
+          "weightedHarvestAdvantage": -0.12185370678749684,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.00009367377655493506
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.4367528158719953,
+          "decisionGatedFraction": 0.14596937783088337,
+          "movementDecisionGatedFraction": 0.2599307394581381,
+          "blockedByEnergyReserveFraction": 0.0580566306783459,
+          "blockedByRecentHarvestFraction": 0.20187410877979223,
+          "energyReserveNearThresholdFraction": 0.02560541244590949,
+          "recentHarvestNearThresholdFraction": 0.4236621665833318,
+          "reproductionDecisionGatedFraction": 0.03192987657981543,
+          "suppressedByHarvestThresholdFraction": 0.03192987657981543,
+          "harvestThresholdNearThresholdFraction": 0.051715404667482055
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0.5
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "score": -6.045848451097374,
+        "summary": "rh0.3_me4_mh0.25: matched bins 7, harvest -0.1219, survival +0.0000, reproduction +0.0001, movement gate 26.0%, reproduction gate 3.2%."
+      }
+    },
+    {
+      "regimeId": "rh0.3_me4_mh0.5",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.3,
+        "movementEnergyReserveThreshold": 4,
+        "movementMinRecentHarvest": 0.5
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.3,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1267,
+            "births": 23,
+            "deaths": 5,
+            "meanEnergy": 9.608971219515814,
+            "meanGenome": {
+              "metabolism": 0.6460235308100494,
+              "harvest": 1.8988362033249042,
+              "aggression": 0.9331860960299853
+            },
+            "activeClades": 21,
+            "activeSpecies": 231,
+            "dominantSpeciesShare": 0.13417521704814522,
+            "selectionDifferential": {
+              "metabolism": -0.03356083612797167,
+              "harvest": 0.048280519516974874,
+              "aggression": 0.038800735080158244
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 1,
+            "cumulativeExtinctClades": 27,
+            "cumulativeExtinctSpecies": 112,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.2951854775059195,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.2951854775059195,
+                "reproductionPolicyAgentFraction": 0.2951854775059195,
+                "decisionGatedFraction": 0.1506629168340699,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.25783132530120484,
+                "reproductionDecisionGatedFraction": 0.04340836012861737
+              },
+              "movement": {
+                "decisions": 1245,
+                "gatedDecisions": 321,
+                "energyReservePolicyActiveDecisions": 368,
+                "recentHarvestPolicyActiveDecisions": 368,
+                "blockedByEnergyReserve": 101,
+                "blockedByRecentHarvest": 220,
+                "energyReserveNearThreshold": 37,
+                "recentHarvestNearThreshold": 360
+              },
+              "reproduction": {
+                "decisions": 1244,
+                "gatedDecisions": 54,
+                "harvestThresholdPolicyActiveDecisions": 67,
+                "suppressedByHarvestThreshold": 54,
+                "harvestThresholdNearThreshold": 65
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.2951854775059195,
+                  "mean": 0.30809782049693213,
+                  "variance": 0.0018152749569724726,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.08699967155215252,
+                    "survivalRate": 0.04043193994843645,
+                    "reproductionRate": -0.0068279191103552996
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.2951854775059195,
+                  "mean": 3.9893555757191206,
+                  "variance": 0.0031414505256083156,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.08866878789882984,
+                    "survivalRate": 0.04096840390215539,
+                    "reproductionRate": -0.009973092615396284
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.2951854775059195,
+                  "mean": 0.4860203643942024,
+                  "variance": 0.0067328700425505995,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.08502963536444991,
+                    "survivalRate": 0.040170531388804435,
+                    "reproductionRate": -0.009136889618552203
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 33142,
+            "meanHarvestIntake": 0.37200451496159753,
+            "survivalRate": 0.9925773942429545,
+            "reproductionRate": 0.017983223704061312,
+            "movementPolicyGatedRate": 0.6478184780640879,
+            "reproductionPolicyGatedRate": 0.07329068855229015,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 54360,
+            "meanHarvestIntake": 0.417908026531432,
+            "survivalRate": 0.9959896983075791,
+            "reproductionRate": 0.019996320824135393,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.07073522729000208,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.002923459090172395,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.37749799934626527,
+            "decisionGatedFraction": 0.13725906866686577,
+            "movementDecisionGatedFraction": 0.246560554904798,
+            "blockedByEnergyReserveFraction": 0.06374744481958704,
+            "blockedByRecentHarvestFraction": 0.18281311008521095,
+            "energyReserveNearThresholdFraction": 0.02746962493396725,
+            "recentHarvestNearThresholdFraction": 0.3663611934128023,
+            "reproductionDecisionGatedFraction": 0.027907350812288886,
+            "suppressedByHarvestThresholdFraction": 0.027907350812288886,
+            "harvestThresholdNearThresholdFraction": 0.043796962246375144
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.3,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1090,
+            "births": 10,
+            "deaths": 8,
+            "meanEnergy": 10.00381198527783,
+            "meanGenome": {
+              "metabolism": 0.7103896874055435,
+              "harvest": 1.744086156265527,
+              "aggression": 0.9255519234848321
+            },
+            "activeClades": 19,
+            "activeSpecies": 198,
+            "dominantSpeciesShare": 0.3486238532110092,
+            "selectionDifferential": {
+              "metabolism": -0.0196752850382379,
+              "harvest": -0.07262166127517933,
+              "aggression": 0.041521797779025316
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 2,
+            "cumulativeExtinctClades": 29,
+            "cumulativeExtinctSpecies": 144,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.3853211009174312,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.3853211009174312,
+                "reproductionPolicyAgentFraction": 0.3853211009174312,
+                "decisionGatedFraction": 0.18611111111111112,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.32592592592592595,
+                "reproductionDecisionGatedFraction": 0.046296296296296294
+              },
+              "movement": {
+                "decisions": 1080,
+                "gatedDecisions": 352,
+                "energyReservePolicyActiveDecisions": 417,
+                "recentHarvestPolicyActiveDecisions": 417,
+                "blockedByEnergyReserve": 96,
+                "blockedByRecentHarvest": 256,
+                "energyReserveNearThreshold": 55,
+                "recentHarvestNearThreshold": 415
+              },
+              "reproduction": {
+                "decisions": 1080,
+                "gatedDecisions": 50,
+                "harvestThresholdPolicyActiveDecisions": 58,
+                "suppressedByHarvestThreshold": 50,
+                "harvestThresholdNearThreshold": 58
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.3853211009174312,
+                  "mean": 0.2960099201474791,
+                  "variance": 0.002044003396260055,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.20084025313925188,
+                    "survivalRate": -0.042701877817563086,
+                    "reproductionRate": -0.009353083920355143
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.3853211009174312,
+                  "mean": 4.012758108064801,
+                  "variance": 0.0030451259838094862,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.2022077858885639,
+                    "survivalRate": -0.041091429458748135,
+                    "reproductionRate": -0.01751444487845608
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.3853211009174312,
+                  "mean": 0.49691117150625863,
+                  "variance": 0.0016593791063267186,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.20007839563032875,
+                    "survivalRate": -0.042303560567425035,
+                    "reproductionRate": -0.020438001809124907
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 35142,
+            "meanHarvestIntake": 0.36582975990808514,
+            "survivalRate": 0.9926014455637129,
+            "reproductionRate": 0.018667121962324285,
+            "movementPolicyGatedRate": 0.6011040919697228,
+            "reproductionPolicyGatedRate": 0.05511923055033863,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 45047,
+            "meanHarvestIntake": 0.4937935025147696,
+            "survivalRate": 0.9955157946145138,
+            "reproductionRate": 0.01882478300441761,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.12010839426926705,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.00029423263357603757,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.43749307530376336,
+            "decisionGatedFraction": 0.1445758206484941,
+            "movementDecisionGatedFraction": 0.26477482107268646,
+            "blockedByEnergyReserveFraction": 0.06324814178814504,
+            "blockedByRecentHarvestFraction": 0.20152667928454143,
+            "energyReserveNearThresholdFraction": 0.029154811295922588,
+            "recentHarvestNearThresholdFraction": 0.42731978791942943,
+            "reproductionDecisionGatedFraction": 0.02429540808007325,
+            "suppressedByHarvestThresholdFraction": 0.02429540808007325,
+            "harvestThresholdNearThresholdFraction": 0.04273332748002559
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 68284,
+          "meanHarvestIntake": 0.36882670988145744,
+          "survivalRate": 0.9925897721281706,
+          "reproductionRate": 0.01833518833108781,
+          "movementPolicyGatedRate": 0.623777165953957,
+          "reproductionPolicyGatedRate": 0.06393884365297874,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 99407,
+          "meanHarvestIntake": 0.45229607804306166,
+          "survivalRate": 0.9957749454263785,
+          "reproductionRate": 0.019465429999899402,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 68284,
+          "policyNegativeExposures": 99407,
+          "weightedHarvestAdvantage": -0.08947289008108836,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0016285581424205513
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.406173507813971,
+          "decisionGatedFraction": 0.14075725966956815,
+          "movementDecisionGatedFraction": 0.2552694190903697,
+          "blockedByEnergyReserveFraction": 0.06350871094756651,
+          "blockedByRecentHarvestFraction": 0.19176070814280322,
+          "energyReserveNearThresholdFraction": 0.02827537022276293,
+          "recentHarvestNearThresholdFraction": 0.39550758424777804,
+          "reproductionDecisionGatedFraction": 0.026180553473450663,
+          "suppressedByHarvestThresholdFraction": 0.026180553473450663,
+          "harvestThresholdNearThresholdFraction": 0.04328845980871286
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0.5
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "score": -5.287923575264694,
+        "summary": "rh0.3_me4_mh0.5: matched bins 7, harvest -0.0895, survival +0.0000, reproduction -0.0016, movement gate 25.5%, reproduction gate 2.6%."
+      }
+    },
+    {
+      "regimeId": "rh0.3_me8_mh0.25",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.3,
+        "movementEnergyReserveThreshold": 8,
+        "movementMinRecentHarvest": 0.25
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.3,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1217,
+            "births": 12,
+            "deaths": 8,
+            "meanEnergy": 9.673895618288864,
+            "meanGenome": {
+              "metabolism": 0.6700026607490612,
+              "harvest": 1.9523830386007655,
+              "aggression": 0.9272288816106701
+            },
+            "activeClades": 26,
+            "activeSpecies": 215,
+            "dominantSpeciesShare": 0.16105176663927692,
+            "selectionDifferential": {
+              "metabolism": -0.011422094392594784,
+              "harvest": -0.00785817318608073,
+              "aggression": 0.04242423055200473
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 0,
+            "cumulativeExtinctClades": 22,
+            "cumulativeExtinctSpecies": 122,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.42152834839769926,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.42152834839769926,
+                "reproductionPolicyAgentFraction": 0.42152834839769926,
+                "decisionGatedFraction": 0.2095435684647303,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.37427385892116183,
+                "reproductionDecisionGatedFraction": 0.044813278008298756
+              },
+              "movement": {
+                "decisions": 1205,
+                "gatedDecisions": 451,
+                "energyReservePolicyActiveDecisions": 507,
+                "recentHarvestPolicyActiveDecisions": 505,
+                "blockedByEnergyReserve": 238,
+                "blockedByRecentHarvest": 213,
+                "energyReserveNearThreshold": 57,
+                "recentHarvestNearThreshold": 495
+              },
+              "reproduction": {
+                "decisions": 1205,
+                "gatedDecisions": 54,
+                "harvestThresholdPolicyActiveDecisions": 71,
+                "suppressedByHarvestThreshold": 54,
+                "harvestThresholdNearThreshold": 71
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.42152834839769926,
+                  "mean": 0.31260759204990957,
+                  "variance": 0.0026474725297936427,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09052724328534856,
+                    "survivalRate": 0.025473365548765066,
+                    "reproductionRate": 0.02911642351432023
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.42152834839769926,
+                  "mean": 7.997399626367684,
+                  "variance": 0.002098442991144872,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09258646009808158,
+                    "survivalRate": 0.02774175145747928,
+                    "reproductionRate": 0.016597514123363237
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.4198849630238291,
+                  "mean": 0.2711472531972424,
+                  "variance": 0.006923832894349712,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.08961916740744869,
+                    "survivalRate": 0.02014712776423829,
+                    "reproductionRate": 0.004689177836880991
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 38661,
+            "meanHarvestIntake": 0.35598986575063923,
+            "survivalRate": 0.9935335350870386,
+            "reproductionRate": 0.019114870282713844,
+            "movementPolicyGatedRate": 0.6725899485269393,
+            "reproductionPolicyGatedRate": 0.07568350534130001,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 48765,
+            "meanHarvestIntake": 0.43629833870011153,
+            "survivalRate": 0.995550087152671,
+            "reproductionRate": 0.018394340203014458,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.12175874674911283,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0009147204090998338,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.44189852700491,
+            "decisionGatedFraction": 0.16629971774633961,
+            "movementDecisionGatedFraction": 0.2988919285500816,
+            "blockedByEnergyReserveFraction": 0.13850893123979863,
+            "blockedByRecentHarvestFraction": 0.160382997310283,
+            "energyReserveNearThresholdFraction": 0.03449504586312329,
+            "recentHarvestNearThresholdFraction": 0.4272397066599232,
+            "reproductionDecisionGatedFraction": 0.03364804103083062,
+            "suppressedByHarvestThresholdFraction": 0.03364804103083062,
+            "harvestThresholdNearThresholdFraction": 0.05192102025092285
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.3,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1042,
+            "births": 19,
+            "deaths": 6,
+            "meanEnergy": 10.276242002205779,
+            "meanGenome": {
+              "metabolism": 0.7272715070938467,
+              "harvest": 1.782462166447635,
+              "aggression": 0.9179868157646015
+            },
+            "activeClades": 22,
+            "activeSpecies": 192,
+            "dominantSpeciesShare": 0.272552783109405,
+            "selectionDifferential": {
+              "metabolism": -0.02894206861299886,
+              "harvest": -0.04753623649912164,
+              "aggression": 0.0476694845440645
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 0,
+            "cumulativeExtinctClades": 26,
+            "cumulativeExtinctSpecies": 123,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.3867562380038388,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.3867562380038388,
+                "reproductionPolicyAgentFraction": 0.3867562380038388,
+                "decisionGatedFraction": 0.18621700879765396,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.3255131964809384,
+                "reproductionDecisionGatedFraction": 0.0469208211143695
+              },
+              "movement": {
+                "decisions": 1023,
+                "gatedDecisions": 333,
+                "energyReservePolicyActiveDecisions": 397,
+                "recentHarvestPolicyActiveDecisions": 397,
+                "blockedByEnergyReserve": 171,
+                "blockedByRecentHarvest": 162,
+                "energyReserveNearThreshold": 41,
+                "recentHarvestNearThreshold": 395
+              },
+              "reproduction": {
+                "decisions": 1023,
+                "gatedDecisions": 48,
+                "harvestThresholdPolicyActiveDecisions": 60,
+                "suppressedByHarvestThreshold": 48,
+                "harvestThresholdNearThreshold": 60
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.3867562380038388,
+                  "mean": 0.2852031238010794,
+                  "variance": 0.0029405069029122865,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.23984951155286935,
+                    "survivalRate": -0.04731395869972629,
+                    "reproductionRate": -0.031068265767458525
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.3867562380038388,
+                  "mean": 8.009261455195006,
+                  "variance": 0.0025687420450042665,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.2473228817626608,
+                    "survivalRate": -0.043688016247194886,
+                    "reproductionRate": -0.020745726162465193
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.3867562380038388,
+                  "mean": 0.25903946106355613,
+                  "variance": 0.0019315575273307953,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.2444119544163348,
+                    "survivalRate": -0.03901993744058247,
+                    "reproductionRate": -0.018155440609956722
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 34025,
+            "meanHarvestIntake": 0.37007669242096375,
+            "survivalRate": 0.9926230712711241,
+            "reproductionRate": 0.018515797207935343,
+            "movementPolicyGatedRate": 0.6260102865540044,
+            "reproductionPolicyGatedRate": 0.061513592946362966,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 44565,
+            "meanHarvestIntake": 0.5055767003688144,
+            "survivalRate": 0.995444855828565,
+            "reproductionRate": 0.01835521148883653,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.13187145398431788,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.00035750247421884637,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.4322979493365501,
+            "decisionGatedFraction": 0.1496261425199721,
+            "movementDecisionGatedFraction": 0.27235413709770223,
+            "blockedByEnergyReserveFraction": 0.1188128939864718,
+            "blockedByRecentHarvestFraction": 0.15354124311123046,
+            "energyReserveNearThresholdFraction": 0.03545718413952715,
+            "recentHarvestNearThresholdFraction": 0.4197450356106231,
+            "reproductionDecisionGatedFraction": 0.026786628442715267,
+            "suppressedByHarvestThresholdFraction": 0.026786628442715267,
+            "harvestThresholdNearThresholdFraction": 0.04630388041363776
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 72686,
+          "meanHarvestIntake": 0.3625840417605358,
+          "survivalRate": 0.9931073384145502,
+          "reproductionRate": 0.01883443854387365,
+          "movementPolicyGatedRate": 0.6507855708114355,
+          "reproductionPolicyGatedRate": 0.06905043612249952,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 93330,
+          "meanHarvestIntake": 0.4693787007247744,
+          "survivalRate": 0.9954998392799743,
+          "reproductionRate": 0.01837565627343834,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 72686,
+          "policyNegativeExposures": 93330,
+          "weightedHarvestAdvantage": -0.12453897705990519,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0007047486305920778
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.43735543676677824,
+          "decisionGatedFraction": 0.15840750832576445,
+          "movementDecisionGatedFraction": 0.286329106261917,
+          "blockedByEnergyReserveFraction": 0.12918495202929695,
+          "blockedByRecentHarvestFraction": 0.15714415423262007,
+          "energyReserveNearThresholdFraction": 0.03495051602554402,
+          "recentHarvestNearThresholdFraction": 0.42369177688326626,
+          "reproductionDecisionGatedFraction": 0.030400678397286413,
+          "suppressedByHarvestThresholdFraction": 0.030400678397286413,
+          "harvestThresholdNearThresholdFraction": 0.04926254580695963
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0.5
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "score": -6.579323168291299,
+        "summary": "rh0.3_me8_mh0.25: matched bins 7, harvest -0.1245, survival +0.0000, reproduction -0.0007, movement gate 28.6%, reproduction gate 3.0%."
+      }
+    },
+    {
+      "regimeId": "rh0.3_me8_mh0.5",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.3,
+        "movementEnergyReserveThreshold": 8,
+        "movementMinRecentHarvest": 0.5
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.3,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1239,
+            "births": 15,
+            "deaths": 11,
+            "meanEnergy": 9.767419441538353,
+            "meanGenome": {
+              "metabolism": 0.6199381521517534,
+              "harvest": 1.917465470922333,
+              "aggression": 0.9285879437235144
+            },
+            "activeClades": 21,
+            "activeSpecies": 237,
+            "dominantSpeciesShare": 0.14366424535916061,
+            "selectionDifferential": {
+              "metabolism": -0.02950821873032672,
+              "harvest": 0.022841868656746867,
+              "aggression": 0.04375248569723933
+            },
+            "cladeExtinctions": 1,
+            "speciesExtinctions": 4,
+            "cumulativeExtinctClades": 27,
+            "cumulativeExtinctSpecies": 129,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.3196125907990315,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.3196125907990315,
+                "reproductionPolicyAgentFraction": 0.3196125907990315,
+                "decisionGatedFraction": 0.16584967320261437,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.2883986928104575,
+                "reproductionDecisionGatedFraction": 0.04330065359477124
+              },
+              "movement": {
+                "decisions": 1224,
+                "gatedDecisions": 353,
+                "energyReservePolicyActiveDecisions": 389,
+                "recentHarvestPolicyActiveDecisions": 389,
+                "blockedByEnergyReserve": 191,
+                "blockedByRecentHarvest": 162,
+                "energyReserveNearThreshold": 46,
+                "recentHarvestNearThreshold": 384
+              },
+              "reproduction": {
+                "decisions": 1224,
+                "gatedDecisions": 53,
+                "harvestThresholdPolicyActiveDecisions": 68,
+                "suppressedByHarvestThreshold": 53,
+                "harvestThresholdNearThreshold": 65
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.3196125907990315,
+                  "mean": 0.30195024992854225,
+                  "variance": 0.0022050935015809083,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09860446671620447,
+                    "survivalRate": 0.009452765261155042,
+                    "reproductionRate": 0.03764454224384923
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.3196125907990315,
+                  "mean": 7.978919712927147,
+                  "variance": 0.004503498751346522,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09981597797240663,
+                    "survivalRate": 0.008876745633586819,
+                    "reproductionRate": 0.03568822985064304
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.3196125907990315,
+                  "mean": 0.5224434448795917,
+                  "variance": 0.011038829434441982,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09304995724144913,
+                    "survivalRate": 0.006731370973934442,
+                    "reproductionRate": 0.048356080922207126
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 33703,
+            "meanHarvestIntake": 0.3574780005884246,
+            "survivalRate": 0.9925525917574103,
+            "reproductionRate": 0.01848500133519271,
+            "movementPolicyGatedRate": 0.7054564875530368,
+            "reproductionPolicyGatedRate": 0.07402901818829184,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 54615,
+            "meanHarvestIntake": 0.42146514485772213,
+            "survivalRate": 0.9957703927492447,
+            "reproductionRate": 0.019225487503433124,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.08697641249190091,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0014579699326947662,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.3806879755108425,
+            "decisionGatedFraction": 0.14950489414978374,
+            "movementDecisionGatedFraction": 0.2705384370306313,
+            "blockedByEnergyReserveFraction": 0.12267306904556005,
+            "blockedByRecentHarvestFraction": 0.14786536798507122,
+            "energyReserveNearThresholdFraction": 0.030904373947476218,
+            "recentHarvestNearThresholdFraction": 0.36996495380273997,
+            "reproductionDecisionGatedFraction": 0.02840520970900314,
+            "suppressedByHarvestThresholdFraction": 0.02840520970900314,
+            "harvestThresholdNearThresholdFraction": 0.044059383396329525
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.3,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1092,
+            "births": 11,
+            "deaths": 10,
+            "meanEnergy": 9.955973182987952,
+            "meanGenome": {
+              "metabolism": 0.7142857473286466,
+              "harvest": 1.8178540118225452,
+              "aggression": 0.9274386480548698
+            },
+            "activeClades": 18,
+            "activeSpecies": 191,
+            "dominantSpeciesShare": 0.30494505494505497,
+            "selectionDifferential": {
+              "metabolism": -0.02188923353232497,
+              "harvest": -0.07667717957017595,
+              "aggression": 0.04286552254151754
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 2,
+            "cumulativeExtinctClades": 30,
+            "cumulativeExtinctSpecies": 138,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.3333333333333333,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.3333333333333333,
+                "reproductionPolicyAgentFraction": 0.3333333333333333,
+                "decisionGatedFraction": 0.16234967622571692,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.2960222016651249,
+                "reproductionDecisionGatedFraction": 0.028677150786308975
+              },
+              "movement": {
+                "decisions": 1081,
+                "gatedDecisions": 320,
+                "energyReservePolicyActiveDecisions": 364,
+                "recentHarvestPolicyActiveDecisions": 364,
+                "blockedByEnergyReserve": 174,
+                "blockedByRecentHarvest": 146,
+                "energyReserveNearThreshold": 31,
+                "recentHarvestNearThreshold": 364
+              },
+              "reproduction": {
+                "decisions": 1081,
+                "gatedDecisions": 31,
+                "harvestThresholdPolicyActiveDecisions": 39,
+                "suppressedByHarvestThreshold": 31,
+                "harvestThresholdNearThreshold": 37
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.3333333333333333,
+                  "mean": 0.2973370447720306,
+                  "variance": 0.0018151460672327238,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.14317963943480663,
+                    "survivalRate": -0.017047027138550032,
+                    "reproductionRate": -0.07091829031451281
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.3333333333333333,
+                  "mean": 8.003939375316772,
+                  "variance": 0.0015267157108546803,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.1427080624310548,
+                    "survivalRate": -0.012890025871664976,
+                    "reproductionRate": -0.07199982500298213
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.3333333333333333,
+                  "mean": 0.5095857698806808,
+                  "variance": 0.0024156661441299535,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.13849859399999037,
+                    "survivalRate": -0.01977232206798084,
+                    "reproductionRate": -0.07149487944886147
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 33438,
+            "meanHarvestIntake": 0.3701497374580201,
+            "survivalRate": 0.992344039715294,
+            "reproductionRate": 0.01782403253783121,
+            "movementPolicyGatedRate": 0.6424128237334769,
+            "reproductionPolicyGatedRate": 0.05634308272025839,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 46732,
+            "meanHarvestIntake": 0.4866517550849121,
+            "survivalRate": 0.9955062911923307,
+            "reproductionRate": 0.01955833262004622,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.10560738828176591,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0008210885869460124,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.4159135124485926,
+            "decisionGatedFraction": 0.14651566742542532,
+            "movementDecisionGatedFraction": 0.26929682700866275,
+            "blockedByEnergyReserveFraction": 0.12166685471435557,
+            "blockedByRecentHarvestFraction": 0.14762997229430716,
+            "energyReserveNearThresholdFraction": 0.03349756164830068,
+            "recentHarvestNearThresholdFraction": 0.40655910338861934,
+            "reproductionDecisionGatedFraction": 0.02363745859680819,
+            "suppressedByHarvestThresholdFraction": 0.02363745859680819,
+            "harvestThresholdNearThresholdFraction": 0.03999799257251832
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 67141,
+          "meanHarvestIntake": 0.3637888618720623,
+          "survivalRate": 0.9924487273052234,
+          "reproductionRate": 0.01815582133122831,
+          "movementPolicyGatedRate": 0.6740590697189497,
+          "reproductionPolicyGatedRate": 0.06522095291997439,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 101347,
+          "meanHarvestIntake": 0.45152326862194203,
+          "survivalRate": 0.9956486131804592,
+          "reproductionRate": 0.0193789653369118,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 67141,
+          "policyNegativeExposures": 101347,
+          "weightedHarvestAdvantage": -0.09335570110500847,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0016740388070749556
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.39744498397989725,
+          "decisionGatedFraction": 0.14808273491830032,
+          "movementDecisionGatedFraction": 0.2699476889490668,
+          "blockedByEnergyReserveFraction": 0.12219432034404805,
+          "blockedByRecentHarvestFraction": 0.14775336860501875,
+          "energyReserveNearThresholdFraction": 0.032138191838998874,
+          "recentHarvestNearThresholdFraction": 0.3873761564201824,
+          "reproductionDecisionGatedFraction": 0.026137041900441686,
+          "suppressedByHarvestThresholdFraction": 0.026137041900441686,
+          "harvestThresholdNearThresholdFraction": 0.04212725319326728
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "score": -5.504804458787901,
+        "summary": "rh0.3_me8_mh0.5: matched bins 7, harvest -0.0934, survival +0.0000, reproduction -0.0017, movement gate 27.0%, reproduction gate 2.6%."
+      }
+    },
+    {
+      "regimeId": "rh0.6_me4_mh0.25",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.6,
+        "movementEnergyReserveThreshold": 4,
+        "movementMinRecentHarvest": 0.25
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.6,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1277,
+            "births": 18,
+            "deaths": 8,
+            "meanEnergy": 9.633372159523978,
+            "meanGenome": {
+              "metabolism": 0.6209681589031482,
+              "harvest": 1.8701079425050455,
+              "aggression": 0.9346684967725227
+            },
+            "activeClades": 21,
+            "activeSpecies": 229,
+            "dominantSpeciesShare": 0.15974941268598278,
+            "selectionDifferential": {
+              "metabolism": -0.036511639770817395,
+              "harvest": 0.0073796531596674875,
+              "aggression": 0.039194544925359454
+            },
+            "cladeExtinctions": 1,
+            "speciesExtinctions": 3,
+            "cumulativeExtinctClades": 27,
+            "cumulativeExtinctSpecies": 134,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.24980422866092403,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.24980422866092403,
+                "reproductionPolicyAgentFraction": 0.24980422866092403,
+                "decisionGatedFraction": 0.12311358220810167,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.20492454328832407,
+                "reproductionDecisionGatedFraction": 0.04130262112787927
+              },
+              "movement": {
+                "decisions": 1259,
+                "gatedDecisions": 258,
+                "energyReservePolicyActiveDecisions": 316,
+                "recentHarvestPolicyActiveDecisions": 316,
+                "blockedByEnergyReserve": 76,
+                "blockedByRecentHarvest": 182,
+                "energyReserveNearThreshold": 29,
+                "recentHarvestNearThreshold": 311
+              },
+              "reproduction": {
+                "decisions": 1259,
+                "gatedDecisions": 52,
+                "harvestThresholdPolicyActiveDecisions": 59,
+                "suppressedByHarvestThreshold": 52,
+                "harvestThresholdNearThreshold": 58
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.24980422866092403,
+                  "mean": 0.6046136717236841,
+                  "variance": 0.0013166387130892833,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.08097429667762736,
+                    "survivalRate": 0.000517511459268526,
+                    "reproductionRate": -0.022081646445553188
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.24980422866092403,
+                  "mean": 3.978983742219024,
+                  "variance": 0.0038454222003553255,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.08213128050382607,
+                    "survivalRate": -0.000060018143752501995,
+                    "reproductionRate": -0.023324577121276283
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.24980422866092403,
+                  "mean": 0.2561643454899461,
+                  "variance": 0.004738601359515322,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.06693895403180626,
+                    "survivalRate": 0.001240568987962159,
+                    "reproductionRate": -0.024231283576132873
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 30560,
+            "meanHarvestIntake": 0.38961720379557263,
+            "survivalRate": 0.9920811518324607,
+            "reproductionRate": 0.017571989528795812,
+            "movementPolicyGatedRate": 0.6076897905759162,
+            "reproductionPolicyGatedRate": 0.10052356020942409,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 56792,
+            "meanHarvestIntake": 0.4078198777795561,
+            "survivalRate": 0.9958444851387519,
+            "reproductionRate": 0.02060149316805184,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.050962718683040836,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.003868406162245261,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.3483252616249534,
+            "decisionGatedFraction": 0.12453249249111016,
+            "movementDecisionGatedFraction": 0.21365623561895997,
+            "blockedByEnergyReserveFraction": 0.055096640589047396,
+            "blockedByRecentHarvestFraction": 0.15855959502991257,
+            "energyReserveNearThresholdFraction": 0.022606994937873905,
+            "recentHarvestNearThresholdFraction": 0.336596870685688,
+            "reproductionDecisionGatedFraction": 0.0353615581186546,
+            "suppressedByHarvestThresholdFraction": 0.0353615581186546,
+            "harvestThresholdNearThresholdFraction": 0.048760273499551074
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.6,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 991,
+            "births": 15,
+            "deaths": 7,
+            "meanEnergy": 10.628389187399945,
+            "meanGenome": {
+              "metabolism": 0.77567121694978,
+              "harvest": 1.8389495875603248,
+              "aggression": 0.916087002741684
+            },
+            "activeClades": 18,
+            "activeSpecies": 200,
+            "dominantSpeciesShare": 0.20787083753784055,
+            "selectionDifferential": {
+              "metabolism": -0.008825045742990922,
+              "harvest": -0.018202983634133973,
+              "aggression": 0.049669009682688725
+            },
+            "cladeExtinctions": 1,
+            "speciesExtinctions": 2,
+            "cumulativeExtinctClades": 30,
+            "cumulativeExtinctSpecies": 133,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.3975782038345106,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.3975782038345106,
+                "reproductionPolicyAgentFraction": 0.3975782038345106,
+                "decisionGatedFraction": 0.17613927291346645,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.29273285568065505,
+                "reproductionDecisionGatedFraction": 0.05942622950819672
+              },
+              "movement": {
+                "decisions": 977,
+                "gatedDecisions": 286,
+                "energyReservePolicyActiveDecisions": 388,
+                "recentHarvestPolicyActiveDecisions": 385,
+                "blockedByEnergyReserve": 60,
+                "blockedByRecentHarvest": 226,
+                "energyReserveNearThreshold": 20,
+                "recentHarvestNearThreshold": 381
+              },
+              "reproduction": {
+                "decisions": 976,
+                "gatedDecisions": 58,
+                "harvestThresholdPolicyActiveDecisions": 68,
+                "suppressedByHarvestThreshold": 58,
+                "harvestThresholdNearThreshold": 68
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.3975782038345106,
+                  "mean": 0.5844235851818219,
+                  "variance": 0.0033155722005541364,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.20248789653938615,
+                    "survivalRate": -0.007182646625819406,
+                    "reproductionRate": -0.004053629097494476
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.3975782038345106,
+                  "mean": 4.0101212688302725,
+                  "variance": 0.003172177026202053,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.21030732369143737,
+                    "survivalRate": -0.005141113128842601,
+                    "reproductionRate": 0.00026355648818064247
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.39455095862764883,
+                  "mean": 0.24283004076091474,
+                  "variance": 0.0031388604017160526,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.2169769162668505,
+                    "survivalRate": 0.00006732839872790783,
+                    "reproductionRate": -0.012863469907791459
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 31438,
+            "meanHarvestIntake": 0.40499000152440934,
+            "survivalRate": 0.9931293339270946,
+            "reproductionRate": 0.018639862586678543,
+            "movementPolicyGatedRate": 0.5424327247280362,
+            "reproductionPolicyGatedRate": 0.11508365672116547,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 43879,
+            "meanHarvestIntake": 0.5099272223671982,
+            "survivalRate": 0.9954420109847535,
+            "reproductionRate": 0.017616627543927618,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.10331584461796231,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": 0.0006283971005610986,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.41709939680041963,
+            "decisionGatedFraction": 0.1379225215847979,
+            "movementDecisionGatedFraction": 0.22745521721152948,
+            "blockedByEnergyReserveFraction": 0.049737905646032574,
+            "blockedByRecentHarvestFraction": 0.17771731156549692,
+            "energyReserveNearThresholdFraction": 0.02198124658210289,
+            "recentHarvestNearThresholdFraction": 0.4026516212503168,
+            "reproductionDecisionGatedFraction": 0.04830376096447311,
+            "suppressedByHarvestThresholdFraction": 0.04830376096447311,
+            "harvestThresholdNearThresholdFraction": 0.06671473011041242
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 61998,
+          "meanHarvestIntake": 0.3974124554971927,
+          "survivalRate": 0.992612664924675,
+          "reproductionRate": 0.018113487531855866,
+          "movementPolicyGatedRate": 0.5745991806187296,
+          "reproductionPolicyGatedRate": 0.10790670666795703,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 100671,
+          "meanHarvestIntake": 0.4523249306066517,
+          "survivalRate": 0.9956690606033515,
+          "reproductionRate": 0.01930049368735783,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 61998,
+          "policyNegativeExposures": 100671,
+          "weightedHarvestAdvantage": -0.07271845078886006,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0018886621375906467
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.3801420763038322,
+          "decisionGatedFraction": 0.13073272612677186,
+          "movementDecisionGatedFraction": 0.22004657397169736,
+          "blockedByEnergyReserveFraction": 0.05261499879550073,
+          "blockedByRecentHarvestFraction": 0.1674315751761966,
+          "energyReserveNearThresholdFraction": 0.022317209514926526,
+          "recentHarvestNearThresholdFraction": 0.36718696917099564,
+          "reproductionDecisionGatedFraction": 0.04135373203523412,
+          "suppressedByHarvestThresholdFraction": 0.04135373203523412,
+          "harvestThresholdNearThresholdFraction": 0.05707309534847783
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0.5
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "score": -4.580253608238326,
+        "summary": "rh0.6_me4_mh0.25: matched bins 7, harvest -0.0727, survival +0.0000, reproduction -0.0019, movement gate 22.0%, reproduction gate 4.1%."
+      }
+    },
+    {
+      "regimeId": "rh0.6_me4_mh0.5",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.6,
+        "movementEnergyReserveThreshold": 4,
+        "movementMinRecentHarvest": 0.5
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.6,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1213,
+            "births": 17,
+            "deaths": 11,
+            "meanEnergy": 9.707486980354592,
+            "meanGenome": {
+              "metabolism": 0.6751649441711343,
+              "harvest": 1.865334352121751,
+              "aggression": 0.9319024510679706
+            },
+            "activeClades": 25,
+            "activeSpecies": 236,
+            "dominantSpeciesShare": 0.14262159934047816,
+            "selectionDifferential": {
+              "metabolism": -0.015462229885038647,
+              "harvest": 0.004881329492973707,
+              "aggression": 0.039152090995699385
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 1,
+            "cumulativeExtinctClades": 23,
+            "cumulativeExtinctSpecies": 124,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.2539159109645507,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.2539159109645507,
+                "reproductionPolicyAgentFraction": 0.2539159109645507,
+                "decisionGatedFraction": 0.13168896321070234,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.21989966555183946,
+                "reproductionDecisionGatedFraction": 0.043478260869565216
+              },
+              "movement": {
+                "decisions": 1196,
+                "gatedDecisions": 263,
+                "energyReservePolicyActiveDecisions": 305,
+                "recentHarvestPolicyActiveDecisions": 305,
+                "blockedByEnergyReserve": 84,
+                "blockedByRecentHarvest": 179,
+                "energyReserveNearThreshold": 21,
+                "recentHarvestNearThreshold": 298
+              },
+              "reproduction": {
+                "decisions": 1196,
+                "gatedDecisions": 52,
+                "harvestThresholdPolicyActiveDecisions": 58,
+                "suppressedByHarvestThreshold": 52,
+                "harvestThresholdNearThreshold": 58
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.2539159109645507,
+                  "mean": 0.6004882213975562,
+                  "variance": 0.0013024420081049713,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.07584878677414884,
+                    "survivalRate": -0.041862979894112196,
+                    "reproductionRate": -0.02196101496043499
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.2539159109645507,
+                  "mean": 3.9919381559062916,
+                  "variance": 0.0019567317369599798,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.07451925198415947,
+                    "survivalRate": -0.043601156978859794,
+                    "reproductionRate": -0.02166304216998666
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.2539159109645507,
+                  "mean": 0.5405709663314548,
+                  "variance": 0.007238186463981032,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.07414001155324516,
+                    "survivalRate": -0.03502541662418766,
+                    "reproductionRate": -0.020796452571692152
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 30305,
+            "meanHarvestIntake": 0.3987645739998023,
+            "survivalRate": 0.9921135126216796,
+            "reproductionRate": 0.017257878237914536,
+            "movementPolicyGatedRate": 0.6248143870648408,
+            "reproductionPolicyGatedRate": 0.09790463619864709,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 55476,
+            "meanHarvestIntake": 0.41381793776050446,
+            "survivalRate": 0.9957819597663855,
+            "reproductionRate": 0.020098781455043624,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.060447973714339846,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.003676694523621337,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.3518160697444391,
+            "decisionGatedFraction": 0.12833854844191306,
+            "movementDecisionGatedFraction": 0.22185120093731692,
+            "blockedByEnergyReserveFraction": 0.06090216754540129,
+            "blockedByRecentHarvestFraction": 0.16094903339191563,
+            "energyReserveNearThresholdFraction": 0.025612185120093733,
+            "recentHarvestNearThresholdFraction": 0.3409724663151728,
+            "reproductionDecisionGatedFraction": 0.03477985651990435,
+            "suppressedByHarvestThresholdFraction": 0.03477985651990435,
+            "harvestThresholdNearThresholdFraction": 0.0486120879636142
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.6,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1066,
+            "births": 12,
+            "deaths": 4,
+            "meanEnergy": 10.827295813978777,
+            "meanGenome": {
+              "metabolism": 0.6515777649396342,
+              "harvest": 1.5900995630199108,
+              "aggression": 0.9325792093987538
+            },
+            "activeClades": 14,
+            "activeSpecies": 196,
+            "dominantSpeciesShare": 0.35553470919324576,
+            "selectionDifferential": {
+              "metabolism": -0.01135907822492932,
+              "harvest": -0.03903400208215757,
+              "aggression": 0.037914486198149744
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 1,
+            "cumulativeExtinctClades": 34,
+            "cumulativeExtinctSpecies": 148,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.2626641651031895,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.2626641651031895,
+                "reproductionPolicyAgentFraction": 0.2626641651031895,
+                "decisionGatedFraction": 0.13466097676623992,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.22274881516587677,
+                "reproductionDecisionGatedFraction": 0.046489563567362426
+              },
+              "movement": {
+                "decisions": 1055,
+                "gatedDecisions": 235,
+                "energyReservePolicyActiveDecisions": 276,
+                "recentHarvestPolicyActiveDecisions": 276,
+                "blockedByEnergyReserve": 68,
+                "blockedByRecentHarvest": 167,
+                "energyReserveNearThreshold": 29,
+                "recentHarvestNearThreshold": 274
+              },
+              "reproduction": {
+                "decisions": 1054,
+                "gatedDecisions": 49,
+                "harvestThresholdPolicyActiveDecisions": 59,
+                "suppressedByHarvestThreshold": 49,
+                "harvestThresholdNearThreshold": 59
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.2626641651031895,
+                  "mean": 0.6039531402556774,
+                  "variance": 0.001351356848128357,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.12742601769366038,
+                    "survivalRate": 0.0365065999772358,
+                    "reproductionRate": 0.015152437479587834
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.2626641651031895,
+                  "mean": 4.001370218633009,
+                  "variance": 0.0011723003621442133,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.12659750621711297,
+                    "survivalRate": 0.0365964563143384,
+                    "reproductionRate": 0.017646437886384123
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.2626641651031895,
+                  "mean": 0.5005629806047572,
+                  "variance": 0.0009661266539595516,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.12656872100856428,
+                    "survivalRate": 0.03650183682515053,
+                    "reproductionRate": 0.017536459476102655
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 28937,
+            "meanHarvestIntake": 0.4062596102155576,
+            "survivalRate": 0.9919825828524035,
+            "reproductionRate": 0.01686422227597885,
+            "movementPolicyGatedRate": 0.5585236893942012,
+            "reproductionPolicyGatedRate": 0.10529771572726959,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 48549,
+            "meanHarvestIntake": 0.48093093761863465,
+            "survivalRate": 0.9955302889863848,
+            "reproductionRate": 0.0201651939277843,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.06104757638483067,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0022784903231212344,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.3718664017120147,
+            "decisionGatedFraction": 0.12462209189168148,
+            "movementDecisionGatedFraction": 0.2096211462886344,
+            "blockedByEnergyReserveFraction": 0.052308011569240344,
+            "blockedByRecentHarvestFraction": 0.15731313471939404,
+            "energyReserveNearThresholdFraction": 0.02333303069999092,
+            "recentHarvestNearThresholdFraction": 0.36240775087223254,
+            "reproductionDecisionGatedFraction": 0.03955242286174176,
+            "suppressedByHarvestThresholdFraction": 0.03955242286174176,
+            "harvestThresholdNearThresholdFraction": 0.05296156392382881
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 59242,
+          "meanHarvestIntake": 0.40242555544832265,
+          "survivalRate": 0.9920495594341852,
+          "reproductionRate": 0.01706559535464704,
+          "movementPolicyGatedRate": 0.5924344215252693,
+          "reproductionPolicyGatedRate": 0.10151581648155025,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 104025,
+          "meanHarvestIntake": 0.4451399183431292,
+          "survivalRate": 0.9956645037250661,
+          "reproductionRate": 0.020129776496034608,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 59242,
+          "policyNegativeExposures": 104025,
+          "weightedHarvestAdvantage": -0.057874102421272056,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.003456458640954224
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.3613297068600786,
+          "decisionGatedFraction": 0.12657483466545155,
+          "movementDecisionGatedFraction": 0.21604668484650758,
+          "blockedByEnergyReserveFraction": 0.056823288253073236,
+          "blockedByRecentHarvestFraction": 0.15922339659343432,
+          "energyReserveNearThresholdFraction": 0.024530473804408714,
+          "recentHarvestNearThresholdFraction": 0.3511458839896338,
+          "reproductionDecisionGatedFraction": 0.03704456558563553,
+          "suppressedByHarvestThresholdFraction": 0.03704456558563553,
+          "harvestThresholdNearThresholdFraction": 0.050676029443469155
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0
+      },
+      "interpretation": {
+        "outcome": "detrimental",
+        "score": -4.621934441540715,
+        "summary": "rh0.6_me4_mh0.5: matched bins 7, harvest -0.0579, survival +0.0000, reproduction -0.0035, movement gate 21.6%, reproduction gate 3.7%."
+      }
+    },
+    {
+      "regimeId": "rh0.6_me8_mh0.25",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.6,
+        "movementEnergyReserveThreshold": 8,
+        "movementMinRecentHarvest": 0.25
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.6,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1327,
+            "births": 16,
+            "deaths": 9,
+            "meanEnergy": 9.308338483590802,
+            "meanGenome": {
+              "metabolism": 0.5953927863727347,
+              "harvest": 1.8207784679378614,
+              "aggression": 0.9327475626323756
+            },
+            "activeClades": 25,
+            "activeSpecies": 252,
+            "dominantSpeciesShare": 0.1627731725697061,
+            "selectionDifferential": {
+              "metabolism": -0.01583457246764408,
+              "harvest": -0.030424327628297165,
+              "aggression": 0.03878916270149735
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 1,
+            "cumulativeExtinctClades": 23,
+            "cumulativeExtinctSpecies": 125,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.20195930670685758,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.20195930670685758,
+                "reproductionPolicyAgentFraction": 0.20195930670685758,
+                "decisionGatedFraction": 0.10335621662852784,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.18001525553012968,
+                "reproductionDecisionGatedFraction": 0.02669717772692601
+              },
+              "movement": {
+                "decisions": 1311,
+                "gatedDecisions": 236,
+                "energyReservePolicyActiveDecisions": 268,
+                "recentHarvestPolicyActiveDecisions": 268,
+                "blockedByEnergyReserve": 141,
+                "blockedByRecentHarvest": 95,
+                "energyReserveNearThreshold": 29,
+                "recentHarvestNearThreshold": 265
+              },
+              "reproduction": {
+                "decisions": 1311,
+                "gatedDecisions": 35,
+                "harvestThresholdPolicyActiveDecisions": 41,
+                "suppressedByHarvestThreshold": 35,
+                "harvestThresholdNearThreshold": 40
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.20195930670685758,
+                  "mean": 0.598675714109922,
+                  "variance": 0.0011671893598811294,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.06638527280149323,
+                    "survivalRate": -0.026131080720120044,
+                    "reproductionRate": -0.056187517522759974
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.20195930670685758,
+                  "mean": 7.979204863566675,
+                  "variance": 0.0031863106294599034,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.06828636306696925,
+                    "survivalRate": -0.026437784278215224,
+                    "reproductionRate": -0.05629950214549587
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.20195930670685758,
+                  "mean": 0.29356360952022353,
+                  "variance": 0.006487581325680827,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.07736473100795285,
+                    "survivalRate": -0.0263607754806346,
+                    "reproductionRate": -0.05381761059988639
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 28331,
+            "meanHarvestIntake": 0.3914618939534261,
+            "survivalRate": 0.9915287141293989,
+            "reproductionRate": 0.01708375983904557,
+            "movementPolicyGatedRate": 0.6526772793053546,
+            "reproductionPolicyGatedRate": 0.0825950372383608,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 60087,
+            "meanHarvestIntake": 0.39878902999245947,
+            "survivalRate": 0.9957894386472947,
+            "reproductionRate": 0.021435585068317605,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.04468977540962418,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.00479844708407028,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.3185725275092812,
+            "decisionGatedFraction": 0.11842928127167499,
+            "movementDecisionGatedFraction": 0.21019904739169482,
+            "blockedByEnergyReserveFraction": 0.10675351544294012,
+            "blockedByRecentHarvestFraction": 0.10344553194875468,
+            "energyReserveNearThresholdFraction": 0.0256112948879719,
+            "recentHarvestNearThresholdFraction": 0.30772203844536145,
+            "reproductionDecisionGatedFraction": 0.026613591128802957,
+            "suppressedByHarvestThresholdFraction": 0.026613591128802957,
+            "harvestThresholdNearThresholdFraction": 0.03853284048905317
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.6,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1052,
+            "births": 13,
+            "deaths": 6,
+            "meanEnergy": 10.30600922071229,
+            "meanGenome": {
+              "metabolism": 0.7187878861230342,
+              "harvest": 1.677538715641124,
+              "aggression": 0.9193302286888423
+            },
+            "activeClades": 22,
+            "activeSpecies": 196,
+            "dominantSpeciesShare": 0.21958174904942965,
+            "selectionDifferential": {
+              "metabolism": -0.016821987711170938,
+              "harvest": -0.05095494459203276,
+              "aggression": 0.04676982655508677
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 2,
+            "cumulativeExtinctClades": 26,
+            "cumulativeExtinctSpecies": 126,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.30133079847908745,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.30133079847908745,
+                "reproductionPolicyAgentFraction": 0.30133079847908745,
+                "decisionGatedFraction": 0.15151515151515152,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.25961538461538464,
+                "reproductionDecisionGatedFraction": 0.04331087584215592
+              },
+              "movement": {
+                "decisions": 1040,
+                "gatedDecisions": 270,
+                "energyReservePolicyActiveDecisions": 315,
+                "recentHarvestPolicyActiveDecisions": 315,
+                "blockedByEnergyReserve": 139,
+                "blockedByRecentHarvest": 131,
+                "energyReserveNearThreshold": 25,
+                "recentHarvestNearThreshold": 311
+              },
+              "reproduction": {
+                "decisions": 1039,
+                "gatedDecisions": 45,
+                "harvestThresholdPolicyActiveDecisions": 52,
+                "suppressedByHarvestThreshold": 45,
+                "harvestThresholdNearThreshold": 52
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.30133079847908745,
+                  "mean": 0.5957910700806921,
+                  "variance": 0.0025889645662566354,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.18055628021209197,
+                    "survivalRate": -0.032731616803208484,
+                    "reproductionRate": -0.036248712158873035
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.30133079847908745,
+                  "mean": 8.00054036274006,
+                  "variance": 0.0022776241202354932,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.1818907139735594,
+                    "survivalRate": -0.03231558148857034,
+                    "reproductionRate": -0.036609673458784193
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.30133079847908745,
+                  "mean": 0.252560958632177,
+                  "variance": 0.0026979993732633135,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.17624113879192016,
+                    "survivalRate": -0.03067764212375242,
+                    "reproductionRate": -0.026711343543704892
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 29228,
+            "meanHarvestIntake": 0.3991625048857849,
+            "survivalRate": 0.99240454358834,
+            "reproductionRate": 0.017620090324346516,
+            "movementPolicyGatedRate": 0.5933351580676064,
+            "reproductionPolicyGatedRate": 0.10496783905843711,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 47918,
+            "meanHarvestIntake": 0.48923356679987057,
+            "survivalRate": 0.995408823406653,
+            "reproductionRate": 0.01942902458366376,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.08422353000427256,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.001697456915031266,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.3777479206653871,
+            "decisionGatedFraction": 0.13297976309925594,
+            "movementDecisionGatedFraction": 0.22587199458178123,
+            "blockedByEnergyReserveFraction": 0.09639480059392014,
+            "blockedByRecentHarvestFraction": 0.12947719398786112,
+            "energyReserveNearThresholdFraction": 0.027898616791268333,
+            "recentHarvestNearThresholdFraction": 0.36571674177498764,
+            "reproductionDecisionGatedFraction": 0.03999791405924072,
+            "suppressedByHarvestThresholdFraction": 0.03999791405924072,
+            "harvestThresholdNearThresholdFraction": 0.05583802670004172
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 57559,
+          "meanHarvestIntake": 0.39537220261635786,
+          "survivalRate": 0.9919734533261523,
+          "reproductionRate": 0.017356104171371983,
+          "movementPolicyGatedRate": 0.6225438245973697,
+          "reproductionPolicyGatedRate": 0.09395576712590559,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 108005,
+          "meanHarvestIntake": 0.4389160733213081,
+          "survivalRate": 0.9956205731216148,
+          "reproductionRate": 0.020545345122910976,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 57559,
+          "policyNegativeExposures": 108005,
+          "weightedHarvestAdvantage": -0.05989041713657124,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.003593323189596102
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.3461247445590329,
+          "decisionGatedFraction": 0.1252094870300204,
+          "movementDecisionGatedFraction": 0.21750320187924516,
+          "blockedByEnergyReserveFraction": 0.1019259834776961,
+          "blockedByRecentHarvestFraction": 0.11557721840154904,
+          "energyReserveNearThresholdFraction": 0.02667726878182911,
+          "recentHarvestNearThresholdFraction": 0.33474964642755256,
+          "reproductionDecisionGatedFraction": 0.03284961944736346,
+          "suppressedByHarvestThresholdFraction": 0.03284961944736346,
+          "harvestThresholdNearThresholdFraction": 0.046595678768625214
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0
+      },
+      "interpretation": {
+        "outcome": "detrimental",
+        "score": -4.791182451626613,
+        "summary": "rh0.6_me8_mh0.25: matched bins 7, harvest -0.0599, survival +0.0000, reproduction -0.0036, movement gate 21.8%, reproduction gate 3.3%."
+      }
+    },
+    {
+      "regimeId": "rh0.6_me8_mh0.5",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.6,
+        "movementEnergyReserveThreshold": 8,
+        "movementMinRecentHarvest": 0.5
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.6,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1291,
+            "births": 16,
+            "deaths": 5,
+            "meanEnergy": 9.36162293551507,
+            "meanGenome": {
+              "metabolism": 0.6127955632672193,
+              "harvest": 1.801670472474054,
+              "aggression": 0.9357682306810735
+            },
+            "activeClades": 22,
+            "activeSpecies": 219,
+            "dominantSpeciesShare": 0.25561580170410536,
+            "selectionDifferential": {
+              "metabolism": -0.03298345408927772,
+              "harvest": 0.0015461165413444,
+              "aggression": 0.03836312398698005
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 0,
+            "cumulativeExtinctClades": 26,
+            "cumulativeExtinctSpecies": 122,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.21223857474825716,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.21223857474825716,
+                "reproductionPolicyAgentFraction": 0.21223857474825716,
+                "decisionGatedFraction": 0.11211289690317522,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.19278996865203762,
+                "reproductionDecisionGatedFraction": 0.03137254901960784
+              },
+              "movement": {
+                "decisions": 1276,
+                "gatedDecisions": 246,
+                "energyReservePolicyActiveDecisions": 271,
+                "recentHarvestPolicyActiveDecisions": 271,
+                "blockedByEnergyReserve": 145,
+                "blockedByRecentHarvest": 101,
+                "energyReserveNearThreshold": 15,
+                "recentHarvestNearThreshold": 270
+              },
+              "reproduction": {
+                "decisions": 1275,
+                "gatedDecisions": 40,
+                "harvestThresholdPolicyActiveDecisions": 45,
+                "suppressedByHarvestThreshold": 40,
+                "harvestThresholdNearThreshold": 45
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.21223857474825716,
+                  "mean": 0.5713933841570912,
+                  "variance": 0.0042172951305896895,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.07677515338192865,
+                    "survivalRate": -0.007051314277797526,
+                    "reproductionRate": -0.008422180429445529
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.21223857474825716,
+                  "mean": 8.000164770771132,
+                  "variance": 0.0011569807095497418,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.07561683561902695,
+                    "survivalRate": 0.0019126076903488887,
+                    "reproductionRate": -0.006639645230235516
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.21223857474825716,
+                  "mean": 0.4917297658535996,
+                  "variance": 0.004033985037636567,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.07421039816017937,
+                    "survivalRate": 0.0013796865994928794,
+                    "reproductionRate": -0.005938238816954299
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 28086,
+            "meanHarvestIntake": 0.39077244045022963,
+            "survivalRate": 0.9919888912625507,
+            "reproductionRate": 0.016912340667948444,
+            "movementPolicyGatedRate": 0.6644235562201809,
+            "reproductionPolicyGatedRate": 0.09399700918607136,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 59636,
+            "meanHarvestIntake": 0.40389461503495033,
+            "survivalRate": 0.9957072908981153,
+            "reproductionRate": 0.020943725266617478,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.04313648039655509,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.004405067912311907,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.31850727814309,
+            "decisionGatedFraction": 0.12203729697212753,
+            "movementDecisionGatedFraction": 0.2137473655273527,
+            "blockedByEnergyReserveFraction": 0.10485201136259507,
+            "blockedByRecentHarvestFraction": 0.10889535416475762,
+            "energyReserveNearThresholdFraction": 0.023778979199120316,
+            "recentHarvestNearThresholdFraction": 0.30893200769724183,
+            "reproductionDecisionGatedFraction": 0.03026100113478754,
+            "suppressedByHarvestThresholdFraction": 0.03026100113478754,
+            "harvestThresholdNearThresholdFraction": 0.04181520156807006
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.6,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1062,
+            "births": 17,
+            "deaths": 7,
+            "meanEnergy": 10.626875225680196,
+            "meanGenome": {
+              "metabolism": 0.6620796742978814,
+              "harvest": 1.6138655345994366,
+              "aggression": 0.9174881882390713
+            },
+            "activeClades": 21,
+            "activeSpecies": 225,
+            "dominantSpeciesShare": 0.2391713747645951,
+            "selectionDifferential": {
+              "metabolism": -0.022711229734403315,
+              "harvest": -0.07306349731612194,
+              "aggression": 0.04700445911043616
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 1,
+            "cumulativeExtinctClades": 27,
+            "cumulativeExtinctSpecies": 131,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.2711864406779661,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.2711864406779661,
+                "reproductionPolicyAgentFraction": 0.2711864406779661,
+                "decisionGatedFraction": 0.13732057416267943,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.23253588516746412,
+                "reproductionDecisionGatedFraction": 0.042105263157894736
+              },
+              "movement": {
+                "decisions": 1045,
+                "gatedDecisions": 243,
+                "energyReservePolicyActiveDecisions": 285,
+                "recentHarvestPolicyActiveDecisions": 285,
+                "blockedByEnergyReserve": 126,
+                "blockedByRecentHarvest": 117,
+                "energyReserveNearThreshold": 29,
+                "recentHarvestNearThreshold": 283
+              },
+              "reproduction": {
+                "decisions": 1045,
+                "gatedDecisions": 44,
+                "harvestThresholdPolicyActiveDecisions": 50,
+                "suppressedByHarvestThreshold": 44,
+                "harvestThresholdNearThreshold": 50
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.2711864406779661,
+                  "mean": 0.6043293007872585,
+                  "variance": 0.0011187899739440415,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.15924406948854422,
+                    "survivalRate": -0.05354369461101243,
+                    "reproductionRate": -0.028509371213936294
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.2711864406779661,
+                  "mean": 8.008788566486333,
+                  "variance": 0.0025472718086090675,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.1591149935444376,
+                    "survivalRate": -0.0542999760539362,
+                    "reproductionRate": -0.02801305403005981
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.2711864406779661,
+                  "mean": 0.5108504646433477,
+                  "variance": 0.0020999517972542345,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.15620852350584769,
+                    "survivalRate": -0.054317499034050476,
+                    "reproductionRate": -0.029187817057124046
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 27974,
+            "meanHarvestIntake": 0.41055146579447355,
+            "survivalRate": 0.9922070494030171,
+            "reproductionRate": 0.017230285264888824,
+            "movementPolicyGatedRate": 0.5935154071637949,
+            "reproductionPolicyGatedRate": 0.1059197826553228,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 48756,
+            "meanHarvestIntake": 0.48432914892838846,
+            "survivalRate": 0.9955697760275658,
+            "reproductionRate": 0.01981294609894167,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": -0.06309069506255581,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.001927713102802056,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.3632177402757769,
+            "decisionGatedFraction": 0.1281680084371049,
+            "movementDecisionGatedFraction": 0.2174220499456543,
+            "blockedByEnergyReserveFraction": 0.10129251077092309,
+            "blockedByRecentHarvestFraction": 0.11612953917473122,
+            "energyReserveNearThresholdFraction": 0.02577164333512303,
+            "recentHarvestNearThresholdFraction": 0.3535219936356612,
+            "reproductionDecisionGatedFraction": 0.038835587711020234,
+            "suppressedByHarvestThresholdFraction": 0.038835587711020234,
+            "harvestThresholdNearThresholdFraction": 0.05304340987731991
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 56060,
+          "meanHarvestIntake": 0.40064219526611733,
+          "survivalRate": 0.9920977524081341,
+          "reproductionRate": 0.017070995362112023,
+          "movementPolicyGatedRate": 0.62904031394934,
+          "reproductionPolicyGatedRate": 0.09994648590795577,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 108392,
+          "meanHarvestIntake": 0.4400750170434439,
+          "survivalRate": 0.9956454350874603,
+          "reproductionRate": 0.020435087460329175,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 56060,
+          "policyNegativeExposures": 108392,
+          "weightedHarvestAdvantage": -0.04779637853066382,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0034200055280635324
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.339357803118008,
+          "decisionGatedFraction": 0.12489761738854048,
+          "movementDecisionGatedFraction": 0.21546188296968846,
+          "blockedByEnergyReserveFraction": 0.10319123586306342,
+          "blockedByRecentHarvestFraction": 0.11227064710662504,
+          "energyReserveNearThresholdFraction": 0.024708707314241723,
+          "recentHarvestNearThresholdFraction": 0.3297365993144617,
+          "reproductionDecisionGatedFraction": 0.03426135981459853,
+          "suppressedByHarvestThresholdFraction": 0.03426135981459853,
+          "harvestThresholdNearThresholdFraction": 0.04705357197453787
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 0,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0
+      },
+      "interpretation": {
+        "outcome": "detrimental",
+        "score": -4.099821690564957,
+        "summary": "rh0.6_me8_mh0.5: matched bins 7, harvest -0.0478, survival +0.0000, reproduction -0.0034, movement gate 21.5%, reproduction gate 3.4%."
+      }
+    },
+    {
+      "regimeId": "rh0.9_me4_mh0.25",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.9,
+        "movementEnergyReserveThreshold": 4,
+        "movementMinRecentHarvest": 0.25
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.9,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1259,
+            "births": 23,
+            "deaths": 5,
+            "meanEnergy": 9.873869352893276,
+            "meanGenome": {
+              "metabolism": 0.6487094860659303,
+              "harvest": 1.7673561142220464,
+              "aggression": 0.9359704252766674
+            },
+            "activeClades": 22,
+            "activeSpecies": 223,
+            "dominantSpeciesShare": 0.1898332009531374,
+            "selectionDifferential": {
+              "metabolism": -0.03783710343396829,
+              "harvest": 0.018116031782986264,
+              "aggression": 0.03714258465243647
+            },
+            "cladeExtinctions": 1,
+            "speciesExtinctions": 1,
+            "cumulativeExtinctClades": 26,
+            "cumulativeExtinctSpecies": 117,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.14217633042096903,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.14217633042096903,
+                "reproductionPolicyAgentFraction": 0.14217633042096903,
+                "decisionGatedFraction": 0.07160194174757281,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.11731391585760517,
+                "reproductionDecisionGatedFraction": 0.025889967637540454
+              },
+              "movement": {
+                "decisions": 1236,
+                "gatedDecisions": 145,
+                "energyReservePolicyActiveDecisions": 175,
+                "recentHarvestPolicyActiveDecisions": 175,
+                "blockedByEnergyReserve": 44,
+                "blockedByRecentHarvest": 101,
+                "energyReserveNearThreshold": 17,
+                "recentHarvestNearThreshold": 169
+              },
+              "reproduction": {
+                "decisions": 1236,
+                "gatedDecisions": 32,
+                "harvestThresholdPolicyActiveDecisions": 41,
+                "suppressedByHarvestThreshold": 32,
+                "harvestThresholdNearThreshold": 40
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.14217633042096903,
+                  "mean": 0.89133137417437,
+                  "variance": 0.002436810606288904,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0.00621914738436482,
+                    "survivalRate": -0.010965924677606811,
+                    "reproductionRate": 0.0148045085291331
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.14217633042096903,
+                  "mean": 3.996938854178632,
+                  "variance": 0.0008112152108404859,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0.008290432617797492,
+                    "survivalRate": -0.010634819704828663,
+                    "reproductionRate": 0.01269384252776539
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.14217633042096903,
+                  "mean": 0.27768826416391845,
+                  "variance": 0.005667243439709109,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0.009170481521409337,
+                    "survivalRate": -0.007037288968924931,
+                    "reproductionRate": 0.04191766032925489
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 21902,
+            "meanHarvestIntake": 0.457503207617597,
+            "survivalRate": 0.9921924938361794,
+            "reproductionRate": 0.01488448543512008,
+            "movementPolicyGatedRate": 0.556981097616656,
+            "reproductionPolicyGatedRate": 0.20075792165099077,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 62170,
+            "meanHarvestIntake": 0.4018780218820426,
+            "survivalRate": 0.995528389898665,
+            "reproductionRate": 0.02145729451503941,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.022132197546171545,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.006313869982013609,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.258633021821465,
+            "decisionGatedFraction": 0.09920438039105511,
+            "movementDecisionGatedFraction": 0.14580245733135727,
+            "blockedByEnergyReserveFraction": 0.03803126643400105,
+            "blockedByRecentHarvestFraction": 0.10777119089735622,
+            "energyReserveNearThresholdFraction": 0.015681025003585602,
+            "recentHarvestNearThresholdFraction": 0.2473107998278912,
+            "reproductionDecisionGatedFraction": 0.05258122765267929,
+            "suppressedByHarvestThresholdFraction": 0.05258122765267929,
+            "harvestThresholdNearThresholdFraction": 0.058488693302081965
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.9,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1040,
+            "births": 17,
+            "deaths": 5,
+            "meanEnergy": 11.32168691826624,
+            "meanGenome": {
+              "metabolism": 0.6421021508057855,
+              "harvest": 1.4723958674740356,
+              "aggression": 0.9281096323581335
+            },
+            "activeClades": 20,
+            "activeSpecies": 187,
+            "dominantSpeciesShare": 0.32596153846153847,
+            "selectionDifferential": {
+              "metabolism": -0.013025488681361885,
+              "harvest": -0.023620373611703105,
+              "aggression": 0.042236748626262144
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 0,
+            "cumulativeExtinctClades": 28,
+            "cumulativeExtinctSpecies": 124,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.09615384615384616,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.09615384615384616,
+                "reproductionPolicyAgentFraction": 0.09615384615384616,
+                "decisionGatedFraction": 0.056695992179863146,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.08211143695014662,
+                "reproductionDecisionGatedFraction": 0.03128054740957967
+              },
+              "movement": {
+                "decisions": 1023,
+                "gatedDecisions": 84,
+                "energyReservePolicyActiveDecisions": 98,
+                "recentHarvestPolicyActiveDecisions": 98,
+                "blockedByEnergyReserve": 20,
+                "blockedByRecentHarvest": 64,
+                "energyReserveNearThreshold": 10,
+                "recentHarvestNearThreshold": 98
+              },
+              "reproduction": {
+                "decisions": 1023,
+                "gatedDecisions": 32,
+                "harvestThresholdPolicyActiveDecisions": 38,
+                "suppressedByHarvestThreshold": 32,
+                "harvestThresholdNearThreshold": 38
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.09615384615384616,
+                  "mean": 0.8997930826877719,
+                  "variance": 0.0009980637182576055,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.05009980835135611,
+                    "survivalRate": -0.1045444157812367,
+                    "reproductionRate": 0.008602914444270388
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.09615384615384616,
+                  "mean": 4.021282086027086,
+                  "variance": 0.002584097781316447,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.0516162565212905,
+                    "survivalRate": -0.11712083902524888,
+                    "reproductionRate": 0.008558445063082452
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.09615384615384616,
+                  "mean": 0.25233093877858476,
+                  "variance": 0.0013618559747918737,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.059192385941706276,
+                    "survivalRate": -0.1148553128489302,
+                    "reproductionRate": -0.00032607385714161286
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 17981,
+            "meanHarvestIntake": 0.5112912241214473,
+            "survivalRate": 0.99093487570213,
+            "reproductionRate": 0.01329180801957622,
+            "movementPolicyGatedRate": 0.46838329347644736,
+            "reproductionPolicyGatedRate": 0.24036482954229466,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 55386,
+            "meanHarvestIntake": 0.4670508057406841,
+            "survivalRate": 0.9958473260390712,
+            "reproductionRate": 0.020691149387931967,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.055092487989904085,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.006131742256334284,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.24283543350502293,
+            "decisionGatedFraction": 0.08727810650887574,
+            "movementDecisionGatedFraction": 0.11530352399989047,
+            "blockedByEnergyReserveFraction": 0.03318638591495304,
+            "blockedByRecentHarvestFraction": 0.08211713808493744,
+            "energyReserveNearThresholdFraction": 0.013704444018509898,
+            "recentHarvestNearThresholdFraction": 0.23201719558610115,
+            "reproductionDecisionGatedFraction": 0.059226573848219916,
+            "suppressedByHarvestThresholdFraction": 0.059226573848219916,
+            "harvestThresholdNearThresholdFraction": 0.06411872721791323
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 39883,
+          "meanHarvestIntake": 0.48175319695528224,
+          "survivalRate": 0.9916255046009578,
+          "reproductionRate": 0.014166436827721084,
+          "movementPolicyGatedRate": 0.5170373342025424,
+          "reproductionPolicyGatedRate": 0.21861444725823032,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 117556,
+          "meanHarvestIntake": 0.4325838965867778,
+          "survivalRate": 0.9956786552791861,
+          "reproductionRate": 0.021096328558304126,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 39883,
+          "policyNegativeExposures": 117556,
+          "weightedHarvestAdvantage": 0.03618396500914505,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.00646719118349591
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.25127472720211474,
+          "decisionGatedFraction": 0.09364616813540712,
+          "movementDecisionGatedFraction": 0.13158700784889285,
+          "blockedByEnergyReserveFraction": 0.03577308404058452,
+          "blockedByRecentHarvestFraction": 0.09581392380830835,
+          "energyReserveNearThresholdFraction": 0.014759747303937209,
+          "recentHarvestNearThresholdFraction": 0.24018250271201583,
+          "reproductionDecisionGatedFraction": 0.0556779504077345,
+          "suppressedByHarvestThresholdFraction": 0.0556779504077345,
+          "harvestThresholdNearThresholdFraction": 0.06111228184447978
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 1,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "score": -1.4243973412907023,
+        "summary": "rh0.9_me4_mh0.25: matched bins 7, harvest +0.0362, survival +0.0000, reproduction -0.0065, movement gate 13.2%, reproduction gate 5.6%."
+      }
+    },
+    {
+      "regimeId": "rh0.9_me4_mh0.5",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.9,
+        "movementEnergyReserveThreshold": 4,
+        "movementMinRecentHarvest": 0.5
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.9,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1143,
+            "births": 18,
+            "deaths": 2,
+            "meanEnergy": 10.464019355953871,
+            "meanGenome": {
+              "metabolism": 0.6814459353999686,
+              "harvest": 1.771950578706645,
+              "aggression": 0.9254208986457994
+            },
+            "activeClades": 23,
+            "activeSpecies": 221,
+            "dominantSpeciesShare": 0.1662292213473316,
+            "selectionDifferential": {
+              "metabolism": -0.028288173271208694,
+              "harvest": 0.05514032314450312,
+              "aggression": 0.04335900442496177
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 2,
+            "cumulativeExtinctClades": 25,
+            "cumulativeExtinctSpecies": 117,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.15485564304461943,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.15485564304461943,
+                "reproductionPolicyAgentFraction": 0.15485564304461943,
+                "decisionGatedFraction": 0.07777777777777778,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.12355555555555556,
+                "reproductionDecisionGatedFraction": 0.032
+              },
+              "movement": {
+                "decisions": 1125,
+                "gatedDecisions": 139,
+                "energyReservePolicyActiveDecisions": 175,
+                "recentHarvestPolicyActiveDecisions": 175,
+                "blockedByEnergyReserve": 39,
+                "blockedByRecentHarvest": 100,
+                "energyReserveNearThreshold": 20,
+                "recentHarvestNearThreshold": 173
+              },
+              "reproduction": {
+                "decisions": 1125,
+                "gatedDecisions": 36,
+                "harvestThresholdPolicyActiveDecisions": 41,
+                "suppressedByHarvestThreshold": 36,
+                "harvestThresholdNearThreshold": 41
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.15485564304461943,
+                  "mean": 0.8975790736892941,
+                  "variance": 0.0021908305538792263,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.03974118611165736,
+                    "survivalRate": 0.018051725580359414,
+                    "reproductionRate": -0.020159290820614028
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.15485564304461943,
+                  "mean": 3.9859786943449644,
+                  "variance": 0.002659192114877205,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.0417100139094588,
+                    "survivalRate": 0.018075733928000163,
+                    "reproductionRate": -0.015661601945330905
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.15485564304461943,
+                  "mean": 0.5083768017057295,
+                  "variance": 0.0036316086030612022,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.04043423203462876,
+                    "survivalRate": 0.017927443766296937,
+                    "reproductionRate": -0.016053907582657186
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 21456,
+            "meanHarvestIntake": 0.4720912044778631,
+            "survivalRate": 0.99277591349739,
+            "reproductionRate": 0.01435495898583147,
+            "movementPolicyGatedRate": 0.5559750186428039,
+            "reproductionPolicyGatedRate": 0.2156972408650261,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 59852,
+            "meanHarvestIntake": 0.4160078436238906,
+            "survivalRate": 0.9959399852970661,
+            "reproductionRate": 0.01979883713159126,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.028070122909167623,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.005127615415052672,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.26223559821851145,
+            "decisionGatedFraction": 0.10228136177468078,
+            "movementDecisionGatedFraction": 0.14733162893524523,
+            "blockedByEnergyReserveFraction": 0.036175231884594955,
+            "blockedByRecentHarvestFraction": 0.11115639705065027,
+            "energyReserveNearThresholdFraction": 0.01519137426358887,
+            "recentHarvestNearThresholdFraction": 0.25306606395198045,
+            "reproductionDecisionGatedFraction": 0.05719935731059202,
+            "suppressedByHarvestThresholdFraction": 0.05719935731059202,
+            "harvestThresholdNearThresholdFraction": 0.0625262637498455
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.9,
+            "movementEnergyReserveThreshold": 4,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 972,
+            "births": 14,
+            "deaths": 6,
+            "meanEnergy": 11.343421093242197,
+            "meanGenome": {
+              "metabolism": 0.7037610859282442,
+              "harvest": 1.5425093150939106,
+              "aggression": 0.9134982368605558
+            },
+            "activeClades": 20,
+            "activeSpecies": 193,
+            "dominantSpeciesShare": 0.2623456790123457,
+            "selectionDifferential": {
+              "metabolism": -0.010084873717599363,
+              "harvest": -0.007846488347599712,
+              "aggression": 0.04820634344460484
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 1,
+            "cumulativeExtinctClades": 28,
+            "cumulativeExtinctSpecies": 108,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.07510288065843622,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.07510288065843622,
+                "reproductionPolicyAgentFraction": 0.07510288065843622,
+                "decisionGatedFraction": 0.04434011476264997,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.061522419186652764,
+                "reproductionDecisionGatedFraction": 0.027139874739039668
+              },
+              "movement": {
+                "decisions": 959,
+                "gatedDecisions": 59,
+                "energyReservePolicyActiveDecisions": 73,
+                "recentHarvestPolicyActiveDecisions": 73,
+                "blockedByEnergyReserve": 12,
+                "blockedByRecentHarvest": 47,
+                "energyReserveNearThreshold": 6,
+                "recentHarvestNearThreshold": 72
+              },
+              "reproduction": {
+                "decisions": 958,
+                "gatedDecisions": 26,
+                "harvestThresholdPolicyActiveDecisions": 26,
+                "suppressedByHarvestThreshold": 26,
+                "harvestThresholdNearThreshold": 26
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.07510288065843622,
+                  "mean": 0.8998361898187465,
+                  "variance": 0.0005896750568889013,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.11005221613529868,
+                    "survivalRate": -0.07548628799542902,
+                    "reproductionRate": -0.035246429086887056
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.07510288065843622,
+                  "mean": 4.0187996854696255,
+                  "variance": 0.0019447770563823265,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.109859437636016,
+                    "survivalRate": -0.07504457595023568,
+                    "reproductionRate": -0.03525772045640415
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.07510288065843622,
+                  "mean": 0.4862412474057573,
+                  "variance": 0.002661104978380975,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.11437529693996493,
+                    "survivalRate": -0.07774759930646556,
+                    "reproductionRate": -0.03505230635363846
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 17229,
+            "meanHarvestIntake": 0.5284111898088022,
+            "survivalRate": 0.9904231238028904,
+            "reproductionRate": 0.012420918219281443,
+            "movementPolicyGatedRate": 0.4629403912008822,
+            "reproductionPolicyGatedRate": 0.2336177375355505,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 54871,
+            "meanHarvestIntake": 0.47342110754569666,
+            "survivalRate": 0.9959176978731935,
+            "reproductionRate": 0.020028794809644437,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.07731529204679667,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.005424709687439238,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.23660714285714285,
+            "decisionGatedFraction": 0.08363182762129089,
+            "movementDecisionGatedFraction": 0.11110646774485632,
+            "blockedByEnergyReserveFraction": 0.03706799281206904,
+            "blockedByRecentHarvestFraction": 0.07403847493278727,
+            "energyReserveNearThresholdFraction": 0.012383857801551813,
+            "recentHarvestNearThresholdFraction": 0.2276178138102999,
+            "reproductionDecisionGatedFraction": 0.05612806961275118,
+            "suppressedByHarvestThresholdFraction": 0.05612806961275118,
+            "harvestThresholdNearThresholdFraction": 0.0604370319755686
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 38685,
+          "meanHarvestIntake": 0.4971742347807273,
+          "survivalRate": 0.9917280599715652,
+          "reproductionRate": 0.013493602171384258,
+          "movementPolicyGatedRate": 0.514540519581233,
+          "reproductionPolicyGatedRate": 0.2236784283313946,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 114723,
+          "meanHarvestIntake": 0.4434681018515225,
+          "survivalRate": 0.995929325418617,
+          "reproductionRate": 0.019908823862695362,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 38685,
+          "policyNegativeExposures": 114723,
+          "weightedHarvestAdvantage": 0.04943030852972931,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.00564336395924321
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.250194625129482,
+          "decisionGatedFraction": 0.0935178059762587,
+          "movementDecisionGatedFraction": 0.13030755332102598,
+          "blockedByEnergyReserveFraction": 0.03659478638857248,
+          "blockedByRecentHarvestFraction": 0.09371276693245349,
+          "energyReserveNearThresholdFraction": 0.01387197716590073,
+          "recentHarvestNearThresholdFraction": 0.24110661586603296,
+          "reproductionDecisionGatedFraction": 0.05669599858472949,
+          "suppressedByHarvestThresholdFraction": 0.05669599858472949,
+          "harvestThresholdNearThresholdFraction": 0.06154461050576264
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 1,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "score": -0.35016655313513967,
+        "summary": "rh0.9_me4_mh0.5: matched bins 7, harvest +0.0494, survival +0.0000, reproduction -0.0056, movement gate 13.0%, reproduction gate 5.7%."
+      }
+    },
+    {
+      "regimeId": "rh0.9_me8_mh0.25",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.9,
+        "movementEnergyReserveThreshold": 8,
+        "movementMinRecentHarvest": 0.25
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.9,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1221,
+            "births": 19,
+            "deaths": 11,
+            "meanEnergy": 9.730556014639435,
+            "meanGenome": {
+              "metabolism": 0.6765449972759742,
+              "harvest": 1.7811143915508356,
+              "aggression": 0.9287922649337684
+            },
+            "activeClades": 25,
+            "activeSpecies": 219,
+            "dominantSpeciesShare": 0.19901719901719903,
+            "selectionDifferential": {
+              "metabolism": -0.03185045519766172,
+              "harvest": 0.03385622213657147,
+              "aggression": 0.0424153101951561
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 4,
+            "cumulativeExtinctClades": 23,
+            "cumulativeExtinctSpecies": 103,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.15233415233415235,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.15233415233415235,
+                "reproductionPolicyAgentFraction": 0.15233415233415235,
+                "decisionGatedFraction": 0.07941787941787942,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.13383208645054032,
+                "reproductionDecisionGatedFraction": 0.024958402662229616
+              },
+              "movement": {
+                "decisions": 1203,
+                "gatedDecisions": 161,
+                "energyReservePolicyActiveDecisions": 184,
+                "recentHarvestPolicyActiveDecisions": 184,
+                "blockedByEnergyReserve": 91,
+                "blockedByRecentHarvest": 70,
+                "energyReserveNearThreshold": 13,
+                "recentHarvestNearThreshold": 180
+              },
+              "reproduction": {
+                "decisions": 1202,
+                "gatedDecisions": 30,
+                "harvestThresholdPolicyActiveDecisions": 36,
+                "suppressedByHarvestThreshold": 30,
+                "harvestThresholdNearThreshold": 36
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.15233415233415235,
+                  "mean": 0.8969449492712186,
+                  "variance": 0.0006658925432148344,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.05080155840100556,
+                    "survivalRate": 0.04043789281453393,
+                    "reproductionRate": -0.018262814896276066
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.15233415233415235,
+                  "mean": 7.989290859310271,
+                  "variance": 0.0027963527083767928,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.05041790613923485,
+                    "survivalRate": 0.04045144142248766,
+                    "reproductionRate": -0.016275733642292223
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.15233415233415235,
+                  "mean": 0.2581568951767328,
+                  "variance": 0.0022075809144252163,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.048795233019664645,
+                    "survivalRate": 0.03967777265151757,
+                    "reproductionRate": -0.017172913183698974
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 22269,
+            "meanHarvestIntake": 0.4568786707589506,
+            "survivalRate": 0.9930396515335219,
+            "reproductionRate": 0.014235035250797072,
+            "movementPolicyGatedRate": 0.5950873411468858,
+            "reproductionPolicyGatedRate": 0.19479994611343124,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 61199,
+            "meanHarvestIntake": 0.4062737577606823,
+            "survivalRate": 0.9958822856582624,
+            "reproductionRate": 0.02063759211751826,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.012442373162081759,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.006015889590244838,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.265013409576919,
+            "decisionGatedFraction": 0.10585099020923473,
+            "movementDecisionGatedFraction": 0.15943981904807739,
+            "blockedByEnergyReserveFraction": 0.07313874584917465,
+            "blockedByRecentHarvestFraction": 0.08630107319890273,
+            "energyReserveNearThresholdFraction": 0.01568891669473988,
+            "recentHarvestNearThresholdFraction": 0.25452379806535447,
+            "reproductionDecisionGatedFraction": 0.05222667677971611,
+            "suppressedByHarvestThresholdFraction": 0.05222667677971611,
+            "harvestThresholdNearThresholdFraction": 0.059654952384392196
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.9,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.25
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1114,
+            "births": 17,
+            "deaths": 14,
+            "meanEnergy": 10.828127355971455,
+            "meanGenome": {
+              "metabolism": 0.5978079805834475,
+              "harvest": 1.3925236633497646,
+              "aggression": 0.9228972830336466
+            },
+            "activeClades": 20,
+            "activeSpecies": 189,
+            "dominantSpeciesShare": 0.28186714542190305,
+            "selectionDifferential": {
+              "metabolism": -0.014793848810064625,
+              "harvest": -0.0042844136228064045,
+              "aggression": 0.04281182844108733
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 4,
+            "cumulativeExtinctClades": 28,
+            "cumulativeExtinctSpecies": 121,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.06732495511669659,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.06732495511669659,
+                "reproductionPolicyAgentFraction": 0.06732495511669659,
+                "decisionGatedFraction": 0.04143897996357013,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.060964513193812554,
+                "reproductionDecisionGatedFraction": 0.02187784867821331
+              },
+              "movement": {
+                "decisions": 1099,
+                "gatedDecisions": 67,
+                "energyReservePolicyActiveDecisions": 74,
+                "recentHarvestPolicyActiveDecisions": 74,
+                "blockedByEnergyReserve": 34,
+                "blockedByRecentHarvest": 33,
+                "energyReserveNearThreshold": 7,
+                "recentHarvestNearThreshold": 74
+              },
+              "reproduction": {
+                "decisions": 1097,
+                "gatedDecisions": 24,
+                "harvestThresholdPolicyActiveDecisions": 25,
+                "suppressedByHarvestThreshold": 24,
+                "harvestThresholdNearThreshold": 24
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.06732495511669659,
+                  "mean": 0.8807146180495613,
+                  "variance": 0.0028525109142194115,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09819851858098884,
+                    "survivalRate": -0.06625983368382977,
+                    "reproductionRate": -0.0076416117080937655
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.06732495511669659,
+                  "mean": 7.989584184527397,
+                  "variance": 0.0025464671910706534,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09669758626689404,
+                    "survivalRate": -0.06460688757289823,
+                    "reproductionRate": -0.005108719013090751
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.06732495511669659,
+                  "mean": 0.2639683664944022,
+                  "variance": 0.0022382956489154365,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.09853587758141764,
+                    "survivalRate": -0.05858616049954826,
+                    "reproductionRate": -0.006526322379103936
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 16857,
+            "meanHarvestIntake": 0.519428194181137,
+            "survivalRate": 0.99038974906567,
+            "reproductionRate": 0.012635700302544937,
+            "movementPolicyGatedRate": 0.5042415613691641,
+            "reproductionPolicyGatedRate": 0.23432401969508215,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 59010,
+            "meanHarvestIntake": 0.44598781181211944,
+            "survivalRate": 0.9958142687680054,
+            "reproductionRate": 0.02138620572784274,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.09462309453263125,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.006644399499053384,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.21977564894128657,
+            "decisionGatedFraction": 0.08246070697637452,
+            "movementDecisionGatedFraction": 0.11254849516041471,
+            "blockedByEnergyReserveFraction": 0.05585053559842697,
+            "blockedByRecentHarvestFraction": 0.05669795956198774,
+            "energyReserveNearThresholdFraction": 0.011771248493836315,
+            "recentHarvestNearThresholdFraction": 0.20936668299723263,
+            "reproductionDecisionGatedFraction": 0.052347000980677995,
+            "suppressedByHarvestThresholdFraction": 0.052347000980677995,
+            "harvestThresholdNearThresholdFraction": 0.05572636433512682
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 39126,
+          "meanHarvestIntake": 0.48382743414715984,
+          "survivalRate": 0.9918979706588968,
+          "reproductionRate": 0.013545979655472065,
+          "movementPolicyGatedRate": 0.5559474518223176,
+          "reproductionPolicyGatedRate": 0.21182845166896694,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 120209,
+          "meanHarvestIntake": 0.42576918929717933,
+          "survivalRate": 0.9958488965052533,
+          "reproductionRate": 0.02100508281409878,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 39126,
+          "policyNegativeExposures": 120209,
+          "weightedHarvestAdvantage": 0.050286381291390826,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.00673715559759664
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.2434735786698355,
+          "decisionGatedFraction": 0.09471619823557974,
+          "movementDecisionGatedFraction": 0.13711634591746039,
+          "blockedByEnergyReserveFraction": 0.06490837688084267,
+          "blockedByRecentHarvestFraction": 0.07220796903661773,
+          "energyReserveNearThresholdFraction": 0.013823839030755363,
+          "recentHarvestNearThresholdFraction": 0.23302592678975537,
+          "reproductionDecisionGatedFraction": 0.05228395334313237,
+          "suppressedByHarvestThresholdFraction": 0.05228395334313237,
+          "harvestThresholdNearThresholdFraction": 0.05778487121417622
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 1,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "score": -0.8542587342287784,
+        "summary": "rh0.9_me8_mh0.25: matched bins 7, harvest +0.0503, survival +0.0000, reproduction -0.0067, movement gate 13.7%, reproduction gate 5.2%."
+      }
+    },
+    {
+      "regimeId": "rh0.9_me8_mh0.5",
+      "thresholds": {
+        "reproductionHarvestThreshold": 0.9,
+        "movementEnergyReserveThreshold": 8,
+        "movementMinRecentHarvest": 0.5
+      },
+      "runs": [
+        {
+          "run": 1,
+          "seed": 90210,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.9,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1152,
+            "births": 12,
+            "deaths": 7,
+            "meanEnergy": 9.982825583989356,
+            "meanGenome": {
+              "metabolism": 0.6898675967042427,
+              "harvest": 1.7598152695044211,
+              "aggression": 0.927946928752581
+            },
+            "activeClades": 26,
+            "activeSpecies": 218,
+            "dominantSpeciesShare": 0.20052083333333334,
+            "selectionDifferential": {
+              "metabolism": -0.01653955002064278,
+              "harvest": -0.003756712224464387,
+              "aggression": 0.04149099123293287
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 0,
+            "cumulativeExtinctClades": 22,
+            "cumulativeExtinctSpecies": 116,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.13368055555555555,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.13368055555555555,
+                "reproductionPolicyAgentFraction": 0.13368055555555555,
+                "decisionGatedFraction": 0.07236842105263158,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.11929824561403508,
+                "reproductionDecisionGatedFraction": 0.02543859649122807
+              },
+              "movement": {
+                "decisions": 1140,
+                "gatedDecisions": 136,
+                "energyReservePolicyActiveDecisions": 153,
+                "recentHarvestPolicyActiveDecisions": 153,
+                "blockedByEnergyReserve": 78,
+                "blockedByRecentHarvest": 58,
+                "energyReserveNearThreshold": 17,
+                "recentHarvestNearThreshold": 152
+              },
+              "reproduction": {
+                "decisions": 1140,
+                "gatedDecisions": 29,
+                "harvestThresholdPolicyActiveDecisions": 32,
+                "suppressedByHarvestThreshold": 29,
+                "harvestThresholdNearThreshold": 30
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.13368055555555555,
+                  "mean": 0.8971459187234636,
+                  "variance": 0.001136547256837657,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.038300183558054174,
+                    "survivalRate": 0.030718023631145376,
+                    "reproductionRate": -0.015045776935520545
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.13368055555555555,
+                  "mean": 7.99610974524221,
+                  "variance": 0.0012284398732442029,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.04024783077590174,
+                    "survivalRate": 0.030742860347891015,
+                    "reproductionRate": -0.015126300568091744
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.13368055555555555,
+                  "mean": 0.5085989310596642,
+                  "variance": 0.0018743313046056074,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.038691642615236894,
+                    "survivalRate": 0.030614917410762714,
+                    "reproductionRate": -0.015506671045609753
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 21368,
+            "meanHarvestIntake": 0.4573640259975446,
+            "survivalRate": 0.992418569824036,
+            "reproductionRate": 0.013665293897416698,
+            "movementPolicyGatedRate": 0.6099775365031823,
+            "reproductionPolicyGatedRate": 0.19079932609509548,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 60232,
+            "meanHarvestIntake": 0.4196557576286926,
+            "survivalRate": 0.9955505379200426,
+            "reproductionRate": 0.020620268295922433,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.013478174637090808,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.006405027940635688,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.2599390597794544,
+            "decisionGatedFraction": 0.1053691399153894,
+            "movementDecisionGatedFraction": 0.1604757390330087,
+            "blockedByEnergyReserveFraction": 0.07454968542618289,
+            "blockedByRecentHarvestFraction": 0.08592605360682581,
+            "energyReserveNearThresholdFraction": 0.01494687334556334,
+            "recentHarvestNearThresholdFraction": 0.25111732187488456,
+            "reproductionDecisionGatedFraction": 0.05022791671799926,
+            "suppressedByHarvestThresholdFraction": 0.05022791671799926,
+            "harvestThresholdNearThresholdFraction": 0.05526672415917211
+          }
+        },
+        {
+          "run": 2,
+          "seed": 90247,
+          "stepsExecuted": 120,
+          "extinct": false,
+          "thresholds": {
+            "reproductionHarvestThreshold": 0.9,
+            "movementEnergyReserveThreshold": 8,
+            "movementMinRecentHarvest": 0.5
+          },
+          "finalSummary": {
+            "tick": 120,
+            "population": 1000,
+            "births": 12,
+            "deaths": 3,
+            "meanEnergy": 11.668768081345764,
+            "meanGenome": {
+              "metabolism": 0.6573130291615363,
+              "harvest": 1.53861596746822,
+              "aggression": 0.9099226021782012
+            },
+            "activeClades": 20,
+            "activeSpecies": 181,
+            "dominantSpeciesShare": 0.253,
+            "selectionDifferential": {
+              "metabolism": -0.017540121984904955,
+              "harvest": -0.0129558006263355,
+              "aggression": 0.053876202315571775
+            },
+            "cladeExtinctions": 0,
+            "speciesExtinctions": 1,
+            "cumulativeExtinctClades": 28,
+            "cumulativeExtinctSpecies": 106,
+            "policyObservability": {
+              "activation": {
+                "anyPolicyAgentFraction": 0.117,
+                "harvestPolicyAgentFraction": 0,
+                "movementPolicyAgentFraction": 0.117,
+                "reproductionPolicyAgentFraction": 0.117,
+                "decisionGatedFraction": 0.0673076923076923,
+                "harvestDecisionGuidedFraction": 0,
+                "movementDecisionGatedFraction": 0.09716599190283401,
+                "reproductionDecisionGatedFraction": 0.03744939271255061
+              },
+              "movement": {
+                "decisions": 988,
+                "gatedDecisions": 96,
+                "energyReservePolicyActiveDecisions": 116,
+                "recentHarvestPolicyActiveDecisions": 116,
+                "blockedByEnergyReserve": 44,
+                "blockedByRecentHarvest": 52,
+                "energyReserveNearThreshold": 6,
+                "recentHarvestNearThreshold": 116
+              },
+              "reproduction": {
+                "decisions": 988,
+                "gatedDecisions": 37,
+                "harvestThresholdPolicyActiveDecisions": 42,
+                "suppressedByHarvestThreshold": 37,
+                "harvestThresholdNearThreshold": 41
+              },
+              "parameters": [
+                {
+                  "key": "reproduction_harvest_threshold",
+                  "prevalence": 0.117,
+                  "mean": 0.8719163939834408,
+                  "variance": 0.003267662943634084,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.050676389913229446,
+                    "survivalRate": -0.09655588576659302,
+                    "reproductionRate": -0.011280036425769227
+                  }
+                },
+                {
+                  "key": "movement_energy_reserve_threshold",
+                  "prevalence": 0.117,
+                  "mean": 8.003111986079828,
+                  "variance": 0.002007626728749705,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.05269368704639237,
+                    "survivalRate": -0.0931227115143981,
+                    "reproductionRate": -0.012227606043972192
+                  }
+                },
+                {
+                  "key": "movement_min_recent_harvest",
+                  "prevalence": 0.117,
+                  "mean": 0.49799962114148677,
+                  "variance": 0.00327772472836227,
+                  "outcomeCorrelation": {
+                    "harvestIntake": -0.05412480431661612,
+                    "survivalRate": -0.09293120891864227,
+                    "reproductionRate": -0.012014359540810818
+                  }
+                },
+                {
+                  "key": "harvest_secondary_preference",
+                  "prevalence": 0,
+                  "mean": 0,
+                  "variance": 0,
+                  "outcomeCorrelation": {
+                    "harvestIntake": 0,
+                    "survivalRate": 0,
+                    "reproductionRate": 0
+                  }
+                }
+              ]
+            }
+          },
+          "policyMetrics": {
+            "exposures": 18885,
+            "meanHarvestIntake": 0.504243067111112,
+            "survivalRate": 0.9918983320095314,
+            "reproductionRate": 0.013026211278792693,
+            "movementPolicyGatedRate": 0.5272967963992586,
+            "reproductionPolicyGatedRate": 0.24643897272967963,
+            "harvestPolicyGuidedRate": 0
+          },
+          "controlMetrics": {
+            "exposures": 53445,
+            "meanHarvestIntake": 0.4781049629330321,
+            "survivalRate": 0.9959397511460379,
+            "reproductionRate": 0.020132846851903825,
+            "movementPolicyGatedRate": 0,
+            "reproductionPolicyGatedRate": 0,
+            "harvestPolicyGuidedRate": 0
+          },
+          "matchedBins": 7,
+          "weightedHarvestAdvantage": 0.034790464278313275,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.00573112368936508,
+          "decisionObservability": {
+            "policyAgentMeanFraction": 0.25897218962364565,
+            "decisionGatedFraction": 0.10146728978452436,
+            "movementDecisionGatedFraction": 0.1382153316585007,
+            "blockedByEnergyReserveFraction": 0.05950282454508862,
+            "blockedByRecentHarvestFraction": 0.07871250711341207,
+            "energyReserveNearThresholdFraction": 0.012450206115452413,
+            "recentHarvestNearThresholdFraction": 0.2498507918442128,
+            "reproductionDecisionGatedFraction": 0.06467481934408005,
+            "suppressedByHarvestThresholdFraction": 0.06467481934408005,
+            "harvestThresholdNearThresholdFraction": 0.06969149527515286
+          }
+        }
+      ],
+      "overall": {
+        "policyMetrics": {
+          "exposures": 40253,
+          "meanHarvestIntake": 0.4793576834001985,
+          "survivalRate": 0.992174496310834,
+          "reproductionRate": 0.013365463443718481,
+          "movementPolicyGatedRate": 0.5711872407025563,
+          "reproductionPolicyGatedRate": 0.2169030879685986,
+          "harvestPolicyGuidedRate": 0
+        },
+        "controlMetrics": {
+          "exposures": 113677,
+          "meanHarvestIntake": 0.4471355273049327,
+          "survivalRate": 0.9957335256912129,
+          "reproductionRate": 0.020391108139729233,
+          "movementPolicyGatedRate": 0,
+          "reproductionPolicyGatedRate": 0,
+          "harvestPolicyGuidedRate": 0
+        },
+        "matchedComparison": {
+          "matchedBins": 7,
+          "policyPositiveExposures": 40253,
+          "policyNegativeExposures": 113677,
+          "weightedHarvestAdvantage": 0.02313800140099822,
+          "weightedSurvivalAdvantage": 0,
+          "weightedReproductionAdvantage": -0.0062501589172075794
+        },
+        "decisionObservability": {
+          "policyAgentMeanFraction": 0.25948482556126834,
+          "decisionGatedFraction": 0.10353527111795768,
+          "movementDecisionGatedFraction": 0.15001174413445728,
+          "blockedByEnergyReserveFraction": 0.06747657697627685,
+          "blockedByRecentHarvestFraction": 0.08253516715818045,
+          "energyReserveNearThresholdFraction": 0.013773259910744578,
+          "recentHarvestNearThresholdFraction": 0.25052196153143513,
+          "reproductionDecisionGatedFraction": 0.05701691373342911,
+          "suppressedByHarvestThresholdFraction": 0.05701691373342911,
+          "harvestThresholdNearThresholdFraction": 0.062045320969111216
+        }
+      },
+      "support": {
+        "harvestAdvantagePositiveRunFraction": 1,
+        "survivalAdvantagePositiveRunFraction": 0,
+        "reproductionAdvantagePositiveRunFraction": 0
+      },
+      "interpretation": {
+        "outcome": "mixed",
+        "score": -1.9681793885538785,
+        "summary": "rh0.9_me8_mh0.5: matched bins 7, harvest +0.0231, survival +0.0000, reproduction -0.0063, movement gate 15.0%, reproduction gate 5.7%."
+      }
+    }
+  ],
+  "interpretation": {
+    "nonDetrimentalRegimeIds": [],
+    "bestRegimeId": "rh0.9_me4_mh0.5",
+    "worstRegimeId": "rh0.3_me8_mh0.25",
+    "ruledOutAcrossTestedRange": true,
+    "summary": "No tested regime cleared the non-detrimental bar. Best remaining candidate rh0.9_me4_mh0.5 still landed at harvest +0.0494, survival +0.0000, reproduction -0.0056; this bounded sweep does not support the current binary gate design across the tested range."
+  }
+}
