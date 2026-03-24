@@ -7,6 +7,7 @@ import {
   normalizeSeedBehavioralState,
   resolveHarvestSecondaryPreference,
   resolveBehavioralPolicyFlags,
+  computeGradedReproductionProbability,
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
@@ -241,6 +242,57 @@ describe('behavioral-control', () => {
         })
       ).toBe(0);
       expect(DEFAULT_HARVEST_SECONDARY_PREFERENCE).toBe(0.5);
+    });
+  });
+
+  describe('computeGradedReproductionProbability', () => {
+    it('returns 1 when threshold is zero or negative', () => {
+      expect(computeGradedReproductionProbability(5, 0, 1)).toBe(1);
+      expect(computeGradedReproductionProbability(5, -1, 1)).toBe(1);
+    });
+
+    it('returns binary threshold behavior when steepness is zero', () => {
+      expect(computeGradedReproductionProbability(10, 5, 0)).toBe(1);
+      expect(computeGradedReproductionProbability(5, 5, 0)).toBe(1);
+      expect(computeGradedReproductionProbability(4, 5, 0)).toBe(0);
+    });
+
+    it('returns 0.5 when harvest exactly equals threshold', () => {
+      expect(computeGradedReproductionProbability(10, 10, 1)).toBeCloseTo(0.5, 5);
+      expect(computeGradedReproductionProbability(5, 5, 2)).toBeCloseTo(0.5, 5);
+    });
+
+    it('returns higher probability when harvest exceeds threshold', () => {
+      const prob = computeGradedReproductionProbability(15, 10, 1);
+      expect(prob).toBeGreaterThan(0.5);
+      expect(prob).toBeLessThan(1);
+    });
+
+    it('returns lower probability when harvest is below threshold', () => {
+      const prob = computeGradedReproductionProbability(5, 10, 1);
+      expect(prob).toBeLessThan(0.5);
+      expect(prob).toBeGreaterThan(0);
+    });
+
+    it('steepness increases gradient slope', () => {
+      const gentleSlope = computeGradedReproductionProbability(15, 10, 0.5);
+      const steepSlope = computeGradedReproductionProbability(15, 10, 2);
+      expect(steepSlope).toBeGreaterThan(gentleSlope);
+    });
+
+    it('uses normalized distance relative to threshold magnitude', () => {
+      const smallThreshold = computeGradedReproductionProbability(12, 10, 1);
+      const largeThreshold = computeGradedReproductionProbability(120, 100, 1);
+      expect(smallThreshold).toBeCloseTo(largeThreshold, 3);
+    });
+
+    it('asymptotes toward 0 and 1 at extremes', () => {
+      const veryLow = computeGradedReproductionProbability(1, 10, 2);
+      const veryHigh = computeGradedReproductionProbability(100, 10, 2);
+      expect(veryLow).toBeGreaterThan(0);
+      expect(veryLow).toBeLessThan(0.2);
+      expect(veryHigh).toBeGreaterThan(0.9);
+      expect(veryHigh).toBeLessThan(1);
     });
   });
 });

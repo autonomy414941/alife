@@ -3,6 +3,7 @@ import {
   INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE,
   INTERNAL_STATE_LAST_HARVEST,
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
+  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST
 } from '../src/behavioral-control';
@@ -233,7 +234,10 @@ describe('LifeSimulation', () => {
   });
 
   it('can gate reproduction on per-agent last-harvest state', () => {
-    const policyState = new Map([[INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 1]]);
+    const policyState = new Map([
+      [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 1],
+      [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS, 0]
+    ]);
     const createSimulation = (resource: number) => {
       const sim = new LifeSimulation({
         seed: 19,

@@ -2,10 +2,12 @@ import { Agent, AgentSeed } from './types';
 
 export const INTERNAL_STATE_LAST_HARVEST = 'last_harvest_total';
 export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD = 'reproduction_harvest_threshold';
+export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS = 'reproduction_harvest_threshold_steepness';
 export const INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD = 'movement_energy_reserve_threshold';
 export const INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST = 'movement_min_recent_harvest';
 export const INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE = 'harvest_secondary_preference';
 export const DEFAULT_HARVEST_SECONDARY_PREFERENCE = 0.5;
+export const DEFAULT_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS = 1.0;
 export const POLICY_NEAR_THRESHOLD_MARGIN = 1;
 
 export interface BehavioralStateCarrier {
@@ -27,6 +29,7 @@ export interface BehavioralPolicyFlags {
 
 export const POLICY_PARAMETER_KEYS = [
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
+  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
   INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE
@@ -180,7 +183,8 @@ export function resolveBehavioralPolicyFlags(
   agent: Pick<BehavioralStateCarrier, 'policyState'>
 ): BehavioralPolicyFlags {
   const hasReproductionPolicy =
-    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD);
+    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD) ||
+    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS);
   const hasMovementPolicy =
     isActivePolicyParameter(agent.policyState, INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD) ||
     isActivePolicyParameter(agent.policyState, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
@@ -225,6 +229,10 @@ export function isActivePolicyParameter(
     return policyState.has(key);
   }
 
+  if (key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS) {
+    return policyState.has(key);
+  }
+
   return (policyState.get(key) ?? 0) > 0;
 }
 
@@ -241,9 +249,31 @@ function clampPolicyParameterValue(key: string, value: number): number {
     return clamp(value, 0, 1);
   }
 
+  if (key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS) {
+    return clamp(value, 0.01, 10);
+  }
+
   return Math.max(0, value);
 }
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+export function computeGradedReproductionProbability(
+  recentHarvest: number,
+  threshold: number,
+  steepness: number
+): number {
+  if (threshold <= 0) {
+    return 1;
+  }
+
+  if (steepness <= 0) {
+    return recentHarvest >= threshold ? 1 : 0;
+  }
+
+  const normalizedDistance = (recentHarvest - threshold) / Math.max(1, threshold);
+  const scaledDistance = normalizedDistance * steepness;
+  return 1 / (1 + Math.exp(-scaledDistance));
 }

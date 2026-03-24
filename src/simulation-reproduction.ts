@@ -4,8 +4,11 @@ import {
   isNearPolicyThreshold,
   getTransientStateValue,
   inheritBehavioralState,
+  computeGradedReproductionProbability,
   INTERNAL_STATE_LAST_HARVEST,
-  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
+  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
+  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS,
+  DEFAULT_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS
 } from './behavioral-control';
 import { disturbanceSettlementOpenUntilTickAt, resolveDisturbanceSettlementOpeningConfig } from './disturbance';
 import { mutateGenomeV2WithConfig } from './genome-v2-adapter';
@@ -125,19 +128,22 @@ interface ReproduceAgentOptions {
 
 function evaluateReproductionEligibility(
   agent: Agent,
-  config: SimulationConfig
+  config: SimulationConfig,
+  randomFloat: () => number
 ): {
   canReproduce: boolean;
   policyGated: boolean;
   harvestThresholdPolicyActive: boolean;
   harvestThresholdNearThreshold: boolean;
+  gradedProbability: number;
 } {
   if (agent.energy < config.reproduceThreshold) {
     return {
       canReproduce: false,
       policyGated: false,
       harvestThresholdPolicyActive: false,
-      harvestThresholdNearThreshold: false
+      harvestThresholdNearThreshold: false,
+      gradedProbability: 0
     };
   }
 
@@ -145,18 +151,28 @@ function evaluateReproductionEligibility(
     agent,
     INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
   );
+  const reproductionHarvestThresholdSteepness = getPolicyStateValue(
+    agent,
+    INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS,
+    DEFAULT_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS
+  );
   const recentHarvest = getTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST);
   const harvestThresholdPolicyActive = reproductionHarvestThreshold > 0;
   const harvestThresholdNearThreshold = isNearPolicyThreshold(recentHarvest, reproductionHarvestThreshold);
-  if (
-    harvestThresholdPolicyActive &&
-    recentHarvest < reproductionHarvestThreshold
-  ) {
+
+  const gradedProbability = computeGradedReproductionProbability(
+    recentHarvest,
+    reproductionHarvestThreshold,
+    reproductionHarvestThresholdSteepness
+  );
+
+  if (harvestThresholdPolicyActive && randomFloat() >= gradedProbability) {
     return {
       canReproduce: false,
       policyGated: true,
       harvestThresholdPolicyActive,
-      harvestThresholdNearThreshold
+      harvestThresholdNearThreshold,
+      gradedProbability
     };
   }
 
@@ -168,7 +184,8 @@ function evaluateReproductionEligibility(
       canReproduce: true,
       policyGated: false,
       harvestThresholdPolicyActive,
-      harvestThresholdNearThreshold
+      harvestThresholdNearThreshold,
+      gradedProbability
     };
   }
 
@@ -178,7 +195,8 @@ function evaluateReproductionEligibility(
       canReproduce: false,
       policyGated: false,
       harvestThresholdPolicyActive,
-      harvestThresholdNearThreshold
+      harvestThresholdNearThreshold,
+      gradedProbability
     };
   }
 
@@ -189,7 +207,8 @@ function evaluateReproductionEligibility(
     canReproduce: primaryFraction >= minPrimaryFraction && secondaryFraction >= minSecondaryFraction,
     policyGated: false,
     harvestThresholdPolicyActive,
-    harvestThresholdNearThreshold
+    harvestThresholdNearThreshold,
+    gradedProbability
   };
 }
 
@@ -225,7 +244,7 @@ export function runReproductionPhase({
     if (!isAlive(agent.id)) {
       continue;
     }
-    const reproductionDecision = evaluateReproductionEligibility(agent, config);
+    const reproductionDecision = evaluateReproductionEligibility(agent, config, randomFloat);
     decisionStats.evaluated += 1;
     decisionStats.policyGated += Number(reproductionDecision.policyGated);
     decisionStats.harvestThresholdPolicyActive += Number(reproductionDecision.harvestThresholdPolicyActive);
