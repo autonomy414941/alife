@@ -1,11 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import {
   DEFAULT_HARVEST_SECONDARY_PREFERENCE,
+  DEFAULT_SPENDING_SECONDARY_PREFERENCE,
   inheritBehavioralState,
   INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE,
+  INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE,
   mutatePolicyParameters,
   normalizeSeedBehavioralState,
   resolveHarvestSecondaryPreference,
+  resolveSpendingSecondaryPreference,
   resolveBehavioralPolicyFlags,
   computeGradedReproductionProbability,
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
@@ -26,7 +29,8 @@ describe('behavioral-control', () => {
       const parent = {
         policyState: new Map([
           [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 2.0],
-          [INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0.75]
+          [INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0.75],
+          [INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, 0.25]
         ]),
         transientState: new Map([[INTERNAL_STATE_LAST_HARVEST, 5.0]])
       };
@@ -34,6 +38,7 @@ describe('behavioral-control', () => {
 
       expect(result.policyState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD)).toBe(2.0);
       expect(result.policyState?.get(INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE)).toBe(0.75);
+      expect(result.policyState?.get(INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE)).toBe(0.25);
       expect(result.transientState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
     });
 
@@ -42,7 +47,8 @@ describe('behavioral-control', () => {
         policyState: new Map([
           [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 2.0],
           [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 10.0],
-          [INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0.6]
+          [INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0.6],
+          [INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, 0.3]
         ]),
         transientState: new Map([[INTERNAL_STATE_LAST_HARVEST, 3]])
       };
@@ -56,13 +62,16 @@ describe('behavioral-control', () => {
       const mutatedRepThreshold = result.policyState?.get(INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD);
       const mutatedMoveReserve = result.policyState?.get(INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD);
       const mutatedHarvestPreference = result.policyState?.get(INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE);
+      const mutatedSpendingPreference = result.policyState?.get(INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE);
 
       expect(mutatedRepThreshold).toBeDefined();
       expect(mutatedMoveReserve).toBeDefined();
       expect(mutatedHarvestPreference).toBeDefined();
+      expect(mutatedSpendingPreference).toBeDefined();
       expect(mutatedRepThreshold).not.toBe(2.0);
       expect(mutatedMoveReserve).not.toBe(10.0);
       expect(mutatedHarvestPreference).not.toBe(0.6);
+      expect(mutatedSpendingPreference).not.toBe(0.3);
       expect(result.transientState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(0);
     });
 
@@ -102,7 +111,8 @@ describe('behavioral-control', () => {
         [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 2.0],
         [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 10.0],
         [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 1.5],
-        [INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0.5]
+        [INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0.5],
+        [INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, 0.25]
       ]);
 
       mutatePolicyParameters(state, {
@@ -116,6 +126,7 @@ describe('behavioral-control', () => {
       expect(state.get(INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD)).toBe(10.0 + delta);
       expect(state.get(INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST)).toBe(1.5 + delta);
       expect(state.get(INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE)).toBe(0.5 + delta);
+      expect(state.get(INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE)).toBe(0.25 + delta);
     });
 
     it('clamps mutated values to minimum of zero', () => {
@@ -141,6 +152,19 @@ describe('behavioral-control', () => {
       });
 
       expect(state.get(INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE)).toBe(1);
+    });
+
+    it('clamps spending preference mutations to the unit interval', () => {
+      const state = new Map([[INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, 0.1]]);
+      const randomValues = [0.5, 0.0];
+
+      mutatePolicyParameters(state, {
+        mutationProbability: 1.0,
+        mutationMagnitude: 0.5,
+        randomFloat: () => randomValues.shift() ?? 0.0
+      });
+
+      expect(state.get(INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE)).toBe(0);
     });
 
     it('skips mutation when probability check fails', () => {
@@ -179,24 +203,37 @@ describe('behavioral-control', () => {
       const harvestOnly = resolveBehavioralPolicyFlags({
         policyState: new Map([[INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0]])
       });
+      const spendingOnly = resolveBehavioralPolicyFlags({
+        policyState: new Map([[INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, 1]])
+      });
 
       expect(movementOnly).toEqual({
         hasAnyPolicy: true,
         hasHarvestPolicy: false,
         hasMovementPolicy: true,
-        hasReproductionPolicy: false
+        hasReproductionPolicy: false,
+        hasSpendingPolicy: false
       });
       expect(reproductionOnly).toEqual({
         hasAnyPolicy: true,
         hasHarvestPolicy: false,
         hasMovementPolicy: false,
-        hasReproductionPolicy: true
+        hasReproductionPolicy: true,
+        hasSpendingPolicy: false
       });
       expect(harvestOnly).toEqual({
         hasAnyPolicy: true,
         hasHarvestPolicy: true,
         hasMovementPolicy: false,
-        hasReproductionPolicy: false
+        hasReproductionPolicy: false,
+        hasSpendingPolicy: false
+      });
+      expect(spendingOnly).toEqual({
+        hasAnyPolicy: true,
+        hasHarvestPolicy: false,
+        hasMovementPolicy: false,
+        hasReproductionPolicy: false,
+        hasSpendingPolicy: true
       });
     });
 
@@ -212,7 +249,8 @@ describe('behavioral-control', () => {
         hasAnyPolicy: false,
         hasHarvestPolicy: false,
         hasMovementPolicy: false,
-        hasReproductionPolicy: false
+        hasReproductionPolicy: false,
+        hasSpendingPolicy: false
       });
     });
   });
@@ -242,6 +280,34 @@ describe('behavioral-control', () => {
         })
       ).toBe(0);
       expect(DEFAULT_HARVEST_SECONDARY_PREFERENCE).toBe(0.5);
+    });
+  });
+
+  describe('resolveSpendingSecondaryPreference', () => {
+    it('returns undefined when no spending policy is present', () => {
+      expect(resolveSpendingSecondaryPreference({ policyState: undefined })).toBeUndefined();
+    });
+
+    it('clamps stored spending preference values to a valid share', () => {
+      expect(
+        resolveSpendingSecondaryPreference({
+          policyState: new Map([[INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, 2]])
+        })
+      ).toBe(1);
+      expect(
+        resolveSpendingSecondaryPreference({
+          policyState: new Map([[INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, -1]])
+        })
+      ).toBe(0);
+    });
+
+    it('keeps zero as an explicit primary-first spending preference', () => {
+      expect(
+        resolveSpendingSecondaryPreference({
+          policyState: new Map([[INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, 0]])
+        })
+      ).toBe(0);
+      expect(DEFAULT_SPENDING_SECONDARY_PREFERENCE).toBe(0.5);
     });
   });
 

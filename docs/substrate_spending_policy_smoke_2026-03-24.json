@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-03-24T00:00:00.000Z",
+  "question": "Does a heritable substrate spending preference create different reserve retention under identical mixed-resource intake?",
+  "prediction": "If the policy is active, primary-biased spenders should retain more secondary reserve, while secondary-biased spenders should burn more secondary reserve, than identical controls.",
+  "config": {
+    "steps": 6,
+    "initialPools": {
+      "primary": 6,
+      "secondary": 6
+    },
+    "intakePerStep": {
+      "primary": 1,
+      "secondary": 2
+    },
+    "spendPerStep": 2.5
+  },
+  "arms": [
+    {
+      "label": "control",
+      "cumulativePrimarySpent": 6.268371571502501,
+      "cumulativeSecondarySpent": 8.7316284284975,
+      "finalPrimary": 5.7316284284974985,
+      "finalSecondary": 9.2683715715025,
+      "finalSecondaryShare": 0.6178914381001667
+    },
+    {
+      "label": "primary_biased",
+      "spendingSecondaryPreference": 0,
+      "cumulativePrimarySpent": 12,
+      "cumulativeSecondarySpent": 3,
+      "finalPrimary": 0,
+      "finalSecondary": 15,
+      "finalSecondaryShare": 1
+    },
+    {
+      "label": "secondary_biased",
+      "spendingSecondaryPreference": 1,
+      "cumulativePrimarySpent": 0,
+      "cumulativeSecondarySpent": 15,
+      "finalPrimary": 12,
+      "finalSecondary": 3,
+      "finalSecondaryShare": 0.2
+    }
+  ],
+  "interpretation": {
+    "primaryBiasedRetainsMoreSecondary": true,
+    "secondaryBiasedBurnsMoreSecondary": true,
+    "summary": "Primary-biased spending ended with secondary reserve +5.732 vs control, while secondary-biased spending changed cumulative secondary burn by +6.268."
+  }
+}

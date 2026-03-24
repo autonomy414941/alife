@@ -1,7 +1,8 @@
 import { Agent, AgentSeed } from './types';
 import { getTrait } from './genome-v2';
+import { resolveSpendingSecondaryPreference } from './behavioral-control';
 
-type EnergyCarrier = Pick<Agent, 'energy' | 'energyPrimary' | 'energySecondary' | 'genomeV2'>;
+type EnergyCarrier = Pick<Agent, 'energy' | 'energyPrimary' | 'energySecondary' | 'genomeV2' | 'policyState'>;
 
 export interface AgentEnergyPools {
   primary: number;
@@ -89,21 +90,11 @@ export function spendAgentEnergy(
     return { primary: 0, secondary: 0, total: 0 };
   }
 
-  let primaryEfficiency = 1.0;
-  let secondaryEfficiency = 1.0;
-
-  if (agent.genomeV2 && agent.genomeV2.traits.has('metabolic_efficiency_primary')) {
-    const eff = agent.genomeV2.traits.get('metabolic_efficiency_primary')!;
-    primaryEfficiency = 2.0 - 2.0 * eff;
-  }
-  if (agent.genomeV2 && agent.genomeV2.traits.has('metabolic_efficiency_secondary')) {
-    const eff = agent.genomeV2.traits.get('metabolic_efficiency_secondary')!;
-    secondaryEfficiency = 2.0 - 2.0 * eff;
-  }
+  const primaryEfficiency = resolveMetabolicEfficiency(agent, 'metabolic_efficiency_primary');
+  const secondaryEfficiency = resolveMetabolicEfficiency(agent, 'metabolic_efficiency_secondary');
 
   const spentTotal = Math.min(current.total, requested);
-  const rawPrimarySpent = spentTotal * (current.primary / current.total);
-  const rawSecondarySpent = spentTotal - rawPrimarySpent;
+  const { primary: rawPrimarySpent, secondary: rawSecondarySpent } = resolveRawSpendSplit(agent, current, spentTotal);
 
   const primarySpent = rawPrimarySpent * primaryEfficiency;
   const secondarySpent = rawSecondarySpent * secondaryEfficiency;
@@ -116,6 +107,53 @@ export function spendAgentEnergy(
     primary: primarySpent,
     secondary: secondarySpent,
     total: primarySpent + secondarySpent
+  };
+}
+
+function resolveMetabolicEfficiency(agent: EnergyCarrier, traitKey: string): number {
+  if (!agent.genomeV2?.traits.has(traitKey)) {
+    return 1.0;
+  }
+
+  const efficiency = getTrait(agent.genomeV2, traitKey);
+  return 2.0 - 2.0 * efficiency;
+}
+
+function resolveRawSpendSplit(
+  agent: EnergyCarrier,
+  current: AgentEnergyPools,
+  spentTotal: number
+): Pick<AgentEnergyPools, 'primary' | 'secondary'> {
+  const spendingSecondaryPreference = resolveSpendingSecondaryPreference(agent);
+  if (spendingSecondaryPreference === undefined) {
+    const rawPrimarySpent = spentTotal * (current.primary / current.total);
+    return {
+      primary: rawPrimarySpent,
+      secondary: spentTotal - rawPrimarySpent
+    };
+  }
+
+  const targetPrimarySpent = spentTotal * (1 - spendingSecondaryPreference);
+  const targetSecondarySpent = spentTotal - targetPrimarySpent;
+
+  let rawPrimarySpent = Math.min(current.primary, targetPrimarySpent);
+  let rawSecondarySpent = Math.min(current.secondary, targetSecondarySpent);
+  let remaining = spentTotal - rawPrimarySpent - rawSecondarySpent;
+
+  if (remaining > 0) {
+    const additionalPrimary = Math.min(current.primary - rawPrimarySpent, remaining);
+    rawPrimarySpent += additionalPrimary;
+    remaining -= additionalPrimary;
+  }
+
+  if (remaining > 0) {
+    const additionalSecondary = Math.min(current.secondary - rawSecondarySpent, remaining);
+    rawSecondarySpent += additionalSecondary;
+  }
+
+  return {
+    primary: rawPrimarySpent,
+    secondary: rawSecondarySpent
   };
 }
 

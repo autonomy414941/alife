@@ -6,7 +6,9 @@ export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS = 'reproduc
 export const INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD = 'movement_energy_reserve_threshold';
 export const INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST = 'movement_min_recent_harvest';
 export const INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE = 'harvest_secondary_preference';
+export const INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE = 'spending_secondary_preference';
 export const DEFAULT_HARVEST_SECONDARY_PREFERENCE = 0.5;
+export const DEFAULT_SPENDING_SECONDARY_PREFERENCE = 0.5;
 export const DEFAULT_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS = 1.0;
 export const POLICY_NEAR_THRESHOLD_MARGIN = 1;
 
@@ -25,6 +27,7 @@ export interface BehavioralPolicyFlags {
   hasHarvestPolicy: boolean;
   hasMovementPolicy: boolean;
   hasReproductionPolicy: boolean;
+  hasSpendingPolicy?: boolean;
 }
 
 export const POLICY_PARAMETER_KEYS = [
@@ -32,7 +35,8 @@ export const POLICY_PARAMETER_KEYS = [
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
-  INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE
+  INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE,
+  INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE
 ];
 
 export const TRANSIENT_MEMORY_KEYS = [INTERNAL_STATE_LAST_HARVEST];
@@ -179,6 +183,19 @@ export function resolveHarvestSecondaryPreference(
   );
 }
 
+export function resolveSpendingSecondaryPreference(
+  agent: Pick<BehavioralStateCarrier, 'policyState'>
+): number | undefined {
+  if (!agent.policyState?.has(INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE)) {
+    return undefined;
+  }
+
+  return clampPolicyParameterValue(
+    INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE,
+    agent.policyState.get(INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE) ?? DEFAULT_SPENDING_SECONDARY_PREFERENCE
+  );
+}
+
 export function resolveBehavioralPolicyFlags(
   agent: Pick<BehavioralStateCarrier, 'policyState'>
 ): BehavioralPolicyFlags {
@@ -190,12 +207,15 @@ export function resolveBehavioralPolicyFlags(
     isActivePolicyParameter(agent.policyState, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
   const hasHarvestPolicy =
     isActivePolicyParameter(agent.policyState, INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE);
+  const hasSpendingPolicy =
+    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE);
 
   return {
-    hasAnyPolicy: hasHarvestPolicy || hasReproductionPolicy || hasMovementPolicy,
+    hasAnyPolicy: hasHarvestPolicy || hasReproductionPolicy || hasMovementPolicy || hasSpendingPolicy,
     hasHarvestPolicy,
     hasMovementPolicy,
-    hasReproductionPolicy
+    hasReproductionPolicy,
+    hasSpendingPolicy
   };
 }
 
@@ -229,6 +249,10 @@ export function isActivePolicyParameter(
     return policyState.has(key);
   }
 
+  if (key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE) {
+    return policyState.has(key);
+  }
+
   if (key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS) {
     return policyState.has(key);
   }
@@ -245,7 +269,10 @@ export function isNearPolicyThreshold(
 }
 
 function clampPolicyParameterValue(key: string, value: number): number {
-  if (key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE) {
+  if (
+    key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE ||
+    key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE
+  ) {
     return clamp(value, 0, 1);
   }
 
