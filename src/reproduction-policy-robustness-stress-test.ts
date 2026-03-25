@@ -5,6 +5,7 @@ import {
 } from './behavioral-policy-fitness-pilot';
 import { INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD } from './behavioral-control';
 import { runGeneratedAtStudyCli } from './clade-activity-relabel-null-smoke-study';
+import { cloneGenomeV2, fromGenome, setTrait } from './genome-v2';
 import {
   analyzePolicyFitnessComparison,
   PolicyFitnessAnalysis,
@@ -224,7 +225,7 @@ function buildInitialAgents(seed: number): AgentSeed[] {
     lineage: agent.lineage,
     species: agent.species,
     genome: { ...agent.genome },
-    genomeV2: agent.genomeV2,
+    genomeV2: agent.genomeV2 ? cloneGenomeV2(agent.genomeV2) : fromGenome(agent.genome),
     policyState: undefined,
     transientState: undefined
   }));
@@ -234,12 +235,14 @@ function buildInitialAgents(seed: number): AgentSeed[] {
   const shuffledIndices = rng.shuffle(Array.from({ length: agents.length }, (_, index) => index));
 
   for (const index of shuffledIndices.slice(0, policyCount)) {
-    agents[index].policyState = new Map([
-      [
-        INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
-        BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS.reproductionHarvestThreshold
-      ]
-    ]);
+    if (!agents[index].genomeV2) {
+      agents[index].genomeV2 = fromGenome(agents[index].genome);
+    }
+    setTrait(
+      agents[index].genomeV2,
+      INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
+      BEHAVIORAL_POLICY_FITNESS_PILOT_POLICY_THRESHOLDS.reproductionHarvestThreshold
+    );
   }
 
   return agents;

@@ -1,0 +1,335 @@
+{
+  "generatedAt": "2026-03-25T04:06:01.014Z",
+  "question": "Did policy-genome unification preserve the March 24 bounded behavioral validation surfaces, or did the refactor change their outcomes?",
+  "prediction": "If unification was architecture-only, graded reproduction, substrate spending, and the bounded reproduction-only stress panel should remain qualitatively unchanged under genome-backed policy loci.",
+  "baselines": {
+    "gradedReproduction": "docs/graded_reproduction_policy_smoke_2026-03-24.txt",
+    "substrateSpending": "docs/substrate_spending_policy_smoke_2026-03-24.json",
+    "reproductionRobustness": "docs/reproduction_policy_robustness_stress_test_2026-03-24.json"
+  },
+  "architectureChecks": {
+    "reproductionPolicyFlagsRecognizeGenomeTraits": true,
+    "spendingPreferenceResolvesFromGenomeTraits": true,
+    "summary": "Genome-backed policy loci are visible to both policy-flag detection and substrate spending resolution."
+  },
+  "validations": {
+    "gradedReproduction": {
+      "status": "degraded",
+      "baseline": {
+        "rows": [
+          {
+            "steepness": 0,
+            "threshold": 2,
+            "finalPopulation": 30,
+            "totalBirths": 0,
+            "reproductionPolicyAgentFraction": 1,
+            "reproductionDecisionGatedFraction": 1
+          },
+          {
+            "steepness": 0.5,
+            "threshold": 2,
+            "finalPopulation": 2349,
+            "totalBirths": 2319,
+            "reproductionPolicyAgentFraction": 1,
+            "reproductionDecisionGatedFraction": 0.0917
+          },
+          {
+            "steepness": 1,
+            "threshold": 2,
+            "finalPopulation": 2079,
+            "totalBirths": 2049,
+            "reproductionPolicyAgentFraction": 1,
+            "reproductionDecisionGatedFraction": 0.1232
+          },
+          {
+            "steepness": 2,
+            "threshold": 2,
+            "finalPopulation": 1655,
+            "totalBirths": 1625,
+            "reproductionPolicyAgentFraction": 1,
+            "reproductionDecisionGatedFraction": 0.239
+          },
+          {
+            "steepness": 5,
+            "threshold": 2,
+            "finalPopulation": 233,
+            "totalBirths": 203,
+            "reproductionPolicyAgentFraction": 1,
+            "reproductionDecisionGatedFraction": 0.7225
+          }
+        ],
+        "summary": {
+          "binaryBirths": 0,
+          "maxBirths": 2319,
+          "maxBirthsSteepness": 0.5,
+          "steepnessZeroGatedFraction": 1,
+          "steepnessFiveGatedFraction": 0.7225
+        }
+      },
+      "current": {
+        "rows": [
+          {
+            "steepness": 0,
+            "threshold": 2,
+            "finalPopulation": 30,
+            "totalBirths": 0,
+            "reproductionPolicyAgentFraction": 1,
+            "reproductionDecisionGatedFraction": 1
+          },
+          {
+            "steepness": 0.5,
+            "threshold": 2,
+            "finalPopulation": 1531,
+            "totalBirths": 1510,
+            "reproductionPolicyAgentFraction": 1,
+            "reproductionDecisionGatedFraction": 0.0913364674278039
+          },
+          {
+            "steepness": 1,
+            "threshold": 2,
+            "finalPopulation": 1240,
+            "totalBirths": 1210,
+            "reproductionPolicyAgentFraction": 1,
+            "reproductionDecisionGatedFraction": 0.12935323383084577
+          },
+          {
+            "steepness": 2,
+            "threshold": 2,
+            "finalPopulation": 544,
+            "totalBirths": 514,
+            "reproductionPolicyAgentFraction": 1,
+            "reproductionDecisionGatedFraction": 0.5675675675675675
+          },
+          {
+            "steepness": 5,
+            "threshold": 2,
+            "finalPopulation": 37,
+            "totalBirths": 7,
+            "reproductionPolicyAgentFraction": 1,
+            "reproductionDecisionGatedFraction": 1
+          }
+        ],
+        "summary": {
+          "binaryBirths": 0,
+          "maxBirths": 1510,
+          "maxBirthsSteepness": 0.5,
+          "steepnessZeroGatedFraction": 1,
+          "steepnessFiveGatedFraction": 1
+        }
+      },
+      "deltas": {
+        "totalBirthDeltaAtSteepnessOne": -839,
+        "gatedFractionDeltaAtSteepnessFive": 0.27749999999999997,
+        "exactRowMatch": false
+      },
+      "summary": "Graded reproduction changed materially after unification: binary births=0, max births=1510 at steepness 0.5."
+    },
+    "substrateSpending": {
+      "status": "preserved",
+      "baseline": {
+        "generatedAt": "2026-03-24T00:00:00.000Z",
+        "config": {
+          "steps": 6,
+          "initialPools": {
+            "primary": 6,
+            "secondary": 6
+          },
+          "intakePerStep": {
+            "primary": 1,
+            "secondary": 2
+          },
+          "spendPerStep": 2.5
+        },
+        "arms": [
+          {
+            "label": "control",
+            "cumulativePrimarySpent": 6.268371571502501,
+            "cumulativeSecondarySpent": 8.7316284284975,
+            "finalPrimary": 5.7316284284974985,
+            "finalSecondary": 9.2683715715025,
+            "finalSecondaryShare": 0.6178914381001667
+          },
+          {
+            "label": "primary_biased",
+            "spendingSecondaryPreference": 0,
+            "cumulativePrimarySpent": 12,
+            "cumulativeSecondarySpent": 3,
+            "finalPrimary": 0,
+            "finalSecondary": 15,
+            "finalSecondaryShare": 1
+          },
+          {
+            "label": "secondary_biased",
+            "spendingSecondaryPreference": 1,
+            "cumulativePrimarySpent": 0,
+            "cumulativeSecondarySpent": 15,
+            "finalPrimary": 12,
+            "finalSecondary": 3,
+            "finalSecondaryShare": 0.2
+          }
+        ],
+        "summary": {
+          "primaryBiasedSecondaryRetentionDelta": 5.731628428497499,
+          "secondaryBiasedSecondaryBurnDelta": 6.268371571502501,
+          "primaryBiasedRetainsMoreSecondary": true,
+          "secondaryBiasedBurnsMoreSecondary": true
+        }
+      },
+      "current": {
+        "generatedAt": "2026-03-25T04:05:48.392Z",
+        "config": {
+          "steps": 6,
+          "initialPools": {
+            "primary": 6,
+            "secondary": 6
+          },
+          "intakePerStep": {
+            "primary": 1,
+            "secondary": 2
+          },
+          "spendPerStep": 2.5
+        },
+        "arms": [
+          {
+            "label": "control",
+            "cumulativePrimarySpent": 6.268371571502501,
+            "cumulativeSecondarySpent": 8.7316284284975,
+            "finalPrimary": 5.7316284284974985,
+            "finalSecondary": 9.2683715715025,
+            "finalSecondaryShare": 0.6178914381001667
+          },
+          {
+            "label": "primary_biased",
+            "spendingSecondaryPreference": 0,
+            "cumulativePrimarySpent": 12,
+            "cumulativeSecondarySpent": 3,
+            "finalPrimary": 0,
+            "finalSecondary": 15,
+            "finalSecondaryShare": 1
+          },
+          {
+            "label": "secondary_biased",
+            "spendingSecondaryPreference": 1,
+            "cumulativePrimarySpent": 0,
+            "cumulativeSecondarySpent": 15,
+            "finalPrimary": 12,
+            "finalSecondary": 3,
+            "finalSecondaryShare": 0.2
+          }
+        ],
+        "summary": {
+          "primaryBiasedSecondaryRetentionDelta": 5.731628428497499,
+          "secondaryBiasedSecondaryBurnDelta": 6.268371571502501,
+          "primaryBiasedRetainsMoreSecondary": true,
+          "secondaryBiasedBurnsMoreSecondary": true
+        }
+      },
+      "deltas": {
+        "primaryBiasedSecondaryRetentionDelta": 0,
+        "secondaryBiasedSecondaryBurnDelta": 0,
+        "exactArmMatch": true
+      },
+      "summary": "Substrate spending preserved: primary-biased retention delta=5.732, secondary-biased burn delta=6.268."
+    },
+    "reproductionRobustness": {
+      "status": "preserved",
+      "comparisonMode": "reduced",
+      "baseline": {
+        "generatedAt": "2026-03-24",
+        "config": {
+          "runs": 6,
+          "steps": 200,
+          "seed": 90210,
+          "seedStep": 37,
+          "stopWhenExtinct": true,
+          "initialAgents": 48,
+          "policyShare": 0.5,
+          "reproductionHarvestThreshold": 0.6,
+          "simulation": {
+            "width": 20,
+            "height": 20,
+            "initialAgents": 48,
+            "initialEnergy": 12,
+            "resourceRegen": 0.7,
+            "maxResource": 8,
+            "metabolismCostBase": 0.25,
+            "moveCost": 0.15,
+            "harvestCap": 2.5,
+            "reproduceThreshold": 20,
+            "reproduceProbability": 0.35,
+            "offspringEnergyFraction": 0.45,
+            "mutationAmount": 0.2,
+            "policyMutationProbability": 0.12,
+            "policyMutationMagnitude": 0.15,
+            "biomeBands": 4,
+            "biomeContrast": 0.45,
+            "maxAge": 120,
+            "maxResource2": 8,
+            "resource2Regen": 0.7
+          }
+        },
+        "summary": {
+          "signal": "mixed",
+          "weightedHarvestAdvantage": 0.04135582309911663,
+          "weightedReproductionAdvantage": 0.0002149701863085676,
+          "harvestAdvantagePositiveRunFraction": 0.8333333333333334,
+          "reproductionAdvantagePositiveRunFraction": 1
+        }
+      },
+      "current": {
+        "generatedAt": "2026-03-25T04:06:00.995Z",
+        "config": {
+          "runs": 2,
+          "steps": 80,
+          "seed": 90210,
+          "seedStep": 37,
+          "stopWhenExtinct": true,
+          "initialAgents": 48,
+          "policyShare": 0.5,
+          "reproductionHarvestThreshold": 0.6,
+          "simulation": {
+            "width": 20,
+            "height": 20,
+            "initialAgents": 48,
+            "initialEnergy": 12,
+            "resourceRegen": 0.7,
+            "maxResource": 8,
+            "metabolismCostBase": 0.25,
+            "moveCost": 0.15,
+            "harvestCap": 2.5,
+            "reproduceThreshold": 20,
+            "reproduceProbability": 0.35,
+            "offspringEnergyFraction": 0.45,
+            "mutationAmount": 0.2,
+            "policyMutationProbability": 0.12,
+            "policyMutationMagnitude": 0.15,
+            "biomeBands": 4,
+            "biomeContrast": 0.45,
+            "maxAge": 120,
+            "maxResource2": 8,
+            "resource2Regen": 0.7
+          }
+        },
+        "summary": {
+          "signal": "mixed",
+          "weightedHarvestAdvantage": 0.14483869383552714,
+          "weightedReproductionAdvantage": -0.0004615795459623194,
+          "harvestAdvantagePositiveRunFraction": 1,
+          "reproductionAdvantagePositiveRunFraction": 0.5
+        }
+      },
+      "deltas": {
+        "weightedHarvestAdvantage": 0.1034828707364105,
+        "weightedReproductionAdvantage": -0.000676549732270887,
+        "exactAggregateMatch": false
+      },
+      "summary": "Reproduction-only robustness preserved on the reduced panel: signal stayed mixed, harvest delta=0.1448, reproduction delta=-0.0005."
+    }
+  },
+  "conclusion": {
+    "preservedCount": 2,
+    "improvedCount": 0,
+    "degradedCount": 1,
+    "summary": "Policy-genome unification changed 1 bounded validation surfaces (2 preserved, 0 improved, 1 degraded)."
+  }
+}

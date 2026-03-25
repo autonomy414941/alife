@@ -242,18 +242,18 @@ export function resolveSpendingSecondaryPreference(
 }
 
 export function resolveBehavioralPolicyFlags(
-  agent: Pick<BehavioralStateCarrier, 'policyState'>
+  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
 ): BehavioralPolicyFlags {
   const hasReproductionPolicy =
-    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD) ||
-    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS);
+    isActivePolicyParameter(agent, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD) ||
+    isActivePolicyParameter(agent, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS);
   const hasMovementPolicy =
-    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD) ||
-    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
+    isActivePolicyParameter(agent, INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD) ||
+    isActivePolicyParameter(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
   const hasHarvestPolicy =
-    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE);
+    isActivePolicyParameter(agent, INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE);
   const hasSpendingPolicy =
-    isActivePolicyParameter(agent.policyState, INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE);
+    isActivePolicyParameter(agent, INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE);
 
   return {
     hasAnyPolicy: hasHarvestPolicy || hasReproductionPolicy || hasMovementPolicy || hasSpendingPolicy,
@@ -303,9 +303,11 @@ export function isActivePolicyParameter(
     return false;
   }
 
-  if (carrier.genomeV2) {
+  const stateCarrier = carrier as { policyState?: ReadonlyMap<string, number>; genomeV2?: GenomeV2 };
+
+  if (stateCarrier.genomeV2) {
     const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[key];
-    if (traitName && carrier.genomeV2.traits.has(traitName)) {
+    if (traitName && stateCarrier.genomeV2.traits.has(traitName)) {
       if (
         key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE ||
         key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE ||
@@ -313,27 +315,27 @@ export function isActivePolicyParameter(
       ) {
         return true;
       }
-      return getTrait(carrier.genomeV2, traitName) > 0;
+      return getTrait(stateCarrier.genomeV2, traitName) > 0;
     }
   }
 
-  if (!carrier.policyState) {
+  if (!stateCarrier.policyState) {
     return false;
   }
 
   if (key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE) {
-    return carrier.policyState.has(key);
+    return stateCarrier.policyState.has(key);
   }
 
   if (key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE) {
-    return carrier.policyState.has(key);
+    return stateCarrier.policyState.has(key);
   }
 
   if (key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS) {
-    return carrier.policyState.has(key);
+    return stateCarrier.policyState.has(key);
   }
 
-  return (carrier.policyState.get(key) ?? 0) > 0;
+  return (stateCarrier.policyState.get(key) ?? 0) > 0;
 }
 
 export function isNearPolicyThreshold(

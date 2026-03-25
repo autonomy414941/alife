@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { createGenomeV2, setTrait } from '../src/genome-v2';
 import {
   DEFAULT_HARVEST_SECONDARY_PREFERENCE,
   DEFAULT_SPENDING_SECONDARY_PREFERENCE,
@@ -251,6 +252,25 @@ describe('behavioral-control', () => {
         hasMovementPolicy: false,
         hasReproductionPolicy: false,
         hasSpendingPolicy: false
+      });
+    });
+
+    it('recognizes genome-backed policy traits without policyState', () => {
+      const genomeV2 = createGenomeV2();
+      setTrait(genomeV2, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 0.6);
+      setTrait(genomeV2, INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, 1);
+
+      expect(
+        resolveBehavioralPolicyFlags({
+          genomeV2,
+          policyState: undefined
+        })
+      ).toEqual({
+        hasAnyPolicy: true,
+        hasHarvestPolicy: false,
+        hasMovementPolicy: false,
+        hasReproductionPolicy: true,
+        hasSpendingPolicy: true
       });
     });
   });

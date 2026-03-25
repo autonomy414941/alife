@@ -1,6 +1,7 @@
 import { addAgentEnergy, getAgentEnergyPools, spendAgentEnergy } from './agent-energy';
 import { INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE } from './behavioral-control';
 import { runGeneratedAtStudyCli } from './clade-activity-relabel-null-smoke-study';
+import { fromGenome, setTrait } from './genome-v2';
 import { Agent } from './types';
 
 export const SUBSTRATE_SPENDING_POLICY_SMOKE_ARTIFACT =
@@ -129,6 +130,16 @@ function runArm(
 }
 
 function createAgent(spendingSecondaryPreference?: number): Agent {
+  const genome = { metabolism: 0.5, harvest: 0.5, aggression: 0.5 };
+  const genomeV2 =
+    spendingSecondaryPreference === undefined
+      ? undefined
+      : (() => {
+          const value = fromGenome(genome);
+          setTrait(value, INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, spendingSecondaryPreference);
+          return value;
+        })();
+
   return {
     id: 1,
     lineage: 1,
@@ -139,11 +150,8 @@ function createAgent(spendingSecondaryPreference?: number): Agent {
     energyPrimary: INITIAL_POOLS.primary,
     energySecondary: INITIAL_POOLS.secondary,
     age: 0,
-    genome: { metabolism: 0.5, harvest: 0.5, aggression: 0.5 },
-    policyState:
-      spendingSecondaryPreference === undefined
-        ? undefined
-        : new Map([[INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, spendingSecondaryPreference]])
+    genome,
+    genomeV2
   };
 }
 

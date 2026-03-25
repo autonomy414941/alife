@@ -3,9 +3,10 @@ import {
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS
 } from './behavioral-control';
+import { fromGenome, setTrait } from './genome-v2';
 import { AgentSeed, SimulationConfig } from './types';
 
-interface GradedReproductionSmokeResult {
+export interface GradedReproductionSmokeResult {
   steepness: number;
   threshold: number;
   finalPopulation: number;
@@ -36,16 +37,20 @@ const SMOKE_CONFIG: Partial<SimulationConfig> = {
 };
 
 function buildInitialAgents(steepness: number, threshold: number, count: number): AgentSeed[] {
-  return Array.from({ length: count }, (_, i) => ({
-    x: i % 20,
-    y: Math.floor(i / 20),
-    energy: 15,
-    genome: { metabolism: 0.5, harvest: 0.5, aggression: 0.5 },
-    policyState: new Map([
-      [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, threshold],
-      [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS, steepness]
-    ])
-  }));
+  return Array.from({ length: count }, (_, i) => {
+    const genome = { metabolism: 0.5, harvest: 0.5, aggression: 0.5 };
+    const genomeV2 = fromGenome(genome);
+    setTrait(genomeV2, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, threshold);
+    setTrait(genomeV2, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS, steepness);
+
+    return {
+      x: i % 20,
+      y: Math.floor(i / 20),
+      energy: 15,
+      genome,
+      genomeV2
+    };
+  });
 }
 
 export function runGradedReproductionPolicySmoke(seed = 12000): GradedReproductionSmokeResult[] {
