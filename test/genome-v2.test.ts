@@ -195,6 +195,67 @@ describe('GenomeV2', () => {
       }
     });
 
+    it('clamps policy trait preferences to [0, 1]', () => {
+      const genome = createGenomeV2();
+      setTrait(genome, 'metabolism', 0.5);
+      setTrait(genome, 'harvest', 0.5);
+      setTrait(genome, 'aggression', 0.5);
+      setTrait(genome, 'harvest_secondary_preference', 0.99);
+      setTrait(genome, 'spending_secondary_preference', 0.01);
+
+      for (let i = 0; i < 50; i++) {
+        const mutated = mutateGenomeV2(genome, {
+          mutationAmount: 0.5,
+          randomFloat: Math.random,
+          addLociProbability: 0,
+          removeLociProbability: 0
+        });
+        expect(getTrait(mutated, 'harvest_secondary_preference')).toBeGreaterThanOrEqual(0);
+        expect(getTrait(mutated, 'harvest_secondary_preference')).toBeLessThanOrEqual(1);
+        expect(getTrait(mutated, 'spending_secondary_preference')).toBeGreaterThanOrEqual(0);
+        expect(getTrait(mutated, 'spending_secondary_preference')).toBeLessThanOrEqual(1);
+      }
+    });
+
+    it('clamps reproduction steepness to [0.01, 10]', () => {
+      const genome = createGenomeV2();
+      setTrait(genome, 'metabolism', 0.5);
+      setTrait(genome, 'harvest', 0.5);
+      setTrait(genome, 'aggression', 0.5);
+      setTrait(genome, 'reproduction_harvest_threshold_steepness', 9.5);
+
+      for (let i = 0; i < 50; i++) {
+        const mutated = mutateGenomeV2(genome, {
+          mutationAmount: 5.0,
+          randomFloat: Math.random,
+          addLociProbability: 0,
+          removeLociProbability: 0
+        });
+        expect(getTrait(mutated, 'reproduction_harvest_threshold_steepness')).toBeGreaterThanOrEqual(0.01);
+        expect(getTrait(mutated, 'reproduction_harvest_threshold_steepness')).toBeLessThanOrEqual(10);
+      }
+    });
+
+    it('clamps policy threshold traits to >= 0', () => {
+      const genome = createGenomeV2();
+      setTrait(genome, 'metabolism', 0.5);
+      setTrait(genome, 'harvest', 0.5);
+      setTrait(genome, 'aggression', 0.5);
+      setTrait(genome, 'reproduction_harvest_threshold', 0.5);
+      setTrait(genome, 'movement_energy_reserve_threshold', 0.5);
+
+      for (let i = 0; i < 50; i++) {
+        const mutated = mutateGenomeV2(genome, {
+          mutationAmount: 2.0,
+          randomFloat: Math.random,
+          addLociProbability: 0,
+          removeLociProbability: 0
+        });
+        expect(getTrait(mutated, 'reproduction_harvest_threshold')).toBeGreaterThanOrEqual(0);
+        expect(getTrait(mutated, 'movement_energy_reserve_threshold')).toBeGreaterThanOrEqual(0);
+      }
+    });
+
     it('preserves core traits (never removes)', () => {
       const genome = createGenomeV2();
       setTrait(genome, 'metabolism', 0.5);
@@ -241,7 +302,13 @@ describe('GenomeV2', () => {
       'trophic_level',
       'defense_level',
       'metabolic_efficiency_primary',
-      'metabolic_efficiency_secondary'
+      'metabolic_efficiency_secondary',
+      'reproduction_harvest_threshold',
+      'reproduction_harvest_threshold_steepness',
+      'movement_energy_reserve_threshold',
+      'movement_min_recent_harvest',
+      'harvest_secondary_preference',
+      'spending_secondary_preference'
     ])('includes %s in the default mutation loci list', (locus) => {
       const targetIndex = DEFAULT_MUTATION_CANDIDATE_NEW_LOCI.indexOf(locus);
       expect(targetIndex).toBeGreaterThanOrEqual(0);
@@ -284,6 +351,26 @@ describe('GenomeV2', () => {
         }
       }
       expect(removedLocus).toBe(true);
+    });
+
+    it('preserves policy traits (never removes)', () => {
+      const genome = createGenomeV2();
+      setTrait(genome, 'metabolism', 0.5);
+      setTrait(genome, 'harvest', 0.5);
+      setTrait(genome, 'aggression', 0.5);
+      setTrait(genome, 'reproduction_harvest_threshold', 5.0);
+      setTrait(genome, 'harvest_secondary_preference', 0.7);
+
+      for (let i = 0; i < 50; i++) {
+        const mutated = mutateGenomeV2(genome, {
+          mutationAmount: 0.2,
+          randomFloat: Math.random,
+          removeLociProbability: 1.0,
+          minTraits: 3
+        });
+        expect(hasTrait(mutated, 'reproduction_harvest_threshold')).toBe(true);
+        expect(hasTrait(mutated, 'harvest_secondary_preference')).toBe(true);
+      }
     });
 
     it('respects min traits constraint', () => {
@@ -381,6 +468,43 @@ describe('GenomeV2', () => {
       const b = cloneGenomeV2(a);
 
       expect(genomeV2Distance(a, b)).toBe(0);
+    });
+
+    it('includes policy trait divergence in distance calculation', () => {
+      const a = createGenomeV2();
+      setTrait(a, 'metabolism', 0.5);
+      setTrait(a, 'harvest', 0.5);
+      setTrait(a, 'aggression', 0.5);
+      setTrait(a, 'reproduction_harvest_threshold', 5.0);
+
+      const b = createGenomeV2();
+      setTrait(b, 'metabolism', 0.5);
+      setTrait(b, 'harvest', 0.5);
+      setTrait(b, 'aggression', 0.5);
+      setTrait(b, 'reproduction_harvest_threshold', 10.0);
+
+      const distance = genomeV2Distance(a, b);
+      expect(distance).toBeGreaterThan(0);
+    });
+
+    it('includes multiple policy trait differences in distance', () => {
+      const a = createGenomeV2();
+      setTrait(a, 'metabolism', 0.5);
+      setTrait(a, 'harvest', 0.5);
+      setTrait(a, 'aggression', 0.5);
+      setTrait(a, 'harvest_secondary_preference', 0.2);
+      setTrait(a, 'spending_secondary_preference', 0.3);
+
+      const b = createGenomeV2();
+      setTrait(b, 'metabolism', 0.5);
+      setTrait(b, 'harvest', 0.5);
+      setTrait(b, 'aggression', 0.5);
+      setTrait(b, 'harvest_secondary_preference', 0.8);
+      setTrait(b, 'spending_secondary_preference', 0.7);
+
+      const distance = genomeV2Distance(a, b);
+      expect(distance).toBeGreaterThan(0);
+      expect(distance).toBeCloseTo(0.6);
     });
   });
 });

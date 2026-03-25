@@ -1702,7 +1702,7 @@ export class LifeSimulation {
         reproductionPolicyGated: false,
         harvestPolicyGuided: false,
         policyValues: Object.fromEntries(
-          POLICY_PARAMETER_KEYS.map((key) => [key, Math.max(0, agent.policyState?.get(key) ?? 0)])
+          POLICY_PARAMETER_KEYS.map((key) => [key, Math.max(0, getPolicyStateValue(agent, key, 0))])
         ),
         ...policyFlags
       });

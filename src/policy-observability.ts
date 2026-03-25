@@ -1,4 +1,5 @@
 import {
+  getPolicyStateValue,
   isActivePolicyParameter,
   POLICY_PARAMETER_KEYS,
   resolveBehavioralPolicyFlags
@@ -33,7 +34,7 @@ export interface PolicyDecisionStats {
 }
 
 export function summarizePolicyObservability(
-  agents: ReadonlyArray<Pick<Agent, 'policyState'>>,
+  agents: ReadonlyArray<Pick<Agent, 'policyState' | 'genomeV2'>>,
   records: ReadonlyArray<PolicyFitnessRecord>,
   decisionStats: PolicyDecisionStats
 ): PolicyObservabilitySummary {
@@ -97,12 +98,12 @@ export function summarizePolicyObservability(
 
 function summarizePolicyParameter(
   key: string,
-  agents: ReadonlyArray<Pick<Agent, 'policyState'>>,
+  agents: ReadonlyArray<Pick<Agent, 'policyState' | 'genomeV2'>>,
   records: ReadonlyArray<PolicyFitnessRecord>
 ): PolicyParameterObservability {
   const values = agents
-    .filter((agent) => isActivePolicyParameter(agent.policyState, key))
-    .map((agent) => agent.policyState?.get(key) ?? 0);
+    .filter((agent) => isActivePolicyParameter(agent, key))
+    .map((agent) => getPolicyStateValue(agent, key, 0));
   const mean = arithmeticMean(values);
 
   return {

@@ -1,4 +1,5 @@
-import { Agent, AgentSeed } from './types';
+import { Agent, AgentSeed, GenomeV2 } from './types';
+import { getTrait, setTrait } from './genome-v2';
 
 export const INTERNAL_STATE_LAST_HARVEST = 'last_harvest_total';
 export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD = 'reproduction_harvest_threshold';
@@ -11,6 +12,15 @@ export const DEFAULT_HARVEST_SECONDARY_PREFERENCE = 0.5;
 export const DEFAULT_SPENDING_SECONDARY_PREFERENCE = 0.5;
 export const DEFAULT_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS = 1.0;
 export const POLICY_NEAR_THRESHOLD_MARGIN = 1;
+
+const POLICY_STATE_KEY_TO_TRAIT_NAME: Record<string, string> = {
+  [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD]: 'reproduction_harvest_threshold',
+  [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS]: 'reproduction_harvest_threshold_steepness',
+  [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD]: 'movement_energy_reserve_threshold',
+  [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST]: 'movement_min_recent_harvest',
+  [INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE]: 'harvest_secondary_preference',
+  [INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE]: 'spending_secondary_preference'
+};
 
 export interface BehavioralStateCarrier {
   policyState?: ReadonlyMap<string, number>;
@@ -79,16 +89,30 @@ export function splitLegacyInternalState(
 }
 
 export function normalizeSeedBehavioralState(
-  seed: Pick<AgentSeed, 'policyState' | 'transientState' | 'internalState'>
+  seed: Pick<AgentSeed, 'policyState' | 'transientState' | 'internalState' | 'genomeV2'>
 ): MutableBehavioralStateCarrier {
+  let result: MutableBehavioralStateCarrier;
+
   if (seed.policyState !== undefined || seed.transientState !== undefined) {
-    return {
+    result = {
       policyState: clonePolicyState(seed.policyState),
       transientState: cloneTransientState(seed.transientState)
     };
+  } else {
+    result = splitLegacyInternalState(seed.internalState);
   }
 
-  return splitLegacyInternalState(seed.internalState);
+  if (seed.genomeV2 && result.policyState) {
+    for (const [key, value] of result.policyState) {
+      const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[key];
+      if (traitName && !seed.genomeV2.traits.has(traitName)) {
+        setTrait(seed.genomeV2, traitName, value);
+      }
+    }
+    result.policyState = undefined;
+  }
+
+  return result;
 }
 
 export interface MutatePolicyOptions {
@@ -118,10 +142,10 @@ export function mutatePolicyParameters(
 }
 
 export function inheritBehavioralState(
-  parent: Pick<Agent, 'policyState' | 'transientState'>,
+  parent: Pick<Agent, 'policyState' | 'transientState' | 'genomeV2'>,
   mutationOptions?: MutatePolicyOptions
 ): MutableBehavioralStateCarrier {
-  const policyState = clonePolicyState(parent.policyState);
+  const policyState = parent.genomeV2 ? undefined : clonePolicyState(parent.policyState);
   const transientState = cloneTransientState(parent.transientState);
 
   if (transientState) {
@@ -132,7 +156,7 @@ export function inheritBehavioralState(
     }
   }
 
-  if (policyState && mutationOptions) {
+  if (policyState && mutationOptions && !parent.genomeV2) {
     mutatePolicyParameters(policyState, mutationOptions);
   }
 
@@ -155,10 +179,17 @@ export function setTransientStateValue(agent: Agent, key: string, value: number)
 }
 
 export function getPolicyStateValue(
-  agent: Pick<BehavioralStateCarrier, 'policyState'>,
+  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 },
   key: string,
   fallback = 0
 ): number {
+  if (agent.genomeV2) {
+    const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[key];
+    if (traitName && agent.genomeV2.traits.has(traitName)) {
+      return getTrait(agent.genomeV2, traitName);
+    }
+  }
+
   return agent.policyState?.get(key) ?? fallback;
 }
 
@@ -171,8 +202,15 @@ export function getTransientStateValue(
 }
 
 export function resolveHarvestSecondaryPreference(
-  agent: Pick<BehavioralStateCarrier, 'policyState'>
+  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
 ): number | undefined {
+  if (agent.genomeV2) {
+    const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE];
+    if (agent.genomeV2.traits.has(traitName)) {
+      return getTrait(agent.genomeV2, traitName);
+    }
+  }
+
   if (!agent.policyState?.has(INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE)) {
     return undefined;
   }
@@ -184,8 +222,15 @@ export function resolveHarvestSecondaryPreference(
 }
 
 export function resolveSpendingSecondaryPreference(
-  agent: Pick<BehavioralStateCarrier, 'policyState'>
+  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
 ): number | undefined {
+  if (agent.genomeV2) {
+    const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE];
+    if (agent.genomeV2.traits.has(traitName)) {
+      return getTrait(agent.genomeV2, traitName);
+    }
+  }
+
   if (!agent.policyState?.has(INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE)) {
     return undefined;
   }
@@ -238,26 +283,57 @@ export function mergeBehavioralState(
 }
 
 export function isActivePolicyParameter(
-  policyState: ReadonlyMap<string, number> | undefined,
+  carrier: { policyState?: ReadonlyMap<string, number>; genomeV2?: GenomeV2 } | ReadonlyMap<string, number> | undefined,
   key: string
 ): boolean {
-  if (!policyState) {
+  if (carrier instanceof Map) {
+    if (key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE) {
+      return carrier.has(key);
+    }
+    if (key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE) {
+      return carrier.has(key);
+    }
+    if (key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS) {
+      return carrier.has(key);
+    }
+    return (carrier.get(key) ?? 0) > 0;
+  }
+
+  if (!carrier) {
+    return false;
+  }
+
+  if (carrier.genomeV2) {
+    const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[key];
+    if (traitName && carrier.genomeV2.traits.has(traitName)) {
+      if (
+        key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE ||
+        key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE ||
+        key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS
+      ) {
+        return true;
+      }
+      return getTrait(carrier.genomeV2, traitName) > 0;
+    }
+  }
+
+  if (!carrier.policyState) {
     return false;
   }
 
   if (key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE) {
-    return policyState.has(key);
+    return carrier.policyState.has(key);
   }
 
   if (key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE) {
-    return policyState.has(key);
+    return carrier.policyState.has(key);
   }
 
   if (key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS) {
-    return policyState.has(key);
+    return carrier.policyState.has(key);
   }
 
-  return (policyState.get(key) ?? 0) > 0;
+  return (carrier.policyState.get(key) ?? 0) > 0;
 }
 
 export function isNearPolicyThreshold(
@@ -285,6 +361,21 @@ function clampPolicyParameterValue(key: string, value: number): number {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+export function migratePolicyStateToGenomeV2(agent: Agent): void {
+  if (!agent.genomeV2 || !agent.policyState) {
+    return;
+  }
+
+  for (const [key, value] of agent.policyState) {
+    const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[key];
+    if (traitName) {
+      setTrait(agent.genomeV2, traitName, value);
+    }
+  }
+
+  agent.policyState = undefined;
 }
 
 export function computeGradedReproductionProbability(

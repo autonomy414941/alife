@@ -9,7 +9,13 @@ export const DEFAULT_TRAIT_VALUES: Record<string, number> = {
   trophic_level: 0.5,
   defense_level: 0.5,
   metabolic_efficiency_primary: 0.5,
-  metabolic_efficiency_secondary: 0.5
+  metabolic_efficiency_secondary: 0.5,
+  reproduction_harvest_threshold: 0,
+  reproduction_harvest_threshold_steepness: 1.0,
+  movement_energy_reserve_threshold: 0,
+  movement_min_recent_harvest: 0,
+  harvest_secondary_preference: 0.5,
+  spending_secondary_preference: 0.5
 };
 
 export function createGenomeV2(traits: Map<string, number> = new Map()): GenomeV2 {
@@ -86,7 +92,15 @@ export const EXTENDED_TRAITS: string[] = [
   'metabolic_efficiency_primary',
   'metabolic_efficiency_secondary'
 ];
-export const DEFAULT_MUTATION_CANDIDATE_NEW_LOCI = [...OPTIONAL_TRAITS, ...EXTENDED_TRAITS];
+export const POLICY_TRAITS: string[] = [
+  'reproduction_harvest_threshold',
+  'reproduction_harvest_threshold_steepness',
+  'movement_energy_reserve_threshold',
+  'movement_min_recent_harvest',
+  'harvest_secondary_preference',
+  'spending_secondary_preference'
+];
+export const DEFAULT_MUTATION_CANDIDATE_NEW_LOCI = [...OPTIONAL_TRAITS, ...EXTENDED_TRAITS, ...POLICY_TRAITS];
 const DISTANCE_BASELINE_TRAIT_COUNT = CORE_TRAITS.length;
 
 export function mutateGenomeV2(
@@ -112,13 +126,14 @@ export function mutateGenomeV2(
       const delta = (randomFloat() - 0.5) * 2 * mutationAmount;
       setTrait(mutated, key, Math.max(0, Math.min(1, value + delta)));
     } else {
-      if (currentTraitCount > minTraits && randomFloat() < removeLociProbability) {
+      if (currentTraitCount > minTraits && randomFloat() < removeLociProbability && !POLICY_TRAITS.includes(key)) {
         mutated.traits.delete(key);
         continue;
       }
       const value = getTrait(mutated, key);
       const delta = (randomFloat() - 0.5) * 2 * mutationAmount;
-      setTrait(mutated, key, Math.max(0, Math.min(1, value + delta)));
+      const mutatedValue = value + delta;
+      setTrait(mutated, key, clampTraitValue(key, mutatedValue));
     }
   }
 
@@ -131,6 +146,22 @@ export function mutateGenomeV2(
   }
 
   return mutated;
+}
+
+function clampTraitValue(key: string, value: number): number {
+  if (key === 'harvest_secondary_preference' || key === 'spending_secondary_preference') {
+    return Math.max(0, Math.min(1, value));
+  }
+
+  if (key === 'reproduction_harvest_threshold_steepness') {
+    return Math.max(0.01, Math.min(10, value));
+  }
+
+  if (POLICY_TRAITS.includes(key)) {
+    return Math.max(0, value);
+  }
+
+  return Math.max(0, Math.min(1, value));
 }
 
 export function genomeV2Distance(a: GenomeV2, b: GenomeV2): number {
