@@ -1,91 +1,95 @@
-# Session Plan — 2026-03-24
+# Session Plan — 2026-03-25
 
 ## Compact Context
-- March 23, 2026 isolated the current behavioral surfaces: reproduction-only was weakly positive in matched bins, while movement-only and harvest-only remained negative
-- The March 23, 2026 threshold-regime panel found no non-detrimental binary-gate regime; the best tested setting still traded a small harvest gain for lower reproduction
-- Gate-specific movement and reproduction observability now exists, including block reasons and near-threshold counts
-- Movement and settlement scoring already respect `harvest_secondary_preference`; the old navigation mismatch is no longer the main blocker
-- Energy expenditure is still hard-coded in `spendAgentEnergy()`, so harvest choice can change intake without becoming a full reserve-management strategy
-- Heritable policy loci still live outside `GenomeV2.traits`, `genomeV2Distance()`, speciation / cladogenesis thresholds, and policy-aware null machinery
+- March 24, 2026 completed four bets: reproduction-only validated over longer horizon, harvest-only diagnosed as ecological (secondary niches worse), graded reproduction surface shipped with sigmoid, spending policy landed
+- `spending_secondary_preference` now controls reserve burn order; `reproduction_harvest_threshold_steepness` enables smooth probability gradients
+- Policy parameters live in `policyState`, traits in `genomeV2.traits`; separate mutation, distance, observability
+- Policy divergence invisible to `genomeV2Distance()`, speciation, cladogenesis, relabel-null
+- Movement and harvest policies still binary; reproduction is the only graded surface
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Behavioral policy validation and reporting | 4 | 8d633bf |
-| Planning and structural backlog maintenance | 3 | 6552fa4 |
-| Behavioral policy mechanism rollout | 2 | fa79fe5 |
-| Behavioral state architecture | 1 | 6a15e7d |
+| Behavioral policy validation and reporting | 4 | 4665d4f |
+| Planning and structural backlog maintenance | 3 | e0a0d36 |
+| Behavioral policy mechanism rollout | 2 | d4771e7 |
+| Metabolic / expenditure policy | 1 | 45121f6 |
 | Policy-genome integration | 0 | none |
-| Metabolic / expenditure policy | 0 | none |
+| Graded policy expansion | 0 | none |
 
 Dominant axis: Behavioral policy validation and reporting (4/10)
-Underexplored axes: Behavioral state architecture, Policy-genome integration, Metabolic / expenditure policy
+Underexplored axes: Policy-genome integration, Graded policy expansion
 
 ## Project State
-- The codebase now has isolated policy-surface studies, bounded threshold-regime sweeps, gate-specific observability, harvest-allocation control, and navigation alignment artifacts under `docs/`
-- Recent sessions have been converging on a falsifiable conclusion about the current binary policy family rather than expanding policies blindly
-- The main underdeveloped area is now mechanism replacement: current movement and harvest policies are harmful, while reproduction-only is only weakly positive and still architecturally outside the shared evolutionary machinery
+- Graded reproduction policy and spending policy both exist, are heritable, have focused tests, and show measurable gradient behavior in smoke studies
+- The codebase has extensive validation artifacts (`docs/`) showing reproduction-only as weakly positive, harvest-only as ecologically detrimental
+- The main underdeveloped area is policy-genome architectural split: policies and traits are separate systems despite being functionally identical (heritable scalars that mutate and affect fitness)
 
 ## External Context
-- Tobias Uller et al., *Twenty years on from Developmental Plasticity and Evolution: middle-range theories and how to test them* (Journal of Experimental Biology, 2024). Source: https://charliecornwallis.github.io/Group/wp-content/uploads/2024/11/Uller-et-al.-2024-Twenty-years-on-from-Developmental-Plasticity-a.pdf
-- Joseph Bejjani et al., *The Emergence of Complex Behavior in Large-Scale Ecological Environments* (arXiv:2510.18221, submitted October 21, 2025; revised December 12, 2025). Source: https://arxiv.org/abs/2510.18221
+- Uller et al., *Twenty years on from Developmental Plasticity and Evolution* (JEB, 2024): adaptive phenotypic plasticity can facilitate evolution by allowing organisms to express phenotypes that match local conditions, creating selection pressures that favor genetic accommodation of initially plastic responses. Source: https://charliecornwallis.github.io/Group/wp-content/uploads/2024/11/Uller-et-al.-2024-Twenty-years-on-from-Developmental-Plasticity-a.pdf
+- Recent research in embodied intelligence (2025-2026) emphasizes multimodal perception, world modeling, and adaptive control for closed-loop interaction in dynamic environments, with agents learning optimal policies through experience. Sources: [Frontiers in Robotics and AI](https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1668910/full), [Nature Neuroscience](https://www.nature.com/articles/s41593-025-02169-w)
+- Metabolic strategy evolution research shows that species interactions and species sorting set the tempo and trajectory of evolutionary divergence, with substrate choice driving parallel evolution of regulatory loci. Source: [ScienceDirect](https://www.sciencedirect.com/science/article/pii/S0960982220313592)
 
 ## Research Gaps
-- Does the small March 23, 2026 reproduction-only advantage persist over longer horizons and more seeds, or was it a short-panel artifact?
-- Is harvest-only still negative because secondary-preferring intake lacks downstream reserve-management payoff, or because the current ecology makes secondary-biased foraging intrinsically worse?
+- Can policy divergence drive taxonomic splits if policies become first-class genome loci that contribute to speciation distance?
+- Does unifying policy and genome state reduce technical debt without breaking existing validation artifacts or test coverage?
 
 ## Current Anti-Evidence
-- The project still cannot claim adaptive behavioral control: no current policy stack improves harvest, survival, and reproduction together under live selection, and the March 23, 2026 sweep ruled out the tested binary-gate family across its bounded parameter range
-- Even if a policy surface starts to work locally, policy divergence still does not count toward `GenomeV2` distance, speciation, cladogenesis, or policy-aware nulls, so evolutionary novelty from behavior remains structurally undercounted
+- The strongest current anti-evidence against claiming adaptive behavioral control is that policy divergence remains invisible to taxonomic machinery: two lineages with radically different behavioral strategies (e.g., `harvest_secondary_preference` 0.9 vs 0.1) can remain classified as the same species indefinitely because `genomeV2Distance()` ignores policy state, so policy-driven niche partitioning is systematically undercounted by diversity metrics.
+- Even if policies begin driving fitness advantages, the relabel-null baseline treats all clades as interchangeable regardless of policy state, washing out any policy-mediated ecological differentiation signal.
 
 ## Bet Queue
 
-### Bet 1: [validate] Stress-test reproduction-only behavioral policy robustness
-Re-run the March 23 reproduction-only result on a slightly longer horizon and broader seed panel to find out whether the current weak positive signal is real enough to build on. The goal is not to optimize yet; it is to determine whether reproduction control is actually the best surviving foothold after the binary-gate sweep failure.
+### Bet 1: [refactor] [Policy-Genome Coupling] Unify policy parameters into GenomeV2.traits
+Merge `policyState` into `genomeV2.traits` so behavioral and morphological loci share one mutation operator, one distance metric, one observability surface. Deprecate `policyState` for heritable state, keeping only ephemeral memory (`last_harvest`) in `transientState`. This removes duplication and makes policy loci eligible for speciation/cladogenesis distance.
 
 #### Success Evidence
-- Artifact under `docs/` comparing reproduction-only vs no-policy across a bounded longer-horizon, multi-seed panel with matched-bin harvest, survival, reproduction, and any diversification readout already available
-- Clear conclusion stating whether the reproduction-only signal survives, vanishes, or reverses outside the original 120-step, 2-seed panel
+- `POLICY_PARAMETER_KEYS` entries moved to `genomeV2.traits`, `policyState` deprecated for heritable loci
+- Existing tests pass or are updated to reflect unified architecture
+- `genomeV2Distance()` consumes policy loci alongside morphological traits
 
 #### Stop Conditions
-- Stop after one bounded panel that is meaningfully larger than the March 23 pilot but still cheap enough for a single session
-- Do not redesign policy mechanics in this bet
+- Stop after one unified heritable-state system exists and all prior policy mechanisms still function
+- Do not extend `genomeV2Distance()` weighting or add new policy loci in this bet
 
-### Bet 2: [investigate] Diagnose harvest-only detriment after navigation alignment
-Use the now-aligned movement / settlement stack to explain why harvest-only still underperforms. The most likely branches are ecology versus payoff: either secondary-biased niches are genuinely worse, or current reserve spending destroys the value of harvesting secondary energy. This bet should discriminate between those branches before more policy rollout happens.
+### Bet 2: [expand] Extend genomeV2Distance and speciation to include policy loci
+Make `genomeV2Distance()` include policy trait contributions so policy divergence can trigger speciation and cladogenesis thresholds. Add per-locus distance weights if needed to prevent policy loci from dominating morphological distance.
 
 #### Success Evidence
-- Artifact under `docs/` stratifying harvest-only outcomes by at least secondary-resource availability, resulting pool composition, and one downstream spending or reserve measure
-- A concrete diagnosis identifying whether the remaining harm is primarily ecological, energetic, or mixed
+- `genomeV2Distance()` includes policy loci with configurable or default weights
+- Focused tests show that policy divergence increments distance and can cross speciation thresholds
+- One bounded smoke or pilot artifact demonstrates that policy-driven distance can create taxonomic splits under controlled conditions
 
 #### Stop Conditions
-- Stop after one bounded diagnosis pass on the current harvest-only setup
-- Do not add new policy parameters or change energy rules in this bet
+- Stop after speciation machinery consumes unified policy-genome distance
+- Do not revalidate full ecological context or redesign cladogenesis logic in this bet
 
-### Bet 3: [expand] [Binary Policy Gates] Prototype a graded reproduction policy surface
-Replace the current all-or-nothing reproduction veto with one richer surface while keeping scope narrow: reproduction is the only surface with any positive evidence, so it should be the first place to test whether continuous or probabilistic control is better than brittle thresholds. A minimal graded gate with observability is enough for this session if it is heritable and testable.
+### Bet 3: [validate] Test whether policy-genome unification preserves prior validation results
+Re-run a subset of prior validation artifacts (reproduction-only advantage, graded sigmoid behavior, spending policy reserve retention) under the unified architecture to confirm that the refactor did not break established mechanisms or reverse prior findings.
 
 #### Success Evidence
-- Code and focused tests for one graded or probabilistic reproduction policy surface that uses existing policy state and observability plumbing
-- A bounded smoke or pilot artifact showing that reproduction decisions vary across a gradient instead of only firing as a hard threshold
+- At least two prior validation conclusions re-confirmed under unified policy-genome architecture
+- Artifact under `docs/` comparing pre-unification and post-unification outcomes on a bounded test panel
+- Clear statement of whether unification preserved, improved, or degraded prior behavioral surfaces
 
 #### Stop Conditions
-- Stop once one richer reproduction surface is live, heritable, and measurable
-- Do not redesign movement and harvest policies in the same bet
+- Stop after bounded revalidation of 2-3 key prior results
+- Do not run full 4000-step horizon studies or expand the validation scope beyond confirming mechanism preservation
 
-### Bet 4: [expand] [Energy Expenditure Policy Blindness] Add a substrate spending policy
-If harvest choice is going to matter, intake must be able to influence downstream reserve use. Introduce one spending-policy hook so agents can preferentially burn primary or secondary reserves under simple conditions, and make the effect observable. This is the shortest path from “harvest policy changes intake” to “harvest policy can alter lifetime energetic strategy.”
+### Bet 4: [expand] Extend graded policy gates to movement
+Apply the sigmoid activation pattern from reproduction to movement policies, replacing binary blocking with smooth probability or intensity gradients controlled by threshold and steepness parameters. Movement is the natural next candidate because it already has threshold parameters and remains binary while reproduction is now graded.
 
 #### Success Evidence
-- `spendAgentEnergy()` or its caller consults a heritable spending preference or reserve target instead of always using the current fixed draw rule
-- Focused tests and one bounded artifact or smoke study show policy-driven differences in reserve retention or burn order under controlled conditions
+- Movement policy uses sigmoid or continuous activation with heritable steepness parameter
+- Focused tests confirm gradient behavior across steepness values
+- One bounded smoke study shows measurable variation in movement frequency or behavior under different steepness settings
 
 #### Stop Conditions
-- Stop after one end-to-end spending policy exists and is observable
-- Do not attempt full policy-genome unification or multi-policy optimization in this bet
+- Stop after movement has one graded surface; do not extend to harvest in the same bet
+- Do not redesign movement kinematics or add new observation inputs
 
 ## Assumptions / Unknowns
-- Assumption: the March 23 reproduction-only signal is the best current foundation because it is the only isolated surface with positive matched-bin harvest and reproduction deltas
-- Assumption: harvest-only underperformance is more likely downstream-payoff failure than a remaining navigation bug, because navigation alignment already landed on March 23, 2026
-- Unknown: whether richer reproduction policies need new observation inputs immediately or can already improve on binary gates using the current state surface
-- Unknown: whether spending-policy control will rescue harvest-choice fitness or simply reveal that the dual-resource ecology itself is poorly tuned for secondary specialization
+- Assumption: policy-genome unification is the highest-leverage refactor because it removes duplication and enables policy divergence to count toward taxonomic novelty
+- Assumption: prior validation artifacts will largely survive unification because the functional mechanism (heritable scalars that mutate) remains unchanged, only the storage location shifts
+- Unknown: whether policy loci should have equal distance weight to morphological loci, or whether they need separate scaling to prevent policy variance from drowning out morphology in speciation thresholds
+- Unknown: whether graded movement policies will improve fitness over binary gates, or whether movement blocking is already near-optimal and smoothing the gate will just add noise
