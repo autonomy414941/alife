@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
+  INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
-  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD
+  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS,
+  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
+  INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS
 } from '../src/behavioral-control';
 import { runBehavioralPolicyFitnessPilot } from '../src/behavioral-policy-fitness-pilot';
 import { LifeSimulation } from '../src/simulation';
@@ -40,8 +43,11 @@ describe('policy fitness', () => {
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
           policyState: new Map([
             [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 0.5],
+            [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS, 0],
             [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 8],
-            [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 0.5]
+            [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS, 0],
+            [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 0.5],
+            [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS, 0]
           ])
         }
       ]

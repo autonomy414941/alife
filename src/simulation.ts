@@ -16,10 +16,15 @@ import {
   INTERNAL_STATE_LAST_HARVEST,
   POLICY_PARAMETER_KEYS,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
+  INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
+  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS,
+  DEFAULT_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS,
+  DEFAULT_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS,
   normalizeSeedBehavioralState,
   resolveBehavioralPolicyFlags,
-  setTransientStateValue
+  setTransientStateValue,
+  computeGradedMovementProbability
 } from './behavioral-control';
 import {
   getCladeHabitatPreference as lookupCladeHabitatPreference,
@@ -1590,14 +1595,35 @@ export class LifeSimulation {
       agent,
       INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD
     );
+    const energyReserveSteepness = getPolicyStateValue(
+      agent,
+      INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS,
+      DEFAULT_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS
+    );
     const minRecentHarvest = getPolicyStateValue(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
+    const minRecentHarvestSteepness = getPolicyStateValue(
+      agent,
+      INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS,
+      DEFAULT_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS
+    );
     const recentHarvest = getTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST);
     const energyReservePolicyActive = energyReserveThreshold > 0;
     const recentHarvestPolicyActive = minRecentHarvest > 0;
     const energyReserveNearThreshold = isNearPolicyThreshold(agent.energy, energyReserveThreshold);
     const recentHarvestNearThreshold = isNearPolicyThreshold(recentHarvest, minRecentHarvest);
 
-    if (energyReservePolicyActive && agent.energy < energyReserveThreshold) {
+    const energyReserveProbability = computeGradedMovementProbability(
+      agent.energy,
+      energyReserveThreshold,
+      energyReserveSteepness
+    );
+    const recentHarvestProbability = computeGradedMovementProbability(
+      recentHarvest,
+      minRecentHarvest,
+      minRecentHarvestSteepness
+    );
+
+    if (energyReservePolicyActive && this.rng.float() >= energyReserveProbability) {
       return {
         x: agent.x,
         y: agent.y,
@@ -1610,7 +1636,7 @@ export class LifeSimulation {
       };
     }
 
-    if (recentHarvestPolicyActive && recentHarvest < minRecentHarvest) {
+    if (recentHarvestPolicyActive && this.rng.float() >= recentHarvestProbability) {
       return {
         x: agent.x,
         y: agent.y,

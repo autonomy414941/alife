@@ -295,8 +295,11 @@ describe('run export', () => {
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
           policyState: new Map([
             ['reproduction_harvest_threshold', 2],
+            ['reproduction_harvest_threshold_steepness', 0],
             ['movement_energy_reserve_threshold', 15],
-            ['movement_min_recent_harvest', 2]
+            ['movement_energy_reserve_threshold_steepness', 0],
+            ['movement_min_recent_harvest', 2],
+            ['movement_min_recent_harvest_steepness', 0]
           ])
         },
         {

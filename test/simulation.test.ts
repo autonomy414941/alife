@@ -5,7 +5,9 @@ import {
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
-  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST
+  INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS,
+  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
+  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS
 } from '../src/behavioral-control';
 import { EncounterOperator } from '../src/encounter';
 import { shouldFoundNewClade } from '../src/settlement-cladogenesis';
@@ -477,7 +479,10 @@ describe('LifeSimulation', () => {
   });
 
   it('blocks movement when energy is below the energy reserve threshold', () => {
-    const policyState = new Map([[INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 15]]);
+    const policyState = new Map([
+      [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 15],
+      [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS, 0]
+    ]);
     const sim = new LifeSimulation({
       seed: 42,
       config: {
@@ -511,7 +516,10 @@ describe('LifeSimulation', () => {
   });
 
   it('allows movement when energy exceeds the energy reserve threshold', () => {
-    const policyState = new Map([[INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 5]]);
+    const policyState = new Map([
+      [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 5],
+      [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS, 0]
+    ]);
     const sim = new LifeSimulation({
       seed: 42,
       config: {
@@ -544,7 +552,10 @@ describe('LifeSimulation', () => {
   });
 
   it('blocks movement when recent harvest is below the minimum threshold', () => {
-    const policyState = new Map([[INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 3]]);
+    const policyState = new Map([
+      [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 3],
+      [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS, 0]
+    ]);
     const sim = new LifeSimulation({
       seed: 42,
       config: {
@@ -579,7 +590,10 @@ describe('LifeSimulation', () => {
   });
 
   it('allows movement when recent harvest exceeds the minimum threshold', () => {
-    const policyState = new Map([[INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2]]);
+    const policyState = new Map([
+      [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2],
+      [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS, 0]
+    ]);
     const sim = new LifeSimulation({
       seed: 42,
       config: {
@@ -635,8 +649,11 @@ describe('LifeSimulation', () => {
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
           policyState: new Map([
             [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 2],
+            [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS, 0],
             [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 15],
-            [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2]
+            [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS, 0],
+            [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2],
+            [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS, 0]
           ])
         },
         {
@@ -732,14 +749,20 @@ describe('LifeSimulation', () => {
           y: 0,
           energy: 10,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          policyState: new Map([[INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 11]])
+          policyState: new Map([
+            [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD, 11],
+            [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS, 0]
+          ])
         },
         {
           x: 1,
           y: 0,
           energy: 10,
           genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
-          policyState: new Map([[INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2]]),
+          policyState: new Map([
+            [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST, 2],
+            [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS, 0]
+          ]),
           transientState: new Map([[INTERNAL_STATE_LAST_HARVEST, 1]])
         },
         {

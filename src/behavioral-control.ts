@@ -5,19 +5,25 @@ export const INTERNAL_STATE_LAST_HARVEST = 'last_harvest_total';
 export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD = 'reproduction_harvest_threshold';
 export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS = 'reproduction_harvest_threshold_steepness';
 export const INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD = 'movement_energy_reserve_threshold';
+export const INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS = 'movement_energy_reserve_threshold_steepness';
 export const INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST = 'movement_min_recent_harvest';
+export const INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS = 'movement_min_recent_harvest_steepness';
 export const INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE = 'harvest_secondary_preference';
 export const INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE = 'spending_secondary_preference';
 export const DEFAULT_HARVEST_SECONDARY_PREFERENCE = 0.5;
 export const DEFAULT_SPENDING_SECONDARY_PREFERENCE = 0.5;
 export const DEFAULT_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS = 1.0;
+export const DEFAULT_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS = 1.0;
+export const DEFAULT_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS = 1.0;
 export const POLICY_NEAR_THRESHOLD_MARGIN = 1;
 
 const POLICY_STATE_KEY_TO_TRAIT_NAME: Record<string, string> = {
   [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD]: 'reproduction_harvest_threshold',
   [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS]: 'reproduction_harvest_threshold_steepness',
   [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD]: 'movement_energy_reserve_threshold',
+  [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS]: 'movement_energy_reserve_threshold_steepness',
   [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST]: 'movement_min_recent_harvest',
+  [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS]: 'movement_min_recent_harvest_steepness',
   [INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE]: 'harvest_secondary_preference',
   [INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE]: 'spending_secondary_preference'
 };
@@ -44,7 +50,9 @@ export const POLICY_PARAMETER_KEYS = [
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
+  INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
+  INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS,
   INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE,
   INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE
 ];
@@ -249,7 +257,9 @@ export function resolveBehavioralPolicyFlags(
     isActivePolicyParameter(agent, INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS);
   const hasMovementPolicy =
     isActivePolicyParameter(agent, INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD) ||
-    isActivePolicyParameter(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST);
+    isActivePolicyParameter(agent, INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS) ||
+    isActivePolicyParameter(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST) ||
+    isActivePolicyParameter(agent, INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS);
   const hasHarvestPolicy =
     isActivePolicyParameter(agent, INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE);
   const hasSpendingPolicy =
@@ -293,7 +303,11 @@ export function isActivePolicyParameter(
     if (key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE) {
       return carrier.has(key);
     }
-    if (key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS) {
+    if (
+      key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS ||
+      key === INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS ||
+      key === INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS
+    ) {
       return carrier.has(key);
     }
     return (carrier.get(key) ?? 0) > 0;
@@ -311,7 +325,9 @@ export function isActivePolicyParameter(
       if (
         key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE ||
         key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE ||
-        key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS
+        key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS ||
+        key === INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS ||
+        key === INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS
       ) {
         return true;
       }
@@ -331,7 +347,11 @@ export function isActivePolicyParameter(
     return stateCarrier.policyState.has(key);
   }
 
-  if (key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS) {
+  if (
+    key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS ||
+    key === INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS ||
+    key === INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS
+  ) {
     return stateCarrier.policyState.has(key);
   }
 
@@ -354,7 +374,11 @@ function clampPolicyParameterValue(key: string, value: number): number {
     return clamp(value, 0, 1);
   }
 
-  if (key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS) {
+  if (
+    key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS ||
+    key === INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS ||
+    key === INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS
+  ) {
     return clamp(value, 0.01, 10);
   }
 
@@ -394,6 +418,24 @@ export function computeGradedReproductionProbability(
   }
 
   const normalizedDistance = (recentHarvest - threshold) / Math.max(1, threshold);
+  const scaledDistance = normalizedDistance * steepness;
+  return 1 / (1 + Math.exp(-scaledDistance));
+}
+
+export function computeGradedMovementProbability(
+  value: number,
+  threshold: number,
+  steepness: number
+): number {
+  if (threshold <= 0) {
+    return 1;
+  }
+
+  if (steepness <= 0) {
+    return value >= threshold ? 1 : 0;
+  }
+
+  const normalizedDistance = (value - threshold) / Math.max(1, threshold);
   const scaledDistance = normalizedDistance * steepness;
   return 1 / (1 + Math.exp(-scaledDistance));
 }
