@@ -1512,7 +1512,7 @@ export class LifeSimulation {
     const lineageCrowdingEfficiency = lineageOccupancy
       ? this.lineageHarvestCrowdingEfficiency(agent, lineageOccupancy)
       : 1;
-    const harvestSecondaryPreference = resolveHarvestSecondaryPreference(agent);
+    const harvestSecondaryPreference = resolveHarvestSecondaryPreference(agent, available);
     const defaultHarvestShares = resolveResourceHarvestShares(agent.genome);
     const harvest = resolveDualResourceHarvest({
       primaryAvailable: available,

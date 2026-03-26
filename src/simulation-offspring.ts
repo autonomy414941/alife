@@ -246,13 +246,15 @@ export function resolveSimulationLocalEcologyScore({
     lineagePenalty,
     excludedPosition,
     jitter,
-    resourceAt: (cellX, cellY) =>
-      combinedResourceAvailability(
-        resources[wrapY(cellY)][wrapX(cellX)],
+    resourceAt: (cellX, cellY) => {
+      const primaryAvailable = resources[wrapY(cellY)][wrapX(cellX)];
+      return combinedResourceAvailability(
+        primaryAvailable,
         resources2[wrapY(cellY)][wrapX(cellX)],
         agent.genome,
-        resolveHarvestSecondaryPreference(agent)
-      ),
+        resolveHarvestSecondaryPreference(agent, primaryAvailable)
+      );
+    },
     habitatMatchEfficiencyAt: (nextAgent, cellX, cellY) =>
       calculateHabitatMatchEfficiency({
         agent: nextAgent,
