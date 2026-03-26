@@ -40,7 +40,9 @@ export function mutateGenomeV2WithConfig(
     removeLociProbability: 0.01,
     minTraits: 3,
     maxTraits: 20,
-    candidateNewLoci: DEFAULT_MUTATION_CANDIDATE_NEW_LOCI
+    candidateNewLoci: DEFAULT_MUTATION_CANDIDATE_NEW_LOCI,
+    policyMutationProbability: config.policyMutationProbability,
+    policyMutationMagnitude: config.policyMutationMagnitude
   });
 }
 

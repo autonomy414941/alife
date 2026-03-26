@@ -81,6 +81,8 @@ export interface MutateGenomeV2Options {
   minTraits?: number;
   maxTraits?: number;
   candidateNewLoci?: string[];
+  policyMutationProbability?: number;
+  policyMutationMagnitude?: number;
 }
 
 const CORE_TRAITS = ['metabolism', 'harvest', 'aggression'];
@@ -114,7 +116,9 @@ export function mutateGenomeV2(
     removeLociProbability = 0.01,
     minTraits = 3,
     maxTraits = 20,
-    candidateNewLoci = DEFAULT_MUTATION_CANDIDATE_NEW_LOCI
+    candidateNewLoci = DEFAULT_MUTATION_CANDIDATE_NEW_LOCI,
+    policyMutationProbability = 0,
+    policyMutationMagnitude = 0
   } = options;
 
   const mutated = cloneGenomeV2(genome);
@@ -125,8 +129,16 @@ export function mutateGenomeV2(
       const value = getTrait(mutated, key);
       const delta = (randomFloat() - 0.5) * 2 * mutationAmount;
       setTrait(mutated, key, Math.max(0, Math.min(1, value + delta)));
+    } else if (POLICY_TRAITS.includes(key)) {
+      if (randomFloat() >= policyMutationProbability) {
+        continue;
+      }
+      const value = getTrait(mutated, key);
+      const delta = (randomFloat() - 0.5) * 2 * policyMutationMagnitude;
+      const mutatedValue = value + delta;
+      setTrait(mutated, key, clampTraitValue(key, mutatedValue));
     } else {
-      if (currentTraitCount > minTraits && randomFloat() < removeLociProbability && !POLICY_TRAITS.includes(key)) {
+      if (currentTraitCount > minTraits && randomFloat() < removeLociProbability) {
         mutated.traits.delete(key);
         continue;
       }
