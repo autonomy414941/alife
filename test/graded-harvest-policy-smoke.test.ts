@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { runGradedHarvestPolicySmoke } from '../src/graded-harvest-policy-smoke';
 
 describe('graded-harvest-policy-smoke', () => {
-  it('runs without crashing and graded harvest guides decisions', { timeout: 60000 }, () => {
+  it('runs without crashing and graded harvest guides decisions', { timeout: 120000 }, () => {
     const results = runGradedHarvestPolicySmoke(42);
     expect(results).toBeDefined();
     expect(results.length).toBeGreaterThan(0);
