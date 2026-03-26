@@ -1,7 +1,13 @@
 # Backlog
 
+## Bet Queue (selected for 2026-03-26 session)
+- [expand] Extend graded policy gates to harvest
+- [validate] Diagnose graded reproduction degradation after unification
+- [validate] Add per-locus distance weights to genomeV2Distance
+- [validate] Test graded harvest policy fitness differentiation
+
+## Remaining Items
 - [feat] Extend behavioral control to encounters: add contingent aggression policies (e.g., retreat-after-loss, conditional aggression based on energy state)
-- [expand] Extend graded policy gates to movement and harvest: apply the sigmoid activation pattern from reproduction to movement and harvest decision surfaces
 - [validate] Run matched baseline comparing behavioral-control-enabled runs against memoryless default to measure diversification and complexity gains
 - [validate] Extend normalized GenomeV2 distance revalidation from the 500-step subset to a bounded 4000-step, 2-4 seed panel if full-horizon robustness still matters for direction-setting
 - [validate] Add per-trait fitness decomposition to ecological-context validation: track harvest intake, survival probability, and reproductive output conditional on trait presence vs absence within matched ecological bins
