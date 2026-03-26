@@ -1,0 +1,207 @@
+{
+  "generatedAt": "2026-03-26T00:00:00.000Z",
+  "question": "Do per-category genomeV2 distance weights suppress threshold-dominated taxonomic splitting while preserving some diversification under the same mutation schedules?",
+  "prediction": "If unbounded policy thresholds are dominating distance, then lowering policy-threshold weight should reduce total species/clade originations in the threshold-heavy scenario without eliminating diversification entirely.",
+  "config": {
+    "seeds": [
+      4101,
+      4138
+    ],
+    "steps": 120,
+    "weights": {
+      "categories": {
+        "policyThreshold": 0.15,
+        "policyBounded": 0.75
+      }
+    }
+  },
+  "scenarios": [
+    {
+      "scenario": "policy-threshold-heavy",
+      "config": {
+        "mutationAmount": 0.03,
+        "policyMutationProbability": 1,
+        "policyMutationMagnitude": 1.4,
+        "speciationThreshold": 0.35,
+        "cladogenesisThreshold": 1.1
+      },
+      "unweighted": {
+        "label": "unweighted",
+        "config": {},
+        "runs": [
+          {
+            "seed": 4101,
+            "finalPopulation": 1393,
+            "activeSpecies": 1361,
+            "activeClades": 695,
+            "totalSpecies": 2206,
+            "totalClades": 1032,
+            "extinctSpecies": 845,
+            "extinctClades": 337
+          },
+          {
+            "seed": 4138,
+            "finalPopulation": 1952,
+            "activeSpecies": 1899,
+            "activeClades": 917,
+            "totalSpecies": 2619,
+            "totalClades": 1191,
+            "extinctSpecies": 720,
+            "extinctClades": 274
+          }
+        ],
+        "aggregate": {
+          "meanFinalPopulation": 1672.5,
+          "meanActiveSpecies": 1630,
+          "meanActiveClades": 806,
+          "meanTotalSpecies": 2412.5,
+          "meanTotalClades": 1111.5
+        }
+      },
+      "weighted": {
+        "label": "weighted",
+        "config": {
+          "genomeV2DistanceWeights": {
+            "categories": {
+              "policyThreshold": 0.15,
+              "policyBounded": 0.75
+            }
+          }
+        },
+        "runs": [
+          {
+            "seed": 4101,
+            "finalPopulation": 1345,
+            "activeSpecies": 1124,
+            "activeClades": 628,
+            "totalSpecies": 1865,
+            "totalClades": 943,
+            "extinctSpecies": 741,
+            "extinctClades": 315
+          },
+          {
+            "seed": 4138,
+            "finalPopulation": 1936,
+            "activeSpecies": 1641,
+            "activeClades": 849,
+            "totalSpecies": 2299,
+            "totalClades": 1124,
+            "extinctSpecies": 658,
+            "extinctClades": 275
+          }
+        ],
+        "aggregate": {
+          "meanFinalPopulation": 1640.5,
+          "meanActiveSpecies": 1382.5,
+          "meanActiveClades": 738.5,
+          "meanTotalSpecies": 2082,
+          "meanTotalClades": 1033.5
+        }
+      },
+      "deltas": {
+        "meanFinalPopulation": -32,
+        "meanActiveSpecies": -247.5,
+        "meanActiveClades": -67.5,
+        "meanTotalSpecies": -330.5,
+        "meanTotalClades": -78
+      },
+      "summary": "policy-threshold-heavy: weighted mean total species -330.50 and mean total clades -78.00 versus unweighted."
+    },
+    {
+      "scenario": "mixed-divergence",
+      "config": {
+        "mutationAmount": 0.16,
+        "policyMutationProbability": 0.65,
+        "policyMutationMagnitude": 0.5,
+        "speciationThreshold": 0.35,
+        "cladogenesisThreshold": 1.1
+      },
+      "unweighted": {
+        "label": "unweighted",
+        "config": {},
+        "runs": [
+          {
+            "seed": 4101,
+            "finalPopulation": 2238,
+            "activeSpecies": 944,
+            "activeClades": 180,
+            "totalSpecies": 1484,
+            "totalClades": 228,
+            "extinctSpecies": 540,
+            "extinctClades": 48
+          },
+          {
+            "seed": 4138,
+            "finalPopulation": 2000,
+            "activeSpecies": 858,
+            "activeClades": 181,
+            "totalSpecies": 1420,
+            "totalClades": 230,
+            "extinctSpecies": 562,
+            "extinctClades": 49
+          }
+        ],
+        "aggregate": {
+          "meanFinalPopulation": 2119,
+          "meanActiveSpecies": 901,
+          "meanActiveClades": 180.5,
+          "meanTotalSpecies": 1452,
+          "meanTotalClades": 229
+        }
+      },
+      "weighted": {
+        "label": "weighted",
+        "config": {
+          "genomeV2DistanceWeights": {
+            "categories": {
+              "policyThreshold": 0.15,
+              "policyBounded": 0.75
+            }
+          }
+        },
+        "runs": [
+          {
+            "seed": 4101,
+            "finalPopulation": 2207,
+            "activeSpecies": 585,
+            "activeClades": 173,
+            "totalSpecies": 992,
+            "totalClades": 206,
+            "extinctSpecies": 407,
+            "extinctClades": 33
+          },
+          {
+            "seed": 4138,
+            "finalPopulation": 1964,
+            "activeSpecies": 572,
+            "activeClades": 130,
+            "totalSpecies": 1036,
+            "totalClades": 176,
+            "extinctSpecies": 464,
+            "extinctClades": 46
+          }
+        ],
+        "aggregate": {
+          "meanFinalPopulation": 2085.5,
+          "meanActiveSpecies": 578.5,
+          "meanActiveClades": 151.5,
+          "meanTotalSpecies": 1014,
+          "meanTotalClades": 191
+        }
+      },
+      "deltas": {
+        "meanFinalPopulation": -33.5,
+        "meanActiveSpecies": -322.5,
+        "meanActiveClades": -29,
+        "meanTotalSpecies": -438,
+        "meanTotalClades": -38
+      },
+      "summary": "mixed-divergence: weighted mean total species -438.00 and mean total clades -38.00 versus unweighted."
+    }
+  ],
+  "conclusion": {
+    "weightedReducedTotalSpeciesInAllScenarios": true,
+    "weightedReducedTotalCladesInAllScenarios": true,
+    "summary": "policy-threshold-heavy: species -330.50, clades -78.00; mixed-divergence: species -438.00, clades -38.00"
+  }
+}

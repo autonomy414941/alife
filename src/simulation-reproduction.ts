@@ -321,7 +321,8 @@ export function reproduceAgent({
     : undefined;
   const childGenome = childGenomeV2 ? toGenome(childGenomeV2) : mutateGenome(parent.genome);
   const diverged =
-    genomeDistance(parent.genomeV2 ?? parent.genome, childGenomeV2 ?? childGenome) >= config.speciationThreshold;
+    genomeDistance(parent.genomeV2 ?? parent.genome, childGenomeV2 ?? childGenome, config) >=
+    config.speciationThreshold;
   const childSpecies = diverged ? allocateSpeciesId() : parent.species;
   if (diverged) {
     initializeDivergentSpecies({
@@ -477,9 +478,13 @@ function defenseDeltaFromMutation(config: SimulationConfig, parent: Genome | Gen
   return clamp(signal, -1, 1) * mutationScale;
 }
 
-function genomeDistance(a: Genome | GenomeV2, b: Genome | GenomeV2): number {
+function genomeDistance(
+  a: Genome | GenomeV2,
+  b: Genome | GenomeV2,
+  config?: Pick<SimulationConfig, 'genomeV2DistanceWeights'>
+): number {
   if (isGenomeV2(a) && isGenomeV2(b)) {
-    return genomeV2Distance(a, b);
+    return genomeV2Distance(a, b, config?.genomeV2DistanceWeights);
   }
 
   const left = toLegacyGenome(a);

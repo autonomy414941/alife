@@ -168,6 +168,48 @@ describe('policy-driven speciation and cladogenesis', () => {
       const distance = genomeV2Distance(a, b);
       expect(distance).toBeGreaterThan(2.0);
     });
+
+    it('distance weights can rebalance morphology against threshold policy divergence', () => {
+      const morphologyA = createGenomeV2();
+      setTrait(morphologyA, 'metabolism', 0.1);
+      setTrait(morphologyA, 'harvest', 0.1);
+      setTrait(morphologyA, 'aggression', 0.1);
+      setTrait(morphologyA, 'reproduction_harvest_threshold', 0.0);
+
+      const morphologyB = createGenomeV2();
+      setTrait(morphologyB, 'metabolism', 0.9);
+      setTrait(morphologyB, 'harvest', 0.9);
+      setTrait(morphologyB, 'aggression', 0.9);
+      setTrait(morphologyB, 'reproduction_harvest_threshold', 0.0);
+
+      const policyA = createGenomeV2();
+      setTrait(policyA, 'metabolism', 0.5);
+      setTrait(policyA, 'harvest', 0.5);
+      setTrait(policyA, 'aggression', 0.5);
+      setTrait(policyA, 'reproduction_harvest_threshold', 0.0);
+
+      const policyB = createGenomeV2();
+      setTrait(policyB, 'metabolism', 0.5);
+      setTrait(policyB, 'harvest', 0.5);
+      setTrait(policyB, 'aggression', 0.5);
+      setTrait(policyB, 'reproduction_harvest_threshold', 10.0);
+
+      const weightedConfig: SimulationConfig = {
+        ...baseConfig,
+        genomeV2DistanceWeights: {
+          categories: {
+            policyThreshold: 0.1
+          }
+        }
+      };
+
+      const weightedMorphologyDistance = genomeV2Distance(morphologyA, morphologyB, weightedConfig.genomeV2DistanceWeights);
+      const weightedPolicyDistance = genomeV2Distance(policyA, policyB, weightedConfig.genomeV2DistanceWeights);
+
+      expect(weightedMorphologyDistance).toBeGreaterThan(weightedPolicyDistance);
+      expect(shouldSpeciateV2(policyA, policyB, weightedConfig)).toBe(true);
+      expect(shouldFoundCladeV2(policyA, policyB, weightedConfig)).toBe(false);
+    });
   });
 
   describe('mixed morphological and policy divergence', () => {

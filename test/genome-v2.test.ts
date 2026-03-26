@@ -506,5 +506,65 @@ describe('GenomeV2', () => {
       expect(distance).toBeGreaterThan(0);
       expect(distance).toBeCloseTo(0.6);
     });
+
+    it('down-weights unbounded policy thresholds by category', () => {
+      const morphologyA = createCoreGenomeV2();
+      setTrait(morphologyA, 'reproduction_harvest_threshold', 0);
+
+      const morphologyB = createCoreGenomeV2();
+      setTrait(morphologyB, 'metabolism', 0.9);
+      setTrait(morphologyB, 'harvest', 0.9);
+      setTrait(morphologyB, 'aggression', 0.9);
+      setTrait(morphologyB, 'reproduction_harvest_threshold', 0);
+
+      const policyA = createCoreGenomeV2();
+      setTrait(policyA, 'reproduction_harvest_threshold', 0);
+
+      const policyB = createCoreGenomeV2();
+      setTrait(policyB, 'reproduction_harvest_threshold', 10);
+
+      const morphologyDistance = genomeV2Distance(morphologyA, morphologyB, {
+        categories: { policyThreshold: 0.1 }
+      });
+      const policyDistance = genomeV2Distance(policyA, policyB, {
+        categories: { policyThreshold: 0.1 }
+      });
+
+      expect(policyDistance).toBeCloseTo(30 / 31, 10);
+      expect(morphologyDistance).toBeGreaterThan(policyDistance);
+    });
+
+    it('lets per-locus weights override category weights', () => {
+      const a = createCoreGenomeV2();
+      setTrait(a, 'reproduction_harvest_threshold', 0);
+      setTrait(a, 'movement_energy_reserve_threshold', 0);
+
+      const b = createCoreGenomeV2();
+      setTrait(b, 'reproduction_harvest_threshold', 2);
+      setTrait(b, 'movement_energy_reserve_threshold', 2);
+
+      const categoryWeightedDistance = genomeV2Distance(a, b, {
+        categories: { policyThreshold: 0.1 }
+      });
+      const locusOverrideDistance = genomeV2Distance(a, b, {
+        categories: { policyThreshold: 0.1 },
+        traits: { reproduction_harvest_threshold: 1 }
+      });
+
+      expect(locusOverrideDistance).toBeGreaterThan(categoryWeightedDistance);
+      expect(locusOverrideDistance).toBeCloseTo(6.6 / 4.1, 10);
+    });
+
+    it('rejects invalid distance weights', () => {
+      const a = createCoreGenomeV2();
+      const b = createCoreGenomeV2();
+      setTrait(b, 'reproduction_harvest_threshold', 1);
+
+      expect(() =>
+        genomeV2Distance(a, b, {
+          categories: { policyThreshold: -1 }
+        })
+      ).toThrow(/finite non-negative number/);
+    });
   });
 });

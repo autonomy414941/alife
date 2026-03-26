@@ -51,7 +51,10 @@ export function shouldSpeciateV2(
   childGenomeV2: GenomeV2,
   config: SimulationConfig
 ): boolean {
-  return genomeV2Distance(parentGenomeV2, childGenomeV2) >= config.speciationThreshold;
+  return (
+    genomeV2Distance(parentGenomeV2, childGenomeV2, config.genomeV2DistanceWeights) >=
+    config.speciationThreshold
+  );
 }
 
 export function shouldFoundCladeV2(
@@ -63,7 +66,7 @@ export function shouldFoundCladeV2(
   if (!Number.isFinite(threshold) || threshold < 0) {
     return false;
   }
-  return genomeV2Distance(founderGenomeV2, childGenomeV2) >= threshold;
+  return genomeV2Distance(founderGenomeV2, childGenomeV2, config.genomeV2DistanceWeights) >= threshold;
 }
 
 export function getMetabolismV2(genomeV2: GenomeV2): number {

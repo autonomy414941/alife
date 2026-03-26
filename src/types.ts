@@ -9,6 +9,13 @@ export interface GenomeV2 {
   traits: Map<string, number>;
 }
 
+export type GenomeV2DistanceTraitCategory = 'morphology' | 'policyThreshold' | 'policyBounded';
+
+export interface GenomeV2DistanceWeights {
+  categories?: Partial<Record<GenomeV2DistanceTraitCategory, number>>;
+  traits?: Partial<Record<string, number>>;
+}
+
 export interface TaxonTimelinePoint {
   tick: number;
   population: number;
@@ -282,6 +289,7 @@ export interface SimulationConfig {
   policyMutationMagnitude: number;
   speciationThreshold: number;
   cladogenesisThreshold: number;
+  genomeV2DistanceWeights?: GenomeV2DistanceWeights;
   maxAge: number;
 }
 

@@ -1,4 +1,4 @@
-import { Genome, GenomeV2 } from './types';
+import { Genome, GenomeV2, GenomeV2DistanceTraitCategory, GenomeV2DistanceWeights } from './types';
 
 export const DEFAULT_TRAIT_VALUES: Record<string, number> = {
   metabolism: 0.6,
@@ -102,8 +102,17 @@ export const POLICY_TRAITS: string[] = [
   'harvest_secondary_preference',
   'spending_secondary_preference'
 ];
+export const POLICY_THRESHOLD_TRAITS: string[] = [
+  'reproduction_harvest_threshold',
+  'movement_energy_reserve_threshold',
+  'movement_min_recent_harvest'
+];
+export const POLICY_BOUNDED_TRAITS: string[] = [
+  'reproduction_harvest_threshold_steepness',
+  'harvest_secondary_preference',
+  'spending_secondary_preference'
+];
 export const DEFAULT_MUTATION_CANDIDATE_NEW_LOCI = [...OPTIONAL_TRAITS, ...EXTENDED_TRAITS, ...POLICY_TRAITS];
-const DISTANCE_BASELINE_TRAIT_COUNT = CORE_TRAITS.length;
 
 export function mutateGenomeV2(
   genome: GenomeV2,
@@ -176,17 +185,61 @@ function clampTraitValue(key: string, value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
-export function genomeV2Distance(a: GenomeV2, b: GenomeV2): number {
+export function genomeV2Distance(a: GenomeV2, b: GenomeV2, weights?: GenomeV2DistanceWeights): number {
   const allKeys = new Set([...listTraits(a), ...listTraits(b)]);
   if (allKeys.size === 0) {
     return 0;
   }
 
   let sum = 0;
+  let totalExpressedWeight = 0;
   for (const key of allKeys) {
-    sum += Math.abs(getTrait(a, key) - getTrait(b, key));
+    const weight = distanceWeightForTrait(key, weights);
+    totalExpressedWeight += weight;
+    sum += Math.abs(getTrait(a, key) - getTrait(b, key)) * weight;
   }
 
-  const normalizationCount = Math.max(allKeys.size, DISTANCE_BASELINE_TRAIT_COUNT);
-  return (sum * DISTANCE_BASELINE_TRAIT_COUNT) / normalizationCount;
+  if (sum === 0 || totalExpressedWeight === 0) {
+    return 0;
+  }
+
+  const baselineWeight = CORE_TRAITS.reduce((total, key) => total + distanceWeightForTrait(key, weights), 0);
+  if (baselineWeight === 0) {
+    return 0;
+  }
+
+  const normalizationCount = Math.max(totalExpressedWeight, baselineWeight);
+  return (sum * baselineWeight) / normalizationCount;
+}
+
+export function classifyGenomeV2DistanceTraitCategory(key: string): GenomeV2DistanceTraitCategory {
+  if (POLICY_THRESHOLD_TRAITS.includes(key)) {
+    return 'policyThreshold';
+  }
+  if (POLICY_BOUNDED_TRAITS.includes(key)) {
+    return 'policyBounded';
+  }
+  return 'morphology';
+}
+
+function distanceWeightForTrait(key: string, weights?: GenomeV2DistanceWeights): number {
+  const traitWeight = weights?.traits?.[key];
+  if (traitWeight !== undefined) {
+    return validateDistanceWeight(`trait ${key}`, traitWeight);
+  }
+
+  const category = classifyGenomeV2DistanceTraitCategory(key);
+  const categoryWeight = weights?.categories?.[category];
+  if (categoryWeight !== undefined) {
+    return validateDistanceWeight(`category ${category}`, categoryWeight);
+  }
+
+  return 1;
+}
+
+function validateDistanceWeight(label: string, weight: number): number {
+  if (!Number.isFinite(weight) || weight < 0) {
+    throw new Error(`GenomeV2 distance weight for ${label} must be a finite non-negative number`);
+  }
+  return weight;
 }
