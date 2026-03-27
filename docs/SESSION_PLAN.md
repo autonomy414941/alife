@@ -1,99 +1,94 @@
-# Session Plan — 2026-03-26
+# Session Plan — 2026-03-27
 
 ## Compact Context
-- March 25 unified policy parameters into `genomeV2.traits`; policy divergence now contributes to speciation/cladogenesis distance
-- March 26 extended graded sigmoid gates to movement (energy reserve and recent harvest thresholds)
-- Harvest policy still uses binary substrate ratio; it is the last remaining non-graded decision surface
-- Revalidation showed graded reproduction degraded after unification (births 2049→1210 at steepness 1.0), while spending policy preserved exactly
-- Unbounded policy thresholds can dominate distance: reproduction_harvest_threshold 0→10 contributes 10 units vs max morphology 3 units
+- Policy parameters now live in `genomeV2.traits`, and the uncontrolled policy-mutation regression was fixed on March 26
+- Graded reproduction, movement, and harvest surfaces all exist, but only harvest currently has fresh anti-evidence from a bounded pilot
+- `genomeV2DistanceWeights` is implemented, but no calibrated default weighting has been established
+- `policyObservability` is exported in standard summaries, while generic genome-wide trait means and selection metrics are still missing
+- The live environment still uses two largely symmetric resource pools on the same fertility and forcing structure
+- Claims of progress still depend heavily on species and clade counts plus relabel-null deltas rather than direct ecological distinctness
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Structural ceiling identification | 2 | c88018c |
-| Graded policy expansion | 2 | fe0e302 |
-| Policy-genome unification validation | 2 | 190ee83 |
-| Policy-genome integration | 2 | e2f5109 |
-| Behavioral policy mechanism rollout | 2 | 45121f6 |
-| Graded harvest policy | 0 | none |
-| Policy-distance weighting | 0 | none |
-| Null-baseline policy preservation | 0 | none |
+| Behavioral policy surfaces | 4 | 1e77c0d |
+| Structural critique and planning | 3 | 4a54d05 |
+| Policy mutation stability | 2 | 7e1a6fd |
+| Distance weighting | 1 | f87d602 |
+| Trait decoder / phenotype expression | 0 | none |
+| Genome-wide observability | 0 | none |
+| Environmental feedbacks | 0 | none |
 
-Dominant axis: No single axis dominates (5 axes at 2 commits each)
-Underexplored axes: Graded harvest policy, Policy-distance weighting, Null-baseline policy preservation
+Dominant axis: Behavioral policy surfaces (4/10)
+Underexplored axes: Trait decoder / phenotype expression, Genome-wide observability, Environmental feedbacks, Distance weighting
 
 ## Project State
-- Policy-genome unification complete: all policy parameters are `genomeV2.traits` loci
-- Graded policies exist for reproduction (steepness-controlled sigmoid) and movement (energy + harvest thresholds)
-- Focused tests confirm policy divergence crosses speciation/cladogenesis thresholds
-- Main underdeveloped areas: (1) harvest policy remains binary, (2) unbounded policy traits may dominate morphology in distance, (3) graded reproduction surface degraded after unification
+- Policy loci are now first-class genome traits, graded policy gates exist for reproduction, movement, and harvest, and policy observability is collected in step summaries
+- Recent sessions have concentrated on policy-genome unification, smoothing binary policy gates, and patching regressions introduced by that refactor
+- The important gap is now expression fidelity and measurement: not every heritable locus is actually shaping behavior, default metrics still under-report genome-wide change, and taxonomic thresholds are not yet calibrated against ecological meaning
 
 ## External Context
-- [Frontiers in Robotics and AI, 2025](https://www.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1668910/full): Embodied intelligence systems use three-layer framework integrating multimodal perception, world modeling, and structured strategies; adaptive environment generation adapts difficulty to agent capabilities via closed-loop feedback
-- [Nature Communications, 2021](https://www.nature.com/articles/s41467-021-25874-z): Embodied intelligence via learning and evolution shows that morphology and control co-evolve to solve tasks
-- [IET Control Theory, 2026](https://ietresearch.onlinelibrary.wiley.com/doi/10.1049/cth2.70099): Specialized deep residual policy reinforcement learning uses sigmoid-based adaptive activation for safe continuous control; gradient-descent tuning evolves activation functions to task-specific forms
-- [arXiv, 2026](https://arxiv.org/abs/2602.06366): Adaptive environment generation for embodied agents uses fine-grained performance feedback beyond binary success/failure and closed-loop adaptation mechanisms
+- Faldor and Cully, ["Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity"](https://doi.org/10.1162/isal_a_00827), ALIFE 2024: recent OEE work is pairing richer expressive spaces with diversity-preserving search rather than relying on a small number of hand-tuned local control knobs
+- Bedau, ["Kuhnian Lessons for the Study of Open-Ended Evolution"](https://doi.org/10.1162/artl_a_00428), Artificial Life 2024: argues that progress requires sharper exemplars and more decisive tests; I infer that this repo needs stronger expression and measurement validity before more mechanism rollout
 
 ## Research Gaps
-- Can graded harvest policies (smooth substrate effort allocation vs binary ratios) create measurable fitness differentiation or niche partitioning?
-- Does unbounded policy trait variance systematically drown out morphological distance in speciation thresholds, creating policy-dominated taxonomic splits that ignore morphology?
+- When a locus is present in `GenomeV2`, is it actually expressed in the live simulator and visible in default summaries, or can it remain selectively inert behind the current hard-coded trait plumbing?
+- After restoring expression fidelity and calibrating distance weights, do graded policies still look ecologically neutral under the current symmetric ecology?
 
 ## Current Anti-Evidence
-- Policy-genome unification altered graded reproduction surface dynamics (births 2049→1210, steepness 5.0 births 203→7), suggesting the refactor changed evolutionary behavior beyond storage location despite substrate spending remaining unchanged
-- Unbounded policy thresholds contribute disproportionately to distance: `reproduction_harvest_threshold` 0→10 produces 10-unit contribution while maximum morphological divergence across all three core traits is 3 units, meaning policy-only splits can occur while morphology remains near-identical
+- The March 26 graded-harvest pilot showed no monotonic fitness advantage, and follow-up inspection found that graded harvest currently returns identical outputs for `basePreference=0.1` and `basePreference=0.9` under the same threshold and steepness, so the current neutrality claim is contaminated by a partially inert locus
+- Taxonomic novelty can still be driven by uncalibrated policy-distance contributions and scored mainly through species and clade counts, so the project cannot yet claim ecologically meaningful open-ended diversification
 
 ## Bet Queue
 
-### Bet 1: [expand] Extend graded policy gates to harvest
-Apply sigmoid or graded intensity modulation to harvest substrate preference instead of using a fixed binary ratio. Replace `harvest_secondary_preference` as a static allocation coefficient with a dynamic graded surface that modulates harvest effort or substrate choice probability based on threshold and steepness parameters.
+### Bet 1: [investigate] Graded Harvest Base-Preference Inertness
+Verify and repair the graded-harvest expression path so `harvest_secondary_preference` still matters when thresholded harvest is active. The March 26 neutrality result is not trustworthy until the heritable preference locus changes behavior under the graded regime it is supposed to parameterize.
 
 #### Success Evidence
-- Harvest policy uses graded activation (sigmoid, linear ramp, or smooth intensity function) with heritable steepness parameter
-- Focused tests confirm gradient behavior across steepness values for harvest decisions
-- One bounded smoke study shows measurable variation in substrate intake distributions under different steepness settings
+- Focused tests show that two agents with identical threshold and steepness but different base preferences produce different graded harvest shares
+- A short follow-up artifact under `docs/` states whether the March 26 neutrality conclusion survives the fix or needs to be revised
 
 #### Stop Conditions
-- Stop after harvest has one graded surface; do not add new observability inputs or redesign resource dynamics
-- Do not extend graded gates to other decision surfaces in the same bet
+- Stop after expression fidelity is restored and rechecked on a bounded smoke or pilot
+- Do not redesign the wider resource model in this bet
 
-### Bet 2: [validate] Diagnose graded reproduction degradation after unification
-Investigate why graded reproduction surface degraded (births 2049→1210 at steepness 1.0, 203→7 at steepness 5.0) while substrate spending preserved exactly. Compare mutation, inheritance, and decision-gating code paths for reproduction vs spending to identify mechanism differences.
+### Bet 2: [expand] Trait Decoder Bottleneck
+Introduce a metadata-driven trait registry or phenotype decoder that centralizes locus meaning, mutation behavior, clamping, and distance category for the currently supported trait set. This is the smallest structural change that turns `GenomeV2` from a flexible storage map into an actually extensible phenotype mechanism.
 
 #### Success Evidence
-- Documented root cause of reproduction degradation (mutation rate, inheritance pattern, threshold resolution, or RNG seeding difference)
-- Artifact under `docs/` comparing reproduction and spending code paths with hypothesis about divergence source
-- If fixable without breaking other mechanisms, a targeted fix with before/after validation
+- One central trait metadata surface replaces multiple hard-coded trait lists or switch branches
+- At least one live simulator path consumes the shared metadata rather than direct trait-name conditionals
+- Tests cover metadata-driven mutation, clamping, or distance behavior for existing loci
 
 #### Stop Conditions
-- Stop after identifying root cause or documenting that degradation is expected evolutionary consequence, not a bug
-- Do not redesign entire policy mutation or inheritance system in this bet
+- Stop after the current locus set is centralized behind one metadata layer
+- Do not attempt generative new trait families or a full developmental system in this bet
 
-### Bet 3: [validate] Add per-locus distance weights to genomeV2Distance
-Introduce configurable distance weights for policy vs morphological traits to prevent unbounded policy thresholds from systematically dominating speciation/cladogenesis thresholds. Test whether weighted distance preserves policy-driven splits while allowing morphology to co-contribute.
+### Bet 3: [feat] Generic Trait Metrics Surface
+Add genome-wide trait prevalence, mean, variance, and selection-style summaries to the standard step and export surfaces so the planner can see which loci are spreading or remaining inert. Without this, any post-decoder or post-policy result still collapses back to the legacy morphology triad.
 
 #### Success Evidence
-- `genomeV2Distance()` accepts optional per-locus or per-category weights (morphology, policy thresholds, policy bounded traits)
-- Focused tests show that weighted distance can balance policy and morphology contributions
-- One bounded smoke study compares unweighted vs weighted distance in taxonomic split distributions
+- `StepSummary` and standard exports include generic `GenomeV2` trait summaries rather than only the legacy morphology trio plus opt-in policy fields
+- At least one study or export test asserts presence of the new generic metrics
 
 #### Stop Conditions
-- Stop after weighted distance mechanism exists and is validated in focused tests
-- Do not retune all experiments or redesign speciation/cladogenesis thresholds in this bet
+- Stop after generic reporting is wired into the default observability path
+- Do not build a full dashboard or redesign every study artifact in this bet
 
-### Bet 4: [validate] Test graded harvest policy fitness differentiation
-Run bounded pilot comparing graded harvest (varying steepness) against fixed binary harvest to measure whether smooth substrate-choice surfaces create measurable fitness advantages, niche partitioning, or ecological differentiation.
+### Bet 4: [validate] Distance Weight Initialization Opacity
+Run a bounded calibration panel for `genomeV2DistanceWeights` and choose a defensible default weighting scheme for morphology, bounded policy traits, and unbounded policy thresholds. Until these weights are calibrated, taxonomic outcomes remain too easy to inflate through policy-only distance.
 
 #### Success Evidence
-- Bounded pilot (2-4 seeds, 100-200 steps) comparing graded harvest at multiple steepness values against binary baseline
-- Artifact under `docs/` showing harvest intake distributions, survival, reproductive output, or diversity metrics by steepness
-- Clear statement of whether graded harvest creates measurable fitness signal or remains neutral
+- Artifact under `docs/` compares at least three weighting regimes on the same bounded panel
+- The study reports whether weighting changes the balance of policy-only versus mixed or morphology-linked splits
+- One weighting scheme is justified as the new default or explicitly rejected pending further evidence
 
 #### Stop Conditions
-- Stop after bounded pilot with 2-4 steepness levels and 2-4 seeds
-- Do not run full-horizon studies or expand to multi-factorial panels
+- Stop after a bounded, comparable calibration panel and recommendation
+- Do not rerun full-horizon studies or retune the entire speciation system in this bet
 
 ## Assumptions / Unknowns
-- Assumption: graded harvest policy is the highest-leverage next expansion because it closes the last binary decision surface and harvest is central to substrate niche partitioning
-- Assumption: unbounded policy trait dominance is a structural issue requiring distance weighting, not a sign that policies should be re-bounded
-- Unknown: whether graded reproduction degradation is a bug (wrong mutation rate, inheritance error) or an expected evolutionary consequence of genome-backed vs legacy policyState dynamics
-- Unknown: whether graded harvest will show fitness differentiation similar to graded reproduction or remain neutral like binary harvest-only policies
+- Assumption: the graded-harvest base-preference omission is a real mechanism bug, not an intentional normalization
+- Assumption: trait metadata can be centralized incrementally without destabilizing the current live simulator
+- Unknown: whether graded-policy neutrality persists once expression fidelity and metric coverage are fixed
+- Unknown: whether simple category-level distance weights are sufficient, or whether per-trait range-aware weighting will be needed
