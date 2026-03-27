@@ -1,0 +1,348 @@
+{
+  "generatedAt": "2026-03-27T04:30:53.296Z",
+  "question": "What distance weighting scheme prevents policy-only distance from inflating taxonomic outcomes while preserving ecologically meaningful diversification?",
+  "hypothesis": "Down-weighting unbounded policy thresholds and bounded policy traits relative to morphology will reduce policy-only species inflation without eliminating diversification entirely.",
+  "scenarios": [
+    {
+      "label": "policy-threshold-heavy",
+      "description": "High policy mutation rate and magnitude, dominated by unbounded threshold traits",
+      "config": {
+        "mutationAmount": 0.03,
+        "policyMutationProbability": 1,
+        "policyMutationMagnitude": 1.4,
+        "speciationThreshold": 0.35,
+        "cladogenesisThreshold": 1.1
+      }
+    },
+    {
+      "label": "mixed-divergence",
+      "description": "Moderate morphology and policy mutation, more balanced trait change",
+      "config": {
+        "mutationAmount": 0.16,
+        "policyMutationProbability": 0.65,
+        "policyMutationMagnitude": 0.5,
+        "speciationThreshold": 0.35,
+        "cladogenesisThreshold": 1.1
+      }
+    }
+  ],
+  "regimes": [
+    {
+      "label": "baseline",
+      "description": "All traits weighted equally (implicit 1.0)"
+    },
+    {
+      "label": "moderate-policy-downweight",
+      "description": "Policy thresholds 0.25, policy bounded 0.5, morphology implicit 1.0",
+      "weights": {
+        "categories": {
+          "policyThreshold": 0.25,
+          "policyBounded": 0.5
+        }
+      }
+    },
+    {
+      "label": "strong-policy-downweight",
+      "description": "Policy thresholds 0.1, policy bounded 0.3, morphology implicit 1.0",
+      "weights": {
+        "categories": {
+          "policyThreshold": 0.1,
+          "policyBounded": 0.3
+        }
+      }
+    },
+    {
+      "label": "morphology-priority",
+      "description": "Morphology 2.0, policy thresholds 0.2, policy bounded 0.4",
+      "weights": {
+        "categories": {
+          "morphology": 2,
+          "policyThreshold": 0.2,
+          "policyBounded": 0.4
+        }
+      }
+    }
+  ],
+  "seeds": [
+    5001,
+    5002
+  ],
+  "steps": 120,
+  "results": [
+    {
+      "scenario": "policy-threshold-heavy",
+      "regime": "baseline",
+      "runs": [
+        {
+          "seed": 5001,
+          "finalPopulation": 2078,
+          "activeSpecies": 2027,
+          "activeClades": 994,
+          "totalSpecies": 2958,
+          "totalClades": 1355,
+          "extinctSpecies": 931,
+          "extinctClades": 361
+        },
+        {
+          "seed": 5002,
+          "finalPopulation": 1336,
+          "activeSpecies": 1304,
+          "activeClades": 647,
+          "totalSpecies": 2112,
+          "totalClades": 938,
+          "extinctSpecies": 808,
+          "extinctClades": 291
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 1707,
+        "meanActiveSpecies": 1665.5,
+        "meanActiveClades": 820.5,
+        "meanTotalSpecies": 2535,
+        "meanTotalClades": 1146.5
+      }
+    },
+    {
+      "scenario": "policy-threshold-heavy",
+      "regime": "moderate-policy-downweight",
+      "runs": [
+        {
+          "seed": 5001,
+          "finalPopulation": 1369,
+          "activeSpecies": 1199,
+          "activeClades": 640,
+          "totalSpecies": 1926,
+          "totalClades": 940,
+          "extinctSpecies": 727,
+          "extinctClades": 300
+        },
+        {
+          "seed": 5002,
+          "finalPopulation": 1376,
+          "activeSpecies": 1208,
+          "activeClades": 623,
+          "totalSpecies": 1925,
+          "totalClades": 929,
+          "extinctSpecies": 717,
+          "extinctClades": 306
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 1372.5,
+        "meanActiveSpecies": 1203.5,
+        "meanActiveClades": 631.5,
+        "meanTotalSpecies": 1925.5,
+        "meanTotalClades": 934.5
+      }
+    },
+    {
+      "scenario": "policy-threshold-heavy",
+      "regime": "strong-policy-downweight",
+      "runs": [
+        {
+          "seed": 5001,
+          "finalPopulation": 1336,
+          "activeSpecies": 829,
+          "activeClades": 538,
+          "totalSpecies": 1362,
+          "totalClades": 795,
+          "extinctSpecies": 533,
+          "extinctClades": 257
+        },
+        {
+          "seed": 5002,
+          "finalPopulation": 1934,
+          "activeSpecies": 1038,
+          "activeClades": 608,
+          "totalSpecies": 1590,
+          "totalClades": 897,
+          "extinctSpecies": 552,
+          "extinctClades": 289
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 1635,
+        "meanActiveSpecies": 933.5,
+        "meanActiveClades": 573,
+        "meanTotalSpecies": 1476,
+        "meanTotalClades": 846
+      }
+    },
+    {
+      "scenario": "policy-threshold-heavy",
+      "regime": "morphology-priority",
+      "runs": [
+        {
+          "seed": 5001,
+          "finalPopulation": 1315,
+          "activeSpecies": 1230,
+          "activeClades": 638,
+          "totalSpecies": 2005,
+          "totalClades": 919,
+          "extinctSpecies": 775,
+          "extinctClades": 281
+        },
+        {
+          "seed": 5002,
+          "finalPopulation": 1346,
+          "activeSpecies": 1260,
+          "activeClades": 640,
+          "totalSpecies": 2031,
+          "totalClades": 938,
+          "extinctSpecies": 771,
+          "extinctClades": 298
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 1330.5,
+        "meanActiveSpecies": 1245,
+        "meanActiveClades": 639,
+        "meanTotalSpecies": 2018,
+        "meanTotalClades": 928.5
+      }
+    },
+    {
+      "scenario": "mixed-divergence",
+      "regime": "baseline",
+      "runs": [
+        {
+          "seed": 5001,
+          "finalPopulation": 2682,
+          "activeSpecies": 1074,
+          "activeClades": 250,
+          "totalSpecies": 1514,
+          "totalClades": 290,
+          "extinctSpecies": 440,
+          "extinctClades": 40
+        },
+        {
+          "seed": 5002,
+          "finalPopulation": 2135,
+          "activeSpecies": 848,
+          "activeClades": 231,
+          "totalSpecies": 1307,
+          "totalClades": 279,
+          "extinctSpecies": 459,
+          "extinctClades": 48
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 2408.5,
+        "meanActiveSpecies": 961,
+        "meanActiveClades": 240.5,
+        "meanTotalSpecies": 1410.5,
+        "meanTotalClades": 284.5
+      }
+    },
+    {
+      "scenario": "mixed-divergence",
+      "regime": "moderate-policy-downweight",
+      "runs": [
+        {
+          "seed": 5001,
+          "finalPopulation": 2355,
+          "activeSpecies": 569,
+          "activeClades": 155,
+          "totalSpecies": 878,
+          "totalClades": 169,
+          "extinctSpecies": 309,
+          "extinctClades": 14
+        },
+        {
+          "seed": 5002,
+          "finalPopulation": 1747,
+          "activeSpecies": 400,
+          "activeClades": 120,
+          "totalSpecies": 730,
+          "totalClades": 136,
+          "extinctSpecies": 330,
+          "extinctClades": 16
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 2051,
+        "meanActiveSpecies": 484.5,
+        "meanActiveClades": 137.5,
+        "meanTotalSpecies": 804,
+        "meanTotalClades": 152.5
+      }
+    },
+    {
+      "scenario": "mixed-divergence",
+      "regime": "strong-policy-downweight",
+      "runs": [
+        {
+          "seed": 5001,
+          "finalPopulation": 2476,
+          "activeSpecies": 323,
+          "activeClades": 112,
+          "totalSpecies": 553,
+          "totalClades": 130,
+          "extinctSpecies": 230,
+          "extinctClades": 18
+        },
+        {
+          "seed": 5002,
+          "finalPopulation": 2370,
+          "activeSpecies": 282,
+          "activeClades": 107,
+          "totalSpecies": 491,
+          "totalClades": 121,
+          "extinctSpecies": 209,
+          "extinctClades": 14
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 2423,
+        "meanActiveSpecies": 302.5,
+        "meanActiveClades": 109.5,
+        "meanTotalSpecies": 522,
+        "meanTotalClades": 125.5
+      }
+    },
+    {
+      "scenario": "mixed-divergence",
+      "regime": "morphology-priority",
+      "runs": [
+        {
+          "seed": 5001,
+          "finalPopulation": 2345,
+          "activeSpecies": 1915,
+          "activeClades": 168,
+          "totalSpecies": 2911,
+          "totalClades": 205,
+          "extinctSpecies": 996,
+          "extinctClades": 37
+        },
+        {
+          "seed": 5002,
+          "finalPopulation": 1987,
+          "activeSpecies": 1604,
+          "activeClades": 172,
+          "totalSpecies": 2614,
+          "totalClades": 221,
+          "extinctSpecies": 1010,
+          "extinctClades": 49
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 2166,
+        "meanActiveSpecies": 1759.5,
+        "meanActiveClades": 170,
+        "meanTotalSpecies": 2762.5,
+        "meanTotalClades": 213
+      }
+    }
+  ],
+  "conclusion": {
+    "bestRegimeForPolicyInflationControl": "morphology-priority",
+    "reasoning": "morphology-priority reduced policy-heavy species by 20.4% (517.0 species) while reducing mixed-divergence species by -95.9% (-1352.0 species). This suggests it controls policy-only inflation while preserving morphology-linked diversification.",
+    "recommendedDefault": {
+      "categories": {
+        "morphology": 2,
+        "policyThreshold": 0.2,
+        "policyBounded": 0.4
+      }
+    }
+  }
+}
