@@ -11,10 +11,13 @@ import {
   resolveHarvestSecondaryPreference,
   resolveSpendingSecondaryPreference,
   resolveBehavioralPolicyFlags,
+  computeGradedHarvestSecondaryPreference,
   computeGradedReproductionProbability,
   INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD,
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
+  INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD,
+  INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS,
   INTERNAL_STATE_LAST_HARVEST
 } from '../src/behavioral-control';
 
@@ -276,6 +279,20 @@ describe('behavioral-control', () => {
   });
 
   describe('resolveHarvestSecondaryPreference', () => {
+    it('keeps graded harvest sensitive to inherited base preference', () => {
+      const lowPreference = computeGradedHarvestSecondaryPreference(2, 5, 2, 0.1);
+      const highPreference = computeGradedHarvestSecondaryPreference(2, 5, 2, 0.9);
+
+      expect(lowPreference).toBeLessThan(highPreference);
+      expect(lowPreference).toBeGreaterThan(0.1);
+      expect(highPreference).toBeLessThanOrEqual(1);
+    });
+
+    it('uses base preference as the midpoint at the harvest threshold', () => {
+      expect(computeGradedHarvestSecondaryPreference(5, 5, 2, 0.2)).toBeCloseTo(0.2, 10);
+      expect(computeGradedHarvestSecondaryPreference(5, 5, 2, 0.8)).toBeCloseTo(0.8, 10);
+    });
+
     it('returns undefined when no harvest policy is present', () => {
       expect(resolveHarvestSecondaryPreference({ policyState: undefined })).toBeUndefined();
     });
@@ -300,6 +317,24 @@ describe('behavioral-control', () => {
         })
       ).toBe(0);
       expect(DEFAULT_HARVEST_SECONDARY_PREFERENCE).toBe(0.5);
+    });
+
+    it('propagates genome-backed base preference differences through graded harvest', () => {
+      const lowGenome = createGenomeV2();
+      const highGenome = createGenomeV2();
+      setTrait(lowGenome, INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0.1);
+      setTrait(highGenome, INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0.9);
+      setTrait(lowGenome, INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD, 5);
+      setTrait(highGenome, INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD, 5);
+      setTrait(lowGenome, INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS, 2);
+      setTrait(highGenome, INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS, 2);
+
+      const lowPreference = resolveHarvestSecondaryPreference({ genomeV2: lowGenome }, 2);
+      const highPreference = resolveHarvestSecondaryPreference({ genomeV2: highGenome }, 2);
+
+      expect(lowPreference).toBeDefined();
+      expect(highPreference).toBeDefined();
+      expect(lowPreference!).toBeLessThan(highPreference!);
     });
   });
 

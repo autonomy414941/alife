@@ -497,7 +497,12 @@ export function computeGradedHarvestSecondaryPreference(
 
   const normalizedDistance = (primaryAvailable - threshold) / Math.max(1, threshold);
   const scaledDistance = normalizedDistance * steepness;
-  const primaryPreferenceBoost = 1 / (1 + Math.exp(-scaledDistance));
+  const primaryPreference = 1 / (1 + Math.exp(-scaledDistance));
+  const scarcityBias = 1 - 2 * primaryPreference;
 
-  return (1 - primaryPreferenceBoost);
+  if (scarcityBias >= 0) {
+    return basePreference + (1 - basePreference) * scarcityBias;
+  }
+
+  return basePreference * (1 + scarcityBias);
 }

@@ -68,51 +68,56 @@ function buildInitialAgents(
 
 export function runGradedHarvestFitnessPilot(
   seeds: number[],
-  steepnessValues: number[]
+  steepnessValues: number[],
+  basePreferences: number[] = [0.5],
+  options: {
+    steps?: number;
+  } = {}
 ): GradedHarvestFitnessPilotResult[] {
-  const steps = 150;
+  const steps = options.steps ?? 150;
   const baseThreshold = 5.0;
-  const basePreference = 0.5;
 
   const results: GradedHarvestFitnessPilotResult[] = [];
 
   for (const seed of seeds) {
-    for (const steepness of steepnessValues) {
-      const simulation = new LifeSimulation({
-        seed,
-        config: PILOT_CONFIG,
-        initialAgents: buildInitialAgents(steepness, baseThreshold, basePreference, 40)
-      });
+    for (const basePreference of basePreferences) {
+      for (const steepness of steepnessValues) {
+        const simulation = new LifeSimulation({
+          seed,
+          config: PILOT_CONFIG,
+          initialAgents: buildInitialAgents(steepness, baseThreshold, basePreference, 40)
+        });
 
-      const summaries = simulation.run(steps);
-      const finalSnapshot = simulation.snapshot();
-      const finalSummary = summaries[summaries.length - 1];
+        const summaries = simulation.run(steps);
+        const finalSnapshot = simulation.snapshot();
+        const finalSummary = summaries[summaries.length - 1];
 
-      if (!finalSummary) {
-        throw new Error('Graded harvest fitness pilot produced no step summaries');
+        if (!finalSummary) {
+          throw new Error('Graded harvest fitness pilot produced no step summaries');
+        }
+
+        const totalBirths = summaries.reduce((sum, s) => sum + s.births, 0);
+        const totalDeaths = summaries.reduce((sum, s) => sum + s.deaths, 0);
+
+        const avgPopulation = summaries.reduce((sum, s) => sum + s.population, 0) / summaries.length;
+
+        const reproductiveSuccess = totalBirths > 0 ? totalBirths / (totalBirths + totalDeaths) : 0;
+
+        results.push({
+          seed,
+          steepness,
+          threshold: baseThreshold,
+          basePreference,
+          finalPopulation: finalSnapshot.population,
+          totalBirths,
+          totalDeaths,
+          meanEnergy: finalSnapshot.meanEnergy,
+          activeSpecies: finalSnapshot.activeSpecies,
+          activeClades: finalSnapshot.activeClades,
+          reproductiveSuccess,
+          avgPopulation
+        });
       }
-
-      const totalBirths = summaries.reduce((sum, s) => sum + s.births, 0);
-      const totalDeaths = summaries.reduce((sum, s) => sum + s.deaths, 0);
-
-      const avgPopulation = summaries.reduce((sum, s) => sum + s.population, 0) / summaries.length;
-
-      const reproductiveSuccess = totalBirths > 0 ? totalBirths / (totalBirths + totalDeaths) : 0;
-
-      results.push({
-        seed,
-        steepness,
-        threshold: baseThreshold,
-        basePreference,
-        finalPopulation: finalSnapshot.population,
-        totalBirths,
-        totalDeaths,
-        meanEnergy: finalSnapshot.meanEnergy,
-        activeSpecies: finalSnapshot.activeSpecies,
-        activeClades: finalSnapshot.activeClades,
-        reproductiveSuccess,
-        avgPopulation
-      });
     }
   }
 
