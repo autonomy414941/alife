@@ -312,6 +312,7 @@ export interface StepSummary {
   genomeV2ExplicitTraitCount?: number;
   genomeV2ExtendedTraitAgentFraction?: number;
   policyObservability?: PolicyObservabilitySummary;
+  genomeV2Metrics?: GenomeV2Metrics;
 }
 
 export interface PolicyOutcomeCorrelation {
@@ -363,6 +364,18 @@ export interface PolicyObservabilitySummary {
   movement: PolicyMovementDecisionObservability;
   reproduction: PolicyReproductionDecisionObservability;
   parameters: PolicyParameterObservability[];
+}
+
+export interface GenomeV2TraitMetrics {
+  key: string;
+  prevalence: number;
+  mean: number;
+  variance: number;
+  selectionDifferential: number;
+}
+
+export interface GenomeV2Metrics {
+  traits: GenomeV2TraitMetrics[];
 }
 
 export interface SimulationSnapshot {

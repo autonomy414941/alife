@@ -33,7 +33,14 @@ import {
   initializeCladeHabitatPreferences as seedInitialCladeHabitatPreferences,
   initializeSpeciesHabitatPreferences as seedInitialSpeciesHabitatPreferences
 } from './clade-habitat';
-import { cloneGenomeV2, genomeV2HasTraitRole, traitCount } from './genome-v2';
+import {
+  cloneGenomeV2,
+  genomeV2HasTraitRole,
+  getTrait,
+  hasTrait,
+  listTraits,
+  traitCount
+} from './genome-v2';
 import {
   DEFAULT_DEFENSE_LEVEL,
   DEFAULT_TROPHIC_LEVEL,
@@ -101,6 +108,7 @@ import {
   EvolutionHistorySnapshot,
   Genome,
   GenomeV2,
+  GenomeV2Metrics,
   ResilienceAnalytics,
   LocalityRadiusAnalytics,
   LocalityRadiusTurnoverAnalytics,
@@ -443,6 +451,7 @@ export class LifeSimulation {
       this.lastStepPolicyFitnessRecords,
       policyDecisionStats
     );
+    const genomeV2TraitMetrics = this.computeGenomeV2TraitMetrics();
 
     return {
       tick: this.tickCount,
@@ -464,7 +473,8 @@ export class LifeSimulation {
       genomeV2ExtendedTraitAgentFraction: hasGenomeV2Agents
         ? genomeV2Metrics.extendedTraitAgentFraction
         : undefined,
-      policyObservability
+      policyObservability,
+      genomeV2Metrics: genomeV2TraitMetrics
     };
   }
 
@@ -2354,6 +2364,56 @@ export class LifeSimulation {
       explicitTraitCount: totalExplicitTraitCount / agentsWithV2.length,
       extendedTraitAgentFraction: agentsWithExtendedTraits.length / this.agents.length
     };
+  }
+
+  private computeGenomeV2TraitMetrics(): GenomeV2Metrics | undefined {
+    const agentsWithV2 = this.agents.filter((agent) => agent.genomeV2 !== undefined);
+    if (agentsWithV2.length === 0) {
+      return undefined;
+    }
+
+    const allTraitKeys = new Set<string>();
+    for (const agent of agentsWithV2) {
+      for (const key of listTraits(agent.genomeV2!)) {
+        allTraitKeys.add(key);
+      }
+    }
+
+    const totalEnergy = agentsWithV2.reduce((sum, agent) => sum + agent.energy, 0);
+    const traits = Array.from(allTraitKeys).map((key) => {
+      const agentsWithTrait = agentsWithV2.filter((agent) => hasTrait(agent.genomeV2!, key));
+      const prevalence = agentsWithTrait.length / agentsWithV2.length;
+
+      const sum = agentsWithV2.reduce((total, agent) => total + getTrait(agent.genomeV2!, key), 0);
+      const mean = sum / agentsWithV2.length;
+
+      const varianceSum = agentsWithV2.reduce((total, agent) => {
+        const value = getTrait(agent.genomeV2!, key);
+        const diff = value - mean;
+        return total + diff * diff;
+      }, 0);
+      const variance = varianceSum / agentsWithV2.length;
+
+      let selectionDifferential = 0;
+      if (totalEnergy > 0) {
+        const weightedSum = agentsWithV2.reduce(
+          (total, agent) => total + getTrait(agent.genomeV2!, key) * agent.energy,
+          0
+        );
+        const weightedMean = weightedSum / totalEnergy;
+        selectionDifferential = weightedMean - mean;
+      }
+
+      return {
+        key,
+        prevalence,
+        mean,
+        variance,
+        selectionDifferential
+      };
+    });
+
+    return { traits };
   }
 
   private isAlive(agentId: number): boolean {

@@ -81,6 +81,61 @@ describe('run export', () => {
     expect(parsed.history.species).toHaveLength(1);
   });
 
+  it('includes genomeV2Metrics in JSON export when agents have genomeV2', () => {
+    const sim = new LifeSimulation({
+      seed: 42,
+      config: {
+        width: 2,
+        height: 2,
+        maxResource: 10,
+        resourceRegen: 1,
+        metabolismCostBase: 0.1
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 0.6, harvest: 0.7, aggression: 0.3 },
+          genomeV2: {
+            traits: new Map([
+              ['metabolism', 0.6],
+              ['harvest', 0.7],
+              ['aggression', 0.3],
+              ['habitat_preference', 1.2],
+              ['trophic_level', 0.5]
+            ])
+          }
+        }
+      ]
+    });
+
+    const runData = sim.runWithAnalytics(2, 2);
+    const exportData = buildRunExport({
+      generatedAt: '2026-03-27T00:00:00.000Z',
+      analyticsWindow: 2,
+      summaries: runData.summaries,
+      analytics: runData.analytics,
+      history: sim.history()
+    });
+
+    const parsed = JSON.parse(runExportToJson(exportData));
+    expect(parsed.summaries).toHaveLength(2);
+    expect(parsed.summaries[0].genomeV2Metrics).toBeDefined();
+    expect(parsed.summaries[0].genomeV2Metrics.traits).toBeDefined();
+    expect(Array.isArray(parsed.summaries[0].genomeV2Metrics.traits)).toBe(true);
+    expect(parsed.summaries[0].genomeV2Metrics.traits.length).toBeGreaterThan(0);
+
+    const metabolismTrait = parsed.summaries[0].genomeV2Metrics.traits.find(
+      (t: { key: string }) => t.key === 'metabolism'
+    );
+    expect(metabolismTrait).toBeDefined();
+    expect(metabolismTrait.prevalence).toBe(1);
+    expect(metabolismTrait.mean).toBeCloseTo(0.6, 1);
+    expect(metabolismTrait.variance).toBeGreaterThanOrEqual(0);
+    expect(metabolismTrait.selectionDifferential).toBeDefined();
+  });
+
   it('renders one CSV row per tick with a stable header', () => {
     const sim = new LifeSimulation({
       seed: 52,
