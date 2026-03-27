@@ -1,11 +1,9 @@
-import { getTrait } from './genome-v2';
+import { clampGenomeV2TraitValue, getDefaultGenomeV2TraitValue, getTrait } from './genome-v2';
 import { Agent, Genome, GenomeV2, SimulationConfig } from './types';
 
 type HabitatAgent = Pick<Agent, 'lineage' | 'species' | 'x' | 'y' | 'genomeV2'>;
 
-const DEFAULT_HABITAT_PREFERENCE = 1;
-const MIN_HABITAT_PREFERENCE = 0.1;
-const MAX_HABITAT_PREFERENCE = 2;
+const DEFAULT_HABITAT_PREFERENCE = getDefaultGenomeV2TraitValue('habitat_preference');
 
 interface InitializeHabitatPreferencesOptions {
   agents: HabitatAgent[];
@@ -205,7 +203,7 @@ function blendedHabitatPreference(
 }
 
 function clampHabitatPreference(value: number): number {
-  return clamp(value, MIN_HABITAT_PREFERENCE, MAX_HABITAT_PREFERENCE);
+  return clampGenomeV2TraitValue('habitat_preference', value);
 }
 
 function habitatPreferenceTrait(genome: Genome | GenomeV2): number | undefined {

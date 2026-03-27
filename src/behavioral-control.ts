@@ -1,5 +1,11 @@
 import { Agent, AgentSeed, GenomeV2 } from './types';
-import { getTrait, setTrait } from './genome-v2';
+import {
+  clampGenomeV2TraitValue,
+  getGenomeV2TraitDefinition,
+  getTrait,
+  isActiveGenomeV2Trait,
+  setTrait
+} from './genome-v2';
 
 export const INTERNAL_STATE_LAST_HARVEST = 'last_harvest_total';
 export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD = 'reproduction_harvest_threshold';
@@ -338,21 +344,10 @@ export function isActivePolicyParameter(
   key: string
 ): boolean {
   if (carrier instanceof Map) {
-    if (key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE) {
-      return carrier.has(key);
+    if (!carrier.has(key)) {
+      return false;
     }
-    if (key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE) {
-      return carrier.has(key);
-    }
-    if (
-      key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS ||
-      key === INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS ||
-      key === INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS ||
-      key === INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS
-    ) {
-      return carrier.has(key);
-    }
-    return (carrier.get(key) ?? 0) > 0;
+    return isActiveGenomeV2Trait(key, carrier.get(key) ?? 0, true);
   }
 
   if (!carrier) {
@@ -364,17 +359,7 @@ export function isActivePolicyParameter(
   if (stateCarrier.genomeV2) {
     const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[key];
     if (traitName && stateCarrier.genomeV2.traits.has(traitName)) {
-      if (
-        key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE ||
-        key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE ||
-        key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS ||
-        key === INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS ||
-        key === INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS ||
-        key === INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS
-      ) {
-        return true;
-      }
-      return getTrait(stateCarrier.genomeV2, traitName) > 0;
+      return isActiveGenomeV2Trait(traitName, getTrait(stateCarrier.genomeV2, traitName), true);
     }
   }
 
@@ -382,24 +367,11 @@ export function isActivePolicyParameter(
     return false;
   }
 
-  if (key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE) {
-    return stateCarrier.policyState.has(key);
+  if (!stateCarrier.policyState.has(key)) {
+    return false;
   }
 
-  if (key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE) {
-    return stateCarrier.policyState.has(key);
-  }
-
-  if (
-    key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS ||
-    key === INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS ||
-    key === INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS ||
-    key === INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS
-  ) {
-    return stateCarrier.policyState.has(key);
-  }
-
-  return (stateCarrier.policyState.get(key) ?? 0) > 0;
+  return isActiveGenomeV2Trait(key, stateCarrier.policyState.get(key) ?? 0, true);
 }
 
 export function isNearPolicyThreshold(
@@ -411,20 +383,8 @@ export function isNearPolicyThreshold(
 }
 
 function clampPolicyParameterValue(key: string, value: number): number {
-  if (
-    key === INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE ||
-    key === INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE
-  ) {
-    return clamp(value, 0, 1);
-  }
-
-  if (
-    key === INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS ||
-    key === INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS ||
-    key === INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS ||
-    key === INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS
-  ) {
-    return clamp(value, 0.01, 10);
+  if (getGenomeV2TraitDefinition(key)) {
+    return clampGenomeV2TraitValue(key, value);
   }
 
   return Math.max(0, value);

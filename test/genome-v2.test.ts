@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
+  clampGenomeV2TraitValue,
+  classifyGenomeV2DistanceTraitCategory,
   DEFAULT_MUTATION_CANDIDATE_NEW_LOCI,
   createGenomeV2,
   fromGenome,
+  getGenomeV2TraitDefinition,
   toGenome,
   getTrait,
   setTrait,
@@ -105,7 +108,22 @@ describe('GenomeV2', () => {
       expect(getTrait(genome, 'metabolism')).toBe(0.6);
       expect(getTrait(genome, 'trophic_level')).toBe(0.5);
       expect(getTrait(genome, 'defense_level')).toBe(0.5);
+      expect(getTrait(genome, 'movement_energy_reserve_threshold_steepness')).toBe(1);
+      expect(getTrait(genome, 'harvest_primary_threshold')).toBe(0);
       expect(getTrait(genome, 'unknown')).toBe(0.5);
+    });
+
+    it('describes known loci through the shared trait registry', () => {
+      expect(getGenomeV2TraitDefinition('habitat_preference')).toMatchObject({
+        role: 'ecological',
+        mutationMode: 'optional',
+        defaultValue: 1
+      });
+      expect(getGenomeV2TraitDefinition('harvest_primary_threshold')).toMatchObject({
+        role: 'policy',
+        mutationMode: 'policy',
+        distanceCategory: 'policyThreshold'
+      });
     });
 
     it('checks trait existence', () => {
@@ -236,6 +254,27 @@ describe('GenomeV2', () => {
       }
     });
 
+    it('clamps habitat preference to the shared ecological range', () => {
+      expect(clampGenomeV2TraitValue('habitat_preference', -5)).toBe(0.1);
+      expect(clampGenomeV2TraitValue('habitat_preference', 5)).toBe(2);
+    });
+
+    it('mutates centralized policy steepness loci through policy mutation metadata', () => {
+      const genome = createCoreGenomeV2();
+      setTrait(genome, 'movement_energy_reserve_threshold_steepness', 9.9);
+
+      const mutated = mutateGenomeV2(genome, {
+        mutationAmount: 0,
+        randomFloat: scriptedRandom([0.5, 0.5, 0.5, 0.0, 1.0]),
+        addLociProbability: 0,
+        removeLociProbability: 0,
+        policyMutationProbability: 1,
+        policyMutationMagnitude: 5
+      });
+
+      expect(getTrait(mutated, 'movement_energy_reserve_threshold_steepness')).toBe(10);
+    });
+
     it('clamps policy threshold traits to >= 0', () => {
       const genome = createGenomeV2();
       setTrait(genome, 'metabolism', 0.5);
@@ -327,6 +366,16 @@ describe('GenomeV2', () => {
       });
 
       expect(hasTrait(mutated, locus)).toBe(true);
+    });
+
+    it.each([
+      'movement_energy_reserve_threshold_steepness',
+      'movement_min_recent_harvest_steepness',
+      'harvest_primary_threshold',
+      'harvest_primary_threshold_steepness'
+    ])('keeps %s centralized without auto-adding it to the default mutation search space', (locus) => {
+      expect(DEFAULT_MUTATION_CANDIDATE_NEW_LOCI).not.toContain(locus);
+      expect(getGenomeV2TraitDefinition(locus)?.role).toBe('policy');
     });
 
     it('can remove optional loci', () => {
@@ -553,6 +602,13 @@ describe('GenomeV2', () => {
 
       expect(locusOverrideDistance).toBeGreaterThan(categoryWeightedDistance);
       expect(locusOverrideDistance).toBeCloseTo(6.6 / 4.1, 10);
+    });
+
+    it('classifies centralized non-default policy loci by distance category metadata', () => {
+      expect(classifyGenomeV2DistanceTraitCategory('movement_energy_reserve_threshold_steepness')).toBe(
+        'policyBounded'
+      );
+      expect(classifyGenomeV2DistanceTraitCategory('harvest_primary_threshold')).toBe('policyThreshold');
     });
 
     it('rejects invalid distance weights', () => {

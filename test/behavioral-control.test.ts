@@ -171,6 +171,19 @@ describe('behavioral-control', () => {
       expect(state.get(INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE)).toBe(0);
     });
 
+    it('clamps centralized steepness policy mutations through shared trait metadata', () => {
+      const state = new Map([[INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS, 9.9]]);
+      const randomValues = [0.5, 1.0];
+
+      mutatePolicyParameters(state, {
+        mutationProbability: 1.0,
+        mutationMagnitude: 5,
+        randomFloat: () => randomValues.shift() ?? 1.0
+      });
+
+      expect(state.get(INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS)).toBe(10);
+    });
+
     it('skips mutation when probability check fails', () => {
       const state = new Map([[INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD, 2.0]]);
 
@@ -274,6 +287,24 @@ describe('behavioral-control', () => {
         hasMovementPolicy: false,
         hasReproductionPolicy: true,
         hasSpendingPolicy: true
+      });
+    });
+
+    it('recognizes presence-activated genome policy loci from shared metadata', () => {
+      const genomeV2 = createGenomeV2();
+      setTrait(genomeV2, INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS, 0);
+
+      expect(
+        resolveBehavioralPolicyFlags({
+          genomeV2,
+          policyState: undefined
+        })
+      ).toEqual({
+        hasAnyPolicy: true,
+        hasHarvestPolicy: true,
+        hasMovementPolicy: false,
+        hasReproductionPolicy: false,
+        hasSpendingPolicy: false
       });
     });
   });

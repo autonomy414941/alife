@@ -33,7 +33,7 @@ import {
   initializeCladeHabitatPreferences as seedInitialCladeHabitatPreferences,
   initializeSpeciesHabitatPreferences as seedInitialSpeciesHabitatPreferences
 } from './clade-habitat';
-import { cloneGenomeV2, hasTrait, traitCount, EXTENDED_TRAITS } from './genome-v2';
+import { cloneGenomeV2, genomeV2HasTraitRole, traitCount } from './genome-v2';
 import {
   DEFAULT_DEFENSE_LEVEL,
   DEFAULT_TROPHIC_LEVEL,
@@ -2347,9 +2347,7 @@ export class LifeSimulation {
       return sum + agent.genomeV2!.traits.size;
     }, 0);
 
-    const agentsWithExtendedTraits = agentsWithV2.filter((agent) => {
-      return EXTENDED_TRAITS.some((trait) => hasTrait(agent.genomeV2!, trait));
-    });
+    const agentsWithExtendedTraits = agentsWithV2.filter((agent) => genomeV2HasTraitRole(agent.genomeV2!, 'ecological'));
 
     return {
       lociCount: totalLociCount / agentsWithV2.length,

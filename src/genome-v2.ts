@@ -1,22 +1,290 @@
 import { Genome, GenomeV2, GenomeV2DistanceTraitCategory, GenomeV2DistanceWeights } from './types';
 
-export const DEFAULT_TRAIT_VALUES: Record<string, number> = {
-  metabolism: 0.6,
-  harvest: 0.6,
-  aggression: 0.4,
-  harvestEfficiency2: 0.5,
-  habitat_preference: 1,
-  trophic_level: 0.5,
-  defense_level: 0.5,
-  metabolic_efficiency_primary: 0.5,
-  metabolic_efficiency_secondary: 0.5,
-  reproduction_harvest_threshold: 0,
-  reproduction_harvest_threshold_steepness: 1.0,
-  movement_energy_reserve_threshold: 0,
-  movement_min_recent_harvest: 0,
-  harvest_secondary_preference: 0.5,
-  spending_secondary_preference: 0.5
-};
+export type GenomeV2TraitRole = 'core' | 'ecological' | 'policy';
+export type GenomeV2TraitMutationMode = 'core' | 'optional' | 'policy';
+export type GenomeV2TraitActivationMode = 'positive' | 'presence';
+
+export interface GenomeV2TraitDefinition {
+  key: string;
+  meaning: string;
+  role: GenomeV2TraitRole;
+  mutationMode: GenomeV2TraitMutationMode;
+  defaultValue: number;
+  clamp: {
+    min: number;
+    max?: number;
+  };
+  distanceCategory: GenomeV2DistanceTraitCategory;
+  includeInDefaultMutationLoci?: boolean;
+  legacyGenomeField?: keyof Genome;
+  activationMode?: GenomeV2TraitActivationMode;
+}
+
+const UNIT_INTERVAL_CLAMP = { min: 0, max: 1 } as const;
+const NON_NEGATIVE_CLAMP = { min: 0 } as const;
+const POLICY_STEEPNESS_CLAMP = { min: 0.01, max: 10 } as const;
+const HABITAT_PREFERENCE_CLAMP = { min: 0.1, max: 2 } as const;
+
+const GENOME_V2_TRAIT_DEFINITIONS: GenomeV2TraitDefinition[] = [
+  {
+    key: 'metabolism',
+    meaning: 'Primary metabolic expenditure baseline',
+    role: 'core',
+    mutationMode: 'core',
+    defaultValue: 0.6,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'morphology',
+    legacyGenomeField: 'metabolism'
+  },
+  {
+    key: 'harvest',
+    meaning: 'Primary resource acquisition bias',
+    role: 'core',
+    mutationMode: 'core',
+    defaultValue: 0.6,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'morphology',
+    legacyGenomeField: 'harvest'
+  },
+  {
+    key: 'aggression',
+    meaning: 'Encounter aggression bias',
+    role: 'core',
+    mutationMode: 'core',
+    defaultValue: 0.4,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'morphology',
+    legacyGenomeField: 'aggression'
+  },
+  {
+    key: 'harvestEfficiency2',
+    meaning: 'Secondary resource harvest efficiency',
+    role: 'ecological',
+    mutationMode: 'optional',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'morphology',
+    includeInDefaultMutationLoci: true,
+    legacyGenomeField: 'harvestEfficiency2'
+  },
+  {
+    key: 'habitat_preference',
+    meaning: 'Preferred fertility regime',
+    role: 'ecological',
+    mutationMode: 'optional',
+    defaultValue: 1,
+    clamp: HABITAT_PREFERENCE_CLAMP,
+    distanceCategory: 'morphology',
+    includeInDefaultMutationLoci: true
+  },
+  {
+    key: 'trophic_level',
+    meaning: 'Trophic interaction level',
+    role: 'ecological',
+    mutationMode: 'optional',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'morphology',
+    includeInDefaultMutationLoci: true
+  },
+  {
+    key: 'defense_level',
+    meaning: 'Defense against encounters',
+    role: 'ecological',
+    mutationMode: 'optional',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'morphology',
+    includeInDefaultMutationLoci: true
+  },
+  {
+    key: 'metabolic_efficiency_primary',
+    meaning: 'Primary resource metabolic efficiency',
+    role: 'ecological',
+    mutationMode: 'optional',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'morphology',
+    includeInDefaultMutationLoci: true
+  },
+  {
+    key: 'metabolic_efficiency_secondary',
+    meaning: 'Secondary resource metabolic efficiency',
+    role: 'ecological',
+    mutationMode: 'optional',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'morphology',
+    includeInDefaultMutationLoci: true
+  },
+  {
+    key: 'reproduction_harvest_threshold',
+    meaning: 'Harvest threshold for reproduction gating',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0,
+    clamp: NON_NEGATIVE_CLAMP,
+    distanceCategory: 'policyThreshold',
+    includeInDefaultMutationLoci: true
+  },
+  {
+    key: 'reproduction_harvest_threshold_steepness',
+    meaning: 'Steepness of reproduction harvest gating',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 1,
+    clamp: POLICY_STEEPNESS_CLAMP,
+    distanceCategory: 'policyBounded',
+    includeInDefaultMutationLoci: true,
+    activationMode: 'presence'
+  },
+  {
+    key: 'movement_energy_reserve_threshold',
+    meaning: 'Energy reserve threshold for movement gating',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0,
+    clamp: NON_NEGATIVE_CLAMP,
+    distanceCategory: 'policyThreshold',
+    includeInDefaultMutationLoci: true
+  },
+  {
+    key: 'movement_energy_reserve_threshold_steepness',
+    meaning: 'Steepness of energy reserve movement gating',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 1,
+    clamp: POLICY_STEEPNESS_CLAMP,
+    distanceCategory: 'policyBounded',
+    activationMode: 'presence'
+  },
+  {
+    key: 'movement_min_recent_harvest',
+    meaning: 'Recent harvest threshold for movement gating',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0,
+    clamp: NON_NEGATIVE_CLAMP,
+    distanceCategory: 'policyThreshold',
+    includeInDefaultMutationLoci: true
+  },
+  {
+    key: 'movement_min_recent_harvest_steepness',
+    meaning: 'Steepness of recent harvest movement gating',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 1,
+    clamp: POLICY_STEEPNESS_CLAMP,
+    distanceCategory: 'policyBounded',
+    activationMode: 'presence'
+  },
+  {
+    key: 'harvest_secondary_preference',
+    meaning: 'Preference for secondary resource harvesting',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'policyBounded',
+    includeInDefaultMutationLoci: true,
+    activationMode: 'presence'
+  },
+  {
+    key: 'harvest_primary_threshold',
+    meaning: 'Primary resource threshold for graded harvest switching',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0,
+    clamp: NON_NEGATIVE_CLAMP,
+    distanceCategory: 'policyThreshold'
+  },
+  {
+    key: 'harvest_primary_threshold_steepness',
+    meaning: 'Steepness of graded harvest switching',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 1,
+    clamp: POLICY_STEEPNESS_CLAMP,
+    distanceCategory: 'policyBounded',
+    activationMode: 'presence'
+  },
+  {
+    key: 'spending_secondary_preference',
+    meaning: 'Preference for spending on secondary resource use',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'policyBounded',
+    includeInDefaultMutationLoci: true,
+    activationMode: 'presence'
+  }
+];
+
+const GENOME_V2_TRAIT_DEFINITION_MAP = new Map(
+  GENOME_V2_TRAIT_DEFINITIONS.map((definition) => [definition.key, definition] as const)
+);
+
+function listGenomeV2TraitKeys(
+  predicate: (definition: GenomeV2TraitDefinition) => boolean
+): string[] {
+  return GENOME_V2_TRAIT_DEFINITIONS
+    .filter(predicate)
+    .map((definition) => definition.key);
+}
+
+const CORE_TRAITS = listGenomeV2TraitKeys((definition) => definition.mutationMode === 'core');
+
+export const EXTENDED_TRAITS: string[] = listGenomeV2TraitKeys((definition) => definition.role === 'ecological');
+export const POLICY_TRAITS: string[] = listGenomeV2TraitKeys((definition) => definition.role === 'policy');
+export const POLICY_THRESHOLD_TRAITS: string[] = listGenomeV2TraitKeys(
+  (definition) => definition.distanceCategory === 'policyThreshold'
+);
+export const POLICY_BOUNDED_TRAITS: string[] = listGenomeV2TraitKeys(
+  (definition) => definition.distanceCategory === 'policyBounded'
+);
+export const DEFAULT_MUTATION_CANDIDATE_NEW_LOCI = listGenomeV2TraitKeys(
+  (definition) => definition.includeInDefaultMutationLoci === true
+);
+
+export const DEFAULT_TRAIT_VALUES: Record<string, number> = Object.fromEntries(
+  GENOME_V2_TRAIT_DEFINITIONS.map((definition) => [definition.key, definition.defaultValue] as const)
+);
+
+export function getGenomeV2TraitDefinition(key: string): GenomeV2TraitDefinition | undefined {
+  return GENOME_V2_TRAIT_DEFINITION_MAP.get(key);
+}
+
+export function getDefaultGenomeV2TraitValue(key: string): number {
+  return getGenomeV2TraitDefinition(key)?.defaultValue ?? 0.5;
+}
+
+export function clampGenomeV2TraitValue(key: string, value: number): number {
+  const definition = getGenomeV2TraitDefinition(key);
+  if (!definition) {
+    return Math.max(0, Math.min(1, value));
+  }
+
+  const lowerBounded = Math.max(definition.clamp.min, value);
+  if (definition.clamp.max === undefined) {
+    return lowerBounded;
+  }
+
+  return Math.min(definition.clamp.max, lowerBounded);
+}
+
+export function classifyGenomeV2DistanceTraitCategory(key: string): GenomeV2DistanceTraitCategory {
+  return getGenomeV2TraitDefinition(key)?.distanceCategory ?? 'morphology';
+}
+
+export function isActiveGenomeV2Trait(key: string, value: number, isPresent: boolean): boolean {
+  const activationMode = getGenomeV2TraitDefinition(key)?.activationMode ?? 'positive';
+  return activationMode === 'presence' ? isPresent : value > 0;
+}
+
+export function genomeV2HasTraitRole(genome: GenomeV2, role: GenomeV2TraitRole): boolean {
+  return listTraits(genome).some((key) => getGenomeV2TraitDefinition(key)?.role === role);
+}
 
 export function createGenomeV2(traits: Map<string, number> = new Map()): GenomeV2 {
   return { traits: new Map(traits) };
@@ -50,7 +318,7 @@ export function getTrait(genome: GenomeV2, key: string): number {
   if (value !== undefined) {
     return value;
   }
-  return DEFAULT_TRAIT_VALUES[key] ?? 0.5;
+  return getDefaultGenomeV2TraitValue(key);
 }
 
 export function setTrait(genome: GenomeV2, key: string, value: number): void {
@@ -85,35 +353,6 @@ export interface MutateGenomeV2Options {
   policyMutationMagnitude?: number;
 }
 
-const CORE_TRAITS = ['metabolism', 'harvest', 'aggression'];
-const OPTIONAL_TRAITS = ['harvestEfficiency2'];
-export const EXTENDED_TRAITS: string[] = [
-  'habitat_preference',
-  'trophic_level',
-  'defense_level',
-  'metabolic_efficiency_primary',
-  'metabolic_efficiency_secondary'
-];
-export const POLICY_TRAITS: string[] = [
-  'reproduction_harvest_threshold',
-  'reproduction_harvest_threshold_steepness',
-  'movement_energy_reserve_threshold',
-  'movement_min_recent_harvest',
-  'harvest_secondary_preference',
-  'spending_secondary_preference'
-];
-export const POLICY_THRESHOLD_TRAITS: string[] = [
-  'reproduction_harvest_threshold',
-  'movement_energy_reserve_threshold',
-  'movement_min_recent_harvest'
-];
-export const POLICY_BOUNDED_TRAITS: string[] = [
-  'reproduction_harvest_threshold_steepness',
-  'harvest_secondary_preference',
-  'spending_secondary_preference'
-];
-export const DEFAULT_MUTATION_CANDIDATE_NEW_LOCI = [...OPTIONAL_TRAITS, ...EXTENDED_TRAITS, ...POLICY_TRAITS];
-
 export function mutateGenomeV2(
   genome: GenomeV2,
   options: MutateGenomeV2Options
@@ -134,18 +373,21 @@ export function mutateGenomeV2(
   const currentTraitCount = traitCount(mutated);
 
   for (const key of listTraits(mutated)) {
-    if (CORE_TRAITS.includes(key)) {
+    const traitDefinition = getGenomeV2TraitDefinition(key);
+    const mutationMode = traitDefinition?.mutationMode ?? 'optional';
+
+    if (mutationMode === 'core') {
       const value = getTrait(mutated, key);
       const delta = (randomFloat() - 0.5) * 2 * mutationAmount;
-      setTrait(mutated, key, Math.max(0, Math.min(1, value + delta)));
-    } else if (POLICY_TRAITS.includes(key)) {
+      setTrait(mutated, key, clampGenomeV2TraitValue(key, value + delta));
+    } else if (mutationMode === 'policy') {
       if (randomFloat() >= policyMutationProbability) {
         continue;
       }
       const value = getTrait(mutated, key);
       const delta = (randomFloat() - 0.5) * 2 * policyMutationMagnitude;
       const mutatedValue = value + delta;
-      setTrait(mutated, key, clampTraitValue(key, mutatedValue));
+      setTrait(mutated, key, clampGenomeV2TraitValue(key, mutatedValue));
     } else {
       if (currentTraitCount > minTraits && randomFloat() < removeLociProbability) {
         mutated.traits.delete(key);
@@ -154,7 +396,7 @@ export function mutateGenomeV2(
       const value = getTrait(mutated, key);
       const delta = (randomFloat() - 0.5) * 2 * mutationAmount;
       const mutatedValue = value + delta;
-      setTrait(mutated, key, clampTraitValue(key, mutatedValue));
+      setTrait(mutated, key, clampGenomeV2TraitValue(key, mutatedValue));
     }
   }
 
@@ -162,27 +404,11 @@ export function mutateGenomeV2(
     const absent = candidateNewLoci.filter((locus) => !hasTrait(mutated, locus));
     if (absent.length > 0) {
       const newLocus = absent[Math.floor(randomFloat() * absent.length)];
-      setTrait(mutated, newLocus, DEFAULT_TRAIT_VALUES[newLocus] ?? 0.5);
+      setTrait(mutated, newLocus, getDefaultGenomeV2TraitValue(newLocus));
     }
   }
 
   return mutated;
-}
-
-function clampTraitValue(key: string, value: number): number {
-  if (key === 'harvest_secondary_preference' || key === 'spending_secondary_preference') {
-    return Math.max(0, Math.min(1, value));
-  }
-
-  if (key === 'reproduction_harvest_threshold_steepness') {
-    return Math.max(0.01, Math.min(10, value));
-  }
-
-  if (POLICY_TRAITS.includes(key)) {
-    return Math.max(0, value);
-  }
-
-  return Math.max(0, Math.min(1, value));
 }
 
 export function genomeV2Distance(a: GenomeV2, b: GenomeV2, weights?: GenomeV2DistanceWeights): number {
@@ -210,16 +436,6 @@ export function genomeV2Distance(a: GenomeV2, b: GenomeV2, weights?: GenomeV2Dis
 
   const normalizationCount = Math.max(totalExpressedWeight, baselineWeight);
   return (sum * baselineWeight) / normalizationCount;
-}
-
-export function classifyGenomeV2DistanceTraitCategory(key: string): GenomeV2DistanceTraitCategory {
-  if (POLICY_THRESHOLD_TRAITS.includes(key)) {
-    return 'policyThreshold';
-  }
-  if (POLICY_BOUNDED_TRAITS.includes(key)) {
-    return 'policyBounded';
-  }
-  return 'morphology';
 }
 
 function distanceWeightForTrait(key: string, weights?: GenomeV2DistanceWeights): number {
