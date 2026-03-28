@@ -1,0 +1,162 @@
+{
+  "generatedAt": "2026-03-28T04:34:10.079Z",
+  "question": "Do graded movement, harvest, and reproduction policies remain near-neutral once loci are expressed through a shared phenotype decoder and resource layers are asymmetric?",
+  "prediction": "If the previous neutrality was caused by expression gaps and environmental symmetry, we should now see positive ecological differentiation. If neutrality persists, the issue is deeper policy-ecology coupling.",
+  "methodology": "Run matched 200-step panels with 4 seeds each. Graded-policy arm allows policy trait mutation (policyMutationProbability=0.65). Baseline arm prevents policy mutation (policyMutationProbability=0). Both use asymmetric resource layer configuration (secondary layer has different seasonal amplitude, phase offset, and spatial shift). Both use morphology-priority distance weighting. Compare using phenotype-aware diversity metrics (effective richness, occupied niches) alongside raw species counts.",
+  "seeds": {
+    "gradedPolicy": [
+      6001,
+      6002,
+      6003,
+      6004
+    ],
+    "baseline": [
+      7001,
+      7002,
+      7003,
+      7004
+    ]
+  },
+  "steps": 200,
+  "gradedPolicyResults": [
+    {
+      "seed": 6001,
+      "finalPopulation": 1504,
+      "activeSpecies": 9,
+      "activeClades": 6,
+      "effectiveRichness": 1.0026640000070923,
+      "meanPairwiseDistance": 0.03727897710620353,
+      "occupiedNiches": 3,
+      "speciesPerOccupiedNiche": 3,
+      "speciationRate": 0.025,
+      "extinctionRate": 0.075,
+      "netDiversificationRate": -0.05
+    },
+    {
+      "seed": 6002,
+      "finalPopulation": 1362,
+      "activeSpecies": 18,
+      "activeClades": 11,
+      "effectiveRichness": 1.678696891543369,
+      "meanPairwiseDistance": 0.07029571903875251,
+      "occupiedNiches": 7,
+      "speciesPerOccupiedNiche": 2.5714285714285716,
+      "speciationRate": 0.025,
+      "extinctionRate": 0.125,
+      "netDiversificationRate": -0.1
+    },
+    {
+      "seed": 6003,
+      "finalPopulation": 4522,
+      "activeSpecies": 13,
+      "activeClades": 8,
+      "effectiveRichness": 1.6489473533118317,
+      "meanPairwiseDistance": 0.029487695809824847,
+      "occupiedNiches": 3,
+      "speciesPerOccupiedNiche": 4.333333333333333,
+      "speciationRate": 0.05,
+      "extinctionRate": 0.125,
+      "netDiversificationRate": -0.075
+    },
+    {
+      "seed": 6004,
+      "finalPopulation": 1743,
+      "activeSpecies": 13,
+      "activeClades": 7,
+      "effectiveRichness": 1.839127379007287,
+      "meanPairwiseDistance": 0.03654427768918655,
+      "occupiedNiches": 4,
+      "speciesPerOccupiedNiche": 3.25,
+      "speciationRate": 0.05,
+      "extinctionRate": 0.125,
+      "netDiversificationRate": -0.075
+    }
+  ],
+  "baselineResults": [
+    {
+      "seed": 7001,
+      "finalPopulation": 5198,
+      "activeSpecies": 10,
+      "activeClades": 7,
+      "effectiveRichness": 1.1303117116711594,
+      "meanPairwiseDistance": 0.0453390508916139,
+      "occupiedNiches": 4,
+      "speciesPerOccupiedNiche": 2.5,
+      "speciationRate": 0.05,
+      "extinctionRate": 0.1,
+      "netDiversificationRate": -0.05
+    },
+    {
+      "seed": 7002,
+      "finalPopulation": 4115,
+      "activeSpecies": 8,
+      "activeClades": 6,
+      "effectiveRichness": 1.1185302656079403,
+      "meanPairwiseDistance": 0.04692155638308534,
+      "occupiedNiches": 2,
+      "speciesPerOccupiedNiche": 4,
+      "speciationRate": 0.075,
+      "extinctionRate": 0.15,
+      "netDiversificationRate": -0.075
+    },
+    {
+      "seed": 7003,
+      "finalPopulation": 5815,
+      "activeSpecies": 15,
+      "activeClades": 7,
+      "effectiveRichness": 1.2008869400560962,
+      "meanPairwiseDistance": 0.03118725897361297,
+      "occupiedNiches": 3,
+      "speciesPerOccupiedNiche": 5,
+      "speciationRate": 0.125,
+      "extinctionRate": 0.125,
+      "netDiversificationRate": 0
+    },
+    {
+      "seed": 7004,
+      "finalPopulation": 1412,
+      "activeSpecies": 12,
+      "activeClades": 9,
+      "effectiveRichness": 2.098147836336084,
+      "meanPairwiseDistance": 0.06036750004631207,
+      "occupiedNiches": 6,
+      "speciesPerOccupiedNiche": 2,
+      "speciationRate": 0.075,
+      "extinctionRate": 0.15,
+      "netDiversificationRate": -0.075
+    }
+  ],
+  "aggregate": {
+    "gradedPolicy": {
+      "meanActiveSpecies": 13.25,
+      "meanActiveClades": 8,
+      "meanEffectiveRichness": 1.5423589059673952,
+      "meanPairwiseDistance": 0.043401667410991863,
+      "meanOccupiedNiches": 4.25,
+      "meanSpeciationRate": 0.037500000000000006,
+      "meanNetDiversificationRate": -0.07500000000000001
+    },
+    "baseline": {
+      "meanActiveSpecies": 11.25,
+      "meanActiveClades": 7.25,
+      "meanEffectiveRichness": 1.3869691884178201,
+      "meanPairwiseDistance": 0.04595384157365606,
+      "meanOccupiedNiches": 3.75,
+      "meanSpeciationRate": 0.08125,
+      "meanNetDiversificationRate": -0.05
+    },
+    "delta": {
+      "activeSpecies": 2,
+      "activeClades": 0.75,
+      "effectiveRichness": 0.1553897175495751,
+      "pairwiseDistance": -0.002552174162664199,
+      "occupiedNiches": 0.5,
+      "speciationRate": -0.04375,
+      "netDiversificationRate": -0.02500000000000001
+    }
+  },
+  "conclusion": {
+    "neutralityStatus": "weakens",
+    "summary": "Graded policy traits show weakly positive or ambiguous effects. Effective richness delta 0.16 (11.2%), occupied niches delta 0.50 (13.3%), speciation rate delta -0.0437 (-53.8%). Some ecological coupling exists but the signal is modest."
+  }
+}
