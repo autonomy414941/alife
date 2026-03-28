@@ -1,5 +1,5 @@
 import { Agent, AgentSeed } from './types';
-import { getTrait } from './genome-v2';
+import { realizePhenotype } from './phenotype';
 import { resolveSpendingSecondaryPreference } from './behavioral-control';
 
 type EnergyCarrier = Pick<Agent, 'energy' | 'energyPrimary' | 'energySecondary' | 'genomeV2' | 'policyState'>;
@@ -111,11 +111,14 @@ export function spendAgentEnergy(
 }
 
 function resolveMetabolicEfficiency(agent: EnergyCarrier, traitKey: string): number {
-  if (!agent.genomeV2?.traits.has(traitKey)) {
+  const phenotype = realizePhenotype(agent);
+  const efficiency =
+    traitKey === 'metabolic_efficiency_primary'
+      ? phenotype.metabolicEfficiencyPrimary
+      : phenotype.metabolicEfficiencySecondary;
+  if (efficiency === undefined) {
     return 1.0;
   }
-
-  const efficiency = getTrait(agent.genomeV2, traitKey);
   return 2.0 - 2.0 * efficiency;
 }
 

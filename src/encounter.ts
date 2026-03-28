@@ -1,5 +1,5 @@
 import { transferAgentEnergy } from './agent-energy';
-import { getTrait } from './genome-v2';
+import { defenseLevelTraitWithFallback, trophicLevelTraitWithFallback } from './interaction-traits';
 import { Agent, SimulationConfig } from './types';
 
 type EncounterConfig = Pick<SimulationConfig, 'predationPressure' | 'defenseMitigation'>;
@@ -163,15 +163,17 @@ function resolveAggressionDominance(a: Agent, b: Agent): [Agent, Agent] {
 }
 
 function trophicLevel(agent: Agent, context: EncounterOperatorContext): number {
-  if (agent.genomeV2 !== undefined) {
-    return clamp(getTrait(agent.genomeV2, 'trophic_level'), 0, 1);
+  const directLevel = trophicLevelTraitWithFallback(agent.genomeV2);
+  if (directLevel !== undefined) {
+    return directLevel;
   }
   return clamp(context.blendedTrophicLevel(agent.species, agent.lineage), 0, 1);
 }
 
 function defenseLevel(agent: Agent, context: EncounterOperatorContext): number {
-  if (agent.genomeV2 !== undefined) {
-    return clamp(getTrait(agent.genomeV2, 'defense_level'), 0, 1);
+  const directLevel = defenseLevelTraitWithFallback(agent.genomeV2);
+  if (directLevel !== undefined) {
+    return directLevel;
   }
   return clamp(context.blendedDefenseLevel(agent.species, agent.lineage), 0, 1);
 }

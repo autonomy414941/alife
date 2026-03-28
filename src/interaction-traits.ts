@@ -1,4 +1,4 @@
-import { getTrait } from './genome-v2';
+import { realizePhenotype } from './phenotype';
 import { Genome, GenomeV2 } from './types';
 
 export const DEFAULT_TROPHIC_LEVEL = 0.5;
@@ -8,14 +8,14 @@ export function trophicLevelTraitWithFallback(genomeV2: GenomeV2 | undefined): n
   if (genomeV2 === undefined) {
     return undefined;
   }
-  return clamp(getTrait(genomeV2, 'trophic_level'), 0, 1);
+  return realizePhenotype({ genomeV2 }).trophicLevel;
 }
 
 export function defenseLevelTraitWithFallback(genomeV2: GenomeV2 | undefined): number | undefined {
   if (genomeV2 === undefined) {
     return undefined;
   }
-  return clamp(getTrait(genomeV2, 'defense_level'), 0, 1);
+  return realizePhenotype({ genomeV2 }).defenseLevel;
 }
 
 export function trophicLevelTraitForGenome(genome: Genome | GenomeV2): number | undefined {
@@ -28,8 +28,4 @@ export function defenseLevelTraitForGenome(genome: Genome | GenomeV2): number | 
 
 function isGenomeV2(genome: Genome | GenomeV2): genome is GenomeV2 {
   return 'traits' in genome;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
 }

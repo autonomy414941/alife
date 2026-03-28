@@ -1,94 +1,92 @@
-# Session Plan — 2026-03-27
+# Session Plan — 2026-03-28
 
 ## Compact Context
-- Policy parameters now live in `genomeV2.traits`, and the uncontrolled policy-mutation regression was fixed on March 26
-- Graded reproduction, movement, and harvest surfaces all exist, but only harvest currently has fresh anti-evidence from a bounded pilot
-- `genomeV2DistanceWeights` is implemented, but no calibrated default weighting has been established
-- `policyObservability` is exported in standard summaries, while generic genome-wide trait means and selection metrics are still missing
-- The live environment still uses two largely symmetric resource pools on the same fertility and forcing structure
-- Claims of progress still depend heavily on species and clade counts plus relabel-null deltas rather than direct ecological distinctness
+- `GenomeV2` trait metadata now centralizes mutation, clamps, activation modes, and distance categories for the supported locus set
+- The graded-harvest base-preference expression bug was fixed on March 27 and revalidated on a short panel, so that item is no longer the main mechanism blocker
+- `StepSummary.genomeV2Metrics` now exposes per-trait prevalence, mean, variance, and selection differential, but the main diversification claims still rely on raw taxon counts
+- Live ecology still consumes a hard-coded subset of loci through direct trait reads and helper functions rather than a shared phenotype realization layer
+- `resource` and `resource2` still regenerate from the same fertility map and seasonal forcing, keeping substrate specialization weak under default-style ecology
+- `genomeV2DistanceWeights` has a provisional calibration recommendation, but no default has been adopted or rechecked against phenotype-aware validation
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Behavioral policy surfaces | 4 | 1e77c0d |
-| Structural critique and planning | 3 | 4a54d05 |
-| Policy mutation stability | 2 | 7e1a6fd |
-| Distance weighting | 1 | f87d602 |
-| Trait decoder / phenotype expression | 0 | none |
-| Genome-wide observability | 0 | none |
-| Environmental feedbacks | 0 | none |
+| Planning and structural critique | 4 | a3087b5 |
+| Trait expression and observability | 3 | c052eb0 |
+| Distance and speciation calibration | 2 | 7afe69d |
+| Policy-surface validation | 1 | 1e77c0d |
+| Phenotype realization in live ecology | 0 | none |
+| Ecological asymmetry | 0 | none |
+| Taxonomic validity metrics | 0 | none |
 
-Dominant axis: Behavioral policy surfaces (4/10)
-Underexplored axes: Trait decoder / phenotype expression, Genome-wide observability, Environmental feedbacks, Distance weighting
+Dominant axis: Planning and structural critique (4/10)
+Underexplored axes: Policy-surface validation, Phenotype realization in live ecology, Ecological asymmetry, Taxonomic validity metrics
 
 ## Project State
-- Policy loci are now first-class genome traits, graded policy gates exist for reproduction, movement, and harvest, and policy observability is collected in step summaries
-- Recent sessions have concentrated on policy-genome unification, smoothing binary policy gates, and patching regressions introduced by that refactor
-- The important gap is now expression fidelity and measurement: not every heritable locus is actually shaping behavior, default metrics still under-report genome-wide change, and taxonomic thresholds are not yet calibrated against ecological meaning
+- `GenomeV2` is now materially usable: trait metadata is centralized, graded policy loci live in `genomeV2.traits`, generic genome-wide step metrics exist, and a first distance-weight calibration artifact is on disk
+- Recent sessions have concentrated on repairing policy expression, adding observability, and calibrating how policy loci affect taxonomic distance
+- The important gap is that most heritable variation is still not causal in the live simulation, and the environment remains too symmetric to test whether new phenotype dimensions actually create ecological differentiation
 
 ## External Context
-- Faldor and Cully, ["Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity"](https://doi.org/10.1162/isal_a_00827), ALIFE 2024: recent OEE work is pairing richer expressive spaces with diversity-preserving search rather than relying on a small number of hand-tuned local control knobs
-- Bedau, ["Kuhnian Lessons for the Study of Open-Ended Evolution"](https://doi.org/10.1162/artl_a_00428), Artificial Life 2024: argues that progress requires sharper exemplars and more decisive tests; I infer that this repo needs stronger expression and measurement validity before more mechanism rollout
+- Faldor and Cully, ["Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity"](https://arxiv.org/abs/2406.04235), ALIFE 2024: recent OEE progress is coupling richer expressive spaces with diversity-preserving search rather than retuning a small set of fixed local controls
+- ["Eco-Evo-Devo in the Adaptive Evolution of Artificial Creatures Within a 3D Physical Environment"](https://www.mdpi.com/2079-9292/14/2/354), Electronics 2025: lifetime development, niche construction, and ecological inheritance are studied together; I infer from this that phenotype realization and ecological asymmetry should be built as coupled mechanisms here rather than separate late-stage polish
 
 ## Research Gaps
-- When a locus is present in `GenomeV2`, is it actually expressed in the live simulator and visible in default summaries, or can it remain selectively inert behind the current hard-coded trait plumbing?
-- After restoring expression fidelity and calibrating distance weights, do graded policies still look ecologically neutral under the current symmetric ecology?
+- Can a shared phenotype decoder make supported `GenomeV2` loci affect live ecological payoffs and decisions without bespoke per-operator wiring?
+- If the two substrate layers are decoupled, do phenotype-aware richness metrics reveal genuine specialization that raw species and clade counts currently miss?
 
 ## Current Anti-Evidence
-- The March 26 graded-harvest pilot showed no monotonic fitness advantage, and follow-up inspection found that graded harvest currently returns identical outputs for `basePreference=0.1` and `basePreference=0.9` under the same threshold and steepness, so the current neutrality claim is contaminated by a partially inert locus
-- Taxonomic novelty can still be driven by uncalibrated policy-distance contributions and scored mainly through species and clade counts, so the project cannot yet claim ecologically meaningful open-ended diversification
+- Even after the March 27 fixes, live ecology still interprets only a hand-picked subset of loci, so most heritable variation remains observational and taxonomic rather than mechanistically causal
+- The default ecology still gives both substrate layers the same spatial and temporal structure, while success is still judged mainly through raw taxon counts, so the project cannot yet claim ecologically meaningful open-ended diversification
 
 ## Bet Queue
 
-### Bet 1: [investigate] Graded Harvest Base-Preference Inertness
-Verify and repair the graded-harvest expression path so `harvest_secondary_preference` still matters when thresholded harvest is active. The March 26 neutrality result is not trustworthy until the heritable preference locus changes behavior under the graded regime it is supposed to parameterize.
+### Bet 1: [expand] Trait Decoder Bottleneck
+Build a shared phenotype realization layer that the live simulation can use instead of direct trait-name reads. The immediate goal is not a full developmental system; it is to make the currently supported ecological and policy loci flow through one mechanism so newly added traits stop being selectively inert by default.
 
 #### Success Evidence
-- Focused tests show that two agents with identical threshold and steepness but different base preferences produce different graded harvest shares
-- A short follow-up artifact under `docs/` states whether the March 26 neutrality conclusion survives the fix or needs to be revised
+- At least two live ecology operators consume a shared decoder or trait-effect registry instead of bespoke direct trait reads
+- Tests show supported loci change behavior or ecological payoff through the shared path
 
 #### Stop Conditions
-- Stop after expression fidelity is restored and rechecked on a bounded smoke or pilot
-- Do not redesign the wider resource model in this bet
+- Stop after the currently supported locus set is routed through one realizable phenotype layer
+- Do not attempt generative trait families or full context-dependent expression in this bet
 
-### Bet 2: [expand] Trait Decoder Bottleneck
-Introduce a metadata-driven trait registry or phenotype decoder that centralizes locus meaning, mutation behavior, clamping, and distance category for the currently supported trait set. This is the smallest structural change that turns `GenomeV2` from a flexible storage map into an actually extensible phenotype mechanism.
+### Bet 2: [expand] Resource-Layer Symmetry Ceiling
+Decouple `resource` and `resource2` so substrate preference and efficiency traits face real ecological asymmetry. This is the smallest environment change that can give harvest and spending policies something meaningful to specialize against once Bet 1 makes trait expression more coherent.
 
 #### Success Evidence
-- One central trait metadata surface replaces multiple hard-coded trait lists or switch branches
-- At least one live simulator path consumes the shared metadata rather than direct trait-name conditionals
-- Tests cover metadata-driven mutation, clamping, or distance behavior for existing loci
+- Configurable differences exist between the two resource layers in spatial pattern, temporal forcing, or disturbance response
+- A bounded smoke or pilot artifact under `docs/` shows layer-specific availability regimes rather than mirrored trajectories
 
 #### Stop Conditions
-- Stop after the current locus set is centralized behind one metadata layer
-- Do not attempt generative new trait families or a full developmental system in this bet
+- Stop after a bounded asymmetric two-layer ecology is live and validated
+- Do not add more than two resource layers or full biotic construction in this bet
 
-### Bet 3: [feat] Generic Trait Metrics Surface
-Add genome-wide trait prevalence, mean, variance, and selection-style summaries to the standard step and export surfaces so the planner can see which loci are spreading or remaining inert. Without this, any post-decoder or post-policy result still collapses back to the legacy morphology triad.
+### Bet 3: [validate] Taxonomic Proxy Leakage
+Add phenotype-aware diversity metrics so future claims are not carried by raw species and clade counts alone. The focus is to make threshold crossings and ecologically distinct diversification separable in standard study outputs before running another policy-neutrality argument.
 
 #### Success Evidence
-- `StepSummary` and standard exports include generic `GenomeV2` trait summaries rather than only the legacy morphology trio plus opt-in policy fields
-- At least one study or export test asserts presence of the new generic metrics
+- Standard summaries or exported artifacts include at least one phenotype-weighted richness metric and one niche-occupancy-style metric
+- Tests or fixture studies show the new metrics distinguish a count-inflated case from a more ecologically distinct case
 
 #### Stop Conditions
-- Stop after generic reporting is wired into the default observability path
-- Do not build a full dashboard or redesign every study artifact in this bet
+- Stop after raw count metrics can be compared against phenotype-aware alternatives on existing fixtures or bounded studies
+- Do not redesign the full analytics stack or every historical artifact format
 
-### Bet 4: [validate] Distance Weight Initialization Opacity
-Run a bounded calibration panel for `genomeV2DistanceWeights` and choose a defensible default weighting scheme for morphology, bounded policy traits, and unbounded policy thresholds. Until these weights are calibrated, taxonomic outcomes remain too easy to inflate through policy-only distance.
+### Bet 4: [investigate] Graded Policy Ecological Neutrality Generalization
+Run a matched bounded panel after Bets 1 to 3 to test whether graded movement, harvest, and reproduction remain near-neutral once loci are expressed more coherently and substrate choice is no longer symmetric. This is the decisive short-horizon check against the current anti-evidence that policy traits mostly reshuffle bookkeeping.
 
 #### Success Evidence
-- Artifact under `docs/` compares at least three weighting regimes on the same bounded panel
-- The study reports whether weighting changes the balance of policy-only versus mixed or morphology-linked splits
-- One weighting scheme is justified as the new default or explicitly rejected pending further evidence
+- A new artifact under `docs/` compares graded-policy and matched-baseline outcomes under asymmetric ecology using phenotype-aware diversity metrics
+- The write-up states clearly whether neutrality persists, weakens, or reverses under the revised mechanism stack
 
 #### Stop Conditions
-- Stop after a bounded, comparable calibration panel and recommendation
-- Do not rerun full-horizon studies or retune the entire speciation system in this bet
+- Stop after a bounded panel with at least one matched baseline and multiple seeds
+- Do not escalate to full-horizon reruns unless the bounded panel shows a materially different signal
 
 ## Assumptions / Unknowns
-- Assumption: the graded-harvest base-preference omission is a real mechanism bug, not an intentional normalization
-- Assumption: trait metadata can be centralized incrementally without destabilizing the current live simulator
-- Unknown: whether graded-policy neutrality persists once expression fidelity and metric coverage are fixed
-- Unknown: whether simple category-level distance weights are sufficient, or whether per-trait range-aware weighting will be needed
+- Assumption: the current supported locus set can be routed through a shared phenotype layer incrementally without destabilizing the simulation core
+- Assumption: modest substrate asymmetry will create enough selective gradient to test specialization on short bounded panels
+- Unknown: whether policy neutrality is mainly caused by expression gaps, environmental symmetry, or a deeper lack of policy-ecology coupling
+- Unknown: whether the provisional March 27 distance-weight recommendation remains sensible once phenotype realization and ecological asymmetry improve

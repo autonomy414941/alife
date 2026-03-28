@@ -2,10 +2,10 @@ import { Agent, AgentSeed, GenomeV2 } from './types';
 import {
   clampGenomeV2TraitValue,
   getGenomeV2TraitDefinition,
-  getTrait,
   isActiveGenomeV2Trait,
   setTrait
 } from './genome-v2';
+import { realizePhenotype, resolveExpressedTrait } from './phenotype';
 
 export const INTERNAL_STATE_LAST_HARVEST = 'last_harvest_total';
 export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD = 'reproduction_harvest_threshold';
@@ -25,19 +25,6 @@ export const DEFAULT_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS = 1.0;
 export const DEFAULT_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS = 1.0;
 export const DEFAULT_HARVEST_PRIMARY_THRESHOLD_STEEPNESS = 1.0;
 export const POLICY_NEAR_THRESHOLD_MARGIN = 1;
-
-const POLICY_STATE_KEY_TO_TRAIT_NAME: Record<string, string> = {
-  [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD]: 'reproduction_harvest_threshold',
-  [INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS]: 'reproduction_harvest_threshold_steepness',
-  [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD]: 'movement_energy_reserve_threshold',
-  [INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD_STEEPNESS]: 'movement_energy_reserve_threshold_steepness',
-  [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST]: 'movement_min_recent_harvest',
-  [INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS]: 'movement_min_recent_harvest_steepness',
-  [INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE]: 'harvest_secondary_preference',
-  [INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD]: 'harvest_primary_threshold',
-  [INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS]: 'harvest_primary_threshold_steepness',
-  [INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE]: 'spending_secondary_preference'
-};
 
 export interface BehavioralStateCarrier {
   policyState?: ReadonlyMap<string, number>;
@@ -125,9 +112,8 @@ export function normalizeSeedBehavioralState(
 
   if (seed.genomeV2 && result.policyState) {
     for (const [key, value] of result.policyState) {
-      const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[key];
-      if (traitName && !seed.genomeV2.traits.has(traitName)) {
-        setTrait(seed.genomeV2, traitName, value);
+      if (getGenomeV2TraitDefinition(key) && !seed.genomeV2.traits.has(key)) {
+        setTrait(seed.genomeV2, key, value);
       }
     }
     result.policyState = undefined;
@@ -204,14 +190,7 @@ export function getPolicyStateValue(
   key: string,
   fallback = 0
 ): number {
-  if (agent.genomeV2) {
-    const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[key];
-    if (traitName && agent.genomeV2.traits.has(traitName)) {
-      return getTrait(agent.genomeV2, traitName);
-    }
-  }
-
-  return agent.policyState?.get(key) ?? fallback;
+  return resolveExpressedTrait(agent, key) ?? fallback;
 }
 
 export function getTransientStateValue(
@@ -257,41 +236,13 @@ export function resolveHarvestSecondaryPreference(
 function getBaseHarvestSecondaryPreference(
   agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
 ): number | undefined {
-  if (agent.genomeV2) {
-    const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE];
-    if (agent.genomeV2.traits.has(traitName)) {
-      return getTrait(agent.genomeV2, traitName);
-    }
-  }
-
-  if (!agent.policyState?.has(INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE)) {
-    return undefined;
-  }
-
-  return clampPolicyParameterValue(
-    INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE,
-    agent.policyState.get(INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE) ?? DEFAULT_HARVEST_SECONDARY_PREFERENCE
-  );
+  return realizePhenotype(agent).harvestSecondaryPreference;
 }
 
 export function resolveSpendingSecondaryPreference(
   agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
 ): number | undefined {
-  if (agent.genomeV2) {
-    const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE];
-    if (agent.genomeV2.traits.has(traitName)) {
-      return getTrait(agent.genomeV2, traitName);
-    }
-  }
-
-  if (!agent.policyState?.has(INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE)) {
-    return undefined;
-  }
-
-  return clampPolicyParameterValue(
-    INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE,
-    agent.policyState.get(INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE) ?? DEFAULT_SPENDING_SECONDARY_PREFERENCE
-  );
+  return realizePhenotype(agent).spendingSecondaryPreference;
 }
 
 export function resolveBehavioralPolicyFlags(
@@ -344,10 +295,8 @@ export function isActivePolicyParameter(
   key: string
 ): boolean {
   if (carrier instanceof Map) {
-    if (!carrier.has(key)) {
-      return false;
-    }
-    return isActiveGenomeV2Trait(key, carrier.get(key) ?? 0, true);
+    const value = resolveExpressedTrait({ policyState: carrier }, key);
+    return value === undefined ? false : isActiveGenomeV2Trait(key, value, true);
   }
 
   if (!carrier) {
@@ -355,23 +304,8 @@ export function isActivePolicyParameter(
   }
 
   const stateCarrier = carrier as { policyState?: ReadonlyMap<string, number>; genomeV2?: GenomeV2 };
-
-  if (stateCarrier.genomeV2) {
-    const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[key];
-    if (traitName && stateCarrier.genomeV2.traits.has(traitName)) {
-      return isActiveGenomeV2Trait(traitName, getTrait(stateCarrier.genomeV2, traitName), true);
-    }
-  }
-
-  if (!stateCarrier.policyState) {
-    return false;
-  }
-
-  if (!stateCarrier.policyState.has(key)) {
-    return false;
-  }
-
-  return isActiveGenomeV2Trait(key, stateCarrier.policyState.get(key) ?? 0, true);
+  const value = resolveExpressedTrait(stateCarrier, key);
+  return value === undefined ? false : isActiveGenomeV2Trait(key, value, true);
 }
 
 export function isNearPolicyThreshold(
@@ -400,9 +334,8 @@ export function migratePolicyStateToGenomeV2(agent: Agent): void {
   }
 
   for (const [key, value] of agent.policyState) {
-    const traitName = POLICY_STATE_KEY_TO_TRAIT_NAME[key];
-    if (traitName) {
-      setTrait(agent.genomeV2, traitName, value);
+    if (getGenomeV2TraitDefinition(key)) {
+      setTrait(agent.genomeV2, key, value);
     }
   }
 
