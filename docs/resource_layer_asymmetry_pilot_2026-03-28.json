@@ -1,0 +1,141 @@
+{
+  "generatedAt": "2026-03-28T00:00:00.000Z",
+  "question": "Do opt-in secondary-layer regeneration controls produce substrate availability that is no longer mirrored to the primary layer?",
+  "prediction": "If the secondary layer gets its own spatial offset and seasonal forcing, mirrored controls should stay matched while the asymmetric arm should diverge in both total availability and per-cell distribution.",
+  "config": {
+    "steps": 6,
+    "baseConfig": {
+      "width": 8,
+      "height": 8,
+      "maxResource": 120,
+      "maxResource2": 120,
+      "resourceRegen": 1,
+      "resource2Regen": 1,
+      "seasonalCycleLength": 4,
+      "seasonalRegenAmplitude": 0.35,
+      "seasonalFertilityContrastAmplitude": 0.5,
+      "biomeBands": 4,
+      "biomeContrast": 0.8,
+      "decompositionBase": 0,
+      "decompositionEnergyFraction": 0,
+      "initialAgents": 0,
+      "reproduceProbability": 0,
+      "maxAge": 100
+    }
+  },
+  "scenarios": [
+    {
+      "label": "mirrored",
+      "config": {},
+      "trajectory": [
+        {
+          "tick": 1,
+          "primaryTotal": 63.99999999999994,
+          "secondaryTotal": 63.99999999999994,
+          "totalDelta": 0,
+          "meanAbsoluteCellDelta": 0
+        },
+        {
+          "tick": 2,
+          "primaryTotal": 150.4,
+          "secondaryTotal": 150.4,
+          "totalDelta": 0,
+          "meanAbsoluteCellDelta": 0
+        },
+        {
+          "tick": 3,
+          "primaryTotal": 214.4000000000001,
+          "secondaryTotal": 214.4000000000001,
+          "totalDelta": 0,
+          "meanAbsoluteCellDelta": 0
+        },
+        {
+          "tick": 4,
+          "primaryTotal": 256.00000000000006,
+          "secondaryTotal": 256.00000000000006,
+          "totalDelta": 0,
+          "meanAbsoluteCellDelta": 0
+        },
+        {
+          "tick": 5,
+          "primaryTotal": 320,
+          "secondaryTotal": 320,
+          "totalDelta": 0,
+          "meanAbsoluteCellDelta": 0
+        },
+        {
+          "tick": 6,
+          "primaryTotal": 406.3999999999999,
+          "secondaryTotal": 406.3999999999999,
+          "totalDelta": 0,
+          "meanAbsoluteCellDelta": 0
+        }
+      ],
+      "maxAbsoluteTotalDelta": 0,
+      "maxMeanAbsoluteCellDelta": 0,
+      "summary": "mirrored: max total delta 0.000, max mean per-cell delta 0.000."
+    },
+    {
+      "label": "asymmetric",
+      "config": {
+        "resource2SeasonalRegenAmplitude": 0.75,
+        "resource2SeasonalFertilityContrastAmplitude": 1,
+        "resource2SeasonalPhaseOffset": 0.5,
+        "resource2BiomeShiftX": 2,
+        "resource2BiomeShiftY": 1
+      },
+      "trajectory": [
+        {
+          "tick": 1,
+          "primaryTotal": 63.99999999999994,
+          "secondaryTotal": 63.99999999999994,
+          "totalDelta": 0,
+          "meanAbsoluteCellDelta": 0.3252243691818319
+        },
+        {
+          "tick": 2,
+          "primaryTotal": 150.4,
+          "secondaryTotal": 79.99999999999994,
+          "totalDelta": -70.40000000000006,
+          "meanAbsoluteCellDelta": 1.181194458960757
+        },
+        {
+          "tick": 3,
+          "primaryTotal": 214.4000000000001,
+          "secondaryTotal": 143.99999999999983,
+          "totalDelta": -70.40000000000026,
+          "meanAbsoluteCellDelta": 1.3370004950242371
+        },
+        {
+          "tick": 4,
+          "primaryTotal": 256.00000000000006,
+          "secondaryTotal": 253.20834133181256,
+          "totalDelta": -2.7916586681874946,
+          "meanAbsoluteCellDelta": 1.5766311265547253
+        },
+        {
+          "tick": 5,
+          "primaryTotal": 320,
+          "secondaryTotal": 317.20834133181256,
+          "totalDelta": -2.791658668187438,
+          "meanAbsoluteCellDelta": 1.8969558846182712
+        },
+        {
+          "tick": 6,
+          "primaryTotal": 406.3999999999999,
+          "secondaryTotal": 333.20834133181256,
+          "totalDelta": -73.19165866818736,
+          "meanAbsoluteCellDelta": 2.3607666347965885
+        }
+      ],
+      "maxAbsoluteTotalDelta": 73.19165866818736,
+      "maxMeanAbsoluteCellDelta": 2.3607666347965885,
+      "summary": "asymmetric: max total delta 73.192, max mean per-cell delta 2.361."
+    }
+  ],
+  "conclusion": {
+    "mirroredStaysMatched": true,
+    "asymmetricBreaksMirroring": true,
+    "summary": "Mirrored max total delta 0.000 and mean cell delta 0.000; asymmetric max total delta 73.192 and mean cell delta 2.361."
+  }
+}

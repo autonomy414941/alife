@@ -2019,16 +2019,18 @@ export class LifeSimulation {
   private regenerateResources(): void {
     const stepTick = this.tickCount + 1;
     const regenMultiplier = this.seasonalRegenMultiplierForTick(stepTick);
+    const resource2RegenMultiplier = this.resource2SeasonalRegenMultiplierForTick(stepTick);
     for (let y = 0; y < this.config.height; y += 1) {
       for (let x = 0; x < this.config.width; x += 1) {
         const fertility = this.effectiveBiomeFertilityAt(x, y, stepTick);
+        const fertility2 = this.effectiveBiomeFertility2At(x, y, stepTick);
         this.resources[y][x] = clamp(
           this.resources[y][x] + this.config.resourceRegen * regenMultiplier * fertility,
           0,
           this.config.maxResource
         );
         this.resources2[y][x] = clamp(
-          this.resources2[y][x] + this.config.resource2Regen * regenMultiplier * fertility,
+          this.resources2[y][x] + this.config.resource2Regen * resource2RegenMultiplier * fertility2,
           0,
           this.config.maxResource2
         );
@@ -2206,6 +2208,14 @@ export class LifeSimulation {
     return clamp(1 + (base - 1) * contrastMultiplier, 0.1, 2);
   }
 
+  private effectiveBiomeFertility2At(x: number, y: number, tick: number): number {
+    const shiftedX = this.wrapX(x + this.resource2BiomeShiftX());
+    const shiftedY = this.wrapY(y + this.resource2BiomeShiftY());
+    const base = this.biomeFertility[shiftedY][shiftedX];
+    const contrastMultiplier = this.resource2SeasonalFertilityContrastMultiplierForTick(tick);
+    return clamp(1 + (base - 1) * contrastMultiplier, 0.1, 2);
+  }
+
   private seasonalRegenMultiplierForTick(tick: number): number {
     const amplitude = clamp(this.config.seasonalRegenAmplitude, 0, 1);
     if (amplitude === 0) {
@@ -2222,8 +2232,32 @@ export class LifeSimulation {
     return Math.max(0, 1 + amplitude * this.seasonalWaveForTick(tick));
   }
 
+  private resource2SeasonalRegenMultiplierForTick(tick: number): number {
+    const amplitude = clamp(this.config.resource2SeasonalRegenAmplitude ?? this.config.seasonalRegenAmplitude, 0, 1);
+    if (amplitude === 0) {
+      return 1;
+    }
+    return Math.max(0, 1 + amplitude * this.resource2SeasonalWaveForTick(tick));
+  }
+
+  private resource2SeasonalFertilityContrastMultiplierForTick(tick: number): number {
+    const amplitude = clamp(
+      this.config.resource2SeasonalFertilityContrastAmplitude ?? this.config.seasonalFertilityContrastAmplitude,
+      0,
+      1
+    );
+    if (amplitude === 0) {
+      return 1;
+    }
+    return Math.max(0, 1 + amplitude * this.resource2SeasonalWaveForTick(tick));
+  }
+
   private seasonalWaveForTick(tick: number): number {
     return Math.sin(this.seasonalPhaseForTick(tick) * Math.PI * 2);
+  }
+
+  private resource2SeasonalWaveForTick(tick: number): number {
+    return Math.sin(this.resource2SeasonalPhaseForTick(tick) * Math.PI * 2);
   }
 
   private seasonalPhaseForTick(tick: number): number {
@@ -2235,8 +2269,22 @@ export class LifeSimulation {
     return (normalizedTick % cycle) / cycle;
   }
 
+  private resource2SeasonalPhaseForTick(tick: number): number {
+    return wrapUnitInterval(this.seasonalPhaseForTick(tick) + (this.config.resource2SeasonalPhaseOffset ?? 0));
+  }
+
   private normalizedSeasonalCycleLength(): number {
     return Math.max(0, Math.floor(this.config.seasonalCycleLength));
+  }
+
+  private resource2BiomeShiftX(): number {
+    const shift = this.config.resource2BiomeShiftX;
+    return Number.isFinite(shift) ? Math.trunc(shift ?? 0) : 0;
+  }
+
+  private resource2BiomeShiftY(): number {
+    const shift = this.config.resource2BiomeShiftY;
+    return Number.isFinite(shift) ? Math.trunc(shift ?? 0) : 0;
   }
 
   private countBy(agents: Agent[], selector: (agent: Agent) => number): Map<number, number> {
@@ -2441,6 +2489,11 @@ export class LifeSimulation {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function wrapUnitInterval(value: number): number {
+  const wrapped = value % 1;
+  return wrapped < 0 ? wrapped + 1 : wrapped;
 }
 
 function normalizeTrait(value: number, min: number, max: number): number {

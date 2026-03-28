@@ -235,7 +235,12 @@ export interface SimulationConfig {
   resource2Regen: number;
   seasonalCycleLength: number;
   seasonalRegenAmplitude: number;
+  resource2SeasonalRegenAmplitude?: number;
   seasonalFertilityContrastAmplitude: number;
+  resource2SeasonalFertilityContrastAmplitude?: number;
+  resource2SeasonalPhaseOffset?: number;
+  resource2BiomeShiftX?: number;
+  resource2BiomeShiftY?: number;
   disturbanceInterval: number;
   disturbancePhaseOffset: number;
   disturbanceEnergyLoss: number;

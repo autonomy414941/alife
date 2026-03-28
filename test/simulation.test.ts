@@ -2981,9 +2981,83 @@ describe('LifeSimulation', () => {
     expect(spreads[3]).toBeCloseTo(0, 10);
   });
 
-  it('applies periodic disturbance shocks and reports disturbance analytics', () => {
+  it('keeps second-layer regeneration mirrored when secondary asymmetry controls are unset', () => {
     const sim = new LifeSimulation({
       seed: 62,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 100,
+        maxResource2: 100,
+        resourceRegen: 1,
+        resource2Regen: 1,
+        biomeBands: 1,
+        biomeContrast: 0,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        initialAgents: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        seasonalCycleLength: 4,
+        seasonalRegenAmplitude: 0.5,
+        seasonalFertilityContrastAmplitude: 0
+      }
+    });
+    sim.setResource(0, 0, 0);
+    sim.setResource2(0, 0, 0);
+
+    for (let tick = 0; tick < 4; tick += 1) {
+      sim.step();
+      expect(sim.getResource2(0, 0)).toBeCloseTo(sim.getResource(0, 0), 10);
+    }
+  });
+
+  it('lets the second resource layer diverge through dedicated seasonal and spatial controls', () => {
+    const sim = new LifeSimulation({
+      seed: 63,
+      config: {
+        width: 6,
+        height: 6,
+        maxResource: 100,
+        maxResource2: 100,
+        resourceRegen: 1,
+        resource2Regen: 1,
+        biomeBands: 3,
+        biomeContrast: 0.8,
+        decompositionBase: 0,
+        decompositionEnergyFraction: 0,
+        initialAgents: 0,
+        reproduceProbability: 0,
+        maxAge: 100,
+        seasonalCycleLength: 4,
+        seasonalRegenAmplitude: 0.25,
+        resource2SeasonalRegenAmplitude: 0.75,
+        seasonalFertilityContrastAmplitude: 0.5,
+        resource2SeasonalFertilityContrastAmplitude: 1,
+        resource2SeasonalPhaseOffset: 0.5,
+        resource2BiomeShiftX: 1,
+        resource2BiomeShiftY: 1
+      }
+    });
+
+    for (let y = 0; y < 6; y += 1) {
+      for (let x = 0; x < 6; x += 1) {
+        sim.setResource(x, y, 0);
+        sim.setResource2(x, y, 0);
+      }
+    }
+
+    sim.step();
+    expect(meanAbsoluteResourceLayerDelta(sim, 6, 6)).toBeGreaterThan(0);
+
+    sim.step();
+    const totals = totalResourcesByLayer(sim, 6, 6);
+    expect(Math.abs(totals.primary - totals.secondary)).toBeGreaterThan(0.1);
+  });
+
+  it('applies periodic disturbance shocks and reports disturbance analytics', () => {
+    const sim = new LifeSimulation({
+      seed: 64,
       config: {
         width: 1,
         height: 1,
@@ -4541,6 +4615,36 @@ function listCellsByFertility(
   }
   cells.sort((a, b) => a.fertility - b.fertility);
   return cells;
+}
+
+function totalResourcesByLayer(
+  sim: LifeSimulation,
+  width: number,
+  height: number
+): { primary: number; secondary: number } {
+  let primary = 0;
+  let secondary = 0;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      primary += sim.getResource(x, y);
+      secondary += sim.getResource2(x, y);
+    }
+  }
+  return { primary, secondary };
+}
+
+function meanAbsoluteResourceLayerDelta(sim: LifeSimulation, width: number, height: number): number {
+  if (width <= 0 || height <= 0) {
+    return 0;
+  }
+
+  let totalDelta = 0;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      totalDelta += Math.abs(sim.getResource(x, y) - sim.getResource2(x, y));
+    }
+  }
+  return totalDelta / (width * height);
 }
 
 function findFertilityGradientNeighborPair(
