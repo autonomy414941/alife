@@ -4114,6 +4114,159 @@ describe('LifeSimulation', () => {
     expect(summary.dominantSpeciesShare).toBeCloseTo(2 / 3, 10);
   });
 
+  it('distinguishes count inflation from ecologically distinct diversification', () => {
+    const countInflated = new LifeSimulation({
+      seed: 190,
+      config: {
+        width: 4,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 0.6, harvest: 0.6, aggression: 0.4 }
+        },
+        {
+          x: 1,
+          y: 0,
+          energy: 10,
+          lineage: 2,
+          species: 2,
+          genome: { metabolism: 0.6, harvest: 0.6, aggression: 0.4 }
+        },
+        {
+          x: 2,
+          y: 0,
+          energy: 10,
+          lineage: 3,
+          species: 3,
+          genome: { metabolism: 0.6, harvest: 0.6, aggression: 0.4 }
+        },
+        {
+          x: 3,
+          y: 0,
+          energy: 10,
+          lineage: 4,
+          species: 4,
+          genome: { metabolism: 0.6, harvest: 0.6, aggression: 0.4 }
+        }
+      ]
+    }).step();
+
+    const ecologicallyDistinct = new LifeSimulation({
+      seed: 191,
+      config: {
+        width: 4,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 0.1, harvest: 0.2, aggression: 0.1 },
+          genomeV2: {
+            traits: new Map([
+              ['metabolism', 0.1],
+              ['harvest', 0.2],
+              ['aggression', 0.1],
+              ['habitat_preference', 0.1],
+              ['trophic_level', 0.1],
+              ['defense_level', 0.1]
+            ])
+          }
+        },
+        {
+          x: 1,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 0.1, harvest: 0.2, aggression: 0.1 },
+          genomeV2: {
+            traits: new Map([
+              ['metabolism', 0.1],
+              ['harvest', 0.2],
+              ['aggression', 0.1],
+              ['habitat_preference', 0.1],
+              ['trophic_level', 0.1],
+              ['defense_level', 0.1]
+            ])
+          }
+        },
+        {
+          x: 2,
+          y: 0,
+          energy: 10,
+          lineage: 2,
+          species: 2,
+          genome: { metabolism: 0.9, harvest: 0.8, aggression: 0.9 },
+          genomeV2: {
+            traits: new Map([
+              ['metabolism', 0.9],
+              ['harvest', 0.8],
+              ['aggression', 0.9],
+              ['habitat_preference', 2],
+              ['trophic_level', 0.9],
+              ['defense_level', 0.9]
+            ])
+          }
+        },
+        {
+          x: 3,
+          y: 0,
+          energy: 10,
+          lineage: 2,
+          species: 2,
+          genome: { metabolism: 0.9, harvest: 0.8, aggression: 0.9 },
+          genomeV2: {
+            traits: new Map([
+              ['metabolism', 0.9],
+              ['harvest', 0.8],
+              ['aggression', 0.9],
+              ['habitat_preference', 2],
+              ['trophic_level', 0.9],
+              ['defense_level', 0.9]
+            ])
+          }
+        }
+      ]
+    }).step();
+
+    expect(countInflated.activeSpecies).toBeGreaterThan(ecologicallyDistinct.activeSpecies);
+    expect(countInflated.phenotypeDiversity).toBeDefined();
+    expect(ecologicallyDistinct.phenotypeDiversity).toBeDefined();
+    expect(countInflated.phenotypeDiversity!.effectiveRichness).toBeLessThan(
+      ecologicallyDistinct.phenotypeDiversity!.effectiveRichness
+    );
+    expect(countInflated.phenotypeDiversity!.occupiedNiches).toBeLessThan(
+      ecologicallyDistinct.phenotypeDiversity!.occupiedNiches
+    );
+    expect(countInflated.phenotypeDiversity!.speciesPerOccupiedNiche).toBeGreaterThan(
+      ecologicallyDistinct.phenotypeDiversity!.speciesPerOccupiedNiche
+    );
+  });
+
   it('reports energy-weighted trait selection differentials', () => {
     const sim = new LifeSimulation({
       seed: 23,

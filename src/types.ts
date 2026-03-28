@@ -318,6 +318,7 @@ export interface StepSummary {
   genomeV2ExtendedTraitAgentFraction?: number;
   policyObservability?: PolicyObservabilitySummary;
   genomeV2Metrics?: GenomeV2Metrics;
+  phenotypeDiversity?: PhenotypeDiversityMetrics;
 }
 
 export interface PolicyOutcomeCorrelation {
@@ -381,6 +382,13 @@ export interface GenomeV2TraitMetrics {
 
 export interface GenomeV2Metrics {
   traits: GenomeV2TraitMetrics[];
+}
+
+export interface PhenotypeDiversityMetrics {
+  effectiveRichness: number;
+  meanPairwiseDistance: number;
+  occupiedNiches: number;
+  speciesPerOccupiedNiche: number;
 }
 
 export interface SimulationSnapshot {

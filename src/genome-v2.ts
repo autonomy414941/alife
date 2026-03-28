@@ -233,9 +233,10 @@ function listGenomeV2TraitKeys(
     .map((definition) => definition.key);
 }
 
-const CORE_TRAITS = listGenomeV2TraitKeys((definition) => definition.mutationMode === 'core');
+export const CORE_TRAITS: string[] = listGenomeV2TraitKeys((definition) => definition.mutationMode === 'core');
 
 export const EXTENDED_TRAITS: string[] = listGenomeV2TraitKeys((definition) => definition.role === 'ecological');
+export const NON_POLICY_TRAITS: string[] = listGenomeV2TraitKeys((definition) => definition.role !== 'policy');
 export const POLICY_TRAITS: string[] = listGenomeV2TraitKeys((definition) => definition.role === 'policy');
 export const POLICY_THRESHOLD_TRAITS: string[] = listGenomeV2TraitKeys(
   (definition) => definition.distanceCategory === 'policyThreshold'
