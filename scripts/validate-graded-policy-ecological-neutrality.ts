@@ -124,13 +124,14 @@ const gradedPolicyRuns = gradedPolicySeeds.map((seed) => {
     simulation: { config: gradedPolicyConfig }
   });
   const run = result.runs[0];
+  const summary = run.finalSummary as any;
   return {
     seed,
     finalPopulation: run.finalSummary.population,
     activeSpecies: run.finalSummary.activeSpecies,
     activeClades: run.finalSummary.activeClades,
-    totalSpecies: run.finalSummary.totalSpecies,
-    totalClades: run.finalSummary.totalClades,
+    totalSpecies: summary.totalSpecies,
+    totalClades: summary.totalClades,
     effectiveRichness: run.finalSummary.phenotypeDiversity?.effectiveRichness ?? 0,
     meanPairwiseDistance: run.finalSummary.phenotypeDiversity?.meanPairwiseDistance ?? 0,
     occupiedNiches: run.finalSummary.phenotypeDiversity?.occupiedNiches ?? 0,
@@ -151,13 +152,14 @@ const baselineRuns = baselineSeeds.map((seed) => {
     simulation: { config: baselineConfig }
   });
   const run = result.runs[0];
+  const summary = run.finalSummary as any;
   return {
     seed,
     finalPopulation: run.finalSummary.population,
     activeSpecies: run.finalSummary.activeSpecies,
     activeClades: run.finalSummary.activeClades,
-    totalSpecies: run.finalSummary.totalSpecies,
-    totalClades: run.finalSummary.totalClades,
+    totalSpecies: summary.totalSpecies,
+    totalClades: summary.totalClades,
     effectiveRichness: run.finalSummary.phenotypeDiversity?.effectiveRichness ?? 0,
     meanPairwiseDistance: run.finalSummary.phenotypeDiversity?.meanPairwiseDistance ?? 0,
     occupiedNiches: run.finalSummary.phenotypeDiversity?.occupiedNiches ?? 0,
