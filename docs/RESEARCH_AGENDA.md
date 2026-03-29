@@ -13,7 +13,7 @@ Recent external context reinforces that shift. Moreno, Rodriguez-Papa, and Dolso
 ## Structural Constraints
 - Policy traits mostly gate movement, harvest, reproduction, and spending choices, but they still do not directly modulate core ecological payoffs such as intake efficiency, encounter transfer, settlement success, or metabolic burden
 - `phenotypeDiversity` is now available, but it is built from `NON_POLICY_TRAITS`, so policy-driven ecological separation can remain partly invisible unless policy variation changes morphology-side phenotype
-- `genomeV2DistanceWeights` still has no adopted default, and the latest neutrality panel used a weighting regime that the March 27 calibration explicitly rejected for default use
+- `genomeV2DistanceWeights` adopted default: `{ categories: { policyThreshold: 0.25, policyBounded: 0.5 } }` per March 27 calibration and March 29 follow-up validation, which found this regime produces outcomes identical to morphology-priority under the current post-decoder, asymmetric-ecology stack while avoiding the mixed-divergence inflation that rejected morphology-priority
 - The simulator still lacks sampled per-event attribution and lightweight genealogy that would show which policy decisions, trait combinations, and lineages actually produced or suppressed diversification
 - The study layer still cannot branch a live world into paired counterfactual runs, so mechanism comparisons remain exposed to path dependence even when seeds are matched
 
