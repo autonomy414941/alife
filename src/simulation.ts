@@ -7,6 +7,11 @@ import {
   syncAgentEnergy
 } from './agent-energy';
 import {
+  CausalTraceCollector,
+  CausalTraceSamplingConfig,
+  DEFAULT_CAUSAL_TRACE_CONFIG
+} from './causal-trace';
+import {
   clonePolicyState,
   cloneTransientState,
   getPolicyStateValue,
@@ -298,10 +303,19 @@ export class LifeSimulation {
 
   private lastStepPolicyFitnessRecords: PolicyFitnessRecord[] = [];
 
+  private readonly causalTraceCollector: CausalTraceCollector;
+
   constructor(options: LifeSimulationOptions = {}) {
     this.config = resolveSimulationConfig(options.config);
     this.encounterOperator = options.encounterOperator ?? dominantEncounterOperator;
     this.rng = new Rng(options.seed ?? 1);
+    const causalTraceConfig: CausalTraceSamplingConfig = {
+      enabled: this.config.causalTraceEnabled ?? DEFAULT_CAUSAL_TRACE_CONFIG.enabled,
+      samplingRate: this.config.causalTraceSamplingRate ?? DEFAULT_CAUSAL_TRACE_CONFIG.samplingRate,
+      maxEventsPerTick: this.config.causalTraceMaxEventsPerTick ?? DEFAULT_CAUSAL_TRACE_CONFIG.maxEventsPerTick,
+      trackEventTypes: DEFAULT_CAUSAL_TRACE_CONFIG.trackEventTypes
+    };
+    this.causalTraceCollector = new CausalTraceCollector(causalTraceConfig);
     this.biomeFertility = this.buildBiomeFertility();
     this.resources = this.buildInitialResources(this.config.maxResource);
     this.resources2 = this.usesSecondResourceLayer()
@@ -415,6 +429,21 @@ export class LifeSimulation {
         survivors.push(agent);
       } else {
         deadAgents.push(agent);
+        this.causalTraceCollector.recordEvent(
+          {
+            type: 'death',
+            tick: nextTick,
+            agentId: agent.id,
+            lineage: agent.lineage,
+            species: agent.species,
+            x: agent.x,
+            y: agent.y,
+            age: agent.age,
+            reason: agent.energy <= 0 ? 'energy_depletion' : 'max_age',
+            finalEnergy: agent.energy
+          },
+          () => this.rng.float()
+        );
       }
     }
     this.recycleDeadAgents(deadAgents);
@@ -545,6 +574,10 @@ export class LifeSimulation {
 
   history(): EvolutionHistorySnapshot {
     return this.evolutionHistory.snapshot();
+  }
+
+  causalTrace() {
+    return this.causalTraceCollector;
   }
 
   storageDiagnostics(): SimulationStorageDiagnostics {
@@ -1474,8 +1507,27 @@ export class LifeSimulation {
     policyDecisionStats.movement.energyReserveNearThreshold += Number(destination.energyReserveNearThreshold);
     policyDecisionStats.movement.recentHarvestNearThreshold += Number(destination.recentHarvestNearThreshold);
     const moved = destination.x !== agent.x || destination.y !== agent.y;
+    const movementEnergyCost = moved ? this.config.moveCost * agent.genome.metabolism : 0;
     agent.x = destination.x;
     agent.y = destination.y;
+
+    this.causalTraceCollector.recordEvent(
+      {
+        type: 'movement',
+        tick: this.tickCount + 1,
+        agentId: agent.id,
+        lineage: agent.lineage,
+        species: agent.species,
+        fromX: previousX,
+        fromY: previousY,
+        toX: agent.x,
+        toY: agent.y,
+        moved,
+        policyGated: destination.policyGated,
+        energyCost: movementEnergyCost
+      },
+      () => this.rng.float()
+    );
 
     if (moved) {
       occupancy[previousY][previousX] = Math.max(0, occupancy[previousY][previousX] - 1);
@@ -1555,6 +1607,29 @@ export class LifeSimulation {
     });
     const totalHarvest = harvest.primaryHarvest + harvest.secondaryHarvest;
     setTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST, totalHarvest);
+    const policyGuided =
+      harvestSecondaryPreference !== undefined &&
+      (Math.abs(harvest.primaryShare - defaultHarvestShares.primaryShare) > 1e-9 ||
+        Math.abs(harvest.secondaryShare - defaultHarvestShares.secondaryShare) > 1e-9);
+    this.causalTraceCollector.recordEvent(
+      {
+        type: 'harvest',
+        tick: this.tickCount + 1,
+        agentId: agent.id,
+        lineage: agent.lineage,
+        species: agent.species,
+        x: agent.x,
+        y: agent.y,
+        primaryHarvest: harvest.primaryHarvest,
+        secondaryHarvest: harvest.secondaryHarvest,
+        policyGuided,
+        habitatEfficiency,
+        trophicEfficiency,
+        defenseEfficiency,
+        lineageCrowdingEfficiency
+      },
+      () => this.rng.float()
+    );
     const policyFitness = policyFitnessByAgentId.get(agent.id);
     if (policyFitness) {
       policyFitness.movementPolicyGated = destination.policyGated;
@@ -1845,7 +1920,25 @@ export class LifeSimulation {
       blendedTrophicLevel: (species, lineage) => this.blendedTrophicLevel(species, lineage),
       blendedDefenseLevel: (species, lineage) => this.blendedDefenseLevel(species, lineage),
       lineageTransferMultiplier: (dominant, target) =>
-        this.encounterLineageTransferMultiplier(dominant, target)
+        this.encounterLineageTransferMultiplier(dominant, target),
+      recordEncounter: (dominant, target, transfer) => {
+        this.causalTraceCollector.recordEvent(
+          {
+            type: 'encounter',
+            tick: this.tickCount + 1,
+            agentId: dominant.id,
+            lineage: dominant.lineage,
+            species: dominant.species,
+            targetId: target.id,
+            targetLineage: target.lineage,
+            targetSpecies: target.species,
+            energyTransfer: transfer,
+            x: dominant.x,
+            y: dominant.y
+          },
+          () => this.rng.float()
+        );
+      }
     };
   }
 

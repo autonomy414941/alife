@@ -13,6 +13,7 @@ export interface EncounterOperatorContext {
     dominant: Pick<Agent, 'lineage'>,
     target: Pick<Agent, 'lineage'>
   ) => number;
+  recordEncounter?: (dominant: Agent, target: Agent, transfer: number) => void;
 }
 
 export type EncounterOperator = (agentsInCell: Agent[], context: EncounterOperatorContext) => void;
@@ -39,6 +40,7 @@ export const dominantEncounterOperator: EncounterOperator = (agentsInCell, conte
     }
 
     transferAgentEnergy(target, dominant, stolen);
+    context.recordEncounter?.(dominant, target, stolen);
   }
 };
 
@@ -88,6 +90,7 @@ export const pairwiseEncounterOperator: EncounterOperator = (agentsInCell, conte
       }
 
       transferAgentEnergy(target, dominant, stolen);
+      context.recordEncounter?.(dominant, target, stolen);
     }
   }
 };
@@ -119,6 +122,7 @@ export const nonTransitiveEncounterOperator: EncounterOperator = (agentsInCell, 
       }
 
       transferAgentEnergy(target, dominant, stolen);
+      context.recordEncounter?.(dominant, target, stolen);
     }
   }
 };

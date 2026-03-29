@@ -66,6 +66,22 @@ interface RunReproductionPhaseOptions {
     occupancy?: number[][],
     lineageOccupancy?: LineageOccupancyGrid
   ) => Agent;
+  recordReproduction?: (
+    parent: Agent,
+    offspring: Agent,
+    policyGated: boolean,
+    localFertility: number,
+    localCrowding: number,
+    speciationOccurred: boolean
+  ) => void;
+  recordSettlement?: (
+    offspring: Agent,
+    parentSpecies: number,
+    settled: boolean,
+    localFertility: number,
+    localCrowding: number,
+    sameLineageCrowding: number
+  ) => void;
 }
 
 interface RunReproductionPhaseResult {

@@ -296,6 +296,9 @@ export interface SimulationConfig {
   cladogenesisThreshold: number;
   genomeV2DistanceWeights?: GenomeV2DistanceWeights;
   maxAge: number;
+  causalTraceSamplingRate?: number;
+  causalTraceMaxEventsPerTick?: number;
+  causalTraceEnabled?: boolean;
 }
 
 export interface StepSummary {

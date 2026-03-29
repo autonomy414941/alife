@@ -1,0 +1,64 @@
+{
+  "config": {
+    "samplingRate": 0.2,
+    "maxEventsPerTick": 50,
+    "steps": 100
+  },
+  "summary": {
+    "totalEvents": 4685,
+    "eventCounts": {
+      "movement": 2334,
+      "harvest": 2351,
+      "encounter": 0,
+      "death": 0,
+      "reproduction": 0,
+      "settlement": 0
+    },
+    "uniqueLineages": 30,
+    "uniqueSpecies": 803,
+    "finalPopulation": 2025,
+    "activeSpecies": 687,
+    "activeClades": 9
+  },
+  "policyMetrics": {
+    "policyGatedMovements": 0,
+    "totalMovements": 2334,
+    "policyGuidedHarvests": 0,
+    "totalHarvests": 2351
+  },
+  "deathReasons": {},
+  "sampleEvents": {
+    "movement": {
+      "type": "movement",
+      "tick": 1,
+      "agentId": 26,
+      "lineage": 26,
+      "species": 26,
+      "fromX": 13,
+      "fromY": 2,
+      "toX": 14,
+      "toY": 2,
+      "moved": true,
+      "policyGated": false,
+      "energyCost": 0.07781864892574958
+    },
+    "harvest": {
+      "type": "harvest",
+      "tick": 1,
+      "agentId": 7,
+      "lineage": 7,
+      "species": 7,
+      "x": 4,
+      "y": 11,
+      "primaryHarvest": 0.2284643445357387,
+      "secondaryHarvest": 2.351794600765666,
+      "policyGuided": false,
+      "habitatEfficiency": 0.9986914606802684,
+      "trophicEfficiency": 0.6868421880307143,
+      "defenseEfficiency": 0.9798277700622566,
+      "lineageCrowdingEfficiency": 1
+    },
+    "encounter": null,
+    "death": null
+  }
+}
