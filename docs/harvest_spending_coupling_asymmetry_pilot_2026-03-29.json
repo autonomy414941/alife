@@ -1,0 +1,414 @@
+{
+  "generatedAt": "2026-03-29T00:00:00.000Z",
+  "question": "When harvest preference also shapes reserve spending, do matched agents in an asymmetric two-layer schedule separate into different primary-versus-secondary energy trajectories?",
+  "prediction": "Primary specialists should burn more secondary reserve than controls, while secondary specialists should retain more secondary reserve, because the shared harvest policy now also steers burn allocation.",
+  "config": {
+    "steps": 8,
+    "initialPools": {
+      "primary": 6,
+      "secondary": 6
+    },
+    "baseCapacity": 2.5,
+    "spendPerStep": 2.2,
+    "resourceSchedule": [
+      {
+        "primary": 4.5,
+        "secondary": 1.2
+      },
+      {
+        "primary": 1.3,
+        "secondary": 4.4
+      },
+      {
+        "primary": 4.1,
+        "secondary": 1.5
+      },
+      {
+        "primary": 1.1,
+        "secondary": 4.7
+      }
+    ]
+  },
+  "arms": [
+    {
+      "label": "control",
+      "cumulativePrimaryHarvest": 9.7,
+      "cumulativeSecondaryHarvest": 9.9,
+      "cumulativePrimarySpent": 8.779107544297988,
+      "cumulativeSecondarySpent": 8.820892455702015,
+      "finalPrimary": 6.920892455702014,
+      "finalSecondary": 7.079107544297987,
+      "finalSecondaryShare": 0.5056505388784276,
+      "trajectory": [
+        {
+          "step": 1,
+          "resourcePulse": {
+            "primary": 4.5,
+            "secondary": 1.2
+          },
+          "primaryHarvest": 1.25,
+          "secondaryHarvest": 1.2,
+          "primarySpent": 1.1038062283737027,
+          "secondarySpent": 1.0961937716262975,
+          "endPrimary": 6.146193771626297,
+          "endSecondary": 6.103806228373703,
+          "endSecondaryShare": 0.49826989619377166
+        },
+        {
+          "step": 2,
+          "resourcePulse": {
+            "primary": 1.3,
+            "secondary": 4.4
+          },
+          "primaryHarvest": 1.25,
+          "secondaryHarvest": 1.25,
+          "primarySpent": 1.1031611049205325,
+          "secondarySpent": 1.0968388950794676,
+          "endPrimary": 6.2930326667057646,
+          "endSecondary": 6.256967333294235,
+          "endSecondaryShare": 0.4985631341270307
+        },
+        {
+          "step": 3,
+          "resourcePulse": {
+            "primary": 4.1,
+            "secondary": 1.5
+          },
+          "primaryHarvest": 1.25,
+          "secondaryHarvest": 1.25,
+          "primarySpent": 1.1026360044353942,
+          "secondarySpent": 1.097363995564606,
+          "endPrimary": 6.44039666227037,
+          "endSecondary": 6.40960333772963,
+          "endSecondaryShare": 0.49880181616572994
+        },
+        {
+          "step": 4,
+          "resourcePulse": {
+            "primary": 1.1,
+            "secondary": 4.7
+          },
+          "primaryHarvest": 1.1,
+          "secondaryHarvest": 1.25,
+          "primarySpent": 1.09137320111808,
+          "secondarySpent": 1.1086267988819203,
+          "endPrimary": 6.44902346115229,
+          "endSecondary": 6.55097653884771,
+          "endSecondaryShare": 0.5039212722190546
+        },
+        {
+          "step": 5,
+          "resourcePulse": {
+            "primary": 4.5,
+            "secondary": 1.2
+          },
+          "primaryHarvest": 1.25,
+          "secondaryHarvest": 1.2,
+          "primarySpent": 1.0963010753744362,
+          "secondarySpent": 1.103698924625564,
+          "endPrimary": 6.602722385777854,
+          "endSecondary": 6.647277614222146,
+          "endSecondaryShare": 0.5016813293752563
+        },
+        {
+          "step": 6,
+          "resourcePulse": {
+            "primary": 1.3,
+            "secondary": 4.4
+          },
+          "primaryHarvest": 1.25,
+          "secondaryHarvest": 1.25,
+          "primarySpent": 1.0968882062673828,
+          "secondarySpent": 1.1031117937326174,
+          "endPrimary": 6.7558341795104715,
+          "endSecondary": 6.794165820489528,
+          "endSecondaryShare": 0.5014144516966441
+        },
+        {
+          "step": 7,
+          "resourcePulse": {
+            "primary": 4.1,
+            "secondary": 1.5
+          },
+          "primaryHarvest": 1.25,
+          "secondaryHarvest": 1.25,
+          "primarySpent": 1.0973729093409994,
+          "secondarySpent": 1.1026270906590008,
+          "endPrimary": 6.908461270169473,
+          "endSecondary": 6.941538729830528,
+          "endSecondaryShare": 0.5011941321177276
+        },
+        {
+          "step": 8,
+          "resourcePulse": {
+            "primary": 1.1,
+            "secondary": 4.7
+          },
+          "primaryHarvest": 1.1,
+          "secondaryHarvest": 1.25,
+          "primarySpent": 1.0875688144674591,
+          "secondarySpent": 1.112431185532541,
+          "endPrimary": 6.920892455702014,
+          "endSecondary": 7.079107544297987,
+          "endSecondaryShare": 0.5056505388784276
+        }
+      ]
+    },
+    {
+      "label": "primary_specialist",
+      "harvestSecondaryPreference": 0,
+      "cumulativePrimaryHarvest": 14.8,
+      "cumulativeSecondaryHarvest": 0,
+      "cumulativePrimarySpent": 11.600000000000001,
+      "cumulativeSecondarySpent": 6,
+      "finalPrimary": 9.2,
+      "finalSecondary": 0,
+      "finalSecondaryShare": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "resourcePulse": {
+            "primary": 4.5,
+            "secondary": 1.2
+          },
+          "primaryHarvest": 2.5,
+          "secondaryHarvest": 0,
+          "primarySpent": 0,
+          "secondarySpent": 2.2,
+          "endPrimary": 8.5,
+          "endSecondary": 3.8,
+          "endSecondaryShare": 0.30894308943089427
+        },
+        {
+          "step": 2,
+          "resourcePulse": {
+            "primary": 1.3,
+            "secondary": 4.4
+          },
+          "primaryHarvest": 1.3,
+          "secondaryHarvest": 0,
+          "primarySpent": 0,
+          "secondarySpent": 2.2,
+          "endPrimary": 9.8,
+          "endSecondary": 1.5999999999999996,
+          "endSecondaryShare": 0.14035087719298242
+        },
+        {
+          "step": 3,
+          "resourcePulse": {
+            "primary": 4.1,
+            "secondary": 1.5
+          },
+          "primaryHarvest": 2.5,
+          "secondaryHarvest": 0,
+          "primarySpent": 0.6000000000000005,
+          "secondarySpent": 1.5999999999999996,
+          "endPrimary": 11.7,
+          "endSecondary": 0,
+          "endSecondaryShare": 0
+        },
+        {
+          "step": 4,
+          "resourcePulse": {
+            "primary": 1.1,
+            "secondary": 4.7
+          },
+          "primaryHarvest": 1.1,
+          "secondaryHarvest": 0,
+          "primarySpent": 2.2,
+          "secondarySpent": 0,
+          "endPrimary": 10.599999999999998,
+          "endSecondary": 0,
+          "endSecondaryShare": 0
+        },
+        {
+          "step": 5,
+          "resourcePulse": {
+            "primary": 4.5,
+            "secondary": 1.2
+          },
+          "primaryHarvest": 2.5,
+          "secondaryHarvest": 0,
+          "primarySpent": 2.2,
+          "secondarySpent": 0,
+          "endPrimary": 10.899999999999999,
+          "endSecondary": 0,
+          "endSecondaryShare": 0
+        },
+        {
+          "step": 6,
+          "resourcePulse": {
+            "primary": 1.3,
+            "secondary": 4.4
+          },
+          "primaryHarvest": 1.3,
+          "secondaryHarvest": 0,
+          "primarySpent": 2.2,
+          "secondarySpent": 0,
+          "endPrimary": 10,
+          "endSecondary": 0,
+          "endSecondaryShare": 0
+        },
+        {
+          "step": 7,
+          "resourcePulse": {
+            "primary": 4.1,
+            "secondary": 1.5
+          },
+          "primaryHarvest": 2.5,
+          "secondaryHarvest": 0,
+          "primarySpent": 2.2,
+          "secondarySpent": 0,
+          "endPrimary": 10.3,
+          "endSecondary": 0,
+          "endSecondaryShare": 0
+        },
+        {
+          "step": 8,
+          "resourcePulse": {
+            "primary": 1.1,
+            "secondary": 4.7
+          },
+          "primaryHarvest": 1.1,
+          "secondaryHarvest": 0,
+          "primarySpent": 2.2,
+          "secondarySpent": 0,
+          "endPrimary": 9.2,
+          "endSecondary": 0,
+          "endSecondaryShare": 0
+        }
+      ]
+    },
+    {
+      "label": "secondary_specialist",
+      "harvestSecondaryPreference": 1,
+      "cumulativePrimaryHarvest": 0,
+      "cumulativeSecondaryHarvest": 15.4,
+      "cumulativePrimarySpent": 6,
+      "cumulativeSecondarySpent": 11.600000000000001,
+      "finalPrimary": 0,
+      "finalSecondary": 9.8,
+      "finalSecondaryShare": 1,
+      "trajectory": [
+        {
+          "step": 1,
+          "resourcePulse": {
+            "primary": 4.5,
+            "secondary": 1.2
+          },
+          "primaryHarvest": 0,
+          "secondaryHarvest": 1.2,
+          "primarySpent": 2.2,
+          "secondarySpent": 0,
+          "endPrimary": 3.8,
+          "endSecondary": 7.2,
+          "endSecondaryShare": 0.6545454545454545
+        },
+        {
+          "step": 2,
+          "resourcePulse": {
+            "primary": 1.3,
+            "secondary": 4.4
+          },
+          "primaryHarvest": 0,
+          "secondaryHarvest": 2.5,
+          "primarySpent": 2.2,
+          "secondarySpent": 0,
+          "endPrimary": 1.5999999999999996,
+          "endSecondary": 9.7,
+          "endSecondaryShare": 0.8584070796460177
+        },
+        {
+          "step": 3,
+          "resourcePulse": {
+            "primary": 4.1,
+            "secondary": 1.5
+          },
+          "primaryHarvest": 0,
+          "secondaryHarvest": 1.5,
+          "primarySpent": 1.5999999999999996,
+          "secondarySpent": 0.6000000000000005,
+          "endPrimary": 0,
+          "endSecondary": 10.599999999999998,
+          "endSecondaryShare": 1
+        },
+        {
+          "step": 4,
+          "resourcePulse": {
+            "primary": 1.1,
+            "secondary": 4.7
+          },
+          "primaryHarvest": 0,
+          "secondaryHarvest": 2.5,
+          "primarySpent": 0,
+          "secondarySpent": 2.2,
+          "endPrimary": 0,
+          "endSecondary": 10.899999999999999,
+          "endSecondaryShare": 1
+        },
+        {
+          "step": 5,
+          "resourcePulse": {
+            "primary": 4.5,
+            "secondary": 1.2
+          },
+          "primaryHarvest": 0,
+          "secondaryHarvest": 1.2,
+          "primarySpent": 0,
+          "secondarySpent": 2.2,
+          "endPrimary": 0,
+          "endSecondary": 9.899999999999999,
+          "endSecondaryShare": 1
+        },
+        {
+          "step": 6,
+          "resourcePulse": {
+            "primary": 1.3,
+            "secondary": 4.4
+          },
+          "primaryHarvest": 0,
+          "secondaryHarvest": 2.5,
+          "primarySpent": 0,
+          "secondarySpent": 2.2,
+          "endPrimary": 0,
+          "endSecondary": 10.2,
+          "endSecondaryShare": 1
+        },
+        {
+          "step": 7,
+          "resourcePulse": {
+            "primary": 4.1,
+            "secondary": 1.5
+          },
+          "primaryHarvest": 0,
+          "secondaryHarvest": 1.5,
+          "primarySpent": 0,
+          "secondarySpent": 2.2,
+          "endPrimary": 0,
+          "endSecondary": 9.5,
+          "endSecondaryShare": 1
+        },
+        {
+          "step": 8,
+          "resourcePulse": {
+            "primary": 1.1,
+            "secondary": 4.7
+          },
+          "primaryHarvest": 0,
+          "secondaryHarvest": 2.5,
+          "primarySpent": 0,
+          "secondarySpent": 2.2,
+          "endPrimary": 0,
+          "endSecondary": 9.8,
+          "endSecondaryShare": 1
+        }
+      ]
+    }
+  ],
+  "interpretation": {
+    "primarySpecialistRetainsLessSecondaryThanControl": true,
+    "secondarySpecialistRetainsMoreSecondaryThanControl": true,
+    "specialistSecondaryShareGap": 1,
+    "summary": "Primary specialists changed final secondary reserve share by -0.506 vs control, while secondary specialists changed final secondary reserve share by +0.494."
+  }
+}

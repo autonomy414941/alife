@@ -1,6 +1,6 @@
 import { Agent, AgentSeed } from './types';
 import { realizePhenotype } from './phenotype';
-import { resolveSpendingSecondaryPreference } from './behavioral-control';
+import { resolveCoupledSpendingSecondaryPreference } from './behavioral-control';
 
 type EnergyCarrier = Pick<Agent, 'energy' | 'energyPrimary' | 'energySecondary' | 'genomeV2' | 'policyState'>;
 
@@ -127,7 +127,7 @@ function resolveRawSpendSplit(
   current: AgentEnergyPools,
   spentTotal: number
 ): Pick<AgentEnergyPools, 'primary' | 'secondary'> {
-  const spendingSecondaryPreference = resolveSpendingSecondaryPreference(agent);
+  const spendingSecondaryPreference = resolveCoupledSpendingSecondaryPreference(agent);
   if (spendingSecondaryPreference === undefined) {
     const rawPrimarySpent = spentTotal * (current.primary / current.total);
     return {

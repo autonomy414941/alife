@@ -8,6 +8,7 @@ import {
   INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE,
   mutatePolicyParameters,
   normalizeSeedBehavioralState,
+  resolveCoupledSpendingSecondaryPreference,
   resolveHarvestSecondaryPreference,
   resolveSpendingSecondaryPreference,
   resolveBehavioralPolicyFlags,
@@ -394,6 +395,40 @@ describe('behavioral-control', () => {
         })
       ).toBe(0);
       expect(DEFAULT_SPENDING_SECONDARY_PREFERENCE).toBe(0.5);
+    });
+  });
+
+  describe('resolveCoupledSpendingSecondaryPreference', () => {
+    it('falls back to the explicit spending preference when no harvest preference is active', () => {
+      expect(
+        resolveCoupledSpendingSecondaryPreference({
+          policyState: new Map([[INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, 0.75]])
+        })
+      ).toBeCloseTo(0.75, 10);
+    });
+
+    it('uses the inverse harvest preference when no spending preference is active', () => {
+      expect(
+        resolveCoupledSpendingSecondaryPreference({
+          policyState: new Map([[INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 1]])
+        })
+      ).toBeCloseTo(0, 10);
+      expect(
+        resolveCoupledSpendingSecondaryPreference({
+          policyState: new Map([[INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0]])
+        })
+      ).toBeCloseTo(1, 10);
+    });
+
+    it('blends explicit spending preference with harvest-driven reserve preservation', () => {
+      expect(
+        resolveCoupledSpendingSecondaryPreference({
+          policyState: new Map([
+            [INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 1],
+            [INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE, 0.6]
+          ])
+        })
+      ).toBeCloseTo(0.3, 10);
     });
   });
 

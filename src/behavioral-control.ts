@@ -205,7 +205,52 @@ export function resolveHarvestSecondaryPreference(
   agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 },
   primaryAvailable?: number
 ): number | undefined {
-  const basePreference = getBaseHarvestSecondaryPreference(agent);
+  return resolveHarvestSecondaryPreferenceFromBasePreference(
+    agent,
+    getBaseHarvestSecondaryPreference(agent),
+    primaryAvailable
+  );
+}
+
+function getBaseHarvestSecondaryPreference(
+  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
+): number | undefined {
+  return realizePhenotype(agent).harvestSecondaryPreference;
+}
+
+export function resolveSpendingSecondaryPreference(
+  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
+): number | undefined {
+  return realizePhenotype(agent).spendingSecondaryPreference;
+}
+
+export function resolveCoupledSpendingSecondaryPreference(
+  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
+): number | undefined {
+  const phenotype = realizePhenotype(agent);
+  const spendingPreference = phenotype.spendingSecondaryPreference;
+  const harvestPreference = resolveHarvestSecondaryPreferenceFromBasePreference(
+    agent,
+    phenotype.harvestSecondaryPreference
+  );
+
+  if (harvestPreference === undefined) {
+    return spendingPreference;
+  }
+
+  const reservePreservationPreference = 1 - harvestPreference;
+  if (spendingPreference === undefined) {
+    return reservePreservationPreference;
+  }
+
+  return (spendingPreference + reservePreservationPreference) / 2;
+}
+
+function resolveHarvestSecondaryPreferenceFromBasePreference(
+  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 },
+  basePreference: number | undefined,
+  primaryAvailable?: number
+): number | undefined {
   if (basePreference === undefined) {
     return undefined;
   }
@@ -231,18 +276,6 @@ export function resolveHarvestSecondaryPreference(
     steepness,
     basePreference
   );
-}
-
-function getBaseHarvestSecondaryPreference(
-  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
-): number | undefined {
-  return realizePhenotype(agent).harvestSecondaryPreference;
-}
-
-export function resolveSpendingSecondaryPreference(
-  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
-): number | undefined {
-  return realizePhenotype(agent).spendingSecondaryPreference;
 }
 
 export function resolveBehavioralPolicyFlags(

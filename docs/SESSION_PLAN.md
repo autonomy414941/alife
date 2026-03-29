@@ -26,6 +26,7 @@ Underexplored axes: Ecological asymmetry, Policy-payoff coupling, Causal attribu
 ## Project State
 - The repo now has the minimum infrastructure needed to test `GenomeV2` policy loci in live ecology: shared phenotype decoding, asymmetric two-resource dynamics, genome-wide trait metrics, and phenotype-diversity summaries
 - Recent sessions moved from expression repairs and observability into a first phenotype-aware ecological-neutrality check for graded policy mutation
+- Harvest and spending policy are now coupled through a shared substrate-management signal: harvest preference can steer reserve burn when no separate spending locus is present, and a bounded March 29 pilot records full specialist reserve-share separation under an asymmetric pulse schedule
 - The important gap is no longer whether policy traits exist or are readable; it is whether they change ecological payoffs enough to matter, and whether the simulator can explain any resulting diversification signal mechanistically
 
 ## External Context
