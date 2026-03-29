@@ -8,6 +8,8 @@ export interface DualResourceHarvestResult {
   secondaryShare: number;
 }
 
+const HARVEST_POLICY_PAYOFF_BONUS = 0.25;
+
 export function secondaryHarvestEfficiency(genome: Genome): number {
   return Math.max(0, genome.harvestEfficiency2 ?? 0);
 }
@@ -47,6 +49,26 @@ export function combinedResourceAvailability(
 ): number {
   const { primaryShare, secondaryShare } = resolveResourceHarvestShares(genome, secondaryPreferenceShare);
   return Math.max(0, primaryAvailable) * primaryShare + Math.max(0, secondaryAvailable) * secondaryShare;
+}
+
+export function resolveHarvestPolicyPayoffMultiplier(
+  primaryAvailable: number,
+  secondaryAvailable: number,
+  secondaryPreferenceShare?: number
+): number {
+  if (secondaryPreferenceShare === undefined) {
+    return 1;
+  }
+
+  const totalAvailable = Math.max(0, primaryAvailable) + Math.max(0, secondaryAvailable);
+  if (totalAvailable <= 0) {
+    return 1;
+  }
+
+  const secondaryAvailabilityShare = clamp(Math.max(0, secondaryAvailable) / totalAvailable, 0, 1);
+  const secondaryPreferenceOffset = clamp(secondaryPreferenceShare, 0, 1) - 0.5;
+  const availabilityOffset = secondaryAvailabilityShare - 0.5;
+  return 1 + HARVEST_POLICY_PAYOFF_BONUS * 4 * secondaryPreferenceOffset * availabilityOffset;
 }
 
 export function resolveDualResourceHarvest({

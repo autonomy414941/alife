@@ -10,6 +10,7 @@ import {
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST_STEEPNESS
 } from '../src/behavioral-control';
 import { EncounterOperator } from '../src/encounter';
+import { createGenomeV2, setTrait } from '../src/genome-v2';
 import { shouldFoundNewClade } from '../src/settlement-cladogenesis';
 import { LifeSimulation } from '../src/simulation';
 
@@ -200,6 +201,61 @@ describe('LifeSimulation', () => {
     expect(agent.energySecondary).toBeCloseTo(2, 10);
     expect(summary.policyObservability?.activation.harvestPolicyAgentFraction).toBeCloseTo(1, 10);
     expect(summary.policyObservability?.activation.harvestDecisionGuidedFraction).toBeCloseTo(1, 10);
+  });
+
+  it('changes harvest intake for matched morphology when harvest policy matches local composition', () => {
+    const primaryBiasedGenomeV2 = createGenomeV2();
+    setTrait(primaryBiasedGenomeV2, 'harvest_secondary_preference', 0);
+
+    const secondaryBiasedGenomeV2 = createGenomeV2();
+    setTrait(secondaryBiasedGenomeV2, 'harvest_secondary_preference', 1);
+
+    const createSimulation = (genomeV2: ReturnType<typeof createGenomeV2>) =>
+      new LifeSimulation({
+        seed: 103,
+        config: {
+          width: 1,
+          height: 1,
+          maxResource: 10,
+          maxResource2: 10,
+          resourceRegen: 0,
+          resource2Regen: 0,
+          habitatPreferenceStrength: 0,
+          trophicForagingPenalty: 0,
+          defenseForagingPenalty: 0,
+          metabolismCostBase: 0,
+          moveCost: 0,
+          harvestCap: 2,
+          reproduceProbability: 0,
+          maxAge: 100
+        },
+        initialAgents: [
+          {
+            x: 0,
+            y: 0,
+            energy: 1,
+            genome: { metabolism: 1, harvest: 1, aggression: 0.5, harvestEfficiency2: 1 },
+            genomeV2
+          }
+        ]
+      });
+
+    const primaryBiased = createSimulation(primaryBiasedGenomeV2);
+    primaryBiased.setResource(0, 0, 10);
+    primaryBiased.setResource2(0, 0, 4);
+    primaryBiased.step();
+
+    const secondaryBiased = createSimulation(secondaryBiasedGenomeV2);
+    secondaryBiased.setResource(0, 0, 10);
+    secondaryBiased.setResource2(0, 0, 4);
+    secondaryBiased.step();
+
+    const primaryAgent = primaryBiased.snapshot().agents[0]!;
+    const secondaryAgent = secondaryBiased.snapshot().agents[0]!;
+
+    expect(primaryAgent.energy).toBeCloseTo(3.2142857143, 10);
+    expect(secondaryAgent.energy).toBeCloseTo(2.7857142857, 10);
+    expect(primaryAgent.energy).toBeGreaterThan(secondaryAgent.energy);
   });
 
   it('splits legacy internal state seeds into policy and transient state', () => {

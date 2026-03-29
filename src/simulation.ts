@@ -70,6 +70,7 @@ import {
 } from './encounter';
 import {
   resolveDualResourceHarvest,
+  resolveHarvestPolicyPayoffMultiplier,
   resolveResourceHarvestShares
 } from './resource-harvest';
 import {
@@ -1537,7 +1538,8 @@ export class LifeSimulation {
         habitatEfficiency *
         trophicEfficiency *
         defenseEfficiency *
-        lineageCrowdingEfficiency
+        lineageCrowdingEfficiency *
+        resolveHarvestPolicyPayoffMultiplier(available, available2, harvestSecondaryPreference)
     });
     policyDecisionStats.harvestDecisions += 1;
     policyDecisionStats.harvestPolicyGuided += Number(
