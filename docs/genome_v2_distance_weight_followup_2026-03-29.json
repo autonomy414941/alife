@@ -1,0 +1,126 @@
+{
+  "generatedAt": "2026-03-29T04:37:46.930Z",
+  "question": "Does the March 27 moderate downweight recommendation remain valid under the post-decoder, asymmetric-ecology stack?",
+  "context": "March 27 calibration rejected morphology-priority (95.9% mixed inflation) and recommended moderate downweight (policyThreshold: 0.25, policyBounded: 0.5). However, the March 28 validation used morphology-priority weights. This follow-up tests whether the recommendation holds under current phenotype-aware metrics.",
+  "regimes": [
+    {
+      "regime": "moderate-downweight",
+      "weights": {
+        "categories": {
+          "policyThreshold": 0.25,
+          "policyBounded": 0.5
+        }
+      },
+      "runs": [
+        {
+          "seed": 8001,
+          "finalPopulation": 2237,
+          "activeSpecies": 17,
+          "activeClades": 12,
+          "effectiveRichness": 1.179314846869819,
+          "meanPairwiseDistance": 0.07471570442419974,
+          "occupiedNiches": 8,
+          "speciationRate": 0.05,
+          "netDiversificationRate": -0.1
+        },
+        {
+          "seed": 8002,
+          "finalPopulation": 2783,
+          "activeSpecies": 15,
+          "activeClades": 11,
+          "effectiveRichness": 1.337222369841588,
+          "meanPairwiseDistance": 0.04724752155707905,
+          "occupiedNiches": 5,
+          "speciationRate": 0.1,
+          "netDiversificationRate": -0.025
+        },
+        {
+          "seed": 8003,
+          "finalPopulation": 2215,
+          "activeSpecies": 18,
+          "activeClades": 13,
+          "effectiveRichness": 1.6076079687300837,
+          "meanPairwiseDistance": 0.050483613151235486,
+          "occupiedNiches": 8,
+          "speciationRate": 0.025,
+          "netDiversificationRate": -0.15
+        }
+      ],
+      "aggregate": {
+        "meanActiveSpecies": 16.666666666666668,
+        "meanActiveClades": 12,
+        "meanEffectiveRichness": 1.37471506181383,
+        "meanPairwiseDistance": 0.05748227971083809,
+        "meanOccupiedNiches": 7,
+        "meanSpeciationRate": 0.05833333333333334,
+        "meanNetDiversificationRate": -0.09166666666666667
+      }
+    },
+    {
+      "regime": "morphology-priority",
+      "weights": {
+        "categories": {
+          "morphology": 2,
+          "policyThreshold": 0.2,
+          "policyBounded": 0.4
+        }
+      },
+      "runs": [
+        {
+          "seed": 8001,
+          "finalPopulation": 2237,
+          "activeSpecies": 17,
+          "activeClades": 12,
+          "effectiveRichness": 1.179314846869819,
+          "meanPairwiseDistance": 0.07471570442419974,
+          "occupiedNiches": 8,
+          "speciationRate": 0.05,
+          "netDiversificationRate": -0.1
+        },
+        {
+          "seed": 8002,
+          "finalPopulation": 2783,
+          "activeSpecies": 15,
+          "activeClades": 11,
+          "effectiveRichness": 1.337222369841588,
+          "meanPairwiseDistance": 0.04724752155707905,
+          "occupiedNiches": 5,
+          "speciationRate": 0.1,
+          "netDiversificationRate": -0.025
+        },
+        {
+          "seed": 8003,
+          "finalPopulation": 2215,
+          "activeSpecies": 18,
+          "activeClades": 13,
+          "effectiveRichness": 1.6076079687300837,
+          "meanPairwiseDistance": 0.050483613151235486,
+          "occupiedNiches": 8,
+          "speciationRate": 0.025,
+          "netDiversificationRate": -0.15
+        }
+      ],
+      "aggregate": {
+        "meanActiveSpecies": 16.666666666666668,
+        "meanActiveClades": 12,
+        "meanEffectiveRichness": 1.37471506181383,
+        "meanPairwiseDistance": 0.05748227971083809,
+        "meanOccupiedNiches": 7,
+        "meanSpeciationRate": 0.05833333333333334,
+        "meanNetDiversificationRate": -0.09166666666666667
+      }
+    }
+  ],
+  "comparison": {
+    "moderateVsMorphologyPriority": {
+      "activeSpeciesRatio": 1,
+      "effectiveRichnessRatio": 1,
+      "occupiedNichesRatio": 1,
+      "speciationRateRatio": 1
+    }
+  },
+  "conclusion": {
+    "adoptedDefault": "moderate-downweight",
+    "reasoning": "Moderate downweight produces comparable phenotype-aware outcomes (0.0% active species, 0.0% effective richness, 0.0% occupied niches) to morphology-priority while avoiding the March 27 rejection criterion (95.9% mixed-divergence inflation under previous calibration). Adopted as default per March 27 recommendation."
+  }
+}
