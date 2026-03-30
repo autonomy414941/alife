@@ -8,6 +8,7 @@ import {
 } from './simulation-history';
 import {
   Agent,
+  DescentEdge,
   DurationStats,
   EvolutionHistorySnapshot,
   SpeciesTurnoverAnalytics,
@@ -16,6 +17,8 @@ import {
 } from './types';
 
 type FounderContextAgent = Pick<Agent, 'lineage' | 'species' | 'x' | 'y'>;
+type DeadHistoryAgent = FounderContextAgent & Pick<Agent, 'id' | 'age'>;
+type LiveHistoryAgent = FounderContextAgent & Pick<Agent, 'id'>;
 
 interface HistorySamplingContext {
   tick: number;
@@ -26,16 +29,24 @@ interface HistorySamplingContext {
 
 interface HistoryStepInput extends Partial<HistorySamplingContext> {
   tick: number;
-  agents: ReadonlyArray<FounderContextAgent>;
-  offspring: ReadonlyArray<FounderContextAgent>;
-  deadAgents: ReadonlyArray<FounderContextAgent>;
+  agents: ReadonlyArray<LiveHistoryAgent>;
+  offspring: ReadonlyArray<LiveHistoryAgent>;
+  deadAgents: ReadonlyArray<DeadHistoryAgent>;
+  birthsByParentId?: ReadonlyMap<number, number>;
+  descentEdges?: ReadonlyArray<DescentEdge>;
   founderOccupancy?: number[][];
 }
+
+const MAX_DESCENT_EDGES = 2048;
 
 export class SimulationEvolutionHistory {
   private readonly cladeHistory = new Map<number, TaxonHistoryState>();
 
   private readonly speciesHistory = new Map<number, TaxonHistoryState>();
+
+  private readonly descentEdges: DescentEdge[] = [];
+
+  private readonly descentEdgeByOffspringId = new Map<number, DescentEdge>();
 
   private extinctClades = 0;
 
@@ -47,6 +58,10 @@ export class SimulationEvolutionHistory {
   }
 
   recordStep(input: HistoryStepInput): { cladeExtinctionDelta: number; speciesExtinctionDelta: number } {
+    this.recordDescentEdges(input.descentEdges ?? []);
+    this.recordDescendantBirths(input.birthsByParentId);
+    this.recordDescendantDeaths(input.deadAgents, input.tick);
+
     const cladeExtinctionDelta = updateTaxonHistory(
       this.cladeHistory,
       input.tick,
@@ -89,7 +104,13 @@ export class SimulationEvolutionHistory {
       clades: exportTaxonHistory(this.cladeHistory),
       species: exportTaxonHistory(this.speciesHistory),
       extinctClades: this.extinctClades,
-      extinctSpecies: this.extinctSpecies
+      extinctSpecies: this.extinctSpecies,
+      descentEdges: this.descentEdges.map((edge) => ({
+        ...edge,
+        phenotypeDelta: edge.phenotypeDelta.map((entry) => ({ ...entry })),
+        reproduction: { ...edge.reproduction },
+        settlement: { ...edge.settlement }
+      }))
     };
   }
 
@@ -125,6 +146,52 @@ export class SimulationEvolutionHistory {
 
   getExtinctSpecies(): number {
     return this.extinctSpecies;
+  }
+
+  private recordDescentEdges(edges: ReadonlyArray<DescentEdge>): void {
+    for (const edge of edges) {
+      const copy: DescentEdge = {
+        ...edge,
+        phenotypeDelta: edge.phenotypeDelta.map((entry) => ({ ...entry })),
+        reproduction: { ...edge.reproduction },
+        settlement: { ...edge.settlement }
+      };
+      this.descentEdges.push(copy);
+      this.descentEdgeByOffspringId.set(copy.offspringId, copy);
+      while (this.descentEdges.length > MAX_DESCENT_EDGES) {
+        const removed = this.descentEdges.shift();
+        if (removed) {
+          this.descentEdgeByOffspringId.delete(removed.offspringId);
+        }
+      }
+    }
+  }
+
+  private recordDescendantBirths(birthsByParentId: ReadonlyMap<number, number> | undefined): void {
+    if (!birthsByParentId) {
+      return;
+    }
+
+    for (const [parentId, births] of birthsByParentId) {
+      if (births <= 0) {
+        continue;
+      }
+      const edge = this.descentEdgeByOffspringId.get(parentId);
+      if (edge) {
+        edge.offspringProduced += births;
+      }
+    }
+  }
+
+  private recordDescendantDeaths(deadAgents: ReadonlyArray<DeadHistoryAgent>, tick: number): void {
+    for (const agent of deadAgents) {
+      const edge = this.descentEdgeByOffspringId.get(agent.id);
+      if (!edge || edge.offspringDeathTick !== null) {
+        continue;
+      }
+      edge.offspringDeathTick = tick;
+      edge.offspringAgeAtDeath = agent.age;
+    }
   }
 }
 

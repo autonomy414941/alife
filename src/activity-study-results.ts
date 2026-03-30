@@ -238,7 +238,19 @@ export function truncateEvolutionHistory(history: EvolutionHistorySnapshot, maxT
     species: truncateTaxonHistory(history.species, maxTick),
     extinctClades: history.clades.filter((clade) => clade.extinctTick !== null && clade.extinctTick <= maxTick).length,
     extinctSpecies: history.species.filter((species) => species.extinctTick !== null && species.extinctTick <= maxTick)
-      .length
+      .length,
+    descentEdges: history.descentEdges
+      ?.filter((edge) => edge.tick <= maxTick)
+      .map((edge) => ({
+        ...edge,
+        phenotypeDelta: edge.phenotypeDelta.map((entry) => ({ ...entry })),
+        reproduction: { ...edge.reproduction },
+        settlement: { ...edge.settlement },
+        offspringDeathTick:
+          edge.offspringDeathTick !== null && edge.offspringDeathTick <= maxTick ? edge.offspringDeathTick : null,
+        offspringAgeAtDeath:
+          edge.offspringDeathTick !== null && edge.offspringDeathTick <= maxTick ? edge.offspringAgeAtDeath : null
+      }))
   };
 }
 

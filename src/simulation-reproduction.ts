@@ -13,6 +13,7 @@ import {
 import { disturbanceSettlementOpenUntilTickAt, resolveDisturbanceSettlementOpeningConfig } from './disturbance';
 import { mutateGenomeV2WithConfig } from './genome-v2-adapter';
 import { getTrait, genomeV2Distance, toGenome } from './genome-v2';
+import { realizePhenotype } from './phenotype';
 import {
   LineageOccupancyGrid,
   OffspringSettlementContext,
@@ -33,8 +34,9 @@ import {
   usesOffspringSettlementContext,
   usesOffspringSettlementLineageOccupancy
 } from './settlement-cladogenesis';
+import { neighborhoodCrowding } from './settlement-spatial';
 import { secondaryHarvestEfficiency } from './resource-harvest';
-import { Agent, Genome, GenomeV2, SimulationConfig } from './types';
+import { Agent, DescentEdge, Genome, GenomeV2, PhenotypeDeltaEntry, SimulationConfig } from './types';
 
 type LocalEcologyScore = (
   agent: SettlementAgent,
@@ -65,23 +67,8 @@ interface RunReproductionPhaseOptions {
     parent: Agent,
     occupancy?: number[][],
     lineageOccupancy?: LineageOccupancyGrid
-  ) => Agent;
-  recordReproduction?: (
-    parent: Agent,
-    offspring: Agent,
-    policyGated: boolean,
-    localFertility: number,
-    localCrowding: number,
-    speciationOccurred: boolean
-  ) => void;
-  recordSettlement?: (
-    offspring: Agent,
-    parentSpecies: number,
-    settled: boolean,
-    localFertility: number,
-    localCrowding: number,
-    sameLineageCrowding: number
-  ) => void;
+  ) => ReproductionOutcome;
+  recordDescent?: (edge: DescentEdge) => void;
 }
 
 interface RunReproductionPhaseResult {
@@ -98,6 +85,23 @@ interface ReproductionDecisionStats {
   harvestThresholdPolicyActive: number;
   suppressedByHarvestThreshold: number;
   harvestThresholdNearThreshold: number;
+}
+
+interface ReproductionObservability {
+  tick: number;
+  parentId: number;
+  parentLineage: number;
+  parentSpecies: number;
+  parentX: number;
+  parentY: number;
+  phenotypeDelta: PhenotypeDeltaEntry[];
+  reproduction: DescentEdge['reproduction'];
+  settlement: DescentEdge['settlement'];
+}
+
+export interface ReproductionOutcome {
+  offspring: Agent;
+  observability: ReproductionObservability;
 }
 
 interface ReproduceAgentOptions {
@@ -124,6 +128,7 @@ interface ReproduceAgentOptions {
   wrapY: (y: number) => number;
   pickRandomNeighbor: (neighbors: SettlementPosition[]) => SettlementPosition;
   localEcologyScore: LocalEcologyScore;
+  neighborhoodCrowdingAt: (x: number, y: number, occupancy: number[][]) => number;
   disturbanceSettlementOpenUntilTick: number[][];
   sameLineageNeighborhoodCrowdingAt: (
     lineage: number,
@@ -236,7 +241,8 @@ export function runReproductionPhase({
   buildOccupancyGrid,
   buildLineageOccupancyGrid,
   adjustLineageOccupancy,
-  reproduce
+  reproduce,
+  recordDescent
 }: RunReproductionPhaseOptions): RunReproductionPhaseResult {
   const useSettlementContext = usesOffspringSettlementContext(config) || usesCladogenesisEcologyGate(config);
   const reproductiveAgents = useSettlementContext ? agents.filter((agent) => agent.energy > 0) : undefined;
@@ -273,9 +279,30 @@ export function runReproductionPhase({
       continue;
     }
 
-    const child = reproduce(agent, reproductionOccupancy, reproductionLineageOccupancy);
+    const reproductionOutcome = reproduce(agent, reproductionOccupancy, reproductionLineageOccupancy);
+    const child = reproductionOutcome.offspring;
     offspring.push(child);
     birthsByParentId.set(agent.id, (birthsByParentId.get(agent.id) ?? 0) + 1);
+    recordDescent?.({
+      tick: reproductionOutcome.observability.tick,
+      parentId: reproductionOutcome.observability.parentId,
+      parentLineage: reproductionOutcome.observability.parentLineage,
+      parentSpecies: reproductionOutcome.observability.parentSpecies,
+      parentX: reproductionOutcome.observability.parentX,
+      parentY: reproductionOutcome.observability.parentY,
+      offspringId: child.id,
+      offspringLineage: child.lineage,
+      offspringSpecies: child.species,
+      phenotypeDelta: reproductionOutcome.observability.phenotypeDelta,
+      reproduction: {
+        ...reproductionOutcome.observability.reproduction,
+        policyGated: reproductionDecision.policyGated
+      },
+      settlement: reproductionOutcome.observability.settlement,
+      offspringProduced: 0,
+      offspringDeathTick: null,
+      offspringAgeAtDeath: null
+    });
     if (reproductionOccupancy) {
       reproductionOccupancy[child.y][child.x] += 1;
     }
@@ -317,6 +344,7 @@ export function reproduceAgent({
   wrapY,
   pickRandomNeighbor,
   localEcologyScore,
+  neighborhoodCrowdingAt,
   disturbanceSettlementOpenUntilTick,
   sameLineageNeighborhoodCrowdingAt,
   effectiveBiomeFertilityAt,
@@ -327,7 +355,7 @@ export function reproduceAgent({
   getCladeTrophicLevel,
   getSpeciesDefenseLevel,
   getCladeDefenseLevel
-}: ReproduceAgentOptions): Agent {
+}: ReproduceAgentOptions): ReproductionOutcome {
   const currentStepTick = tickCount + 1;
   const childEnergy = parent.energy * config.offspringEnergyFraction;
   const childPools = spendAgentEnergy(parent, childEnergy);
@@ -448,8 +476,7 @@ export function reproduceAgent({
         }
       : undefined;
   const childBehavioralState = inheritBehavioralState(parent, policyMutationOptions);
-
-  return {
+  const offspring: Agent = {
     id: allocateAgentId(),
     lineage: nextLineage,
     species: childSpecies,
@@ -463,6 +490,53 @@ export function reproduceAgent({
     genomeV2: childGenomeV2,
     policyState: childBehavioralState.policyState,
     transientState: childBehavioralState.transientState
+  };
+  const settlementOccupancy = settlementContext?.occupancy ?? occupancy ?? buildOccupancyGrid(agents);
+  const settlementLineageOccupancy =
+    settlementContext?.lineageOccupancy ??
+    lineageOccupancy ??
+    (usesOffspringSettlementLineageOccupancy(config) ? buildLineageOccupancyGrid(agents) : undefined);
+  const localFertility = effectiveBiomeFertilityAt(childPos.x, childPos.y, currentStepTick);
+  const localCrowding = neighborhoodCrowdingAt(childPos.x, childPos.y, settlementOccupancy);
+  const sameLineageCrowding = settlementLineageOccupancy
+    ? sameLineageNeighborhoodCrowdingAt(
+        parent.lineage,
+        childPos.x,
+        childPos.y,
+        settlementLineageOccupancy,
+        childPos.x === parent.x && childPos.y === parent.y ? undefined : { x: parent.x, y: parent.y }
+      )
+    : 0;
+
+  return {
+    offspring,
+    observability: {
+      tick: currentStepTick,
+      parentId: parent.id,
+      parentLineage: parent.lineage,
+      parentSpecies: parent.species,
+      parentX: parent.x,
+      parentY: parent.y,
+      phenotypeDelta: buildPhenotypeDelta(parent, offspring),
+      reproduction: {
+        localFertility,
+        localCrowding,
+        policyGated: false,
+        speciationOccurred: diverged,
+        foundedNewClade: foundNewClade,
+        parentEnergy: parent.energy,
+        offspringEnergy: childEnergy
+      },
+      settlement: {
+        x: childPos.x,
+        y: childPos.y,
+        localFertility,
+        localCrowding,
+        sameLineageCrowding,
+        settled: true,
+        movedFromParentCell: childPos.x !== parent.x || childPos.y !== parent.y
+      }
+    }
   };
 }
 
@@ -531,6 +605,33 @@ function isGenomeV2(genome: Genome | GenomeV2): genome is GenomeV2 {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function buildPhenotypeDelta(
+  parent: Pick<Agent, 'genomeV2' | 'policyState'>,
+  offspring: Pick<Agent, 'genomeV2' | 'policyState'>
+): PhenotypeDeltaEntry[] {
+  const parentPhenotype = realizePhenotype(parent);
+  const offspringPhenotype = realizePhenotype(offspring);
+  const traits = new Set([...Object.keys(parentPhenotype), ...Object.keys(offspringPhenotype)]);
+  const delta: PhenotypeDeltaEntry[] = [];
+
+  for (const trait of traits) {
+    const parentValue = parentPhenotype[trait as keyof typeof parentPhenotype] ?? null;
+    const offspringValue = offspringPhenotype[trait as keyof typeof offspringPhenotype] ?? null;
+    if (parentValue === offspringValue) {
+      continue;
+    }
+
+    delta.push({
+      trait,
+      parentValue,
+      offspringValue,
+      delta: (offspringValue ?? 0) - (parentValue ?? 0)
+    });
+  }
+
+  return delta;
 }
 
 function disturbanceSettlementOpeningBonusAt({

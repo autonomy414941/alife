@@ -113,6 +113,7 @@ import {
   Agent,
   AgentSeed,
   DisturbanceAnalytics,
+  DescentEdge,
   EvolutionAnalyticsSnapshot,
   ForcingAnalytics,
   EvolutionHistorySnapshot,
@@ -380,6 +381,7 @@ export class LifeSimulation {
     const lineageOccupancy = this.usesAdultLineageOccupancy()
       ? buildLineageOccupancyGrid(this.config.width, this.config.height, this.agents)
       : undefined;
+    const descentEdges: DescentEdge[] = [];
     const policyFitnessByAgentId = this.initializePolicyFitnessTracking(nextTick, occupancy);
     const turnOrder = this.rng.shuffle([...this.agents]);
     for (const agent of turnOrder) {
@@ -416,7 +418,56 @@ export class LifeSimulation {
           y,
           delta
         }),
-      reproduce: (parent, occupancy, lineageOccupancy) => this.reproduce(parent, occupancy, lineageOccupancy)
+      reproduce: (parent, occupancy, lineageOccupancy) => this.reproduce(parent, occupancy, lineageOccupancy),
+      recordDescent: (edge) => {
+        descentEdges.push(edge);
+        this.causalTraceCollector.recordEvent(
+          {
+            type: 'reproduction',
+            tick: edge.tick,
+            parentId: edge.parentId,
+            parentLineage: edge.parentLineage,
+            parentSpecies: edge.parentSpecies,
+            parentX: edge.parentX,
+            parentY: edge.parentY,
+            offspringId: edge.offspringId,
+            offspringLineage: edge.offspringLineage,
+            offspringSpecies: edge.offspringSpecies,
+            x: edge.settlement.x,
+            y: edge.settlement.y,
+            parentEnergy: edge.reproduction.parentEnergy,
+            offspringEnergy: edge.reproduction.offspringEnergy,
+            policyGated: edge.reproduction.policyGated,
+            localFertility: edge.reproduction.localFertility,
+            localCrowding: edge.reproduction.localCrowding,
+            speciationOccurred: edge.reproduction.speciationOccurred,
+            foundedNewClade: edge.reproduction.foundedNewClade,
+            phenotypeDelta: edge.phenotypeDelta
+          },
+          () => this.rng.float()
+        );
+        this.causalTraceCollector.recordEvent(
+          {
+            type: 'settlement',
+            tick: edge.tick,
+            parentId: edge.parentId,
+            parentLineage: edge.parentLineage,
+            offspringId: edge.offspringId,
+            offspringLineage: edge.offspringLineage,
+            offspringSpecies: edge.offspringSpecies,
+            phenotypeDelta: edge.phenotypeDelta,
+            parentSpecies: edge.parentSpecies,
+            x: edge.settlement.x,
+            y: edge.settlement.y,
+            settled: edge.settlement.settled,
+            movedFromParentCell: edge.settlement.movedFromParentCell,
+            localFertility: edge.settlement.localFertility,
+            localCrowding: edge.settlement.localCrowding,
+            sameLineageCrowding: edge.settlement.sameLineageCrowding
+          },
+          () => this.rng.float()
+        );
+      }
       });
     policyDecisionStats.reproduction.decisions = reproductionDecisionStats.evaluated;
     policyDecisionStats.reproduction.policyGated = reproductionDecisionStats.policyGated;
@@ -469,6 +520,8 @@ export class LifeSimulation {
       agents: this.agents,
       offspring,
       deadAgents,
+      birthsByParentId,
+      descentEdges,
       founderOccupancy,
       effectiveBiomeFertilityAt: (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
       neighborhoodCrowdingAt: (x, y, occupancy) =>
@@ -1957,7 +2010,7 @@ export class LifeSimulation {
     parent: Agent,
     occupancy?: number[][],
     lineageOccupancy?: LineageOccupancyGrid
-  ): Agent {
+  ) {
     return reproduceInSimulation({
       parent,
       agents: this.agents,

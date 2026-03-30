@@ -14,7 +14,7 @@ import {
   trophicLevelTraitWithFallback
 } from './interaction-traits';
 import { LineageOccupancyGrid, SettlementAgent, SettlementPosition } from './reproduction';
-import { reproduceAgent } from './simulation-reproduction';
+import { ReproductionOutcome, reproduceAgent } from './simulation-reproduction';
 import { resolveSettlementEcologyScore } from './settlement-cladogenesis';
 import {
   buildLineageOccupancyGrid,
@@ -89,7 +89,7 @@ export function reproduceInSimulation({
   cellIndex,
   pickRandomNeighbor,
   effectiveBiomeFertilityAt
-}: ReproduceInSimulationOptions): Agent {
+}: ReproduceInSimulationOptions): ReproductionOutcome {
   return reproduceAgent({
     parent,
     agents,
@@ -136,6 +136,15 @@ export function reproduceInSimulation({
         wrapX,
         wrapY,
         cellIndex
+      }),
+    neighborhoodCrowdingAt: (x, y, nextOccupancy) =>
+      neighborhoodCrowding({
+        x,
+        y,
+        occupancy: nextOccupancy,
+        dispersalRadius,
+        wrapX,
+        wrapY
       }),
     disturbanceSettlementOpenUntilTick,
     sameLineageNeighborhoodCrowdingAt: (lineage, x, y, nextLineageOccupancy, excludedPosition) =>

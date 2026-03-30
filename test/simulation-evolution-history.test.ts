@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { SimulationEvolutionHistory } from '../src/simulation-evolution-history';
 
 type HistoryAgent = {
+  id: number;
   lineage: number;
   species: number;
   x: number;
   y: number;
+  age?: number;
 };
 
 describe('SimulationEvolutionHistory', () => {
@@ -16,8 +18,8 @@ describe('SimulationEvolutionHistory', () => {
 
     history.initialize(
       [
-        { lineage: 1, species: 1, x: 0, y: 0 },
-        { lineage: 1, species: 1, x: 1, y: 0 }
+        { id: 1, lineage: 1, species: 1, x: 0, y: 0 },
+        { id: 2, lineage: 1, species: 1, x: 1, y: 0 }
       ],
       {
         tick: 0,
@@ -30,11 +32,54 @@ describe('SimulationEvolutionHistory', () => {
     const firstStep = history.recordStep({
       tick: 1,
       agents: [
-        { lineage: 1, species: 1, x: 1, y: 0 },
-        { lineage: 2, species: 2, x: 0, y: 0 }
+        { id: 2, lineage: 1, species: 1, x: 1, y: 0 },
+        { id: 3, lineage: 2, species: 2, x: 0, y: 0 }
       ],
-      offspring: [{ lineage: 2, species: 2, x: 0, y: 0 }],
-      deadAgents: [{ lineage: 1, species: 1, x: 0, y: 0 }],
+      offspring: [{ id: 3, lineage: 2, species: 2, x: 0, y: 0 }],
+      deadAgents: [{ id: 1, age: 3, lineage: 1, species: 1, x: 0, y: 0 }],
+      birthsByParentId: new Map([[3, 1]]),
+      descentEdges: [
+        {
+          tick: 1,
+          parentId: 1,
+          parentLineage: 1,
+          parentSpecies: 1,
+          parentX: 0,
+          parentY: 0,
+          offspringId: 3,
+          offspringLineage: 2,
+          offspringSpecies: 2,
+          phenotypeDelta: [
+            {
+              trait: 'reproduction_harvest_threshold',
+              parentValue: 0.3,
+              offspringValue: 0.5,
+              delta: 0.2
+            }
+          ],
+          reproduction: {
+            localFertility: 2,
+            localCrowding: 2,
+            policyGated: false,
+            speciationOccurred: true,
+            foundedNewClade: true,
+            parentEnergy: 10,
+            offspringEnergy: 5
+          },
+          settlement: {
+            x: 0,
+            y: 0,
+            localFertility: 2,
+            localCrowding: 2,
+            sameLineageCrowding: 0,
+            settled: true,
+            movedFromParentCell: false
+          },
+          offspringProduced: 0,
+          offspringDeathTick: null,
+          offspringAgeAtDeath: null
+        }
+      ],
       founderOccupancy: [[2]],
       effectiveBiomeFertilityAt: habitatAt,
       neighborhoodCrowdingAt: crowdingAt
@@ -44,8 +89,8 @@ describe('SimulationEvolutionHistory', () => {
       agents: [],
       offspring: [],
       deadAgents: [
-        { lineage: 1, species: 1, x: 1, y: 0 },
-        { lineage: 2, species: 2, x: 0, y: 0 }
+        { id: 2, age: 4, lineage: 1, species: 1, x: 1, y: 0 },
+        { id: 3, age: 1, lineage: 2, species: 2, x: 0, y: 0 }
       ]
     });
 
@@ -138,7 +183,49 @@ describe('SimulationEvolutionHistory', () => {
         }
       ],
       extinctClades: 2,
-      extinctSpecies: 2
+      extinctSpecies: 2,
+      descentEdges: [
+        {
+          tick: 1,
+          parentId: 1,
+          parentLineage: 1,
+          parentSpecies: 1,
+          parentX: 0,
+          parentY: 0,
+          offspringId: 3,
+          offspringLineage: 2,
+          offspringSpecies: 2,
+          phenotypeDelta: [
+            {
+              trait: 'reproduction_harvest_threshold',
+              parentValue: 0.3,
+              offspringValue: 0.5,
+              delta: 0.2
+            }
+          ],
+          reproduction: {
+            localFertility: 2,
+            localCrowding: 2,
+            policyGated: false,
+            speciationOccurred: true,
+            foundedNewClade: true,
+            parentEnergy: 10,
+            offspringEnergy: 5
+          },
+          settlement: {
+            x: 0,
+            y: 0,
+            localFertility: 2,
+            localCrowding: 2,
+            sameLineageCrowding: 0,
+            settled: true,
+            movedFromParentCell: false
+          },
+          offspringProduced: 1,
+          offspringDeathTick: 2,
+          offspringAgeAtDeath: 1
+        }
+      ]
     });
 
     expect(history.buildSpeciesTurnover({ startTick: 1, endTick: 2, size: 2 }, 2)).toEqual({

@@ -1,3 +1,5 @@
+import { PhenotypeDeltaEntry } from './types';
+
 export type CausalEventType = 'movement' | 'harvest' | 'encounter' | 'reproduction' | 'settlement' | 'death';
 
 export interface CausalTraceMovementEvent {
@@ -52,6 +54,8 @@ export interface CausalTraceReproductionEvent {
   parentId: number;
   parentLineage: number;
   parentSpecies: number;
+  parentX: number;
+  parentY: number;
   offspringId: number;
   offspringLineage: number;
   offspringSpecies: number;
@@ -63,18 +67,24 @@ export interface CausalTraceReproductionEvent {
   localFertility: number;
   localCrowding: number;
   speciationOccurred: boolean;
+  foundedNewClade: boolean;
+  phenotypeDelta: PhenotypeDeltaEntry[];
 }
 
 export interface CausalTraceSettlementEvent {
   type: 'settlement';
   tick: number;
+  parentId: number;
+  parentLineage: number;
   offspringId: number;
   offspringLineage: number;
   offspringSpecies: number;
+  phenotypeDelta: PhenotypeDeltaEntry[];
   parentSpecies: number;
   x: number;
   y: number;
   settled: boolean;
+  movedFromParentCell: boolean;
   localFertility: number;
   localCrowding: number;
   sameLineageCrowding: number;
@@ -170,7 +180,7 @@ export class CausalTraceCollector {
         return e.parentLineage === lineage || e.offspringLineage === lineage;
       }
       if (e.type === 'settlement') {
-        return e.offspringLineage === lineage;
+        return e.parentLineage === lineage || e.offspringLineage === lineage;
       }
       return false;
     });

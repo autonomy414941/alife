@@ -100,6 +100,59 @@ describe('Causal trace integration', () => {
     expect(encounterEvents.length).toBeGreaterThan(0);
   });
 
+  it('should record reproduction and settlement events with phenotype deltas', () => {
+    const sim = new LifeSimulation({
+      seed: 7,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 1,
+        reproduceProbability: 1,
+        policyMutationProbability: 1,
+        policyMutationMagnitude: 0.4,
+        causalTraceEnabled: true,
+        causalTraceSamplingRate: 1.0
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          genome: { metabolism: 0.5, harvest: 0.5, aggression: 0.2 },
+          policyState: new Map([
+            ['reproduction_harvest_threshold', 0.5],
+            ['movement_energy_reserve_threshold', 0.5]
+          ])
+        }
+      ]
+    });
+
+    sim.step();
+
+    const collector = sim.causalTrace();
+    const reproductionEvents = collector.getEventsByType('reproduction');
+    const settlementEvents = collector.getEventsByType('settlement');
+
+    expect(reproductionEvents.length).toBeGreaterThan(0);
+    expect(settlementEvents.length).toBeGreaterThan(0);
+
+    const reproductionEvent = reproductionEvents[0];
+    const settlementEvent = settlementEvents[0];
+    if (reproductionEvent?.type !== 'reproduction' || settlementEvent?.type !== 'settlement') {
+      throw new Error('expected reproduction and settlement events');
+    }
+
+    expect(reproductionEvent.phenotypeDelta.length).toBeGreaterThan(0);
+    expect(reproductionEvent.parentLineage).toBe(settlementEvent.parentLineage);
+    expect(reproductionEvent.offspringId).toBe(settlementEvent.offspringId);
+    expect(settlementEvent.phenotypeDelta).toEqual(reproductionEvent.phenotypeDelta);
+  });
+
   it('should allow filtering by lineage', () => {
     const sim = new LifeSimulation({
       seed: 42,

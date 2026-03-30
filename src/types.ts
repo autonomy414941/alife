@@ -23,6 +23,51 @@ export interface TaxonTimelinePoint {
   deaths: number;
 }
 
+export interface PhenotypeDeltaEntry {
+  trait: string;
+  parentValue: number | null;
+  offspringValue: number | null;
+  delta: number;
+}
+
+export interface DescentReproductionAttribution {
+  localFertility: number;
+  localCrowding: number;
+  policyGated: boolean;
+  speciationOccurred: boolean;
+  foundedNewClade: boolean;
+  parentEnergy: number;
+  offspringEnergy: number;
+}
+
+export interface DescentSettlementAttribution {
+  x: number;
+  y: number;
+  localFertility: number;
+  localCrowding: number;
+  sameLineageCrowding: number;
+  settled: boolean;
+  movedFromParentCell: boolean;
+}
+
+export interface DescentEdge {
+  tick: number;
+  parentId: number;
+  parentLineage: number;
+  parentSpecies: number;
+  parentX: number;
+  parentY: number;
+  offspringId: number;
+  offspringLineage: number;
+  offspringSpecies: number;
+  phenotypeDelta: PhenotypeDeltaEntry[];
+  reproduction: DescentReproductionAttribution;
+  settlement: DescentSettlementAttribution;
+  offspringProduced: number;
+  offspringDeathTick: number | null;
+  offspringAgeAtDeath: number | null;
+}
+
 export interface TaxonFounderContext {
   habitatMean: number;
   habitatBin: number;
@@ -47,6 +92,7 @@ export interface EvolutionHistorySnapshot {
   species: TaxonHistory[];
   extinctClades: number;
   extinctSpecies: number;
+  descentEdges?: DescentEdge[];
 }
 
 export interface DurationStats {

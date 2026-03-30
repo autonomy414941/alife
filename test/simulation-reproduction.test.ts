@@ -45,7 +45,7 @@ describe('simulation reproduction', () => {
       disturbanceSettlementOpeningBonus: 0
     });
 
-    const child = reproduceAgent({
+    const outcome = reproduceAgent({
       parent,
       agents: [parent],
       config,
@@ -75,6 +75,7 @@ describe('simulation reproduction', () => {
       wrapY: (y) => y,
       pickRandomNeighbor: (neighbors) => neighbors[0],
       localEcologyScore: () => 0,
+      neighborhoodCrowdingAt: () => 1,
       disturbanceSettlementOpenUntilTick: [[0]],
       sameLineageNeighborhoodCrowdingAt: () => 0,
       effectiveBiomeFertilityAt: () => 1,
@@ -86,10 +87,21 @@ describe('simulation reproduction', () => {
       getSpeciesDefenseLevel: () => 0.5,
       getCladeDefenseLevel: () => 0.5
     });
+    const child = outcome.offspring;
 
     expect(habitatIndex).toBeGreaterThanOrEqual(0);
     expect(child.genomeV2?.traits.has('habitat_preference')).toBe(true);
     expect(child.species).toBe(parent.species);
     expect(child.lineage).toBe(parent.lineage);
+    expect(outcome.observability.reproduction.speciationOccurred).toBe(false);
+    expect(outcome.observability.settlement).toMatchObject({
+      x: 0,
+      y: 0,
+      localFertility: 1,
+      localCrowding: 1,
+      sameLineageCrowding: 0,
+      settled: true,
+      movedFromParentCell: false
+    });
   });
 });
