@@ -82,6 +82,10 @@ describe('post-coupling diversification revalidation', () => {
     expect(artifact.policyNeutral.runs).toHaveLength(1);
     expect(artifact.policyEnabled.runs[0]?.seed).toBe(1234);
     expect(artifact.policyNeutral.runs[0]?.seed).toBe(1234);
+    expect(artifact.policyEnabled.runs[0]?.policySensitivePhenotypeDiversity).toBeDefined();
+    expect(artifact.policyNeutral.aggregate.meanPolicySensitivePhenotypeDiversity).toBeDefined();
+    expect(typeof artifact.delta.policySensitiveEffectiveRichness).toBe('number');
     expect(typeof artifact.delta.policySensitiveOccupiedNiches).toBe('number');
+    expect(artifact.percentDelta).toHaveProperty('policySensitiveEffectiveRichness');
   });
 });

@@ -137,6 +137,9 @@ describe('run export', () => {
     expect(parsed.summaries[0].phenotypeDiversity).toBeDefined();
     expect(parsed.summaries[0].phenotypeDiversity.effectiveRichness).toBeGreaterThanOrEqual(1);
     expect(parsed.summaries[0].phenotypeDiversity.occupiedNiches).toBeGreaterThanOrEqual(1);
+    expect(parsed.summaries[0].policySensitivePhenotypeDiversity).toBeDefined();
+    expect(parsed.summaries[0].policySensitivePhenotypeDiversity.effectiveRichness).toBeGreaterThanOrEqual(1);
+    expect(parsed.summaries[0].policySensitivePhenotypeDiversity.occupiedNiches).toBeGreaterThanOrEqual(1);
   });
 
   it('renders one CSV row per tick with a stable header', () => {
@@ -179,6 +182,18 @@ describe('run export', () => {
     const phenotypeDistanceIndex = METRICS_CSV_COLUMNS.indexOf('phenotype_mean_pairwise_distance');
     const phenotypeNichesIndex = METRICS_CSV_COLUMNS.indexOf('phenotype_occupied_niches');
     const phenotypePackingIndex = METRICS_CSV_COLUMNS.indexOf('phenotype_species_per_occupied_niche');
+    const policySensitivePhenotypeRichnessIndex = METRICS_CSV_COLUMNS.indexOf(
+      'policy_sensitive_phenotype_effective_richness'
+    );
+    const policySensitivePhenotypeDistanceIndex = METRICS_CSV_COLUMNS.indexOf(
+      'policy_sensitive_phenotype_mean_pairwise_distance'
+    );
+    const policySensitivePhenotypeNichesIndex = METRICS_CSV_COLUMNS.indexOf(
+      'policy_sensitive_phenotype_occupied_niches'
+    );
+    const policySensitivePhenotypePackingIndex = METRICS_CSV_COLUMNS.indexOf(
+      'policy_sensitive_phenotype_species_per_occupied_niche'
+    );
     const habitatMeanIndex = METRICS_CSV_COLUMNS.indexOf('strategy_habitat_preference_mean');
     const trophicWeightedIndex = METRICS_CSV_COLUMNS.indexOf('strategy_trophic_level_weighted_mean');
     const defenseStdIndex = METRICS_CSV_COLUMNS.indexOf('strategy_defense_level_stddev');
@@ -239,6 +254,10 @@ describe('run export', () => {
     expect(Number(row1[phenotypeDistanceIndex])).toBeGreaterThanOrEqual(0);
     expect(Number(row1[phenotypeNichesIndex])).toBeGreaterThanOrEqual(1);
     expect(Number(row1[phenotypePackingIndex])).toBeGreaterThanOrEqual(1);
+    expect(Number(row1[policySensitivePhenotypeRichnessIndex])).toBeGreaterThanOrEqual(1);
+    expect(Number(row1[policySensitivePhenotypeDistanceIndex])).toBeGreaterThanOrEqual(0);
+    expect(Number(row1[policySensitivePhenotypeNichesIndex])).toBeGreaterThanOrEqual(1);
+    expect(Number(row1[policySensitivePhenotypePackingIndex])).toBeGreaterThanOrEqual(1);
     expect(Number(row1[habitatMeanIndex])).toBeCloseTo(runData.analytics[0].strategy.habitatPreference.mean, 10);
     expect(Number(row1[forcingCycleIndex])).toBe(runData.analytics[0].forcing.cycleLength);
     expect(Number(row1[forcingPhaseIndex])).toBeCloseTo(runData.analytics[0].forcing.phase, 10);

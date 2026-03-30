@@ -88,7 +88,10 @@ import {
   resolveDisturbancePhase
 } from './policy-fitness';
 import { PolicyDecisionStats, summarizePolicyObservability } from './policy-observability';
-import { summarizePhenotypeDiversity } from './phenotype-diversity';
+import {
+  summarizePhenotypeDiversity,
+  summarizePolicySensitivePhenotypeDiversity
+} from './phenotype-diversity';
 import { Rng } from './rng';
 import {
   countExtinctionsInWindow,
@@ -490,6 +493,7 @@ export class LifeSimulation {
     );
     const genomeV2TraitMetrics = this.computeGenomeV2TraitMetrics();
     const phenotypeDiversity = summarizePhenotypeDiversity(this.agents);
+    const policySensitivePhenotypeDiversity = summarizePolicySensitivePhenotypeDiversity(this.agents);
 
     return {
       tick: this.tickCount,
@@ -513,7 +517,8 @@ export class LifeSimulation {
         : undefined,
       policyObservability,
       genomeV2Metrics: genomeV2TraitMetrics,
-      phenotypeDiversity
+      phenotypeDiversity,
+      policySensitivePhenotypeDiversity
     };
   }
 

@@ -322,6 +322,7 @@ export interface StepSummary {
   policyObservability?: PolicyObservabilitySummary;
   genomeV2Metrics?: GenomeV2Metrics;
   phenotypeDiversity?: PhenotypeDiversityMetrics;
+  policySensitivePhenotypeDiversity?: PhenotypeDiversityMetrics;
 }
 
 export interface PolicyOutcomeCorrelation {

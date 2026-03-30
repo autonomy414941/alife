@@ -1,8 +1,7 @@
 import { runGeneratedAtStudyCli } from './clade-activity-relabel-null-smoke-study';
 import { DEFAULT_TRAIT_VALUES, fromGenome, POLICY_TRAITS, setTrait } from './genome-v2';
-import { summarizePolicySensitivePhenotypeDiversity } from './phenotype-diversity';
 import { resolveSimulationConfig, LifeSimulation } from './simulation';
-import { AgentSeed, GenomeV2DistanceWeights, SimulationConfig } from './types';
+import { AgentSeed, GenomeV2DistanceWeights, PhenotypeDiversityMetrics, SimulationConfig } from './types';
 
 export const POST_COUPLING_DIVERSIFICATION_REVALIDATION_ARTIFACT =
   'docs/post_coupling_diversification_revalidation_2026-03-30.json';
@@ -35,7 +34,8 @@ export interface PostCouplingDiversificationRunResult {
   activeClades: number;
   effectiveRichness: number;
   occupiedNiches: number;
-  policySensitiveOccupiedNiches: number;
+  phenotypeDiversity: PhenotypeDiversityMetrics;
+  policySensitivePhenotypeDiversity: PhenotypeDiversityMetrics;
   speciationRate: number;
   extinctionRate: number;
   netDiversificationRate: number;
@@ -51,7 +51,7 @@ export interface PostCouplingDiversificationArmResult {
     meanActiveClades: number;
     meanEffectiveRichness: number;
     meanOccupiedNiches: number;
-    meanPolicySensitiveOccupiedNiches: number;
+    meanPolicySensitivePhenotypeDiversity: PhenotypeDiversityMetrics;
     meanSpeciationRate: number;
     meanExtinctionRate: number;
     meanNetDiversificationRate: number;
@@ -78,7 +78,10 @@ export interface PostCouplingDiversificationRevalidationArtifact {
     activeClades: number;
     effectiveRichness: number;
     occupiedNiches: number;
+    policySensitiveEffectiveRichness: number;
+    policySensitiveMeanPairwiseDistance: number;
     policySensitiveOccupiedNiches: number;
+    policySensitiveSpeciesPerOccupiedNiche: number;
     speciationRate: number;
     extinctionRate: number;
     netDiversificationRate: number;
@@ -86,6 +89,7 @@ export interface PostCouplingDiversificationRevalidationArtifact {
   percentDelta: {
     effectiveRichness: number | null;
     occupiedNiches: number | null;
+    policySensitiveEffectiveRichness: number | null;
     policySensitiveOccupiedNiches: number | null;
     speciationRate: number | null;
     netDiversificationRate: number | null;
@@ -123,9 +127,18 @@ export function runPostCouplingDiversificationRevalidation(
     activeClades: policyEnabled.aggregate.meanActiveClades - policyNeutral.aggregate.meanActiveClades,
     effectiveRichness: policyEnabled.aggregate.meanEffectiveRichness - policyNeutral.aggregate.meanEffectiveRichness,
     occupiedNiches: policyEnabled.aggregate.meanOccupiedNiches - policyNeutral.aggregate.meanOccupiedNiches,
+    policySensitiveEffectiveRichness:
+      policyEnabled.aggregate.meanPolicySensitivePhenotypeDiversity.effectiveRichness -
+      policyNeutral.aggregate.meanPolicySensitivePhenotypeDiversity.effectiveRichness,
+    policySensitiveMeanPairwiseDistance:
+      policyEnabled.aggregate.meanPolicySensitivePhenotypeDiversity.meanPairwiseDistance -
+      policyNeutral.aggregate.meanPolicySensitivePhenotypeDiversity.meanPairwiseDistance,
     policySensitiveOccupiedNiches:
-      policyEnabled.aggregate.meanPolicySensitiveOccupiedNiches -
-      policyNeutral.aggregate.meanPolicySensitiveOccupiedNiches,
+      policyEnabled.aggregate.meanPolicySensitivePhenotypeDiversity.occupiedNiches -
+      policyNeutral.aggregate.meanPolicySensitivePhenotypeDiversity.occupiedNiches,
+    policySensitiveSpeciesPerOccupiedNiche:
+      policyEnabled.aggregate.meanPolicySensitivePhenotypeDiversity.speciesPerOccupiedNiche -
+      policyNeutral.aggregate.meanPolicySensitivePhenotypeDiversity.speciesPerOccupiedNiche,
     speciationRate: policyEnabled.aggregate.meanSpeciationRate - policyNeutral.aggregate.meanSpeciationRate,
     extinctionRate: policyEnabled.aggregate.meanExtinctionRate - policyNeutral.aggregate.meanExtinctionRate,
     netDiversificationRate:
@@ -140,9 +153,13 @@ export function runPostCouplingDiversificationRevalidation(
       policyEnabled.aggregate.meanOccupiedNiches,
       policyNeutral.aggregate.meanOccupiedNiches
     ),
+    policySensitiveEffectiveRichness: relativeDelta(
+      policyEnabled.aggregate.meanPolicySensitivePhenotypeDiversity.effectiveRichness,
+      policyNeutral.aggregate.meanPolicySensitivePhenotypeDiversity.effectiveRichness
+    ),
     policySensitiveOccupiedNiches: relativeDelta(
-      policyEnabled.aggregate.meanPolicySensitiveOccupiedNiches,
-      policyNeutral.aggregate.meanPolicySensitiveOccupiedNiches
+      policyEnabled.aggregate.meanPolicySensitivePhenotypeDiversity.occupiedNiches,
+      policyNeutral.aggregate.meanPolicySensitivePhenotypeDiversity.occupiedNiches
     ),
     speciationRate: relativeDelta(policyEnabled.aggregate.meanSpeciationRate, policyNeutral.aggregate.meanSpeciationRate),
     netDiversificationRate: relativeDelta(
@@ -162,7 +179,7 @@ export function runPostCouplingDiversificationRevalidation(
       'genomeV2-backed initial population with neutral policy loci present. The policy-enabled arm allows ' +
       'policy locus mutation (policyMutationProbability=0.65) while the control disables policy mutation. ' +
       'Both arms use the current code path, asymmetric secondary-resource forcing, and the default genomeV2 ' +
-      `moderate-downweight distance regime. Report final phenotype diversity, policy-sensitive occupied niches, and rolling ${windowSize}-step diversification rates.`,
+      `moderate-downweight distance regime. Report final phenotype diversity, a policy-sensitive phenotype-diversity summary, and rolling ${windowSize}-step diversification rates.`,
     config: {
       seeds: [...seeds],
       steps,
@@ -200,7 +217,7 @@ function runArm(input: {
       meanActiveClades: meanOf(runs, (run) => run.activeClades),
       meanEffectiveRichness: meanOf(runs, (run) => run.effectiveRichness),
       meanOccupiedNiches: meanOf(runs, (run) => run.occupiedNiches),
-      meanPolicySensitiveOccupiedNiches: meanOf(runs, (run) => run.policySensitiveOccupiedNiches),
+      meanPolicySensitivePhenotypeDiversity: meanDiversityOf(runs, (run) => run.policySensitivePhenotypeDiversity),
       meanSpeciationRate: meanOf(runs, (run) => run.speciationRate),
       meanExtinctionRate: meanOf(runs, (run) => run.extinctionRate),
       meanNetDiversificationRate: meanOf(runs, (run) => run.netDiversificationRate)
@@ -231,16 +248,19 @@ function runSimulation(
     throw new Error(`Post-coupling diversification revalidation produced no results for seed ${seed}`);
   }
 
-  const policySensitiveDiversity = summarizePolicySensitivePhenotypeDiversity(snapshot.agents);
+  const phenotypeDiversity = finalSummary.phenotypeDiversity ?? emptyPhenotypeDiversityMetrics();
+  const policySensitivePhenotypeDiversity =
+    finalSummary.policySensitivePhenotypeDiversity ?? emptyPhenotypeDiversityMetrics();
 
   return {
     seed,
     finalPopulation: snapshot.population,
     activeSpecies: snapshot.activeSpecies,
     activeClades: snapshot.activeClades,
-    effectiveRichness: finalSummary.phenotypeDiversity?.effectiveRichness ?? 0,
-    occupiedNiches: finalSummary.phenotypeDiversity?.occupiedNiches ?? 0,
-    policySensitiveOccupiedNiches: policySensitiveDiversity.occupiedNiches,
+    effectiveRichness: phenotypeDiversity.effectiveRichness,
+    occupiedNiches: phenotypeDiversity.occupiedNiches,
+    phenotypeDiversity,
+    policySensitivePhenotypeDiversity,
     speciationRate: finalAnalytics.species.speciationRate,
     extinctionRate: finalAnalytics.species.extinctionRate,
     netDiversificationRate: finalAnalytics.species.netDiversificationRate
@@ -281,18 +301,41 @@ function relativeDelta(value: number, baseline: number): number | null {
   return ((value - baseline) / Math.abs(baseline)) * 100;
 }
 
+function meanDiversityOf<T>(
+  values: T[],
+  pick: (value: T) => PhenotypeDiversityMetrics
+): PhenotypeDiversityMetrics {
+  return {
+    effectiveRichness: meanOf(values, (value) => pick(value).effectiveRichness),
+    meanPairwiseDistance: meanOf(values, (value) => pick(value).meanPairwiseDistance),
+    occupiedNiches: meanOf(values, (value) => pick(value).occupiedNiches),
+    speciesPerOccupiedNiche: meanOf(values, (value) => pick(value).speciesPerOccupiedNiche)
+  };
+}
+
+function emptyPhenotypeDiversityMetrics(): PhenotypeDiversityMetrics {
+  return {
+    effectiveRichness: 0,
+    meanPairwiseDistance: 0,
+    occupiedNiches: 0,
+    speciesPerOccupiedNiche: 0
+  };
+}
+
 function buildConclusion(
   delta: PostCouplingDiversificationRevalidationArtifact['delta'],
   percentDelta: PostCouplingDiversificationRevalidationArtifact['percentDelta']
 ): PostCouplingDiversificationRevalidationArtifact['conclusion'] {
   const positiveSignals = [
     delta.effectiveRichness > 0,
+    delta.policySensitiveEffectiveRichness > 0,
     delta.policySensitiveOccupiedNiches > 0,
     delta.speciationRate > 0,
     delta.netDiversificationRate > 0
   ].filter(Boolean).length;
   const negativeSignals = [
     delta.effectiveRichness < 0,
+    delta.policySensitiveEffectiveRichness < 0,
     delta.policySensitiveOccupiedNiches < 0,
     delta.speciationRate < 0,
     delta.netDiversificationRate < 0
@@ -308,7 +351,9 @@ function buildConclusion(
     outcome,
     summary:
       `Effective richness ${formatSigned(delta.effectiveRichness)} ` +
-      `(${formatPercent(percentDelta.effectiveRichness)}), policy-sensitive occupied niches ` +
+      `(${formatPercent(percentDelta.effectiveRichness)}), policy-sensitive richness ` +
+      `${formatSigned(delta.policySensitiveEffectiveRichness)} (${formatPercent(percentDelta.policySensitiveEffectiveRichness)}), ` +
+      `policy-sensitive occupied niches ` +
       `${formatSigned(delta.policySensitiveOccupiedNiches)} (${formatPercent(percentDelta.policySensitiveOccupiedNiches)}), ` +
       `speciation rate ${formatSigned(delta.speciationRate)} (${formatPercent(percentDelta.speciationRate)}), ` +
       `net diversification ${formatSigned(delta.netDiversificationRate)} (${formatPercent(percentDelta.netDiversificationRate)}).`

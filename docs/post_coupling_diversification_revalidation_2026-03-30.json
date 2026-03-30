@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-03-30T03:24:00.000Z",
+  "generatedAt": "2026-03-30T04:00:39.000Z",
   "question": "Do the March 29 harvest-payoff and harvest-spending couplings improve bounded diversification outcomes relative to a policy-neutral control under the adopted moderate-downweight distance regime?",
   "prediction": "If the new couplings matter demographically, the policy-enabled arm should recover at least some of the March 28 speciation loss while also increasing policy-sensitive niche occupancy.",
-  "methodology": "Run matched 120-step panels with 2 shared seeds. Each arm starts from the same genomeV2-backed initial population with neutral policy loci present. The policy-enabled arm allows policy locus mutation (policyMutationProbability=0.65) while the control disables policy mutation. Both arms use the current code path, asymmetric secondary-resource forcing, and the default genomeV2 moderate-downweight distance regime. Report final phenotype diversity, policy-sensitive occupied niches, and rolling 30-step diversification rates.",
+  "methodology": "Run matched 120-step panels with 2 shared seeds. Each arm starts from the same genomeV2-backed initial population with neutral policy loci present. The policy-enabled arm allows policy locus mutation (policyMutationProbability=0.65) while the control disables policy mutation. Both arms use the current code path, asymmetric secondary-resource forcing, and the default genomeV2 moderate-downweight distance regime. Report final phenotype diversity, a policy-sensitive phenotype-diversity summary, and rolling 30-step diversification rates.",
   "config": {
     "seeds": [
       9101,
@@ -38,7 +38,18 @@
         "activeClades": 20,
         "effectiveRichness": 8.477253818176692,
         "occupiedNiches": 95,
-        "policySensitiveOccupiedNiches": 1218,
+        "phenotypeDiversity": {
+          "effectiveRichness": 8.477253818176692,
+          "meanPairwiseDistance": 0.06919243465986534,
+          "occupiedNiches": 95,
+          "speciesPerOccupiedNiche": 15.705263157894738
+        },
+        "policySensitivePhenotypeDiversity": {
+          "effectiveRichness": 292.4939700476798,
+          "meanPairwiseDistance": 0.1630519017484526,
+          "occupiedNiches": 1218,
+          "speciesPerOccupiedNiche": 1.2249589490968802
+        },
         "speciationRate": 23,
         "extinctionRate": 9.3,
         "netDiversificationRate": 13.7
@@ -50,7 +61,18 @@
         "activeClades": 16,
         "effectiveRichness": 8.232042105388782,
         "occupiedNiches": 105,
-        "policySensitiveOccupiedNiches": 1024,
+        "phenotypeDiversity": {
+          "effectiveRichness": 8.232042105388782,
+          "meanPairwiseDistance": 0.07600746401104999,
+          "occupiedNiches": 105,
+          "speciesPerOccupiedNiche": 12.58095238095238
+        },
+        "policySensitivePhenotypeDiversity": {
+          "effectiveRichness": 115.30764944346106,
+          "meanPairwiseDistance": 0.15443385144503655,
+          "occupiedNiches": 1024,
+          "speciesPerOccupiedNiche": 1.2900390625
+        },
         "speciationRate": 20.1,
         "extinctionRate": 9.366666666666667,
         "netDiversificationRate": 10.733333333333333
@@ -62,7 +84,12 @@
       "meanActiveClades": 18,
       "meanEffectiveRichness": 8.354647961782737,
       "meanOccupiedNiches": 100,
-      "meanPolicySensitiveOccupiedNiches": 1121,
+      "meanPolicySensitivePhenotypeDiversity": {
+        "effectiveRichness": 203.90080974557043,
+        "meanPairwiseDistance": 0.15874287659674458,
+        "occupiedNiches": 1121,
+        "speciesPerOccupiedNiche": 1.25749900579844
+      },
       "meanSpeciationRate": 21.55,
       "meanExtinctionRate": 9.333333333333334,
       "meanNetDiversificationRate": 12.216666666666665
@@ -79,7 +106,18 @@
         "activeClades": 17,
         "effectiveRichness": 7.423445391011573,
         "occupiedNiches": 33,
-        "policySensitiveOccupiedNiches": 33,
+        "phenotypeDiversity": {
+          "effectiveRichness": 7.423445391011573,
+          "meanPairwiseDistance": 0.06769728889287024,
+          "occupiedNiches": 33,
+          "speciesPerOccupiedNiche": 3.0606060606060606
+        },
+        "policySensitivePhenotypeDiversity": {
+          "effectiveRichness": 7.423445391011573,
+          "meanPairwiseDistance": 0.03206713684399114,
+          "occupiedNiches": 33,
+          "speciesPerOccupiedNiche": 3.0606060606060606
+        },
         "speciationRate": 0.23333333333333334,
         "extinctionRate": 1.6,
         "netDiversificationRate": -1.3666666666666667
@@ -91,7 +129,18 @@
         "activeClades": 18,
         "effectiveRichness": 3.3394709699409835,
         "occupiedNiches": 27,
-        "policySensitiveOccupiedNiches": 27,
+        "phenotypeDiversity": {
+          "effectiveRichness": 3.3394709699409835,
+          "meanPairwiseDistance": 0.07237784147468983,
+          "occupiedNiches": 27,
+          "speciesPerOccupiedNiche": 2.7777777777777777
+        },
+        "policySensitivePhenotypeDiversity": {
+          "effectiveRichness": 3.3394709699409835,
+          "meanPairwiseDistance": 0.03428424069853735,
+          "occupiedNiches": 27,
+          "speciesPerOccupiedNiche": 2.7777777777777777
+        },
         "speciationRate": 0.23333333333333334,
         "extinctionRate": 1.5333333333333334,
         "netDiversificationRate": -1.3
@@ -103,7 +152,12 @@
       "meanActiveClades": 17.5,
       "meanEffectiveRichness": 5.381458180476279,
       "meanOccupiedNiches": 30,
-      "meanPolicySensitiveOccupiedNiches": 30,
+      "meanPolicySensitivePhenotypeDiversity": {
+        "effectiveRichness": 5.381458180476279,
+        "meanPairwiseDistance": 0.03317568877126424,
+        "occupiedNiches": 30,
+        "speciesPerOccupiedNiche": 2.919191919191919
+      },
       "meanSpeciationRate": 0.23333333333333334,
       "meanExtinctionRate": 1.5666666666666669,
       "meanNetDiversificationRate": -1.3333333333333335
@@ -114,7 +168,10 @@
     "activeClades": 0.5,
     "effectiveRichness": 2.9731897813064583,
     "occupiedNiches": 70,
+    "policySensitiveEffectiveRichness": 198.51935156509415,
+    "policySensitiveMeanPairwiseDistance": 0.12556718782548032,
     "policySensitiveOccupiedNiches": 1091,
+    "policySensitiveSpeciesPerOccupiedNiche": -1.661692913393479,
     "speciationRate": 21.316666666666666,
     "extinctionRate": 7.7666666666666675,
     "netDiversificationRate": 13.549999999999999
@@ -122,12 +179,13 @@
   "percentDelta": {
     "effectiveRichness": 55.24877610483113,
     "occupiedNiches": 233.33333333333334,
+    "policySensitiveEffectiveRichness": 3688.950929421224,
     "policySensitiveOccupiedNiches": 3636.6666666666665,
     "speciationRate": 9135.714285714286,
     "netDiversificationRate": 1016.2499999999998
   },
   "conclusion": {
     "outcome": "improves",
-    "summary": "Effective richness +2.9732 (+55.2%), policy-sensitive occupied niches +1091.0000 (+3636.7%), speciation rate +21.3167 (+9135.7%), net diversification +13.5500 (+1016.2%)."
+    "summary": "Effective richness +2.9732 (+55.2%), policy-sensitive richness +198.5194 (+3689.0%), policy-sensitive occupied niches +1091.0000 (+3636.7%), speciation rate +21.3167 (+9135.7%), net diversification +13.5500 (+1016.2%)."
   }
 }

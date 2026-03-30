@@ -4360,6 +4360,65 @@ describe('LifeSimulation', () => {
     expect(summary.selectionDifferential.aggression).toBeCloseTo(0.2, 10);
   });
 
+  it('tracks policy-sensitive phenotype diversity beside morphology-only diversity', () => {
+    const summary = new LifeSimulation({
+      seed: 24,
+      config: {
+        width: 4,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceProbability: 0,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 10,
+          lineage: 1,
+          species: 1,
+          genome: { metabolism: 0.9, harvest: 0.8, aggression: 0.3 },
+          genomeV2: {
+            traits: new Map([
+              ['metabolism', 0.9],
+              ['harvest', 0.8],
+              ['aggression', 0.3],
+              ['harvest_secondary_preference', 0]
+            ])
+          }
+        },
+        {
+          x: 1,
+          y: 0,
+          energy: 10,
+          lineage: 2,
+          species: 2,
+          genome: { metabolism: 0.9, harvest: 0.8, aggression: 0.3 },
+          genomeV2: {
+            traits: new Map([
+              ['metabolism', 0.9],
+              ['harvest', 0.8],
+              ['aggression', 0.3],
+              ['harvest_secondary_preference', 1]
+            ])
+          }
+        }
+      ]
+    }).step();
+
+    expect(summary.phenotypeDiversity).toBeDefined();
+    expect(summary.policySensitivePhenotypeDiversity).toBeDefined();
+    expect(summary.phenotypeDiversity!.occupiedNiches).toBe(1);
+    expect(summary.policySensitivePhenotypeDiversity!.occupiedNiches).toBe(2);
+    expect(summary.policySensitivePhenotypeDiversity!.effectiveRichness).toBeGreaterThan(
+      summary.phenotypeDiversity!.effectiveRichness
+    );
+  });
+
   it('tracks clade and species lifecycle history across ticks', () => {
     const sim = new LifeSimulation({
       seed: 31,
