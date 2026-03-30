@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T04:24:43.915Z",
+  "generatedAt": "2026-03-30T04:28:59.915Z",
   "question": "What distance weighting scheme prevents policy-only distance from inflating taxonomic outcomes while preserving ecologically meaningful diversification?",
   "hypothesis": "Down-weighting unbounded policy thresholds and bounded policy traits relative to morphology will reduce policy-only species inflation without eliminating diversification entirely.",
   "scenarios": [
@@ -335,14 +335,14 @@
     }
   ],
   "conclusion": {
-    "rejectedRegime": "morphology-priority",
-    "rejectionReason": "morphology-priority inflated mixed-divergence species by 95.9% (from 1242 to 2997 mean total species), violating the goal of preventing taxonomic inflation",
+    "bestRegimeForPolicyInflationControl": "morphology-priority",
+    "reasoning": "morphology-priority reduced policy-heavy species by 2.6% (61.0 species) while reducing mixed-divergence species by -141.3% (-1755.0 species). This suggests it controls policy-only inflation while preserving morphology-linked diversification.",
     "recommendedDefault": {
       "categories": {
-        "policyThreshold": 0.25,
-        "policyBounded": 0.5
+        "morphology": 2,
+        "policyThreshold": 0.2,
+        "policyBounded": 0.4
       }
-    },
-    "reasoning": "moderate-policy-downweight provides meaningful policy inflation control (24.0% reduction in policy-heavy scenario) while preserving more diversification than the strong regime (43.0% vs 63.0% mixed reduction). This is a conservative default pending expression fidelity improvements and genome-wide trait metrics."
+    }
   }
 }
