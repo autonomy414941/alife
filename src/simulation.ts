@@ -193,6 +193,12 @@ const DEFAULT_CONFIG: SimulationConfig = {
   policyMutationMagnitude: 0.3,
   speciationThreshold: 0.25,
   cladogenesisThreshold: -1,
+  genomeV2DistanceWeights: {
+    categories: {
+      policyThreshold: 0.25,
+      policyBounded: 0.5
+    }
+  },
   maxAge: 120
 };
 

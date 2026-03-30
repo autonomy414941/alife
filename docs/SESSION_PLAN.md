@@ -1,94 +1,91 @@
-# Session Plan — 2026-03-29
+# Session Plan — 2026-03-30
 
 ## Compact Context
-- A shared phenotype decoder now routes supported ecological and policy loci from `genomeV2` or legacy `policyState` into live operators
-- The secondary resource layer now has independent seasonal amplitude, phase offset, and biome shift controls, with a March 28 pilot showing mirrored and asymmetric regimes diverge as intended
-- Standard step summaries now expose both `genomeV2Metrics` and `phenotypeDiversity`, but the diversity summary bins only `NON_POLICY_TRAITS`
-- The 2026-03-28 bounded graded-policy panel found weak richness and niche gains for policy-enabled runs, but a 53.8% lower speciation rate versus the matched baseline
-- That same validation used morphology-priority distance weights even though the March 27 calibration analysis rejected that regime as a default
-- The simulator still lacks sampled event-level causal traces, lightweight genealogy, and branchable counterfactual replay
+- Direct policy-payoff coupling is now live: harvest policy modulates intake payoff, and harvest and spending preferences can share substrate-management state
+- Moderate downweight `{ policyThreshold: 0.25, policyBounded: 0.5 }` was adopted on 2026-03-29 as the `genomeV2` distance default after matching morphology-priority outcomes without the earlier inflation failure
+- Sampled causal traces exist for movement, harvest, encounter, and death, but not yet for reproduction or settlement
+- `runWithPolicyFitness` already records decision-time fertility, crowding, age, disturbance phase, survival, reproduction, and policy gating per agent exposure
+- `phenotypeDiversity` still bins only `NON_POLICY_TRAITS`, so policy differentiation can remain invisible in the main diversity summary
+- The strongest published anti-evidence is still the 2026-03-28 bounded graded-policy panel: weak richness and niche gains with a 53.8% lower speciation rate for policy-enabled runs
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Phenotype realization and policy expression | 3 | a6ad5a5 |
-| Planning and structural critique | 2 | 1de7687 |
-| Phenotype-aware measurement | 2 | 1c8b0ee |
-| Validation and calibration | 2 | 9398711 |
-| Ecological asymmetry | 1 | 37d3b96 |
-| Policy-payoff coupling | 0 | none |
-| Causal attribution and genealogy | 0 | none |
-| Counterfactual replay | 0 | none |
+| Distance-weight validation and calibration | 4 | 173abf7 |
+| Planning and structural critique | 2 | 5e931fb |
+| Policy-payoff coupling | 2 | 6bc2889 |
+| Causal attribution infrastructure | 2 | 7182e25 |
+| Policy-sensitive measurement | 0 | none |
+| Genealogy and counterfactual replay | 0 | none |
 
-Dominant axis: Phenotype realization and policy expression (3/10)
-Underexplored axes: Ecological asymmetry, Policy-payoff coupling, Causal attribution and genealogy, Counterfactual replay
+Dominant axis: Distance-weight validation and calibration (4/10)
+Underexplored axes: Policy-sensitive measurement, Genealogy and counterfactual replay
 
 ## Project State
-- The repo now has the minimum infrastructure needed to test `GenomeV2` policy loci in live ecology: shared phenotype decoding, asymmetric two-resource dynamics, genome-wide trait metrics, and phenotype-diversity summaries
-- Recent sessions moved from expression repairs and observability into a first phenotype-aware ecological-neutrality check for graded policy mutation
-- Harvest and spending policy are now coupled through a shared substrate-management signal: harvest preference can steer reserve burn when no separate spending locus is present, and a bounded March 29 pilot records full specialist reserve-share separation under an asymmetric pulse schedule
-- The important gap is no longer whether policy traits exist or are readable; it is whether they change ecological payoffs enough to matter, and whether the simulator can explain any resulting diversification signal mechanistically
+- The repo now has shared phenotype decoding, asymmetric two-resource ecology, a moderate-downweight default, policy-fitness exposure logging, direct harvest and reserve-spending payoff coupling, and bounded causal traces
+- Recent sessions moved from expression repair into payoff coupling, trace plumbing, and default-calibration cleanup
+- The important gap is no longer missing policy surfaces in code; it is missing evidence that the current surfaces drive diversification and missing analytics that can explain any signal at phenotype and lineage level
 
 ## External Context
-- Moreno, Rodriguez-Papa, and Dolson, ["Ecology, Spatial Structure, and Selection Pressure Induce Strong Signatures in Phylogenetic Structure"](https://arxiv.org/abs/2405.07245), revised November 21, 2024, with related Artificial Life publication: ecology can leave detectable phylogenetic signatures, but the paper explicitly says further methods are needed to distinguish driver classes and normalize phylometric evidence
-- Faldor and Cully, ["Toward Artificial Open-Ended Evolution within Lenia using Quality-Diversity"](https://arxiv.org/abs/2406.04235), ALIFE 2024: sustained diversity comes from coupling expressive spaces to niches and diversity maintenance; I infer from this that policy loci here need direct ecological consequence, not just extra taxonomic distance
+- Moreno, Rodriguez-Papa, and Dolson, ["Ecology, Spatial Structure, and Selection Pressure Induce Strong Signatures in Phylogenetic Structure"](https://doi.org/10.1162/artl_a_00470), Artificial Life 31(2), 2025: phylogenetic metrics can detect ecology and spatial structure, but the paper says driver disambiguation and normalization methods are still needed
+- De Pinho and Sinapayen, ["A speciation simulation that partly passes open-endedness tests"](https://arxiv.org/abs/2603.01701), arXiv, March 2, 2026: evolutionary-activity conclusions depend strongly on whether the measured components are genes, individuals, or species, which directly raises the bar for this repo's current taxon-only and policy-only summaries
 
 ## Research Gaps
-- Are graded policy loci still weak because they mostly reallocate actions without changing intake, cost, encounter, or settlement payoffs directly?
-- Once causal traces and a stable distance-weight default exist, does the March 28 ambiguity resolve into real ecological differentiation or into measurement artifact?
+- Under the current March 29 code path and moderate-downweight default, do the new payoff couplings actually improve policy-driven diversification or does the March 28 weak/negative result still hold?
+- If policy effects exist, can we localize them to phenotype-and-environment regions and descendant lineages instead of only policy-positive cohorts?
 
 ## Current Anti-Evidence
-- The strongest current anti-evidence is the 2026-03-28 bounded panel: after the decoder and asymmetric ecology landed, policy-enabled runs gained only modest phenotype richness and occupied niches while losing speciation rate by 53.8%, so policy loci still cannot be claimed as a clear engine of diversification
-- The validation stack is still methodologically unstable because that panel used morphology-priority distance weights that the 2026-03-27 calibration explicitly rejected for default use
+- No post-coupling validation artifact exists yet, so the strongest available result is still the 2026-03-28 panel where policy-enabled runs gained only 11.2% effective richness and 13.3% occupied niches while losing speciation rate by 53.8%
+- Even if the new couplings help, the current measurement stack can still miss or misattribute that effect because `phenotypeDiversity` excludes policy loci and sampled causal traces still stop short of reproduction and settlement outcomes
 
 ## Bet Queue
 
-### Bet 1: [expand] Policy-Ecology Segregation
-Make policy loci affect ecological payoffs directly instead of only gating decisions. The goal is to route at least one policy surface into fitness-relevant operators such as intake efficiency, spending burden, encounter transfer, or settlement score, so policy variation can change demographic outcomes even when raw movement or reproduction counts look similar.
+### Bet 1: [validate] Post-Coupling Diversification Revalidation
+Run a new bounded graded-policy versus policy-neutral panel under the current March 29 code and moderate-downweight default. This replaces stale anti-evidence with a directly comparable result that includes live harvest-payoff and harvest-spending coupling.
 
 #### Success Evidence
-- At least one ecological payoff path reads policy phenotype directly in live simulation code
-- Tests show policy-divergent agents with matched morphology produce different intake, expenditure, or survival outcomes through that path
+- New `docs/` artifact comparing policy-enabled and policy-neutral arms under current defaults
+- Explicit deltas for effective richness, policy-sensitive niche occupancy, speciation rate, and net diversification rate
 
 #### Stop Conditions
-- Stop after one or two direct payoff couplings are live and covered by tests
-- Do not redesign the full interaction alphabet in this bet
+- Stop once at least one bounded matched-seed panel is complete and interpretable
+- Do not broaden into exhaustive sweeps or new operator design
 
-### Bet 2: [expand] Harvest-Spending Policy Coupling Asymmetry
-Build a coherent substrate-management loop by coupling intake and burn policy in the asymmetric two-layer world. This should let agents express strategies such as specializing toward one pool, preserving scarce secondary energy, or exploiting temporal layer mismatch instead of mutating independent preferences that cancel out.
+### Bet 2: [validate] Policy Metric Blind Spot
+Add a policy-sensitive niche or action-signature summary beside `phenotypeDiversity`, then rerun the bounded comparison to see whether policy differentiation appears there even when non-policy phenotype bins stay flat. This tests whether policy novelty is being hidden by the current measurement surface rather than absent in the simulation.
 
 #### Success Evidence
-- Harvest and spending decisions share at least one common policy input or pool-composition signal
-- A bounded smoke or pilot artifact shows differentiated primary-versus-secondary energy trajectories or specialization regimes
+- New summary metric in code and tests that responds to policy-only differences with matched morphology
+- The validation artifact reports both existing phenotype diversity and the new policy-sensitive summary
 
 #### Stop Conditions
-- Stop after coherent intake-burn coupling exists and produces measurable divergence on a bounded panel
-- Do not add long-horizon learning or large memory systems in this bet
+- Stop after one durable metric surface exists and is wired into at least one panel
+- Do not redesign the entire analytics stack
 
-### Bet 3: [validate] Mechanism Attribution Ceiling
-Add sampled causal traces and lightweight lineage context so future panels can explain why policy-enabled runs win or lose. The immediate target is not full raw logging; it is enough movement, harvest, encounter, reproduction, and settlement attribution to connect expressed traits to outcomes and descendant success.
+### Bet 3: [expand] Fitness-Phenotype Gap
+Aggregate existing policy-fitness records and/or causal traces into phenotype-by-environment outcome maps keyed by expressed traits plus local ecology. The goal is to move from "policy-positive versus policy-negative" toward identifying which expressed trait configurations actually gain intake, survival, or reproduction advantages and whether those regions persist across runs.
 
 #### Success Evidence
-- Exported or documented artifacts include sampled per-event attribution keyed by lineage, expressed trait, or policy cohort
-- A bounded comparison can state which mechanism changed between policy-enabled and baseline runs, not just that an aggregate moved
+- Artifact or exported table showing phenotype and environment bins with conditional harvest, survival, or reproduction outcomes
+- Tests or analysis demonstrate that at least one bin-level advantage is stable across multiple seeds or windows
 
 #### Stop Conditions
-- Stop after one bounded attribution surface exists for the main policy mechanisms
-- Do not build an unbounded raw-event archive in this bet
+- Stop after one bounded phenotype-landscape surface exists for current policy and payoff mechanisms
+- Do not build a full online dashboard or unbounded archive
 
-### Bet 4: [validate] Distance Weight Initialization Opacity
-Resolve the weighting mismatch before making stronger diversification claims. Re-run a bounded comparison under the current post-decoder, asymmetric-ecology stack and either adopt the March 27 moderate downweight recommendation or replace it with a better-supported default.
+### Bet 4: [feat] Descent Observability
+Persist lightweight parent-child edges, phenotype deltas, and reproduction and settlement attribution so phenotype-fitness gains can be connected to descendant success or failure. This fills the current gap between per-step traces and diversification outcomes.
 
 #### Success Evidence
-- A new artifact under `docs/` compares at least the moderate downweight regime against the current morphology-priority setup on phenotype-aware outcomes
-- `docs/RESEARCH_AGENDA.md`, `docs/BACKLOG.md`, or code defaults state clearly whether a distance-weight default has been adopted or deferred
+- Reproduction or settlement traces or genealogy records are exported with parent and offspring lineage or species plus phenotype-delta context
+- A follow-up summary can trace at least one successful or failed descendant branch to a concrete policy or phenotype change
 
 #### Stop Conditions
-- Stop after a bounded follow-up panel resolves the current weighting ambiguity
-- Do not escalate to exhaustive hyperparameter sweeps in this bet
+- Stop after bounded genealogy plus reproduction and settlement attribution is live and tested
+- Do not attempt full replay branching in this bet
 
 ## Assumptions / Unknowns
-- Assumption: direct payoff coupling will create a clearer signal than further threshold tuning alone
-- Assumption: bounded causal traces can explain the March 28 ambiguity without requiring full simulation replay
-- Unknown: whether policy-driven ecological gains are currently suppressed more by payoff weakness, distance-weight inflation, or remaining measurement blind spots
-- Unknown: whether the next decisive bottleneck after payoff coupling is genealogical observability or broader environmental complexity
+- Assumption: the March 29 coupling changes are large enough to move bounded diversification metrics, not just per-agent energy partitioning
+- Assumption: policy-sensitive metrics can be layered onto current phenotype and fitness code without rewriting core simulation loops
+- Unknown: whether the next bottleneck after measurement repair is missing descent attribution or insufficient policy-payoff reach
+- Unknown: how much of any new signal is robust across seeds versus path-dependent without replay support

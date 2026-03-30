@@ -165,7 +165,10 @@ function runScenarioComparison({
     label: 'unweighted',
     seeds,
     steps,
-    config: scenario.config
+    config: {
+      ...scenario.config,
+      genomeV2DistanceWeights: undefined
+    }
   });
   const weighted = runArm({
     label: 'weighted',

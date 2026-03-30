@@ -3,7 +3,8 @@ import {
   getDefaultGenomeV2TraitValue,
   getGenomeV2TraitDefinition,
   getTrait,
-  NON_POLICY_TRAITS
+  NON_POLICY_TRAITS,
+  POLICY_TRAITS
 } from './genome-v2';
 import { Agent, PhenotypeDiversityMetrics } from './types';
 
@@ -26,6 +27,17 @@ interface NicheAccumulator {
 }
 
 export function summarizePhenotypeDiversity(agents: Agent[]): PhenotypeDiversityMetrics {
+  return summarizeTraitSpaceDiversity(agents, NON_POLICY_TRAITS);
+}
+
+export function summarizePolicySensitivePhenotypeDiversity(agents: Agent[]): PhenotypeDiversityMetrics {
+  return summarizeTraitSpaceDiversity(agents, [...NON_POLICY_TRAITS, ...POLICY_TRAITS]);
+}
+
+export function summarizeTraitSpaceDiversity(
+  agents: Agent[],
+  traitKeys: ReadonlyArray<string>
+): PhenotypeDiversityMetrics {
   if (agents.length === 0) {
     return {
       effectiveRichness: 0,
@@ -37,7 +49,7 @@ export function summarizePhenotypeDiversity(agents: Agent[]): PhenotypeDiversity
 
   const speciesGroups = new Map<number, SpeciesAccumulator>();
   for (const agent of agents) {
-    const values = NON_POLICY_TRAITS.map((key) => normalizedTraitValue(agent, key));
+    const values = traitKeys.map((key) => normalizedTraitValue(agent, key));
     const accumulator = speciesGroups.get(agent.species);
     if (accumulator) {
       accumulator.population += 1;
