@@ -36,11 +36,12 @@ Underexplored axes: Post-coupling validation, Policy-sensitive measurement, Phen
 
 ## Research Gaps
 - Under matched controls that keep policy loci present in both arms, do the March 30 diversification gains persist when only payoff coupling or policy execution differs?
-- Why does the current phenotype-landscape analysis show effectively no policy-active coverage despite the diversification panel reporting very large policy-sensitive richness gains?
 
 ## Current Anti-Evidence
 - The March 30 "improves" result is not yet strong enough to claim genuine adaptive diversification because its control disables policy mutation entirely and its largest gains come from a metric that directly includes policy traits
-- The March 30 phenotype landscape artifact shows only seven bins and 0.0% policy-positive exposure across three 500-step runs, so the current analytics still do not demonstrate stable policy-conditioned fitness regions
+
+## Resolved Questions (2026-03-31)
+- **Policy Activity Coverage Gap**: The March 30 zero-coverage mystery is now solved. Default simulations create initial agents without genomeV2, and parents without genomeV2 produce offspring without genomeV2 (simulation-reproduction.ts:367-369). Since policy loci only exist in genomeV2, policies cannot evolve in vanilla 500-step runs. With genomeV2-seeded agents, policy-positive exposure ranges from 1.3% to 7.5% across seeds, with 70.4% of bins containing policy-active agents. This confirms that policy-active cohorts exist when initialization permits their evolution.
 
 ## Bet Queue
 
@@ -91,5 +92,5 @@ Add trajectory summaries that score whether new lineages or phenotype innovation
 ## Assumptions / Unknowns
 - Assumption: the March 30 diversification gain is large enough that a stricter control will still be interpretable even if it shrinks substantially
 - Assumption: current causal traces and descent edges provide enough state to support replay-adjacent and trajectory analyses without first rewriting core simulation storage
-- Unknown: whether the zero policy coverage in the phenotype landscape is caused by coarse binning, weak policy activation, or a bug in how policy-positive exposures are propagated
 - Unknown: whether the next bottleneck after stricter validation will be insufficient payoff reach or insufficient environmental complexity
+- Unknown: whether the 5.0% average policy-positive exposure rate (across genomeV2-seeded runs) is sufficient to detect fitness advantages or whether policy-active regions require larger sample sizes or longer timescales
