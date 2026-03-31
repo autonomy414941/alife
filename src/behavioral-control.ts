@@ -203,8 +203,12 @@ export function getTransientStateValue(
 
 export function resolveHarvestSecondaryPreference(
   agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 },
-  primaryAvailable?: number
+  primaryAvailable?: number,
+  enabled = true
 ): number | undefined {
+  if (!enabled) {
+    return undefined;
+  }
   return resolveHarvestSecondaryPreferenceFromBasePreference(
     agent,
     getBaseHarvestSecondaryPreference(agent),
@@ -225,8 +229,12 @@ export function resolveSpendingSecondaryPreference(
 }
 
 export function resolveCoupledSpendingSecondaryPreference(
-  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
+  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 },
+  enabled = true
 ): number | undefined {
+  if (!enabled) {
+    return undefined;
+  }
   const phenotype = realizePhenotype(agent);
   const spendingPreference = phenotype.spendingSecondaryPreference;
   const harvestPreference = resolveHarvestSecondaryPreferenceFromBasePreference(
@@ -378,8 +386,12 @@ export function migratePolicyStateToGenomeV2(agent: Agent): void {
 export function computeGradedReproductionProbability(
   recentHarvest: number,
   threshold: number,
-  steepness: number
+  steepness: number,
+  enabled = true
 ): number {
+  if (!enabled) {
+    return 1;
+  }
   if (threshold <= 0) {
     return 1;
   }

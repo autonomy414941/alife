@@ -229,6 +229,7 @@ export interface LifeSimulationOptions {
   config?: Partial<SimulationConfig>;
   initialAgents?: AgentSeed[];
   encounterOperator?: EncounterOperator;
+  policyCouplingEnabled?: boolean;
 }
 
 interface LocalityFrame {
@@ -275,6 +276,8 @@ export class LifeSimulation {
 
   private readonly encounterOperator: EncounterOperator;
 
+  private readonly policyCouplingEnabled: boolean;
+
   private readonly biomeFertility: number[][];
 
   private resources: number[][];
@@ -318,6 +321,7 @@ export class LifeSimulation {
   constructor(options: LifeSimulationOptions = {}) {
     this.config = resolveSimulationConfig(options.config);
     this.encounterOperator = options.encounterOperator ?? dominantEncounterOperator;
+    this.policyCouplingEnabled = options.policyCouplingEnabled ?? true;
     this.rng = new Rng(options.seed ?? 1);
     const causalTraceConfig: CausalTraceSamplingConfig = {
       enabled: this.config.causalTraceEnabled ?? DEFAULT_CAUSAL_TRACE_CONFIG.enabled,
@@ -467,7 +471,8 @@ export class LifeSimulation {
           },
           () => this.rng.float()
         );
-      }
+      },
+      policyCouplingEnabled: this.policyCouplingEnabled
       });
     policyDecisionStats.reproduction.decisions = reproductionDecisionStats.evaluated;
     policyDecisionStats.reproduction.policyGated = reproductionDecisionStats.policyGated;
@@ -1541,8 +1546,8 @@ export class LifeSimulation {
     policyDecisionStats: PolicyDecisionStats
   ): void {
     agent.age += 1;
-    spendAgentEnergy(agent, this.config.metabolismCostBase * agent.genome.metabolism);
-    spendAgentEnergy(agent, this.specializationMetabolicPenalty(agent));
+    spendAgentEnergy(agent, this.config.metabolismCostBase * agent.genome.metabolism, this.policyCouplingEnabled);
+    spendAgentEnergy(agent, this.specializationMetabolicPenalty(agent), this.policyCouplingEnabled);
     if (agent.energy <= 0 || agent.age > this.config.maxAge) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
       if (lineageOccupancy) {
@@ -1616,7 +1621,7 @@ export class LifeSimulation {
           delta: 1
         });
       }
-      spendAgentEnergy(agent, this.config.moveCost * agent.genome.metabolism);
+      spendAgentEnergy(agent, this.config.moveCost * agent.genome.metabolism, this.policyCouplingEnabled);
     }
     if (agent.energy <= 0) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
@@ -1642,7 +1647,7 @@ export class LifeSimulation {
     const lineageCrowdingEfficiency = lineageOccupancy
       ? this.lineageHarvestCrowdingEfficiency(agent, lineageOccupancy)
       : 1;
-    const harvestSecondaryPreference = resolveHarvestSecondaryPreference(agent, available);
+    const harvestSecondaryPreference = resolveHarvestSecondaryPreference(agent, available, this.policyCouplingEnabled);
     const defaultHarvestShares = resolveResourceHarvestShares(agent.genome);
     const harvest = resolveDualResourceHarvest({
       primaryAvailable: available,

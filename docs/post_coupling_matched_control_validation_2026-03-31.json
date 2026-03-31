@@ -1,0 +1,200 @@
+{
+  "generatedAt": "2026-03-31T05:00:00.000Z",
+  "question": "Under a matched control where both arms have identical policy loci that can mutate, does enabling policy-payoff coupling still produce the diversification gains reported on March 30?",
+  "prediction": "If the March 30 effect is genuine ecology-mediated adaptive diversification rather than a \"more mutating coordinates\" artifact, the policy-coupled arm should retain a measurable advantage even when the control has the same policy loci.",
+  "methodology": "Run matched 120-step panels with 2 shared seeds. Both arms start from the same genomeV2-backed initial population with neutral policy loci present and identical policyMutationProbability=0.65. The policy-coupled arm allows policy parameters to affect harvest intake, reserve spending, and reproduction gating. The policy-decoupled arm carries the same mutating policy loci but bypasses their effects on payoffs by freezing policy coupling during execution. Both arms use asymmetric secondary-resource forcing and the default genomeV2 moderate-downweight distance regime. Report final phenotype diversity, policy-sensitive phenotype-diversity summary, and rolling 30-step diversification rates.",
+  "comparisonToMarch30": "The March 30 artifact compared policyMutationProbability=0.65 against 0, confounding policy execution with access to extra mutating loci. This matched control keeps policy mutation enabled in both arms and isolates whether policies genuinely affect demographic outcomes.",
+  "config": {
+    "seeds": [
+      9201,
+      9202
+    ],
+    "steps": 120,
+    "windowSize": 30,
+    "stopWhenExtinct": false,
+    "distanceWeights": {
+      "categories": {
+        "policyThreshold": 0.25,
+        "policyBounded": 0.5
+      }
+    },
+    "baseConfig": {
+      "maxResource2": 8,
+      "resource2Regen": 0.7,
+      "resource2SeasonalRegenAmplitude": 0.75,
+      "resource2SeasonalFertilityContrastAmplitude": 1,
+      "resource2SeasonalPhaseOffset": 0.5,
+      "resource2BiomeShiftX": 2,
+      "resource2BiomeShiftY": 1
+    }
+  },
+  "policyCoupled": {
+    "label": "policy_coupled",
+    "policyMutationProbability": 0.65,
+    "policyCouplingEnabled": true,
+    "runs": [
+      {
+        "seed": 9201,
+        "finalPopulation": 2634,
+        "activeSpecies": 1178,
+        "activeClades": 18,
+        "effectiveRichness": 3.4737161488270067,
+        "occupiedNiches": 77,
+        "phenotypeDiversity": {
+          "effectiveRichness": 3.4737161488270067,
+          "meanPairwiseDistance": 0.058998098685993816,
+          "occupiedNiches": 77,
+          "speciesPerOccupiedNiche": 15.2987012987013
+        },
+        "policySensitivePhenotypeDiversity": {
+          "effectiveRichness": 178.08809487139936,
+          "meanPairwiseDistance": 0.1516157223090352,
+          "occupiedNiches": 885,
+          "speciesPerOccupiedNiche": 1.3310734463276837
+        },
+        "speciationRate": 17.533333333333335,
+        "extinctionRate": 10.566666666666666,
+        "netDiversificationRate": 6.966666666666667
+      },
+      {
+        "seed": 9202,
+        "finalPopulation": 2727,
+        "activeSpecies": 1370,
+        "activeClades": 21,
+        "effectiveRichness": 13.743176488199161,
+        "occupiedNiches": 111,
+        "phenotypeDiversity": {
+          "effectiveRichness": 13.743176488199161,
+          "meanPairwiseDistance": 0.08882743604919521,
+          "occupiedNiches": 111,
+          "speciesPerOccupiedNiche": 12.342342342342342
+        },
+        "policySensitivePhenotypeDiversity": {
+          "effectiveRichness": 245.68135716408943,
+          "meanPairwiseDistance": 0.17213440052490192,
+          "occupiedNiches": 1161,
+          "speciesPerOccupiedNiche": 1.1800172265288544
+        },
+        "speciationRate": 20.733333333333334,
+        "extinctionRate": 11.2,
+        "netDiversificationRate": 9.533333333333333
+      }
+    ],
+    "aggregate": {
+      "meanFinalPopulation": 2680.5,
+      "meanActiveSpecies": 1274,
+      "meanActiveClades": 19.5,
+      "meanEffectiveRichness": 8.608446318513083,
+      "meanOccupiedNiches": 94,
+      "meanPolicySensitivePhenotypeDiversity": {
+        "effectiveRichness": 211.8847260177444,
+        "meanPairwiseDistance": 0.16187506141696856,
+        "occupiedNiches": 1023,
+        "speciesPerOccupiedNiche": 1.255545336428269
+      },
+      "meanSpeciationRate": 19.133333333333333,
+      "meanExtinctionRate": 10.883333333333333,
+      "meanNetDiversificationRate": 8.25
+    }
+  },
+  "policyDecoupled": {
+    "label": "policy_decoupled",
+    "policyMutationProbability": 0.65,
+    "policyCouplingEnabled": false,
+    "runs": [
+      {
+        "seed": 9201,
+        "finalPopulation": 2940,
+        "activeSpecies": 1285,
+        "activeClades": 18,
+        "effectiveRichness": 5.2426696880333745,
+        "occupiedNiches": 82,
+        "phenotypeDiversity": {
+          "effectiveRichness": 5.2426696880333745,
+          "meanPairwiseDistance": 0.067146677679346,
+          "occupiedNiches": 82,
+          "speciesPerOccupiedNiche": 15.670731707317072
+        },
+        "policySensitivePhenotypeDiversity": {
+          "effectiveRichness": 141.9776609724012,
+          "meanPairwiseDistance": 0.15264535200378937,
+          "occupiedNiches": 1008,
+          "speciesPerOccupiedNiche": 1.2748015873015872
+        },
+        "speciationRate": 20.6,
+        "extinctionRate": 11.633333333333333,
+        "netDiversificationRate": 8.966666666666667
+      },
+      {
+        "seed": 9202,
+        "finalPopulation": 3379,
+        "activeSpecies": 1651,
+        "activeClades": 16,
+        "effectiveRichness": 18.513282214010385,
+        "occupiedNiches": 149,
+        "phenotypeDiversity": {
+          "effectiveRichness": 18.513282214010385,
+          "meanPairwiseDistance": 0.09350234643317955,
+          "occupiedNiches": 149,
+          "speciesPerOccupiedNiche": 11.080536912751677
+        },
+        "policySensitivePhenotypeDiversity": {
+          "effectiveRichness": 321.4335463528669,
+          "meanPairwiseDistance": 0.1733807004317474,
+          "occupiedNiches": 1360,
+          "speciesPerOccupiedNiche": 1.213970588235294
+        },
+        "speciationRate": 26.533333333333335,
+        "extinctionRate": 12.7,
+        "netDiversificationRate": 13.833333333333334
+      }
+    ],
+    "aggregate": {
+      "meanFinalPopulation": 3159.5,
+      "meanActiveSpecies": 1468,
+      "meanActiveClades": 17,
+      "meanEffectiveRichness": 11.87797595102188,
+      "meanOccupiedNiches": 115.5,
+      "meanPolicySensitivePhenotypeDiversity": {
+        "effectiveRichness": 231.70560366263408,
+        "meanPairwiseDistance": 0.16301302621776836,
+        "occupiedNiches": 1184,
+        "speciesPerOccupiedNiche": 1.2443860877684405
+      },
+      "meanSpeciationRate": 23.56666666666667,
+      "meanExtinctionRate": 12.166666666666666,
+      "meanNetDiversificationRate": 11.4
+    }
+  },
+  "delta": {
+    "activeSpecies": -194,
+    "activeClades": 2.5,
+    "effectiveRichness": -3.269529632508796,
+    "occupiedNiches": -21.5,
+    "policySensitiveEffectiveRichness": -19.820877644889663,
+    "policySensitiveMeanPairwiseDistance": -0.0011379648007998067,
+    "policySensitiveOccupiedNiches": -161,
+    "policySensitiveSpeciesPerOccupiedNiche": 0.011159248659828425,
+    "speciationRate": -4.433333333333337,
+    "extinctionRate": -1.2833333333333332,
+    "netDiversificationRate": -3.1500000000000004
+  },
+  "percentDelta": {
+    "effectiveRichness": -27.525982928324698,
+    "occupiedNiches": -18.614718614718615,
+    "policySensitiveEffectiveRichness": -8.554336766817725,
+    "policySensitiveOccupiedNiches": -13.597972972972974,
+    "speciationRate": -18.811881188118825,
+    "netDiversificationRate": -27.631578947368425
+  },
+  "conclusion": {
+    "outcome": "refuted",
+    "summary": "Matched control (both arms with policyMutationProbability=0.65): Effective richness -3.2695 (-27.5%), policy-sensitive richness -19.8209 (-8.6%), policy-sensitive occupied niches -161.0000 (-13.6%), speciation rate -4.4333 (-18.8%), net diversification -3.1500 (-27.6%). Versus March 30 unmatched control: effective richness delta -6.2427, policy-sensitive richness delta -218.3403, speciation rate delta -25.7500, net diversification delta -16.7000.",
+    "comparisonToMarch30Delta": {
+      "effectiveRichnessDeltaChange": -6.242729632508796,
+      "policySensitiveEffectiveRichnessDeltaChange": -218.34027764488965,
+      "speciationRateDeltaChange": -25.750033333333338,
+      "netDiversificationRateDeltaChange": -16.700000000000003
+    }
+  }
+}

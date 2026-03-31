@@ -69,6 +69,7 @@ interface RunReproductionPhaseOptions {
     lineageOccupancy?: LineageOccupancyGrid
   ) => ReproductionOutcome;
   recordDescent?: (edge: DescentEdge) => void;
+  policyCouplingEnabled?: boolean;
 }
 
 interface RunReproductionPhaseResult {
@@ -150,7 +151,8 @@ interface ReproduceAgentOptions {
 function evaluateReproductionEligibility(
   agent: Agent,
   config: SimulationConfig,
-  randomFloat: () => number
+  randomFloat: () => number,
+  policyCouplingEnabled = true
 ): {
   canReproduce: boolean;
   policyGated: boolean;
@@ -184,7 +186,8 @@ function evaluateReproductionEligibility(
   const gradedProbability = computeGradedReproductionProbability(
     recentHarvest,
     reproductionHarvestThreshold,
-    reproductionHarvestThresholdSteepness
+    reproductionHarvestThresholdSteepness,
+    policyCouplingEnabled
   );
 
   if (harvestThresholdPolicyActive && randomFloat() >= gradedProbability) {
@@ -242,7 +245,8 @@ export function runReproductionPhase({
   buildLineageOccupancyGrid,
   adjustLineageOccupancy,
   reproduce,
-  recordDescent
+  recordDescent,
+  policyCouplingEnabled = true
 }: RunReproductionPhaseOptions): RunReproductionPhaseResult {
   const useSettlementContext = usesOffspringSettlementContext(config) || usesCladogenesisEcologyGate(config);
   const reproductiveAgents = useSettlementContext ? agents.filter((agent) => agent.energy > 0) : undefined;
@@ -266,7 +270,7 @@ export function runReproductionPhase({
     if (!isAlive(agent.id)) {
       continue;
     }
-    const reproductionDecision = evaluateReproductionEligibility(agent, config, randomFloat);
+    const reproductionDecision = evaluateReproductionEligibility(agent, config, randomFloat, policyCouplingEnabled);
     decisionStats.evaluated += 1;
     decisionStats.policyGated += Number(reproductionDecision.policyGated);
     decisionStats.harvestThresholdPolicyActive += Number(reproductionDecision.harvestThresholdPolicyActive);

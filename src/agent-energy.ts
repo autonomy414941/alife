@@ -82,7 +82,8 @@ export function addAgentEnergy(
 
 export function spendAgentEnergy(
   agent: EnergyCarrier,
-  amount: number
+  amount: number,
+  policyCouplingEnabled = true
 ): AgentEnergyPools {
   const current = syncAgentEnergy(agent);
   const requested = Math.max(0, amount);
@@ -94,7 +95,12 @@ export function spendAgentEnergy(
   const secondaryEfficiency = resolveMetabolicEfficiency(agent, 'metabolic_efficiency_secondary');
 
   const spentTotal = Math.min(current.total, requested);
-  const { primary: rawPrimarySpent, secondary: rawSecondarySpent } = resolveRawSpendSplit(agent, current, spentTotal);
+  const { primary: rawPrimarySpent, secondary: rawSecondarySpent } = resolveRawSpendSplit(
+    agent,
+    current,
+    spentTotal,
+    policyCouplingEnabled
+  );
 
   const primarySpent = rawPrimarySpent * primaryEfficiency;
   const secondarySpent = rawSecondarySpent * secondaryEfficiency;
@@ -125,9 +131,10 @@ function resolveMetabolicEfficiency(agent: EnergyCarrier, traitKey: string): num
 function resolveRawSpendSplit(
   agent: EnergyCarrier,
   current: AgentEnergyPools,
-  spentTotal: number
+  spentTotal: number,
+  policyCouplingEnabled = true
 ): Pick<AgentEnergyPools, 'primary' | 'secondary'> {
-  const spendingSecondaryPreference = resolveCoupledSpendingSecondaryPreference(agent);
+  const spendingSecondaryPreference = resolveCoupledSpendingSecondaryPreference(agent, policyCouplingEnabled);
   if (spendingSecondaryPreference === undefined) {
     const rawPrimarySpent = spentTotal * (current.primary / current.total);
     return {
