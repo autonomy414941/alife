@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-30T04:28:59.915Z",
+  "generatedAt": "2026-03-31T03:19:40.272Z",
   "question": "What distance weighting scheme prevents policy-only distance from inflating taxonomic outcomes while preserving ecologically meaningful diversification?",
   "hypothesis": "Down-weighting unbounded policy thresholds and bounded policy traits relative to morphology will reduce policy-only species inflation without eliminating diversification entirely.",
   "scenarios": [
