@@ -14,6 +14,14 @@ export class Rng {
     return this.state;
   }
 
+  getState(): number {
+    return this.state;
+  }
+
+  setState(state: number): void {
+    this.state = (state >>> 0) || 1;
+  }
+
   float(): number {
     return this.nextU32() / 0x100000000;
   }

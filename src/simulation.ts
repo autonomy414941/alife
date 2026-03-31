@@ -8,6 +8,7 @@ import {
 } from './agent-energy';
 import {
   CausalTraceCollector,
+  CausalTraceCollectorState,
   CausalTraceSamplingConfig,
   DEFAULT_CAUSAL_TRACE_CONFIG
 } from './causal-trace';
@@ -96,7 +97,8 @@ import { Rng } from './rng';
 import {
   countExtinctionsInWindow,
   countOriginationsInWindow,
-  SimulationEvolutionHistory
+  SimulationEvolutionHistory,
+  SimulationEvolutionHistoryState
 } from './simulation-evolution-history';
 import { TaxonHistoryState } from './simulation-history';
 import { reproduceInSimulation, resolveSimulationLocalEcologyScore } from './simulation-offspring';
@@ -232,7 +234,7 @@ export interface LifeSimulationOptions {
   policyCouplingEnabled?: boolean;
 }
 
-interface LocalityFrame {
+export interface SimulationLocalityFrameState {
   dominantSpeciesByCell: number[];
   dominanceSharesByOccupiedCell: number[];
   speciesRichnessByOccupiedCell: number[];
@@ -242,6 +244,8 @@ interface LocalityFrame {
   neighborhoodCenterDominantAlignmentByOccupiedCell: number[];
   occupiedCells: number;
 }
+
+type LocalityFrame = SimulationLocalityFrameState;
 
 type MovementGateReason = 'none' | 'energy_reserve' | 'recent_harvest';
 
@@ -267,6 +271,41 @@ export interface SimulationStorageDiagnostics {
   localityOccupiedMetricSlotsRetained: number;
   localityNumericSlotsRetained: number;
   estimatedRetainedBytesLowerBound: number;
+}
+
+export interface LifeSimulationReplayState {
+  tickCount: number;
+  rngState: number;
+  config: SimulationConfig;
+  policyCouplingEnabled: boolean;
+  biomeFertility: number[][];
+  resources: number[][];
+  resources2: number[][];
+  agents: Agent[];
+  nextAgentId: number;
+  nextSpeciesId: number;
+  nextLineageId: number;
+  evolutionHistory: SimulationEvolutionHistoryState;
+  cladeFounderGenome: Array<[number, Genome]>;
+  cladeFounderGenomeV2: Array<[number, GenomeV2]>;
+  cladeHabitatPreference: Array<[number, number]>;
+  speciesHabitatPreference: Array<[number, number]>;
+  speciesTrophicLevel: Array<[number, number]>;
+  speciesDefenseLevel: Array<[number, number]>;
+  localityFrames: SimulationLocalityFrameState[];
+  disturbanceEvents: DisturbanceEventState[];
+  disturbanceSettlementOpenUntilTick: number[][];
+  lastStepPolicyFitnessRecords: PolicyFitnessRecord[];
+  causalTrace: CausalTraceCollectorState;
+}
+
+export interface LifeSimulationReplayOptions {
+  encounterOperator?: EncounterOperator;
+  policyCouplingEnabled?: boolean;
+}
+
+interface LifeSimulationRestoreOptions extends LifeSimulationReplayOptions {
+  replayState: LifeSimulationReplayState;
 }
 
 export class LifeSimulation {
@@ -318,7 +357,35 @@ export class LifeSimulation {
 
   private readonly causalTraceCollector: CausalTraceCollector;
 
-  constructor(options: LifeSimulationOptions = {}) {
+  constructor(options?: LifeSimulationOptions);
+  constructor(options: LifeSimulationRestoreOptions);
+  constructor(options: LifeSimulationOptions | LifeSimulationRestoreOptions = {}) {
+    if ('replayState' in options) {
+      const replayState = options.replayState;
+      this.config = resolveSimulationConfig(replayState.config);
+      this.encounterOperator = options.encounterOperator ?? dominantEncounterOperator;
+      this.policyCouplingEnabled = options.policyCouplingEnabled ?? replayState.policyCouplingEnabled;
+      this.rng = new Rng(replayState.rngState);
+      const causalTraceConfig: CausalTraceSamplingConfig = {
+        enabled: this.config.causalTraceEnabled ?? DEFAULT_CAUSAL_TRACE_CONFIG.enabled,
+        samplingRate: this.config.causalTraceSamplingRate ?? DEFAULT_CAUSAL_TRACE_CONFIG.samplingRate,
+        maxEventsPerTick: this.config.causalTraceMaxEventsPerTick ?? DEFAULT_CAUSAL_TRACE_CONFIG.maxEventsPerTick,
+        trackEventTypes: DEFAULT_CAUSAL_TRACE_CONFIG.trackEventTypes
+      };
+      this.causalTraceCollector = new CausalTraceCollector(causalTraceConfig);
+      this.biomeFertility = cloneGrid(replayState.biomeFertility);
+      this.resources = cloneGrid(replayState.resources);
+      this.resources2 = cloneGrid(replayState.resources2);
+      this.disturbanceSettlementOpenUntilTick = cloneGrid(replayState.disturbanceSettlementOpenUntilTick);
+      this.agents = replayState.agents.map((agent) => cloneAgent(agent));
+      this.tickCount = replayState.tickCount;
+      this.nextAgentId = replayState.nextAgentId;
+      this.nextSpeciesId = replayState.nextSpeciesId;
+      this.nextLineageId = replayState.nextLineageId;
+      this.restoreReplayState(replayState);
+      return;
+    }
+
     this.config = resolveSimulationConfig(options.config);
     this.encounterOperator = options.encounterOperator ?? dominantEncounterOperator;
     this.policyCouplingEnabled = options.policyCouplingEnabled ?? true;
@@ -617,7 +684,59 @@ export class LifeSimulation {
   }
 
   policyFitnessRecords(): PolicyFitnessRecord[] {
-    return this.lastStepPolicyFitnessRecords.map((record) => ({ ...record }));
+    return this.lastStepPolicyFitnessRecords.map((record) => clonePolicyFitnessRecord(record));
+  }
+
+  captureReplayState(): LifeSimulationReplayState {
+    return {
+      tickCount: this.tickCount,
+      rngState: this.rng.getState(),
+      config: { ...this.config },
+      policyCouplingEnabled: this.policyCouplingEnabled,
+      biomeFertility: cloneGrid(this.biomeFertility),
+      resources: cloneGrid(this.resources),
+      resources2: cloneGrid(this.resources2),
+      agents: this.agents.map((agent) => cloneAgent(agent)),
+      nextAgentId: this.nextAgentId,
+      nextSpeciesId: this.nextSpeciesId,
+      nextLineageId: this.nextLineageId,
+      evolutionHistory: this.evolutionHistory.snapshotState(),
+      cladeFounderGenome: [...this.cladeFounderGenome.entries()].map(([lineage, genome]) => [
+        lineage,
+        copyGenome(genome)
+      ]),
+      cladeFounderGenomeV2: [...this.cladeFounderGenomeV2.entries()].map(([lineage, genome]) => [
+        lineage,
+        cloneGenomeV2(genome)
+      ]),
+      cladeHabitatPreference: [...this.cladeHabitatPreference.entries()],
+      speciesHabitatPreference: [...this.speciesHabitatPreference.entries()],
+      speciesTrophicLevel: [...this.speciesTrophicLevel.entries()],
+      speciesDefenseLevel: [...this.speciesDefenseLevel.entries()],
+      localityFrames: this.localityFrames.map((frame) => cloneLocalityFrame(frame)),
+      disturbanceEvents: this.disturbanceEvents.map((event) => ({ ...event })),
+      disturbanceSettlementOpenUntilTick: cloneGrid(this.disturbanceSettlementOpenUntilTick),
+      lastStepPolicyFitnessRecords: this.lastStepPolicyFitnessRecords.map((record) => clonePolicyFitnessRecord(record)),
+      causalTrace: this.causalTraceCollector.snapshotState()
+    };
+  }
+
+  fork(options: LifeSimulationReplayOptions = {}): LifeSimulation {
+    return LifeSimulation.fromReplayState(this.captureReplayState(), {
+      encounterOperator: options.encounterOperator ?? this.encounterOperator,
+      policyCouplingEnabled: options.policyCouplingEnabled ?? this.policyCouplingEnabled
+    });
+  }
+
+  static fromReplayState(
+    replayState: LifeSimulationReplayState,
+    options: LifeSimulationReplayOptions = {}
+  ): LifeSimulation {
+    return new LifeSimulation({
+      replayState,
+      encounterOperator: options.encounterOperator,
+      policyCouplingEnabled: options.policyCouplingEnabled
+    });
   }
 
   snapshot(): SimulationSnapshot {
@@ -631,13 +750,7 @@ export class LifeSimulation {
       dominantSpeciesShare: diversity.dominantSpeciesShare,
       extinctClades: this.evolutionHistory.getExtinctClades(),
       extinctSpecies: this.evolutionHistory.getExtinctSpecies(),
-      agents: this.agents.map((agent) => ({
-        ...agent,
-        genome: { ...agent.genome },
-        genomeV2: agent.genomeV2 ? cloneGenomeV2(agent.genomeV2) : undefined,
-        policyState: clonePolicyState(agent.policyState),
-        transientState: cloneTransientState(agent.transientState)
-      }))
+      agents: this.agents.map((agent) => cloneAgent(agent))
     };
   }
 
@@ -647,6 +760,43 @@ export class LifeSimulation {
 
   causalTrace() {
     return this.causalTraceCollector;
+  }
+
+  private restoreReplayState(replayState: LifeSimulationReplayState): void {
+    this.rng.setState(replayState.rngState);
+    this.evolutionHistory.restoreState(replayState.evolutionHistory);
+    this.restoreGenomeMap(this.cladeFounderGenome, replayState.cladeFounderGenome, (genome) => copyGenome(genome));
+    this.restoreGenomeMap(this.cladeFounderGenomeV2, replayState.cladeFounderGenomeV2, (genome) => cloneGenomeV2(genome));
+    this.restoreNumberMap(this.cladeHabitatPreference, replayState.cladeHabitatPreference);
+    this.restoreNumberMap(this.speciesHabitatPreference, replayState.speciesHabitatPreference);
+    this.restoreNumberMap(this.speciesTrophicLevel, replayState.speciesTrophicLevel);
+    this.restoreNumberMap(this.speciesDefenseLevel, replayState.speciesDefenseLevel);
+    this.localityFrames.length = 0;
+    this.localityFrames.push(...replayState.localityFrames.map((frame) => cloneLocalityFrame(frame)));
+    this.disturbanceEvents.length = 0;
+    this.disturbanceEvents.push(...replayState.disturbanceEvents.map((event) => ({ ...event })));
+    this.lastStepPolicyFitnessRecords = replayState.lastStepPolicyFitnessRecords.map((record) =>
+      clonePolicyFitnessRecord(record)
+    );
+    this.causalTraceCollector.restoreState(replayState.causalTrace);
+  }
+
+  private restoreGenomeMap<T>(
+    target: Map<number, T>,
+    entries: ReadonlyArray<readonly [number, T]>,
+    cloneValue: (value: T) => T
+  ): void {
+    target.clear();
+    for (const [key, value] of entries) {
+      target.set(key, cloneValue(value));
+    }
+  }
+
+  private restoreNumberMap(target: Map<number, number>, entries: ReadonlyArray<readonly [number, number]>): void {
+    target.clear();
+    for (const [key, value] of entries) {
+      target.set(key, value);
+    }
   }
 
   storageDiagnostics(): SimulationStorageDiagnostics {
@@ -2668,6 +2818,40 @@ function normalizeTrait(value: number, min: number, max: number): number {
     return 0;
   }
   return clamp((value - min) / (max - min), 0, 1);
+}
+
+function cloneGrid(grid: ReadonlyArray<ReadonlyArray<number>>): number[][] {
+  return grid.map((row) => [...row]);
+}
+
+function cloneAgent(agent: Agent): Agent {
+  return {
+    ...agent,
+    genome: copyGenome(agent.genome),
+    genomeV2: agent.genomeV2 ? cloneGenomeV2(agent.genomeV2) : undefined,
+    policyState: clonePolicyState(agent.policyState),
+    transientState: cloneTransientState(agent.transientState)
+  };
+}
+
+function cloneLocalityFrame(frame: SimulationLocalityFrameState): SimulationLocalityFrameState {
+  return {
+    dominantSpeciesByCell: [...frame.dominantSpeciesByCell],
+    dominanceSharesByOccupiedCell: [...frame.dominanceSharesByOccupiedCell],
+    speciesRichnessByOccupiedCell: [...frame.speciesRichnessByOccupiedCell],
+    neighborhoodDominantSpeciesByCell: [...frame.neighborhoodDominantSpeciesByCell],
+    neighborhoodDominanceSharesByOccupiedCell: [...frame.neighborhoodDominanceSharesByOccupiedCell],
+    neighborhoodSpeciesRichnessByOccupiedCell: [...frame.neighborhoodSpeciesRichnessByOccupiedCell],
+    neighborhoodCenterDominantAlignmentByOccupiedCell: [...frame.neighborhoodCenterDominantAlignmentByOccupiedCell],
+    occupiedCells: frame.occupiedCells
+  };
+}
+
+function clonePolicyFitnessRecord(record: PolicyFitnessRecord): PolicyFitnessRecord {
+  return {
+    ...record,
+    policyValues: record.policyValues ? { ...record.policyValues } : undefined
+  };
 }
 
 function copyGenome(genome: Genome): Genome {

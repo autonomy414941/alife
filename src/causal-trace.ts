@@ -118,6 +118,12 @@ export interface CausalTraceSamplingConfig {
   trackEventTypes: Set<CausalEventType>;
 }
 
+export interface CausalTraceCollectorState {
+  events: CausalTraceEvent[];
+  currentTickEventCount: number;
+  currentTick: number;
+}
+
 export const DEFAULT_CAUSAL_TRACE_CONFIG: CausalTraceSamplingConfig = {
   enabled: false,
   samplingRate: 0.1,
@@ -167,6 +173,20 @@ export class CausalTraceCollector {
     return this.events.length;
   }
 
+  snapshotState(): CausalTraceCollectorState {
+    return {
+      events: this.events.map((event) => cloneCausalTraceEvent(event)),
+      currentTickEventCount: this.currentTickEventCount,
+      currentTick: this.currentTick
+    };
+  }
+
+  restoreState(state: CausalTraceCollectorState): void {
+    this.events = state.events.map((event) => cloneCausalTraceEvent(event));
+    this.currentTickEventCount = state.currentTickEventCount;
+    this.currentTick = state.currentTick;
+  }
+
   getEventsByType(type: CausalEventType): CausalTraceEvent[] {
     return this.events.filter((e) => e.type === type);
   }
@@ -200,4 +220,15 @@ export class CausalTraceCollector {
       return false;
     });
   }
+}
+
+function cloneCausalTraceEvent(event: CausalTraceEvent): CausalTraceEvent {
+  if (event.type === 'reproduction' || event.type === 'settlement') {
+    return {
+      ...event,
+      phenotypeDelta: event.phenotypeDelta.map((entry) => ({ ...entry }))
+    };
+  }
+
+  return { ...event };
 }

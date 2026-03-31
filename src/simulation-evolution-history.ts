@@ -39,6 +39,14 @@ interface HistoryStepInput extends Partial<HistorySamplingContext> {
 
 const MAX_DESCENT_EDGES = 2048;
 
+export interface SimulationEvolutionHistoryState {
+  cladeHistory: TaxonHistoryState[];
+  speciesHistory: TaxonHistoryState[];
+  descentEdges: DescentEdge[];
+  extinctClades: number;
+  extinctSpecies: number;
+}
+
 export class SimulationEvolutionHistory {
   private readonly cladeHistory = new Map<number, TaxonHistoryState>();
 
@@ -146,6 +154,39 @@ export class SimulationEvolutionHistory {
 
   getExtinctSpecies(): number {
     return this.extinctSpecies;
+  }
+
+  snapshotState(): SimulationEvolutionHistoryState {
+    return {
+      cladeHistory: cloneTaxonHistoryStateEntries(this.cladeHistory),
+      speciesHistory: cloneTaxonHistoryStateEntries(this.speciesHistory),
+      descentEdges: this.descentEdges.map((edge) => cloneDescentEdge(edge)),
+      extinctClades: this.extinctClades,
+      extinctSpecies: this.extinctSpecies
+    };
+  }
+
+  restoreState(state: SimulationEvolutionHistoryState): void {
+    this.cladeHistory.clear();
+    for (const entry of state.cladeHistory) {
+      this.cladeHistory.set(entry.id, cloneTaxonHistoryState(entry));
+    }
+
+    this.speciesHistory.clear();
+    for (const entry of state.speciesHistory) {
+      this.speciesHistory.set(entry.id, cloneTaxonHistoryState(entry));
+    }
+
+    this.descentEdges.length = 0;
+    this.descentEdgeByOffspringId.clear();
+    for (const edge of state.descentEdges) {
+      const copy = cloneDescentEdge(edge);
+      this.descentEdges.push(copy);
+      this.descentEdgeByOffspringId.set(copy.offspringId, copy);
+    }
+
+    this.extinctClades = state.extinctClades;
+    this.extinctSpecies = state.extinctSpecies;
   }
 
   private recordDescentEdges(edges: ReadonlyArray<DescentEdge>): void {
@@ -256,6 +297,28 @@ function countTaxa(
     counts.set(id, (counts.get(id) ?? 0) + 1);
   }
   return counts;
+}
+
+function cloneTaxonHistoryStateEntries(history: Map<number, TaxonHistoryState>): TaxonHistoryState[] {
+  return [...history.values()]
+    .sort((left, right) => left.id - right.id)
+    .map((entry) => cloneTaxonHistoryState(entry));
+}
+
+function cloneTaxonHistoryState(entry: TaxonHistoryState): TaxonHistoryState {
+  return {
+    ...entry,
+    timeline: entry.timeline.map((point) => ({ ...point }))
+  };
+}
+
+function cloneDescentEdge(edge: DescentEdge): DescentEdge {
+  return {
+    ...edge,
+    phenotypeDelta: edge.phenotypeDelta.map((entry) => ({ ...entry })),
+    reproduction: { ...edge.reproduction },
+    settlement: { ...edge.settlement }
+  };
 }
 
 function buildTurnoverAnalytics(
