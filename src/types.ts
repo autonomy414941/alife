@@ -16,6 +16,12 @@ export interface GenomeV2DistanceWeights {
   traits?: Partial<Record<string, number>>;
 }
 
+export interface PolicyCouplingConfig {
+  harvestGuidance: boolean;
+  reserveSpending: boolean;
+  reproductionGating: boolean;
+}
+
 export interface TaxonTimelinePoint {
   tick: number;
   population: number;

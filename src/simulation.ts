@@ -127,6 +127,7 @@ import {
   LocalityRadiusTurnoverAnalytics,
   LocalityStateAnalytics,
   LocalityTurnoverAnalytics,
+  PolicyCouplingConfig,
   SimulationConfig,
   SimulationRunSeries,
   SimulationSnapshot,
@@ -212,6 +213,35 @@ export function resolveSimulationConfig(config: Partial<SimulationConfig> = {}):
   return { ...DEFAULT_CONFIG, ...config };
 }
 
+export const DEFAULT_POLICY_COUPLING: PolicyCouplingConfig = {
+  harvestGuidance: true,
+  reserveSpending: true,
+  reproductionGating: true
+};
+
+export function resolvePolicyCoupling(
+  policyCouplingEnabled?: boolean,
+  policyCoupling: Partial<PolicyCouplingConfig> = {}
+): PolicyCouplingConfig {
+  const base =
+    policyCouplingEnabled === undefined
+      ? DEFAULT_POLICY_COUPLING
+      : {
+          harvestGuidance: policyCouplingEnabled,
+          reserveSpending: policyCouplingEnabled,
+          reproductionGating: policyCouplingEnabled
+        };
+
+  return {
+    ...base,
+    ...policyCoupling
+  };
+}
+
+function isPolicyCouplingFullyEnabled(policyCoupling: PolicyCouplingConfig): boolean {
+  return policyCoupling.harvestGuidance && policyCoupling.reserveSpending && policyCoupling.reproductionGating;
+}
+
 const MIN_GENOME: Genome = {
   metabolism: 0.3,
   harvest: 0.4,
@@ -232,6 +262,7 @@ export interface LifeSimulationOptions {
   initialAgents?: AgentSeed[];
   encounterOperator?: EncounterOperator;
   policyCouplingEnabled?: boolean;
+  policyCoupling?: Partial<PolicyCouplingConfig>;
 }
 
 export interface SimulationLocalityFrameState {
@@ -278,6 +309,7 @@ export interface LifeSimulationReplayState {
   rngState: number;
   config: SimulationConfig;
   policyCouplingEnabled: boolean;
+  policyCoupling: PolicyCouplingConfig;
   biomeFertility: number[][];
   resources: number[][];
   resources2: number[][];
@@ -302,6 +334,7 @@ export interface LifeSimulationReplayState {
 export interface LifeSimulationReplayOptions {
   encounterOperator?: EncounterOperator;
   policyCouplingEnabled?: boolean;
+  policyCoupling?: Partial<PolicyCouplingConfig>;
 }
 
 interface LifeSimulationRestoreOptions extends LifeSimulationReplayOptions {
@@ -312,6 +345,8 @@ export class LifeSimulation {
   private readonly rng: Rng;
 
   private readonly config: SimulationConfig;
+
+  private readonly policyCoupling: PolicyCouplingConfig;
 
   private readonly encounterOperator: EncounterOperator;
 
@@ -364,7 +399,11 @@ export class LifeSimulation {
       const replayState = options.replayState;
       this.config = resolveSimulationConfig(replayState.config);
       this.encounterOperator = options.encounterOperator ?? dominantEncounterOperator;
-      this.policyCouplingEnabled = options.policyCouplingEnabled ?? replayState.policyCouplingEnabled;
+      this.policyCoupling =
+        options.policyCouplingEnabled !== undefined || options.policyCoupling !== undefined
+          ? resolvePolicyCoupling(options.policyCouplingEnabled, options.policyCoupling ?? {})
+          : { ...replayState.policyCoupling };
+      this.policyCouplingEnabled = isPolicyCouplingFullyEnabled(this.policyCoupling);
       this.rng = new Rng(replayState.rngState);
       const causalTraceConfig: CausalTraceSamplingConfig = {
         enabled: this.config.causalTraceEnabled ?? DEFAULT_CAUSAL_TRACE_CONFIG.enabled,
@@ -388,7 +427,8 @@ export class LifeSimulation {
 
     this.config = resolveSimulationConfig(options.config);
     this.encounterOperator = options.encounterOperator ?? dominantEncounterOperator;
-    this.policyCouplingEnabled = options.policyCouplingEnabled ?? true;
+    this.policyCoupling = resolvePolicyCoupling(options.policyCouplingEnabled, options.policyCoupling);
+    this.policyCouplingEnabled = isPolicyCouplingFullyEnabled(this.policyCoupling);
     this.rng = new Rng(options.seed ?? 1);
     const causalTraceConfig: CausalTraceSamplingConfig = {
       enabled: this.config.causalTraceEnabled ?? DEFAULT_CAUSAL_TRACE_CONFIG.enabled,
@@ -539,7 +579,7 @@ export class LifeSimulation {
           () => this.rng.float()
         );
       },
-      policyCouplingEnabled: this.policyCouplingEnabled
+      policyCouplingEnabled: this.policyCoupling.reproductionGating
       });
     policyDecisionStats.reproduction.decisions = reproductionDecisionStats.evaluated;
     policyDecisionStats.reproduction.policyGated = reproductionDecisionStats.policyGated;
@@ -693,6 +733,7 @@ export class LifeSimulation {
       rngState: this.rng.getState(),
       config: { ...this.config },
       policyCouplingEnabled: this.policyCouplingEnabled,
+      policyCoupling: { ...this.policyCoupling },
       biomeFertility: cloneGrid(this.biomeFertility),
       resources: cloneGrid(this.resources),
       resources2: cloneGrid(this.resources2),
@@ -724,7 +765,8 @@ export class LifeSimulation {
   fork(options: LifeSimulationReplayOptions = {}): LifeSimulation {
     return LifeSimulation.fromReplayState(this.captureReplayState(), {
       encounterOperator: options.encounterOperator ?? this.encounterOperator,
-      policyCouplingEnabled: options.policyCouplingEnabled ?? this.policyCouplingEnabled
+      policyCouplingEnabled: options.policyCouplingEnabled,
+      policyCoupling: options.policyCoupling
     });
   }
 
@@ -735,7 +777,8 @@ export class LifeSimulation {
     return new LifeSimulation({
       replayState,
       encounterOperator: options.encounterOperator,
-      policyCouplingEnabled: options.policyCouplingEnabled
+      policyCouplingEnabled: options.policyCouplingEnabled,
+      policyCoupling: options.policyCoupling
     });
   }
 
@@ -1696,8 +1739,8 @@ export class LifeSimulation {
     policyDecisionStats: PolicyDecisionStats
   ): void {
     agent.age += 1;
-    spendAgentEnergy(agent, this.config.metabolismCostBase * agent.genome.metabolism, this.policyCouplingEnabled);
-    spendAgentEnergy(agent, this.specializationMetabolicPenalty(agent), this.policyCouplingEnabled);
+    spendAgentEnergy(agent, this.config.metabolismCostBase * agent.genome.metabolism, this.policyCoupling.reserveSpending);
+    spendAgentEnergy(agent, this.specializationMetabolicPenalty(agent), this.policyCoupling.reserveSpending);
     if (agent.energy <= 0 || agent.age > this.config.maxAge) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
       if (lineageOccupancy) {
@@ -1771,7 +1814,7 @@ export class LifeSimulation {
           delta: 1
         });
       }
-      spendAgentEnergy(agent, this.config.moveCost * agent.genome.metabolism, this.policyCouplingEnabled);
+      spendAgentEnergy(agent, this.config.moveCost * agent.genome.metabolism, this.policyCoupling.reserveSpending);
     }
     if (agent.energy <= 0) {
       occupancy[agent.y][agent.x] = Math.max(0, occupancy[agent.y][agent.x] - 1);
@@ -1797,7 +1840,11 @@ export class LifeSimulation {
     const lineageCrowdingEfficiency = lineageOccupancy
       ? this.lineageHarvestCrowdingEfficiency(agent, lineageOccupancy)
       : 1;
-    const harvestSecondaryPreference = resolveHarvestSecondaryPreference(agent, available, this.policyCouplingEnabled);
+    const harvestSecondaryPreference = resolveHarvestSecondaryPreference(
+      agent,
+      available,
+      this.policyCoupling.harvestGuidance
+    );
     const defaultHarvestShares = resolveResourceHarvestShares(agent.genome);
     const harvest = resolveDualResourceHarvest({
       primaryAvailable: available,

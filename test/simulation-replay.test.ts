@@ -82,6 +82,59 @@ describe('simulation replay', () => {
     expect(intervention.snapshot().population).toBeGreaterThan(control.snapshot().population);
   });
 
+  it('supports operator-level replay overrides without changing the shared baseline snapshot', () => {
+    const reproductionPolicyGenome = createGenomeV2();
+    setTrait(reproductionPolicyGenome, 'reproduction_harvest_threshold', 1);
+    setTrait(reproductionPolicyGenome, 'reproduction_harvest_threshold_steepness', 10);
+
+    const baseline = new LifeSimulation({
+      seed: 88,
+      config: {
+        width: 1,
+        height: 1,
+        maxResource: 0,
+        resourceRegen: 0,
+        metabolismCostBase: 0,
+        moveCost: 0,
+        harvestCap: 0,
+        reproduceThreshold: 10,
+        reproduceProbability: 1,
+        offspringEnergyFraction: 0.5,
+        mutationAmount: 0,
+        policyMutationProbability: 0,
+        policyMutationMagnitude: 0,
+        speciationThreshold: 10,
+        maxAge: 100
+      },
+      initialAgents: [
+        {
+          x: 0,
+          y: 0,
+          energy: 30,
+          genome: { metabolism: 1, harvest: 1, aggression: 0.5 },
+          genomeV2: reproductionPolicyGenome
+        }
+      ]
+    });
+
+    baseline.run(2);
+    const replayState = baseline.captureReplayState();
+    const decoupled = LifeSimulation.fromReplayState(replayState, { policyCouplingEnabled: false });
+    const reproductionOnly = LifeSimulation.fromReplayState(replayState, {
+      policyCoupling: {
+        reproductionGating: true
+      }
+    });
+
+    expect(decoupled.snapshot()).toEqual(reproductionOnly.snapshot());
+
+    decoupled.run(4);
+    reproductionOnly.run(4);
+
+    expect(reproductionOnly.snapshot().population).toBe(1);
+    expect(decoupled.snapshot().population).toBeGreaterThan(reproductionOnly.snapshot().population);
+  });
+
   it('runs a bounded replay counterfactual study from a shared baseline world state', () => {
     const artifact = runPolicyCouplingReplayCounterfactual({
       generatedAt: '2026-03-31T00:00:00.000Z'

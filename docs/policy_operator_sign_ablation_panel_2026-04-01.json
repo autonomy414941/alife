@@ -1,0 +1,1076 @@
+{
+  "generatedAt": "2026-04-01T03:18:04.533Z",
+  "question": "Which direct policy-payoff operator drives the matched-control loss once harvest guidance, reserve spending, and reproduction gating are isolated under shared replay states?",
+  "prediction": "If one operator is responsible for most of the March 31 detriment, its marginal delta should stay negative across multiple combination contexts while at least one other operator remains near-neutral or positive.",
+  "methodology": "For each seed, create a genomeV2-backed initial population with neutral policy loci, run a 10-step burn-in with policy mutation enabled and all direct payoff couplings disabled, capture the replay state, then fork eight matched branches covering every combination of harvest guidance, reserve spending, and reproduction gating for 10 steps. Compare final phenotype diversity, policy-sensitive phenotype diversity, and rolling 5-step diversification rates against the fully decoupled branch.",
+  "config": {
+    "seeds": [
+      9301,
+      9302
+    ],
+    "burnInSteps": 10,
+    "branchSteps": 10,
+    "windowSize": 5,
+    "stopWhenExtinct": false,
+    "policyMutationProbability": 0.65,
+    "distanceWeights": {
+      "categories": {
+        "policyThreshold": 0.25,
+        "policyBounded": 0.5
+      }
+    },
+    "baseConfig": {
+      "maxResource2": 8,
+      "resource2Regen": 0.7,
+      "resource2SeasonalRegenAmplitude": 0.75,
+      "resource2SeasonalFertilityContrastAmplitude": 1,
+      "resource2SeasonalPhaseOffset": 0.5,
+      "resource2BiomeShiftX": 2,
+      "resource2BiomeShiftY": 1
+    }
+  },
+  "sharedBaselines": [
+    {
+      "seed": 9301,
+      "tick": 10,
+      "population": 68,
+      "activeSpecies": 66,
+      "activeClades": 24,
+      "meanEnergy": 15.918608841026566,
+      "anyPolicyAgentFraction": 1
+    },
+    {
+      "seed": 9302,
+      "tick": 10,
+      "population": 64,
+      "activeSpecies": 63,
+      "activeClades": 24,
+      "meanEnergy": 17.1274093247961,
+      "anyPolicyAgentFraction": 1
+    }
+  ],
+  "arms": [
+    {
+      "label": "none",
+      "policyCoupling": {
+        "harvestGuidance": false,
+        "reserveSpending": false,
+        "reproductionGating": false
+      },
+      "runs": [
+        {
+          "seed": 9301,
+          "finalPopulation": 173,
+          "activeSpecies": 133,
+          "activeClades": 24,
+          "effectiveRichness": 10.769701331414176,
+          "occupiedNiches": 26,
+          "phenotypeDiversity": {
+            "effectiveRichness": 10.769701331414176,
+            "meanPairwiseDistance": 0.09298818003807549,
+            "occupiedNiches": 26,
+            "speciesPerOccupiedNiche": 5.115384615384615
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 89.87687687687703,
+            "meanPairwiseDistance": 0.15859167412102138,
+            "occupiedNiches": 116,
+            "speciesPerOccupiedNiche": 1.146551724137931
+          },
+          "speciationRate": 8.4,
+          "extinctionRate": 0,
+          "netDiversificationRate": 8.4,
+          "harvestDecisionGuidedFraction": 0,
+          "reproductionDecisionGatedFraction": 0
+        },
+        {
+          "seed": 9302,
+          "finalPopulation": 172,
+          "activeSpecies": 142,
+          "activeClades": 24,
+          "effectiveRichness": 12.409395973154359,
+          "occupiedNiches": 34,
+          "phenotypeDiversity": {
+            "effectiveRichness": 12.409395973154359,
+            "meanPairwiseDistance": 0.0935449153521603,
+            "occupiedNiches": 34,
+            "speciesPerOccupiedNiche": 4.176470588235294
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 98.61333333333356,
+            "meanPairwiseDistance": 0.16070598119402832,
+            "occupiedNiches": 122,
+            "speciesPerOccupiedNiche": 1.1639344262295082
+          },
+          "speciationRate": 8.6,
+          "extinctionRate": 0,
+          "netDiversificationRate": 8.6,
+          "harvestDecisionGuidedFraction": 0,
+          "reproductionDecisionGatedFraction": 0
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 172.5,
+        "meanActiveSpecies": 137.5,
+        "meanActiveClades": 24,
+        "meanEffectiveRichness": 11.589548652284268,
+        "meanOccupiedNiches": 30,
+        "meanPolicySensitivePhenotypeDiversity": {
+          "effectiveRichness": 94.2451051051053,
+          "meanPairwiseDistance": 0.15964882765752486,
+          "occupiedNiches": 119,
+          "speciesPerOccupiedNiche": 1.1552430751837197
+        },
+        "meanSpeciationRate": 8.5,
+        "meanExtinctionRate": 0,
+        "meanNetDiversificationRate": 8.5,
+        "meanHarvestDecisionGuidedFraction": 0,
+        "meanReproductionDecisionGatedFraction": 0
+      },
+      "deltaVsNone": {
+        "finalPopulation": 0,
+        "activeSpecies": 0,
+        "activeClades": 0,
+        "effectiveRichness": 0,
+        "occupiedNiches": 0,
+        "policySensitiveEffectiveRichness": 0,
+        "policySensitiveOccupiedNiches": 0,
+        "speciationRate": 0,
+        "extinctionRate": 0,
+        "netDiversificationRate": 0,
+        "harvestDecisionGuidedFraction": 0,
+        "reproductionDecisionGatedFraction": 0
+      }
+    },
+    {
+      "label": "harvest_only",
+      "policyCoupling": {
+        "harvestGuidance": true,
+        "reserveSpending": false,
+        "reproductionGating": false
+      },
+      "runs": [
+        {
+          "seed": 9301,
+          "finalPopulation": 176,
+          "activeSpecies": 134,
+          "activeClades": 24,
+          "effectiveRichness": 9.740880503144648,
+          "occupiedNiches": 27,
+          "phenotypeDiversity": {
+            "effectiveRichness": 9.740880503144648,
+            "meanPairwiseDistance": 0.09050655868921344,
+            "occupiedNiches": 27,
+            "speciesPerOccupiedNiche": 4.962962962962963
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 85.09890109890084,
+            "meanPairwiseDistance": 0.1571804514731075,
+            "occupiedNiches": 113,
+            "speciesPerOccupiedNiche": 1.1858407079646018
+          },
+          "speciationRate": 8.4,
+          "extinctionRate": 0,
+          "netDiversificationRate": 8.4,
+          "harvestDecisionGuidedFraction": 0.8963414634146342,
+          "reproductionDecisionGatedFraction": 0
+        },
+        {
+          "seed": 9302,
+          "finalPopulation": 165,
+          "activeSpecies": 130,
+          "activeClades": 24,
+          "effectiveRichness": 11.92509855453352,
+          "occupiedNiches": 31,
+          "phenotypeDiversity": {
+            "effectiveRichness": 11.92509855453352,
+            "meanPairwiseDistance": 0.09335357140182633,
+            "occupiedNiches": 31,
+            "speciesPerOccupiedNiche": 4.193548387096774
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 87.54019292604485,
+            "meanPairwiseDistance": 0.1551120922705521,
+            "occupiedNiches": 113,
+            "speciesPerOccupiedNiche": 1.1504424778761062
+          },
+          "speciationRate": 6,
+          "extinctionRate": 0,
+          "netDiversificationRate": 6,
+          "harvestDecisionGuidedFraction": 0.922077922077922,
+          "reproductionDecisionGatedFraction": 0
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 170.5,
+        "meanActiveSpecies": 132,
+        "meanActiveClades": 24,
+        "meanEffectiveRichness": 10.832989528839084,
+        "meanOccupiedNiches": 29,
+        "meanPolicySensitivePhenotypeDiversity": {
+          "effectiveRichness": 86.31954701247284,
+          "meanPairwiseDistance": 0.15614627187182978,
+          "occupiedNiches": 113,
+          "speciesPerOccupiedNiche": 1.168141592920354
+        },
+        "meanSpeciationRate": 7.2,
+        "meanExtinctionRate": 0,
+        "meanNetDiversificationRate": 7.2,
+        "meanHarvestDecisionGuidedFraction": 0.909209692746278,
+        "meanReproductionDecisionGatedFraction": 0
+      },
+      "deltaVsNone": {
+        "finalPopulation": -2,
+        "activeSpecies": -5.5,
+        "activeClades": 0,
+        "effectiveRichness": -0.7565591234451841,
+        "occupiedNiches": -1,
+        "policySensitiveEffectiveRichness": -7.925558092632457,
+        "policySensitiveOccupiedNiches": -6,
+        "speciationRate": -1.2999999999999998,
+        "extinctionRate": 0,
+        "netDiversificationRate": -1.2999999999999998,
+        "harvestDecisionGuidedFraction": 0.909209692746278,
+        "reproductionDecisionGatedFraction": 0
+      }
+    },
+    {
+      "label": "spending_only",
+      "policyCoupling": {
+        "harvestGuidance": false,
+        "reserveSpending": true,
+        "reproductionGating": false
+      },
+      "runs": [
+        {
+          "seed": 9301,
+          "finalPopulation": 173,
+          "activeSpecies": 133,
+          "activeClades": 24,
+          "effectiveRichness": 10.769701331414176,
+          "occupiedNiches": 26,
+          "phenotypeDiversity": {
+            "effectiveRichness": 10.769701331414176,
+            "meanPairwiseDistance": 0.09298818003807549,
+            "occupiedNiches": 26,
+            "speciesPerOccupiedNiche": 5.115384615384615
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 89.87687687687703,
+            "meanPairwiseDistance": 0.15859167412102138,
+            "occupiedNiches": 116,
+            "speciesPerOccupiedNiche": 1.146551724137931
+          },
+          "speciationRate": 8.4,
+          "extinctionRate": 0,
+          "netDiversificationRate": 8.4,
+          "harvestDecisionGuidedFraction": 0,
+          "reproductionDecisionGatedFraction": 0
+        },
+        {
+          "seed": 9302,
+          "finalPopulation": 172,
+          "activeSpecies": 142,
+          "activeClades": 24,
+          "effectiveRichness": 12.409395973154359,
+          "occupiedNiches": 34,
+          "phenotypeDiversity": {
+            "effectiveRichness": 12.409395973154359,
+            "meanPairwiseDistance": 0.0935449153521603,
+            "occupiedNiches": 34,
+            "speciesPerOccupiedNiche": 4.176470588235294
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 98.61333333333356,
+            "meanPairwiseDistance": 0.16070598119402832,
+            "occupiedNiches": 122,
+            "speciesPerOccupiedNiche": 1.1639344262295082
+          },
+          "speciationRate": 8.6,
+          "extinctionRate": 0,
+          "netDiversificationRate": 8.6,
+          "harvestDecisionGuidedFraction": 0,
+          "reproductionDecisionGatedFraction": 0
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 172.5,
+        "meanActiveSpecies": 137.5,
+        "meanActiveClades": 24,
+        "meanEffectiveRichness": 11.589548652284268,
+        "meanOccupiedNiches": 30,
+        "meanPolicySensitivePhenotypeDiversity": {
+          "effectiveRichness": 94.2451051051053,
+          "meanPairwiseDistance": 0.15964882765752486,
+          "occupiedNiches": 119,
+          "speciesPerOccupiedNiche": 1.1552430751837197
+        },
+        "meanSpeciationRate": 8.5,
+        "meanExtinctionRate": 0,
+        "meanNetDiversificationRate": 8.5,
+        "meanHarvestDecisionGuidedFraction": 0,
+        "meanReproductionDecisionGatedFraction": 0
+      },
+      "deltaVsNone": {
+        "finalPopulation": 0,
+        "activeSpecies": 0,
+        "activeClades": 0,
+        "effectiveRichness": 0,
+        "occupiedNiches": 0,
+        "policySensitiveEffectiveRichness": 0,
+        "policySensitiveOccupiedNiches": 0,
+        "speciationRate": 0,
+        "extinctionRate": 0,
+        "netDiversificationRate": 0,
+        "harvestDecisionGuidedFraction": 0,
+        "reproductionDecisionGatedFraction": 0
+      }
+    },
+    {
+      "label": "reproduction_only",
+      "policyCoupling": {
+        "harvestGuidance": false,
+        "reserveSpending": false,
+        "reproductionGating": true
+      },
+      "runs": [
+        {
+          "seed": 9301,
+          "finalPopulation": 166,
+          "activeSpecies": 126,
+          "activeClades": 24,
+          "effectiveRichness": 9.028833551769331,
+          "occupiedNiches": 23,
+          "phenotypeDiversity": {
+            "effectiveRichness": 9.028833551769331,
+            "meanPairwiseDistance": 0.08999262822463412,
+            "occupiedNiches": 23,
+            "speciesPerOccupiedNiche": 5.478260869565218
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 87.20253164556982,
+            "meanPairwiseDistance": 0.15472011780261555,
+            "occupiedNiches": 110,
+            "speciesPerOccupiedNiche": 1.1454545454545455
+          },
+          "speciationRate": 6.4,
+          "extinctionRate": 0,
+          "netDiversificationRate": 6.4,
+          "harvestDecisionGuidedFraction": 0,
+          "reproductionDecisionGatedFraction": 0.060810810810810814
+        },
+        {
+          "seed": 9302,
+          "finalPopulation": 159,
+          "activeSpecies": 134,
+          "activeClades": 24,
+          "effectiveRichness": 9.964919195900668,
+          "occupiedNiches": 30,
+          "phenotypeDiversity": {
+            "effectiveRichness": 9.964919195900668,
+            "meanPairwiseDistance": 0.09029671110447604,
+            "occupiedNiches": 30,
+            "speciesPerOccupiedNiche": 4.466666666666667
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 90.61290322580645,
+            "meanPairwiseDistance": 0.15055128524682204,
+            "occupiedNiches": 116,
+            "speciesPerOccupiedNiche": 1.1551724137931034
+          },
+          "speciationRate": 7.6,
+          "extinctionRate": 0,
+          "netDiversificationRate": 7.6,
+          "harvestDecisionGuidedFraction": 0,
+          "reproductionDecisionGatedFraction": 0.02631578947368421
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 162.5,
+        "meanActiveSpecies": 130,
+        "meanActiveClades": 24,
+        "meanEffectiveRichness": 9.496876373835,
+        "meanOccupiedNiches": 26.5,
+        "meanPolicySensitivePhenotypeDiversity": {
+          "effectiveRichness": 88.90771743568814,
+          "meanPairwiseDistance": 0.15263570152471878,
+          "occupiedNiches": 113,
+          "speciesPerOccupiedNiche": 1.1503134796238244
+        },
+        "meanSpeciationRate": 7,
+        "meanExtinctionRate": 0,
+        "meanNetDiversificationRate": 7,
+        "meanHarvestDecisionGuidedFraction": 0,
+        "meanReproductionDecisionGatedFraction": 0.04356330014224751
+      },
+      "deltaVsNone": {
+        "finalPopulation": -10,
+        "activeSpecies": -7.5,
+        "activeClades": 0,
+        "effectiveRichness": -2.0926722784492675,
+        "occupiedNiches": -3.5,
+        "policySensitiveEffectiveRichness": -5.337387669417154,
+        "policySensitiveOccupiedNiches": -6,
+        "speciationRate": -1.5,
+        "extinctionRate": 0,
+        "netDiversificationRate": -1.5,
+        "harvestDecisionGuidedFraction": 0,
+        "reproductionDecisionGatedFraction": 0.04356330014224751
+      }
+    },
+    {
+      "label": "harvest_spending",
+      "policyCoupling": {
+        "harvestGuidance": true,
+        "reserveSpending": true,
+        "reproductionGating": false
+      },
+      "runs": [
+        {
+          "seed": 9301,
+          "finalPopulation": 176,
+          "activeSpecies": 134,
+          "activeClades": 24,
+          "effectiveRichness": 9.740880503144648,
+          "occupiedNiches": 27,
+          "phenotypeDiversity": {
+            "effectiveRichness": 9.740880503144648,
+            "meanPairwiseDistance": 0.09050655868921344,
+            "occupiedNiches": 27,
+            "speciesPerOccupiedNiche": 4.962962962962963
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 85.09890109890084,
+            "meanPairwiseDistance": 0.1571804514731075,
+            "occupiedNiches": 113,
+            "speciesPerOccupiedNiche": 1.1858407079646018
+          },
+          "speciationRate": 8.4,
+          "extinctionRate": 0,
+          "netDiversificationRate": 8.4,
+          "harvestDecisionGuidedFraction": 0.8963414634146342,
+          "reproductionDecisionGatedFraction": 0
+        },
+        {
+          "seed": 9302,
+          "finalPopulation": 165,
+          "activeSpecies": 130,
+          "activeClades": 24,
+          "effectiveRichness": 11.92509855453352,
+          "occupiedNiches": 31,
+          "phenotypeDiversity": {
+            "effectiveRichness": 11.92509855453352,
+            "meanPairwiseDistance": 0.09335357140182633,
+            "occupiedNiches": 31,
+            "speciesPerOccupiedNiche": 4.193548387096774
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 87.54019292604485,
+            "meanPairwiseDistance": 0.1551120922705521,
+            "occupiedNiches": 113,
+            "speciesPerOccupiedNiche": 1.1504424778761062
+          },
+          "speciationRate": 6,
+          "extinctionRate": 0,
+          "netDiversificationRate": 6,
+          "harvestDecisionGuidedFraction": 0.922077922077922,
+          "reproductionDecisionGatedFraction": 0
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 170.5,
+        "meanActiveSpecies": 132,
+        "meanActiveClades": 24,
+        "meanEffectiveRichness": 10.832989528839084,
+        "meanOccupiedNiches": 29,
+        "meanPolicySensitivePhenotypeDiversity": {
+          "effectiveRichness": 86.31954701247284,
+          "meanPairwiseDistance": 0.15614627187182978,
+          "occupiedNiches": 113,
+          "speciesPerOccupiedNiche": 1.168141592920354
+        },
+        "meanSpeciationRate": 7.2,
+        "meanExtinctionRate": 0,
+        "meanNetDiversificationRate": 7.2,
+        "meanHarvestDecisionGuidedFraction": 0.909209692746278,
+        "meanReproductionDecisionGatedFraction": 0
+      },
+      "deltaVsNone": {
+        "finalPopulation": -2,
+        "activeSpecies": -5.5,
+        "activeClades": 0,
+        "effectiveRichness": -0.7565591234451841,
+        "occupiedNiches": -1,
+        "policySensitiveEffectiveRichness": -7.925558092632457,
+        "policySensitiveOccupiedNiches": -6,
+        "speciationRate": -1.2999999999999998,
+        "extinctionRate": 0,
+        "netDiversificationRate": -1.2999999999999998,
+        "harvestDecisionGuidedFraction": 0.909209692746278,
+        "reproductionDecisionGatedFraction": 0
+      }
+    },
+    {
+      "label": "harvest_reproduction",
+      "policyCoupling": {
+        "harvestGuidance": true,
+        "reserveSpending": false,
+        "reproductionGating": true
+      },
+      "runs": [
+        {
+          "seed": 9301,
+          "finalPopulation": 159,
+          "activeSpecies": 128,
+          "activeClades": 24,
+          "effectiveRichness": 8.923755735968932,
+          "occupiedNiches": 25,
+          "phenotypeDiversity": {
+            "effectiveRichness": 8.923755735968932,
+            "meanPairwiseDistance": 0.09321476823396109,
+            "occupiedNiches": 25,
+            "speciesPerOccupiedNiche": 5.12
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 87.47750865051903,
+            "meanPairwiseDistance": 0.1575633861468881,
+            "occupiedNiches": 111,
+            "speciesPerOccupiedNiche": 1.1531531531531531
+          },
+          "speciationRate": 7.4,
+          "extinctionRate": 0,
+          "netDiversificationRate": 7.4,
+          "harvestDecisionGuidedFraction": 0.9066666666666666,
+          "reproductionDecisionGatedFraction": 0.07333333333333333
+        },
+        {
+          "seed": 9302,
+          "finalPopulation": 161,
+          "activeSpecies": 123,
+          "activeClades": 24,
+          "effectiveRichness": 10.73333333333333,
+          "occupiedNiches": 28,
+          "phenotypeDiversity": {
+            "effectiveRichness": 10.73333333333333,
+            "meanPairwiseDistance": 0.09462686692030665,
+            "occupiedNiches": 28,
+            "speciesPerOccupiedNiche": 4.392857142857143
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 82.81469648562329,
+            "meanPairwiseDistance": 0.14874549823247168,
+            "occupiedNiches": 108,
+            "speciesPerOccupiedNiche": 1.1388888888888888
+          },
+          "speciationRate": 5.4,
+          "extinctionRate": 0,
+          "netDiversificationRate": 5.4,
+          "harvestDecisionGuidedFraction": 0.9144736842105263,
+          "reproductionDecisionGatedFraction": 0.039473684210526314
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 160,
+        "meanActiveSpecies": 125.5,
+        "meanActiveClades": 24,
+        "meanEffectiveRichness": 9.828544534651131,
+        "meanOccupiedNiches": 26.5,
+        "meanPolicySensitivePhenotypeDiversity": {
+          "effectiveRichness": 85.14610256807116,
+          "meanPairwiseDistance": 0.15315444218967988,
+          "occupiedNiches": 109.5,
+          "speciesPerOccupiedNiche": 1.146021021021021
+        },
+        "meanSpeciationRate": 6.4,
+        "meanExtinctionRate": 0,
+        "meanNetDiversificationRate": 6.4,
+        "meanHarvestDecisionGuidedFraction": 0.9105701754385964,
+        "meanReproductionDecisionGatedFraction": 0.056403508771929824
+      },
+      "deltaVsNone": {
+        "finalPopulation": -12.5,
+        "activeSpecies": -12,
+        "activeClades": 0,
+        "effectiveRichness": -1.7610041176331368,
+        "occupiedNiches": -3.5,
+        "policySensitiveEffectiveRichness": -9.099002537034139,
+        "policySensitiveOccupiedNiches": -9.5,
+        "speciationRate": -2.0999999999999996,
+        "extinctionRate": 0,
+        "netDiversificationRate": -2.0999999999999996,
+        "harvestDecisionGuidedFraction": 0.9105701754385964,
+        "reproductionDecisionGatedFraction": 0.056403508771929824
+      }
+    },
+    {
+      "label": "spending_reproduction",
+      "policyCoupling": {
+        "harvestGuidance": false,
+        "reserveSpending": true,
+        "reproductionGating": true
+      },
+      "runs": [
+        {
+          "seed": 9301,
+          "finalPopulation": 166,
+          "activeSpecies": 126,
+          "activeClades": 24,
+          "effectiveRichness": 9.028833551769331,
+          "occupiedNiches": 23,
+          "phenotypeDiversity": {
+            "effectiveRichness": 9.028833551769331,
+            "meanPairwiseDistance": 0.08999262822463412,
+            "occupiedNiches": 23,
+            "speciesPerOccupiedNiche": 5.478260869565218
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 87.20253164556982,
+            "meanPairwiseDistance": 0.15472011780261555,
+            "occupiedNiches": 110,
+            "speciesPerOccupiedNiche": 1.1454545454545455
+          },
+          "speciationRate": 6.4,
+          "extinctionRate": 0,
+          "netDiversificationRate": 6.4,
+          "harvestDecisionGuidedFraction": 0,
+          "reproductionDecisionGatedFraction": 0.060810810810810814
+        },
+        {
+          "seed": 9302,
+          "finalPopulation": 159,
+          "activeSpecies": 134,
+          "activeClades": 24,
+          "effectiveRichness": 9.964919195900668,
+          "occupiedNiches": 30,
+          "phenotypeDiversity": {
+            "effectiveRichness": 9.964919195900668,
+            "meanPairwiseDistance": 0.09029671110447604,
+            "occupiedNiches": 30,
+            "speciesPerOccupiedNiche": 4.466666666666667
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 90.61290322580645,
+            "meanPairwiseDistance": 0.15055128524682204,
+            "occupiedNiches": 116,
+            "speciesPerOccupiedNiche": 1.1551724137931034
+          },
+          "speciationRate": 7.6,
+          "extinctionRate": 0,
+          "netDiversificationRate": 7.6,
+          "harvestDecisionGuidedFraction": 0,
+          "reproductionDecisionGatedFraction": 0.02631578947368421
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 162.5,
+        "meanActiveSpecies": 130,
+        "meanActiveClades": 24,
+        "meanEffectiveRichness": 9.496876373835,
+        "meanOccupiedNiches": 26.5,
+        "meanPolicySensitivePhenotypeDiversity": {
+          "effectiveRichness": 88.90771743568814,
+          "meanPairwiseDistance": 0.15263570152471878,
+          "occupiedNiches": 113,
+          "speciesPerOccupiedNiche": 1.1503134796238244
+        },
+        "meanSpeciationRate": 7,
+        "meanExtinctionRate": 0,
+        "meanNetDiversificationRate": 7,
+        "meanHarvestDecisionGuidedFraction": 0,
+        "meanReproductionDecisionGatedFraction": 0.04356330014224751
+      },
+      "deltaVsNone": {
+        "finalPopulation": -10,
+        "activeSpecies": -7.5,
+        "activeClades": 0,
+        "effectiveRichness": -2.0926722784492675,
+        "occupiedNiches": -3.5,
+        "policySensitiveEffectiveRichness": -5.337387669417154,
+        "policySensitiveOccupiedNiches": -6,
+        "speciationRate": -1.5,
+        "extinctionRate": 0,
+        "netDiversificationRate": -1.5,
+        "harvestDecisionGuidedFraction": 0,
+        "reproductionDecisionGatedFraction": 0.04356330014224751
+      }
+    },
+    {
+      "label": "all",
+      "policyCoupling": {
+        "harvestGuidance": true,
+        "reserveSpending": true,
+        "reproductionGating": true
+      },
+      "runs": [
+        {
+          "seed": 9301,
+          "finalPopulation": 159,
+          "activeSpecies": 128,
+          "activeClades": 24,
+          "effectiveRichness": 8.923755735968932,
+          "occupiedNiches": 25,
+          "phenotypeDiversity": {
+            "effectiveRichness": 8.923755735968932,
+            "meanPairwiseDistance": 0.09321476823396109,
+            "occupiedNiches": 25,
+            "speciesPerOccupiedNiche": 5.12
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 87.47750865051903,
+            "meanPairwiseDistance": 0.1575633861468881,
+            "occupiedNiches": 111,
+            "speciesPerOccupiedNiche": 1.1531531531531531
+          },
+          "speciationRate": 7.4,
+          "extinctionRate": 0,
+          "netDiversificationRate": 7.4,
+          "harvestDecisionGuidedFraction": 0.9066666666666666,
+          "reproductionDecisionGatedFraction": 0.07333333333333333
+        },
+        {
+          "seed": 9302,
+          "finalPopulation": 162,
+          "activeSpecies": 123,
+          "activeClades": 24,
+          "effectiveRichness": 10.414285714285718,
+          "occupiedNiches": 28,
+          "phenotypeDiversity": {
+            "effectiveRichness": 10.414285714285718,
+            "meanPairwiseDistance": 0.09402539661933607,
+            "occupiedNiches": 28,
+            "speciesPerOccupiedNiche": 4.392857142857143
+          },
+          "policySensitivePhenotypeDiversity": {
+            "effectiveRichness": 83.57961783439467,
+            "meanPairwiseDistance": 0.1490623697091357,
+            "occupiedNiches": 109,
+            "speciesPerOccupiedNiche": 1.128440366972477
+          },
+          "speciationRate": 5.4,
+          "extinctionRate": 0,
+          "netDiversificationRate": 5.4,
+          "harvestDecisionGuidedFraction": 0.9144736842105263,
+          "reproductionDecisionGatedFraction": 0.05263157894736842
+        }
+      ],
+      "aggregate": {
+        "meanFinalPopulation": 160.5,
+        "meanActiveSpecies": 125.5,
+        "meanActiveClades": 24,
+        "meanEffectiveRichness": 9.669020725127325,
+        "meanOccupiedNiches": 26.5,
+        "meanPolicySensitivePhenotypeDiversity": {
+          "effectiveRichness": 85.52856324245684,
+          "meanPairwiseDistance": 0.1533128779280119,
+          "occupiedNiches": 110,
+          "speciesPerOccupiedNiche": 1.140796760062815
+        },
+        "meanSpeciationRate": 6.4,
+        "meanExtinctionRate": 0,
+        "meanNetDiversificationRate": 6.4,
+        "meanHarvestDecisionGuidedFraction": 0.9105701754385964,
+        "meanReproductionDecisionGatedFraction": 0.06298245614035088
+      },
+      "deltaVsNone": {
+        "finalPopulation": -12,
+        "activeSpecies": -12,
+        "activeClades": 0,
+        "effectiveRichness": -1.920527927156943,
+        "occupiedNiches": -3.5,
+        "policySensitiveEffectiveRichness": -8.716541862648455,
+        "policySensitiveOccupiedNiches": -9,
+        "speciationRate": -2.0999999999999996,
+        "extinctionRate": 0,
+        "netDiversificationRate": -2.0999999999999996,
+        "harvestDecisionGuidedFraction": 0.9105701754385964,
+        "reproductionDecisionGatedFraction": 0.06298245614035088
+      }
+    }
+  ],
+  "operatorAttribution": [
+    {
+      "operator": "harvestGuidance",
+      "sign": "harmful",
+      "meanMarginalDelta": {
+        "finalPopulation": -2.125,
+        "activeSpecies": -5,
+        "activeClades": 0,
+        "effectiveRichness": -0.25232643369547825,
+        "occupiedNiches": -0.5,
+        "policySensitiveEffectiveRichness": -5.7479713115283,
+        "policySensitiveOccupiedNiches": -4.625,
+        "speciationRate": -0.9499999999999997,
+        "extinctionRate": 0,
+        "netDiversificationRate": -0.9499999999999997,
+        "harvestDecisionGuidedFraction": 0.9098899340924372,
+        "reproductionDecisionGatedFraction": 0.008064841156946419
+      },
+      "contexts": [
+        {
+          "without": "none",
+          "with": "harvest_only",
+          "delta": {
+            "finalPopulation": -2,
+            "activeSpecies": -5.5,
+            "activeClades": 0,
+            "effectiveRichness": -0.7565591234451841,
+            "occupiedNiches": -1,
+            "policySensitiveEffectiveRichness": -7.925558092632457,
+            "policySensitiveOccupiedNiches": -6,
+            "speciationRate": -1.2999999999999998,
+            "extinctionRate": 0,
+            "netDiversificationRate": -1.2999999999999998,
+            "harvestDecisionGuidedFraction": 0.909209692746278,
+            "reproductionDecisionGatedFraction": 0
+          }
+        },
+        {
+          "without": "spending_only",
+          "with": "harvest_spending",
+          "delta": {
+            "finalPopulation": -2,
+            "activeSpecies": -5.5,
+            "activeClades": 0,
+            "effectiveRichness": -0.7565591234451841,
+            "occupiedNiches": -1,
+            "policySensitiveEffectiveRichness": -7.925558092632457,
+            "policySensitiveOccupiedNiches": -6,
+            "speciationRate": -1.2999999999999998,
+            "extinctionRate": 0,
+            "netDiversificationRate": -1.2999999999999998,
+            "harvestDecisionGuidedFraction": 0.909209692746278,
+            "reproductionDecisionGatedFraction": 0
+          }
+        },
+        {
+          "without": "reproduction_only",
+          "with": "harvest_reproduction",
+          "delta": {
+            "finalPopulation": -2.5,
+            "activeSpecies": -4.5,
+            "activeClades": 0,
+            "effectiveRichness": 0.3316681608161307,
+            "occupiedNiches": 0,
+            "policySensitiveEffectiveRichness": -3.7616148676169843,
+            "policySensitiveOccupiedNiches": -3.5,
+            "speciationRate": -0.5999999999999996,
+            "extinctionRate": 0,
+            "netDiversificationRate": -0.5999999999999996,
+            "harvestDecisionGuidedFraction": 0.9105701754385964,
+            "reproductionDecisionGatedFraction": 0.012840208629682312
+          }
+        },
+        {
+          "without": "spending_reproduction",
+          "with": "all",
+          "delta": {
+            "finalPopulation": -2,
+            "activeSpecies": -4.5,
+            "activeClades": 0,
+            "effectiveRichness": 0.17214435129232442,
+            "occupiedNiches": 0,
+            "policySensitiveEffectiveRichness": -3.379154193231301,
+            "policySensitiveOccupiedNiches": -3,
+            "speciationRate": -0.5999999999999996,
+            "extinctionRate": 0,
+            "netDiversificationRate": -0.5999999999999996,
+            "harvestDecisionGuidedFraction": 0.9105701754385964,
+            "reproductionDecisionGatedFraction": 0.019419155998103364
+          }
+        }
+      ],
+      "summary": "Harvest guidance marginal delta: effective richness -0.2523, occupied niches -0.5000, net diversification -0.9500, harvest guidance activation +0.9099, reproduction gating activation +0.0081."
+    },
+    {
+      "operator": "reserveSpending",
+      "sign": "neutral",
+      "meanMarginalDelta": {
+        "finalPopulation": 0.125,
+        "activeSpecies": 0,
+        "activeClades": 0,
+        "effectiveRichness": -0.03988095238095157,
+        "occupiedNiches": 0,
+        "policySensitiveEffectiveRichness": 0.09561516859642083,
+        "policySensitiveOccupiedNiches": 0.125,
+        "speciationRate": 0,
+        "extinctionRate": 0,
+        "netDiversificationRate": 0,
+        "harvestDecisionGuidedFraction": 0,
+        "reproductionDecisionGatedFraction": 0.001644736842105263
+      },
+      "contexts": [
+        {
+          "without": "none",
+          "with": "spending_only",
+          "delta": {
+            "finalPopulation": 0,
+            "activeSpecies": 0,
+            "activeClades": 0,
+            "effectiveRichness": 0,
+            "occupiedNiches": 0,
+            "policySensitiveEffectiveRichness": 0,
+            "policySensitiveOccupiedNiches": 0,
+            "speciationRate": 0,
+            "extinctionRate": 0,
+            "netDiversificationRate": 0,
+            "harvestDecisionGuidedFraction": 0,
+            "reproductionDecisionGatedFraction": 0
+          }
+        },
+        {
+          "without": "harvest_only",
+          "with": "harvest_spending",
+          "delta": {
+            "finalPopulation": 0,
+            "activeSpecies": 0,
+            "activeClades": 0,
+            "effectiveRichness": 0,
+            "occupiedNiches": 0,
+            "policySensitiveEffectiveRichness": 0,
+            "policySensitiveOccupiedNiches": 0,
+            "speciationRate": 0,
+            "extinctionRate": 0,
+            "netDiversificationRate": 0,
+            "harvestDecisionGuidedFraction": 0,
+            "reproductionDecisionGatedFraction": 0
+          }
+        },
+        {
+          "without": "reproduction_only",
+          "with": "spending_reproduction",
+          "delta": {
+            "finalPopulation": 0,
+            "activeSpecies": 0,
+            "activeClades": 0,
+            "effectiveRichness": 0,
+            "occupiedNiches": 0,
+            "policySensitiveEffectiveRichness": 0,
+            "policySensitiveOccupiedNiches": 0,
+            "speciationRate": 0,
+            "extinctionRate": 0,
+            "netDiversificationRate": 0,
+            "harvestDecisionGuidedFraction": 0,
+            "reproductionDecisionGatedFraction": 0
+          }
+        },
+        {
+          "without": "harvest_reproduction",
+          "with": "all",
+          "delta": {
+            "finalPopulation": 0.5,
+            "activeSpecies": 0,
+            "activeClades": 0,
+            "effectiveRichness": -0.1595238095238063,
+            "occupiedNiches": 0,
+            "policySensitiveEffectiveRichness": 0.3824606743856833,
+            "policySensitiveOccupiedNiches": 0.5,
+            "speciationRate": 0,
+            "extinctionRate": 0,
+            "netDiversificationRate": 0,
+            "harvestDecisionGuidedFraction": 0,
+            "reproductionDecisionGatedFraction": 0.006578947368421052
+          }
+        }
+      ],
+      "summary": "Reserve spending marginal delta: effective richness -0.0399, occupied niches 0.0000, net diversification 0.0000, harvest guidance activation 0.0000, reproduction gating activation +0.0016."
+    },
+    {
+      "operator": "reproductionGating",
+      "sign": "harmful",
+      "meanMarginalDelta": {
+        "finalPopulation": -10.125,
+        "activeSpecies": -7,
+        "activeClades": 0,
+        "effectiveRichness": -1.5884395886995617,
+        "occupiedNiches": -3,
+        "policySensitiveEffectiveRichness": -3.159800888312997,
+        "policySensitiveOccupiedNiches": -4.625,
+        "speciationRate": -1.15,
+        "extinctionRate": 0,
+        "netDiversificationRate": -1.15,
+        "harvestDecisionGuidedFraction": 0.0006802413461591827,
+        "reproductionDecisionGatedFraction": 0.051628141299193936
+      },
+      "contexts": [
+        {
+          "without": "none",
+          "with": "reproduction_only",
+          "delta": {
+            "finalPopulation": -10,
+            "activeSpecies": -7.5,
+            "activeClades": 0,
+            "effectiveRichness": -2.0926722784492675,
+            "occupiedNiches": -3.5,
+            "policySensitiveEffectiveRichness": -5.337387669417154,
+            "policySensitiveOccupiedNiches": -6,
+            "speciationRate": -1.5,
+            "extinctionRate": 0,
+            "netDiversificationRate": -1.5,
+            "harvestDecisionGuidedFraction": 0,
+            "reproductionDecisionGatedFraction": 0.04356330014224751
+          }
+        },
+        {
+          "without": "harvest_only",
+          "with": "harvest_reproduction",
+          "delta": {
+            "finalPopulation": -10.5,
+            "activeSpecies": -6.5,
+            "activeClades": 0,
+            "effectiveRichness": -1.0044449941879527,
+            "occupiedNiches": -2.5,
+            "policySensitiveEffectiveRichness": -1.1734444444016816,
+            "policySensitiveOccupiedNiches": -3.5,
+            "speciationRate": -0.7999999999999998,
+            "extinctionRate": 0,
+            "netDiversificationRate": -0.7999999999999998,
+            "harvestDecisionGuidedFraction": 0.0013604826923183655,
+            "reproductionDecisionGatedFraction": 0.056403508771929824
+          }
+        },
+        {
+          "without": "spending_only",
+          "with": "spending_reproduction",
+          "delta": {
+            "finalPopulation": -10,
+            "activeSpecies": -7.5,
+            "activeClades": 0,
+            "effectiveRichness": -2.0926722784492675,
+            "occupiedNiches": -3.5,
+            "policySensitiveEffectiveRichness": -5.337387669417154,
+            "policySensitiveOccupiedNiches": -6,
+            "speciationRate": -1.5,
+            "extinctionRate": 0,
+            "netDiversificationRate": -1.5,
+            "harvestDecisionGuidedFraction": 0,
+            "reproductionDecisionGatedFraction": 0.04356330014224751
+          }
+        },
+        {
+          "without": "harvest_spending",
+          "with": "all",
+          "delta": {
+            "finalPopulation": -10,
+            "activeSpecies": -6.5,
+            "activeClades": 0,
+            "effectiveRichness": -1.163968803711759,
+            "occupiedNiches": -2.5,
+            "policySensitiveEffectiveRichness": -0.7909837700159983,
+            "policySensitiveOccupiedNiches": -3,
+            "speciationRate": -0.7999999999999998,
+            "extinctionRate": 0,
+            "netDiversificationRate": -0.7999999999999998,
+            "harvestDecisionGuidedFraction": 0.0013604826923183655,
+            "reproductionDecisionGatedFraction": 0.06298245614035088
+          }
+        }
+      ],
+      "summary": "Reproduction gating marginal delta: effective richness -1.5884, occupied niches -3.0000, net diversification -1.1500, harvest guidance activation +0.0007, reproduction gating activation +0.0516."
+    }
+  ],
+  "conclusion": {
+    "mostHelpfulOperator": "reserveSpending",
+    "mostHarmfulOperator": "reproductionGating",
+    "summary": "Reproduction gating was the most harmful tested operator on average: net diversification -1.1500, effective richness -1.5884, occupied niches -3.0000. Reserve spending was the least harmful or most helpful: net diversification 0.0000, effective richness -0.0399, occupied niches 0.0000."
+  }
+}
