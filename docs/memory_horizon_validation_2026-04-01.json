@@ -1,0 +1,414 @@
+{
+  "generatedAt": "2026-04-01T04:31:09.779Z",
+  "seed": 9401,
+  "steps": 50,
+  "summary": {
+    "totalSnapshots": 50,
+    "agentsWithMemory": 10,
+    "meanWindow3Divergence": 0.12143575526140486,
+    "meanWindow5Divergence": 0.15786380024504557,
+    "meanDecayDivergence": 0.13610855640802835
+  },
+  "snapshots": [
+    {
+      "tick": 10,
+      "agentId": 1,
+      "lastHarvest": 3.4109442163032844,
+      "window3Mean": 3.4111913999499444,
+      "window5Mean": 3.4111349165192864,
+      "decayWeighted": 3.314759207379118
+    },
+    {
+      "tick": 10,
+      "agentId": 2,
+      "lastHarvest": 2.773070742261347,
+      "window3Mean": 2.77317122143882,
+      "window5Mean": 2.7732516047807976,
+      "decayWeighted": 2.6935362943176706
+    },
+    {
+      "tick": 10,
+      "agentId": 3,
+      "lastHarvest": 2.5725530448887044,
+      "window3Mean": 2.5732923252937687,
+      "window5Mean": 2.5738837496178197,
+      "decayWeighted": 2.4517962254336005
+    },
+    {
+      "tick": 10,
+      "agentId": 4,
+      "lastHarvest": 4.39423834122927,
+      "window3Mean": 4.2866005739715956,
+      "window5Mean": 4.26507302052006,
+      "decayWeighted": 4.175492449264883
+    },
+    {
+      "tick": 10,
+      "agentId": 5,
+      "lastHarvest": 3.5682527706615836,
+      "window3Mean": 3.543721330902631,
+      "window5Mean": 2.9342225955824657,
+      "decayWeighted": 3.101104024033269
+    },
+    {
+      "tick": 10,
+      "agentId": 6,
+      "lastHarvest": 2.926435931190155,
+      "window3Mean": 2.961749417981712,
+      "window5Mean": 2.9900002074149574,
+      "decayWeighted": 2.8951386043691643
+    },
+    {
+      "tick": 10,
+      "agentId": 7,
+      "lastHarvest": 2.440357406901698,
+      "window3Mean": 2.320992919880227,
+      "window5Mean": 2.3572870413887785,
+      "decayWeighted": 2.3097725052208165
+    },
+    {
+      "tick": 10,
+      "agentId": 8,
+      "lastHarvest": 0.7887695067351005,
+      "window3Mean": 0.7975417454211327,
+      "window5Mean": 0.7992961931583391,
+      "decayWeighted": 0.7767497128914842
+    },
+    {
+      "tick": 10,
+      "agentId": 9,
+      "lastHarvest": 1.2240202201089438,
+      "window3Mean": 1.2240202201089438,
+      "window5Mean": 1.2240202201089438,
+      "decayWeighted": 1.189444678463313
+    },
+    {
+      "tick": 10,
+      "agentId": 10,
+      "lastHarvest": 1.6424521134734749,
+      "window3Mean": 1.64783036137401,
+      "window5Mean": 1.6489060109541172,
+      "decayWeighted": 1.592197740515613
+    },
+    {
+      "tick": 20,
+      "agentId": 1,
+      "lastHarvest": 3.411314991773275,
+      "window3Mean": 3.41113845817329,
+      "window5Mean": 3.411209071613284,
+      "decayWeighted": 3.4084411533626495
+    },
+    {
+      "tick": 20,
+      "agentId": 2,
+      "lastHarvest": 2.773070742261347,
+      "window3Mean": 2.773282223165925,
+      "window5Mean": 2.773451407889586,
+      "decayWeighted": 2.7710827188067997
+    },
+    {
+      "tick": 20,
+      "agentId": 3,
+      "lastHarvest": 1.3446350639484703,
+      "window3Mean": 2.162552978240725,
+      "window5Mean": 2.326136561099176,
+      "decayWeighted": 2.2002166834031853
+    },
+    {
+      "tick": 20,
+      "agentId": 4,
+      "lastHarvest": 4.39423834122927,
+      "window3Mean": 4.340419457600433,
+      "window5Mean": 4.297364350697363,
+      "decayWeighted": 4.3360815715793395
+    },
+    {
+      "tick": 20,
+      "agentId": 5,
+      "lastHarvest": 3.490879332323997,
+      "window3Mean": 3.490879332323997,
+      "window5Mean": 3.5202762318554854,
+      "decayWeighted": 3.504057098418945
+    },
+    {
+      "tick": 20,
+      "agentId": 6,
+      "lastHarvest": 3.1518885631529514,
+      "window3Mean": 3.1306022675247056,
+      "window5Mean": 3.1135732310221096,
+      "decayWeighted": 3.0249466931819495
+    },
+    {
+      "tick": 20,
+      "agentId": 7,
+      "lastHarvest": 2.3865985549884345,
+      "window3Mean": 1.3728737307329284,
+      "window5Mean": 1.5500609787366966,
+      "decayWeighted": 1.7293178215438083
+    },
+    {
+      "tick": 20,
+      "agentId": 8,
+      "lastHarvest": 0.7754863124785345,
+      "window3Mean": 0.7799140438973898,
+      "window5Mean": 0.7834562290324741,
+      "decayWeighted": 0.7823675045569244
+    },
+    {
+      "tick": 20,
+      "agentId": 9,
+      "lastHarvest": 1.2544010017020544,
+      "window3Mean": 1.2544010017020544,
+      "window5Mean": 1.2544010017020544,
+      "decayWeighted": 1.2518589395268285
+    },
+    {
+      "tick": 20,
+      "agentId": 10,
+      "lastHarvest": 1.6424521134734749,
+      "window3Mean": 1.64783036137401,
+      "window5Mean": 1.6489060109541172,
+      "decayWeighted": 1.6450646242730451
+    },
+    {
+      "tick": 30,
+      "agentId": 1,
+      "lastHarvest": 3.070321241794875,
+      "window3Mean": 3.070321241794875,
+      "window5Mean": 3.070321241794875,
+      "decayWeighted": 3.0798722924160717
+    },
+    {
+      "tick": 30,
+      "agentId": 2,
+      "lastHarvest": 2.7692709661635395,
+      "window3Mean": 2.1054732791224655,
+      "window5Mean": 1.573452902566799,
+      "decayWeighted": 2.0660408562699133
+    },
+    {
+      "tick": 30,
+      "agentId": 3,
+      "lastHarvest": 2.5725530448887044,
+      "window3Mean": 2.5740316056988326,
+      "window5Mean": 2.573023737574041,
+      "decayWeighted": 2.5619838143408677
+    },
+    {
+      "tick": 30,
+      "agentId": 4,
+      "lastHarvest": 4.232781690342758,
+      "window3Mean": 4.128867780114439,
+      "window5Mean": 4.108084998068776,
+      "decayWeighted": 4.182138208398641
+    },
+    {
+      "tick": 30,
+      "agentId": 5,
+      "lastHarvest": 3.5489448849137375,
+      "window3Mean": 3.5489448849137375,
+      "window5Mean": 3.5489448849137375,
+      "decayWeighted": 3.5445351762519897
+    },
+    {
+      "tick": 30,
+      "agentId": 6,
+      "lastHarvest": 2.926435931190155,
+      "window3Mean": 2.961749417981712,
+      "window5Mean": 2.9900002074149574,
+      "decayWeighted": 2.979583710344869
+    },
+    {
+      "tick": 30,
+      "agentId": 7,
+      "lastHarvest": 2.353317724676173,
+      "window3Mean": 1.4797570494910097,
+      "window5Mean": 1.84249365168998,
+      "decayWeighted": 1.8126672211777555
+    },
+    {
+      "tick": 30,
+      "agentId": 8,
+      "lastHarvest": 0.8230950172521134,
+      "window3Mean": 0.8230950172521134,
+      "window5Mean": 0.8067081741939951,
+      "decayWeighted": 0.8083264488483524
+    },
+    {
+      "tick": 30,
+      "agentId": 9,
+      "lastHarvest": 1.2544010017020544,
+      "window3Mean": 1.2544010017020544,
+      "window5Mean": 1.2491727705548823,
+      "decayWeighted": 1.2513837269443466
+    },
+    {
+      "tick": 30,
+      "agentId": 10,
+      "lastHarvest": 1.6205450658939733,
+      "window3Mean": 1.6205450658939735,
+      "window5Mean": 1.6205450658939733,
+      "decayWeighted": 1.6243007803445222
+    },
+    {
+      "tick": 40,
+      "agentId": 1,
+      "lastHarvest": 3.2205394511414287,
+      "window3Mean": 3.2205394511414287,
+      "window5Mean": 3.2205394511414283,
+      "decayWeighted": 3.2069080868974966
+    },
+    {
+      "tick": 40,
+      "agentId": 2,
+      "lastHarvest": 2.773070742261347,
+      "window3Mean": 2.5440955927950277,
+      "window5Mean": 2.635939429667048,
+      "decayWeighted": 2.564839070484119
+    },
+    {
+      "tick": 40,
+      "agentId": 3,
+      "lastHarvest": 0.7413501250923391,
+      "window3Mean": 1.7893533212872546,
+      "window5Mean": 2.1026332107278343,
+      "decayWeighted": 1.913787763280798
+    },
+    {
+      "tick": 40,
+      "agentId": 4,
+      "lastHarvest": 3.996272772962212,
+      "window3Mean": 3.9962727729622123,
+      "window5Mean": 4.103091448883625,
+      "decayWeighted": 4.117343684897037
+    },
+    {
+      "tick": 40,
+      "agentId": 5,
+      "lastHarvest": 3.5489448849137375,
+      "window3Mean": 3.5489448849137375,
+      "window5Mean": 3.5489448849137375,
+      "decayWeighted": 3.5129233748190165
+    },
+    {
+      "tick": 40,
+      "agentId": 6,
+      "lastHarvest": 2.6667859412983685,
+      "window3Mean": 2.685665150151211,
+      "window5Mean": 2.7378764636331865,
+      "decayWeighted": 2.740829655133692
+    },
+    {
+      "tick": 40,
+      "agentId": 7,
+      "lastHarvest": 2.275722997773912,
+      "window3Mean": 2.275722997773912,
+      "window5Mean": 2.2913152114169617,
+      "decayWeighted": 2.2783642035811544
+    },
+    {
+      "tick": 40,
+      "agentId": 8,
+      "lastHarvest": 0.8150879435869747,
+      "window3Mean": 0.8150879435869746,
+      "window5Mean": 0.8150879435869747,
+      "decayWeighted": 0.8148969480959841
+    },
+    {
+      "tick": 40,
+      "agentId": 9,
+      "lastHarvest": 1.262986343499803,
+      "window3Mean": 1.262986343499803,
+      "window5Mean": 1.262986343499803,
+      "decayWeighted": 1.2614581745600069
+    },
+    {
+      "tick": 40,
+      "agentId": 10,
+      "lastHarvest": 1.5944906769192835,
+      "window3Mean": 1.5854822141111928,
+      "window5Mean": 1.5782754438647204,
+      "decayWeighted": 1.5836482580923026
+    },
+    {
+      "tick": 50,
+      "agentId": 1,
+      "lastHarvest": 0.8247477458904016,
+      "window3Mean": 1.7867773239788312,
+      "window5Mean": 2.13666624122642,
+      "decayWeighted": 1.9487877305829726
+    },
+    {
+      "tick": 50,
+      "agentId": 2,
+      "lastHarvest": 0.8403637995035738,
+      "window3Mean": 1.8708867996825669,
+      "window5Mean": 2.171848641380192,
+      "decayWeighted": 1.8803711113777388
+    },
+    {
+      "tick": 50,
+      "agentId": 3,
+      "lastHarvest": 2.2565203811714887,
+      "window3Mean": 2.234558105643201,
+      "window5Mean": 2.204059986572236,
+      "decayWeighted": 2.2294251703008077
+    },
+    {
+      "tick": 50,
+      "agentId": 4,
+      "lastHarvest": 3.9647011266232925,
+      "window3Mean": 3.985748890849239,
+      "window5Mean": 3.953803150216781,
+      "decayWeighted": 3.9670611951939554
+    },
+    {
+      "tick": 50,
+      "agentId": 5,
+      "lastHarvest": 3.397551153272196,
+      "window3Mean": 2.3204442939388303,
+      "window5Mean": 2.711312924411634,
+      "decayWeighted": 2.7652248386860627
+    },
+    {
+      "tick": 50,
+      "agentId": 6,
+      "lastHarvest": 0.7025283292719641,
+      "window3Mean": 1.1500641628408428,
+      "window5Mean": 1.7794079248472645,
+      "decayWeighted": 1.5860463336216517
+    },
+    {
+      "tick": 50,
+      "agentId": 7,
+      "lastHarvest": 2.0111079997495303,
+      "window3Mean": 2.009339379905773,
+      "window5Mean": 2.1158928270530284,
+      "decayWeighted": 2.1202921087719186
+    },
+    {
+      "tick": 50,
+      "agentId": 8,
+      "lastHarvest": 0.8230950172521134,
+      "window3Mean": 0.7919411796997168,
+      "window5Mean": 0.7312187132609325,
+      "decayWeighted": 0.7655510187725293
+    },
+    {
+      "tick": 50,
+      "agentId": 9,
+      "lastHarvest": 1.0799225468252742,
+      "window3Mean": 1.0746114648732072,
+      "window5Mean": 1.0703625993115538,
+      "decayWeighted": 1.0890227106377668
+    },
+    {
+      "tick": 50,
+      "agentId": 10,
+      "lastHarvest": 1.5674652884950115,
+      "window3Mean": 1.0868518027838743,
+      "window5Mean": 1.2899073524380378,
+      "decayWeighted": 1.305439648856858
+    }
+  ]
+}

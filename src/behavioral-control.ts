@@ -8,6 +8,9 @@ import {
 import { realizePhenotype, resolveExpressedTrait } from './phenotype';
 
 export const INTERNAL_STATE_LAST_HARVEST = 'last_harvest_total';
+export const INTERNAL_STATE_HARVEST_WINDOW_3 = 'harvest_window_3_mean';
+export const INTERNAL_STATE_HARVEST_WINDOW_5 = 'harvest_window_5_mean';
+export const INTERNAL_STATE_HARVEST_DECAY_WEIGHTED = 'harvest_decay_weighted';
 export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD = 'reproduction_harvest_threshold';
 export const INTERNAL_STATE_REPRODUCTION_HARVEST_THRESHOLD_STEEPNESS = 'reproduction_harvest_threshold_steepness';
 export const INTERNAL_STATE_MOVEMENT_ENERGY_RESERVE_THRESHOLD = 'movement_energy_reserve_threshold';
@@ -57,7 +60,66 @@ export const POLICY_PARAMETER_KEYS = [
   INTERNAL_STATE_SPENDING_SECONDARY_PREFERENCE
 ];
 
-export const TRANSIENT_MEMORY_KEYS = [INTERNAL_STATE_LAST_HARVEST];
+export const HARVEST_WINDOW_3_SIZE = 3;
+export const HARVEST_WINDOW_5_SIZE = 5;
+export const HARVEST_DECAY_FACTOR = 0.7;
+
+export const TRANSIENT_MEMORY_KEYS = [
+  INTERNAL_STATE_LAST_HARVEST,
+  INTERNAL_STATE_HARVEST_WINDOW_3,
+  INTERNAL_STATE_HARVEST_WINDOW_5,
+  INTERNAL_STATE_HARVEST_DECAY_WEIGHTED
+];
+
+interface HarvestHistory {
+  window3: number[];
+  window5: number[];
+}
+
+const HARVEST_HISTORY_KEY = 'harvest_history_raw';
+
+function getHarvestHistory(agent: Pick<BehavioralStateCarrier, 'transientState'>): HarvestHistory {
+  const raw = agent.transientState?.get(HARVEST_HISTORY_KEY);
+  if (!raw) {
+    return { window3: [], window5: [] };
+  }
+  const encoded = Math.floor(raw);
+  const window3Count = encoded % 10;
+  const window5Count = Math.floor(encoded / 10) % 10;
+  const window3: number[] = [];
+  const window5: number[] = [];
+
+  for (let i = 0; i < window3Count; i++) {
+    const key = `harvest_h3_${i}`;
+    const value = agent.transientState?.get(key) ?? 0;
+    window3.push(value);
+  }
+
+  for (let i = 0; i < window5Count; i++) {
+    const key = `harvest_h5_${i}`;
+    const value = agent.transientState?.get(key) ?? 0;
+    window5.push(value);
+  }
+
+  return { window3, window5 };
+}
+
+function setHarvestHistory(agent: Agent, history: HarvestHistory): void {
+  if (!agent.transientState) {
+    agent.transientState = new Map();
+  }
+
+  const encoded = history.window3.length + history.window5.length * 10;
+  agent.transientState.set(HARVEST_HISTORY_KEY, encoded);
+
+  for (let i = 0; i < history.window3.length; i++) {
+    agent.transientState.set(`harvest_h3_${i}`, history.window3[i]);
+  }
+
+  for (let i = 0; i < history.window5.length; i++) {
+    agent.transientState.set(`harvest_h5_${i}`, history.window5[i]);
+  }
+}
 
 export function clonePolicyState(policyState: ReadonlyMap<string, number> | undefined): Map<string, number> | undefined {
   return policyState ? new Map(policyState) : undefined;
@@ -185,6 +247,39 @@ export function setTransientStateValue(agent: Agent, key: string, value: number)
   agent.transientState.set(key, value);
 }
 
+export function updateHarvestMemory(agent: Agent, harvestTotal: number): void {
+  setTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST, harvestTotal);
+
+  const history = getHarvestHistory(agent);
+
+  history.window3.push(harvestTotal);
+  if (history.window3.length > HARVEST_WINDOW_3_SIZE) {
+    history.window3.shift();
+  }
+
+  history.window5.push(harvestTotal);
+  if (history.window5.length > HARVEST_WINDOW_5_SIZE) {
+    history.window5.shift();
+  }
+
+  setHarvestHistory(agent, history);
+
+  const mean3 = history.window3.length > 0
+    ? history.window3.reduce((sum, v) => sum + v, 0) / history.window3.length
+    : 0;
+
+  const mean5 = history.window5.length > 0
+    ? history.window5.reduce((sum, v) => sum + v, 0) / history.window5.length
+    : 0;
+
+  const previousDecay = getTransientStateValue(agent, INTERNAL_STATE_HARVEST_DECAY_WEIGHTED, 0);
+  const decayWeighted = previousDecay * HARVEST_DECAY_FACTOR + harvestTotal * (1 - HARVEST_DECAY_FACTOR);
+
+  setTransientStateValue(agent, INTERNAL_STATE_HARVEST_WINDOW_3, mean3);
+  setTransientStateValue(agent, INTERNAL_STATE_HARVEST_WINDOW_5, mean5);
+  setTransientStateValue(agent, INTERNAL_STATE_HARVEST_DECAY_WEIGHTED, decayWeighted);
+}
+
 export function getPolicyStateValue(
   agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 },
   key: string,
@@ -199,6 +294,35 @@ export function getTransientStateValue(
   fallback = 0
 ): number {
   return agent.transientState?.get(key) ?? fallback;
+}
+
+export function getHarvestWindow3Mean(agent: Pick<BehavioralStateCarrier, 'transientState'>): number {
+  return getTransientStateValue(agent, INTERNAL_STATE_HARVEST_WINDOW_3, 0);
+}
+
+export function getHarvestWindow5Mean(agent: Pick<BehavioralStateCarrier, 'transientState'>): number {
+  return getTransientStateValue(agent, INTERNAL_STATE_HARVEST_WINDOW_5, 0);
+}
+
+export function getHarvestDecayWeighted(agent: Pick<BehavioralStateCarrier, 'transientState'>): number {
+  return getTransientStateValue(agent, INTERNAL_STATE_HARVEST_DECAY_WEIGHTED, 0);
+}
+
+export function getEffectiveRecentHarvest(
+  agent: Pick<BehavioralStateCarrier, 'transientState'>,
+  memoryMode: 'instant' | 'window3' | 'window5' | 'decay' = 'instant'
+): number {
+  switch (memoryMode) {
+    case 'window3':
+      return getHarvestWindow3Mean(agent);
+    case 'window5':
+      return getHarvestWindow5Mean(agent);
+    case 'decay':
+      return getHarvestDecayWeighted(agent);
+    case 'instant':
+    default:
+      return getTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST, 0);
+  }
 }
 
 export function resolveHarvestSecondaryPreference(

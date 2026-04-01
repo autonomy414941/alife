@@ -30,6 +30,7 @@ import {
   normalizeSeedBehavioralState,
   resolveBehavioralPolicyFlags,
   setTransientStateValue,
+  updateHarvestMemory,
   computeGradedMovementProbability
 } from './behavioral-control';
 import {
@@ -1872,7 +1873,7 @@ export class LifeSimulation {
       secondary: harvest.secondaryHarvest
     });
     const totalHarvest = harvest.primaryHarvest + harvest.secondaryHarvest;
-    setTransientStateValue(agent, INTERNAL_STATE_LAST_HARVEST, totalHarvest);
+    updateHarvestMemory(agent, totalHarvest);
     const policyGuided =
       harvestSecondaryPreference !== undefined &&
       (Math.abs(harvest.primaryShare - defaultHarvestShares.primaryShare) > 1e-9 ||

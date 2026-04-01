@@ -19,7 +19,12 @@ import {
   INTERNAL_STATE_MOVEMENT_MIN_RECENT_HARVEST,
   INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD,
   INTERNAL_STATE_HARVEST_PRIMARY_THRESHOLD_STEEPNESS,
-  INTERNAL_STATE_LAST_HARVEST
+  INTERNAL_STATE_LAST_HARVEST,
+  updateHarvestMemory,
+  getHarvestWindow3Mean,
+  getHarvestWindow5Mean,
+  getHarvestDecayWeighted,
+  getEffectiveRecentHarvest
 } from '../src/behavioral-control';
 
 describe('behavioral-control', () => {
@@ -480,6 +485,90 @@ describe('behavioral-control', () => {
       expect(veryLow).toBeLessThan(0.2);
       expect(veryHigh).toBeGreaterThan(0.9);
       expect(veryHigh).toBeLessThan(1);
+    });
+  });
+
+  describe('updateHarvestMemory', () => {
+    it('updates last harvest value', () => {
+      const agent = { id: 1, transientState: new Map(), policyState: new Map() } as any;
+      updateHarvestMemory(agent, 10);
+      expect(agent.transientState?.get(INTERNAL_STATE_LAST_HARVEST)).toBe(10);
+    });
+
+    it('builds rolling window average for 3-tick window', () => {
+      const agent = { id: 1, transientState: new Map(), policyState: new Map() } as any;
+      updateHarvestMemory(agent, 10);
+      expect(getHarvestWindow3Mean(agent)).toBeCloseTo(10, 5);
+      updateHarvestMemory(agent, 20);
+      expect(getHarvestWindow3Mean(agent)).toBeCloseTo(15, 5);
+      updateHarvestMemory(agent, 30);
+      expect(getHarvestWindow3Mean(agent)).toBeCloseTo(20, 5);
+      updateHarvestMemory(agent, 40);
+      expect(getHarvestWindow3Mean(agent)).toBeCloseTo(30, 5);
+    });
+
+    it('builds rolling window average for 5-tick window', () => {
+      const agent = { id: 1, transientState: new Map(), policyState: new Map() } as any;
+      for (let i = 1; i <= 5; i++) {
+        updateHarvestMemory(agent, i * 10);
+      }
+      expect(getHarvestWindow5Mean(agent)).toBeCloseTo(30, 5);
+      updateHarvestMemory(agent, 60);
+      expect(getHarvestWindow5Mean(agent)).toBeCloseTo(40, 5);
+    });
+
+    it('builds decay-weighted average', () => {
+      const agent = { id: 1, transientState: new Map(), policyState: new Map() } as any;
+      updateHarvestMemory(agent, 10);
+      const first = getHarvestDecayWeighted(agent);
+      expect(first).toBeCloseTo(3, 5);
+      updateHarvestMemory(agent, 10);
+      const second = getHarvestDecayWeighted(agent);
+      expect(second).toBeGreaterThan(first);
+      expect(second).toBeLessThan(10);
+    });
+
+    it('decay-weighted converges toward stable value', () => {
+      const agent = { id: 1, transientState: new Map(), policyState: new Map() } as any;
+      for (let i = 0; i < 20; i++) {
+        updateHarvestMemory(agent, 10);
+      }
+      expect(getHarvestDecayWeighted(agent)).toBeCloseTo(10, 1);
+    });
+  });
+
+  describe('getEffectiveRecentHarvest', () => {
+    it('returns instant harvest in instant mode', () => {
+      const agent = { id: 1, transientState: new Map(), policyState: new Map() } as any;
+      updateHarvestMemory(agent, 5);
+      updateHarvestMemory(agent, 10);
+      expect(getEffectiveRecentHarvest(agent, 'instant')).toBe(10);
+    });
+
+    it('returns 3-tick window mean in window3 mode', () => {
+      const agent = { id: 1, transientState: new Map(), policyState: new Map() } as any;
+      updateHarvestMemory(agent, 10);
+      updateHarvestMemory(agent, 20);
+      updateHarvestMemory(agent, 30);
+      expect(getEffectiveRecentHarvest(agent, 'window3')).toBeCloseTo(20, 5);
+    });
+
+    it('returns 5-tick window mean in window5 mode', () => {
+      const agent = { id: 1, transientState: new Map(), policyState: new Map() } as any;
+      for (let i = 1; i <= 5; i++) {
+        updateHarvestMemory(agent, i * 10);
+      }
+      expect(getEffectiveRecentHarvest(agent, 'window5')).toBeCloseTo(30, 5);
+    });
+
+    it('returns decay-weighted value in decay mode', () => {
+      const agent = { id: 1, transientState: new Map(), policyState: new Map() } as any;
+      for (let i = 0; i < 10; i++) {
+        updateHarvestMemory(agent, 10);
+      }
+      const decay = getEffectiveRecentHarvest(agent, 'decay');
+      expect(decay).toBeGreaterThan(5);
+      expect(decay).toBeLessThan(15);
     });
   });
 });
