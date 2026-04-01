@@ -8,7 +8,8 @@ import {
   getMetabolismV2,
   getHarvestV2,
   getAggressionV2,
-  getHarvestEfficiency2V2
+  getHarvestEfficiency2V2,
+  createGenomeV2InitialAgents
 } from '../src/genome-v2-adapter';
 import { DEFAULT_MUTATION_CANDIDATE_NEW_LOCI, createGenomeV2, setTrait, getTrait } from '../src/genome-v2';
 import { Agent, SimulationConfig } from '../src/types';
@@ -262,6 +263,83 @@ describe('GenomeV2 Adapter', () => {
       expect(getHarvestV2(genome)).toBe(0.6);
       expect(getAggressionV2(genome)).toBe(0.4);
       expect(getHarvestEfficiency2V2(genome)).toBe(0.5);
+    });
+  });
+
+  describe('createGenomeV2InitialAgents', () => {
+    it('creates agent seeds with genomeV2 from legacy genome', () => {
+      const seeds = createGenomeV2InitialAgents({ seed: 42 });
+      expect(seeds.length).toBeGreaterThan(0);
+      for (const seed of seeds) {
+        expect(seed.genomeV2).toBeDefined();
+        expect(seed.genome).toBeDefined();
+        expect(getTrait(seed.genomeV2!, 'metabolism')).toBe(seed.genome.metabolism);
+        expect(getTrait(seed.genomeV2!, 'harvest')).toBe(seed.genome.harvest);
+        expect(getTrait(seed.genomeV2!, 'aggression')).toBe(seed.genome.aggression);
+      }
+    });
+
+    it('creates reproducible agent seeds for the same seed', () => {
+      const seeds1 = createGenomeV2InitialAgents({ seed: 123 });
+      const seeds2 = createGenomeV2InitialAgents({ seed: 123 });
+      expect(seeds1.length).toBe(seeds2.length);
+      for (let i = 0; i < seeds1.length; i++) {
+        expect(seeds1[i].x).toBe(seeds2[i].x);
+        expect(seeds1[i].y).toBe(seeds2[i].y);
+        expect(seeds1[i].genome).toEqual(seeds2[i].genome);
+      }
+    });
+
+    it('creates different agent seeds for different seeds', () => {
+      const seeds1 = createGenomeV2InitialAgents({ seed: 42 });
+      const seeds2 = createGenomeV2InitialAgents({ seed: 99 });
+      let anyDifferent = false;
+      for (let i = 0; i < Math.min(seeds1.length, seeds2.length); i++) {
+        if (seeds1[i].x !== seeds2[i].x || seeds1[i].genome.metabolism !== seeds2[i].genome.metabolism) {
+          anyDifferent = true;
+          break;
+        }
+      }
+      expect(anyDifferent).toBe(true);
+    });
+
+    it('respects config overrides', () => {
+      const seeds = createGenomeV2InitialAgents({
+        seed: 42,
+        config: { initialAgents: 50, width: 64, height: 64 }
+      });
+      expect(seeds.length).toBe(50);
+      for (const seed of seeds) {
+        expect(seed.x).toBeGreaterThanOrEqual(0);
+        expect(seed.x).toBeLessThan(64);
+        expect(seed.y).toBeGreaterThanOrEqual(0);
+        expect(seed.y).toBeLessThan(64);
+      }
+    });
+
+    it('sets genomeV2 for all agents', () => {
+      const seeds = createGenomeV2InitialAgents({ seed: 42 });
+      for (const seed of seeds) {
+        expect(seed.genomeV2).toBeDefined();
+        expect(seed.genomeV2!.traits.size).toBeGreaterThan(0);
+      }
+    });
+
+    it('preserves agent position and energy', () => {
+      const seeds = createGenomeV2InitialAgents({ seed: 42 });
+      for (const seed of seeds) {
+        expect(seed.x).toBeGreaterThanOrEqual(0);
+        expect(seed.y).toBeGreaterThanOrEqual(0);
+        expect(seed.energy).toBeGreaterThan(0);
+      }
+    });
+
+    it('preserves lineage and species IDs', () => {
+      const seeds = createGenomeV2InitialAgents({ seed: 42 });
+      for (const seed of seeds) {
+        expect(seed.lineage).toBeGreaterThan(0);
+        expect(seed.species).toBeGreaterThan(0);
+      }
     });
   });
 });

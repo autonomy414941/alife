@@ -1,5 +1,6 @@
 import { runGeneratedAtStudyCli } from './clade-activity-relabel-null-smoke-study';
-import { DEFAULT_TRAIT_VALUES, fromGenome, POLICY_TRAITS, setTrait } from './genome-v2';
+import { DEFAULT_TRAIT_VALUES, POLICY_TRAITS, setTrait } from './genome-v2';
+import { createGenomeV2InitialAgents } from './genome-v2-adapter';
 import { resolveSimulationConfig, LifeSimulation } from './simulation';
 import { AgentSeed, GenomeV2DistanceWeights, PhenotypeDiversityMetrics, SimulationConfig } from './types';
 
@@ -298,29 +299,16 @@ function runSimulation(
 }
 
 function buildInitialAgents(seed: number): AgentSeed[] {
-  const seeder = new LifeSimulation({
+  const seeds = createGenomeV2InitialAgents({
     seed,
     config: BASE_CONFIG
   });
 
-  return seeder.snapshot().agents.map((agent) => {
-    const genomeV2 = fromGenome(agent.genome);
+  return seeds.map((agentSeed) => {
     for (const key of POLICY_TRAITS) {
-      setTrait(genomeV2, key, DEFAULT_TRAIT_VALUES[key] ?? 0);
+      setTrait(agentSeed.genomeV2!, key, DEFAULT_TRAIT_VALUES[key] ?? 0);
     }
-
-    return {
-      x: agent.x,
-      y: agent.y,
-      energy: agent.energy,
-      energyPrimary: agent.energyPrimary,
-      energySecondary: agent.energySecondary,
-      age: agent.age,
-      lineage: agent.lineage,
-      species: agent.species,
-      genome: { ...agent.genome },
-      genomeV2
-    };
+    return agentSeed;
   });
 }
 

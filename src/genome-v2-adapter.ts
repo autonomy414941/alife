@@ -1,4 +1,4 @@
-import { Agent, Genome, GenomeV2, SimulationConfig } from './types';
+import { Agent, AgentSeed, Genome, GenomeV2, SimulationConfig } from './types';
 import {
   DEFAULT_MUTATION_CANDIDATE_NEW_LOCI,
   fromGenome,
@@ -7,6 +7,7 @@ import {
   genomeV2Distance,
   getTrait
 } from './genome-v2';
+import { LifeSimulation } from './simulation';
 
 export interface AgentV2 extends Omit<Agent, 'genome'> {
   genomeV2: GenomeV2;
@@ -83,4 +84,31 @@ export function getAggressionV2(genomeV2: GenomeV2): number {
 
 export function getHarvestEfficiency2V2(genomeV2: GenomeV2): number {
   return getTrait(genomeV2, 'harvestEfficiency2');
+}
+
+export interface CreateGenomeV2InitialAgentsOptions {
+  seed: number;
+  config?: Partial<SimulationConfig>;
+}
+
+export function createGenomeV2InitialAgents(
+  options: CreateGenomeV2InitialAgentsOptions
+): AgentSeed[] {
+  const seeder = new LifeSimulation({ seed: options.seed, config: options.config });
+  const snapshot = seeder.snapshot();
+
+  return snapshot.agents.map((agent) => ({
+    x: agent.x,
+    y: agent.y,
+    energy: agent.energy,
+    energyPrimary: agent.energyPrimary,
+    energySecondary: agent.energySecondary,
+    age: agent.age,
+    lineage: agent.lineage,
+    species: agent.species,
+    genome: { ...agent.genome },
+    genomeV2: fromGenome(agent.genome),
+    policyState: undefined,
+    transientState: undefined
+  }));
 }

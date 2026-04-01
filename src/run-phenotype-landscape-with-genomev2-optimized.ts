@@ -1,7 +1,7 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { LifeSimulation } from './simulation';
-import { fromGenome } from './genome-v2';
+import { createGenomeV2InitialAgents } from './genome-v2-adapter';
 import {
   enrichPolicyFitnessWithPhenotype,
   PhenotypeFitnessRecord,
@@ -20,23 +20,7 @@ console.log(`Running phenotype landscape analysis with genomeV2-seeded agents (m
 console.log(`Analysis steps per seed: ${analysisSteps}`);
 
 function buildInitialAgentsWithGenomeV2(seed: number): AgentSeed[] {
-  const seeder = new LifeSimulation({ seed });
-  const snapshot = seeder.snapshot();
-
-  return snapshot.agents.map((agent) => ({
-    x: agent.x,
-    y: agent.y,
-    energy: agent.energy,
-    energyPrimary: agent.energyPrimary,
-    energySecondary: agent.energySecondary,
-    age: agent.age,
-    lineage: agent.lineage,
-    species: agent.species,
-    genome: { ...agent.genome },
-    genomeV2: fromGenome(agent.genome),
-    policyState: undefined,
-    transientState: undefined
-  }));
+  return createGenomeV2InitialAgents({ seed });
 }
 
 interface BinAccumulator {
