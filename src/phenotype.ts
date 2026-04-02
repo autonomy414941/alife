@@ -6,6 +6,12 @@ export interface PhenotypeCarrier {
   policyState?: ReadonlyMap<string, number>;
 }
 
+export interface LocalEcologicalContext {
+  localFertility: number;
+  localCrowding: number;
+  disturbancePhase: number;
+}
+
 export interface RealizedPhenotype {
   trophicLevel?: number;
   defenseLevel?: number;
@@ -35,12 +41,31 @@ export function resolveExpressedTrait(carrier: PhenotypeCarrier, key: string): n
   return undefined;
 }
 
-export function realizePhenotype(carrier: PhenotypeCarrier): RealizedPhenotype {
+export function realizePhenotype(carrier: PhenotypeCarrier, context?: LocalEcologicalContext): RealizedPhenotype {
+  const baseMetabolicEfficiencyPrimary = resolveExpressedTrait(carrier, 'metabolic_efficiency_primary');
+  const baseMetabolicEfficiencySecondary = resolveExpressedTrait(carrier, 'metabolic_efficiency_secondary');
+
+  const metabolicEfficiencyPrimary = context
+    ? realizeContextDependentMetabolicEfficiency(
+        baseMetabolicEfficiencyPrimary,
+        context,
+        'primary'
+      )
+    : baseMetabolicEfficiencyPrimary;
+
+  const metabolicEfficiencySecondary = context
+    ? realizeContextDependentMetabolicEfficiency(
+        baseMetabolicEfficiencySecondary,
+        context,
+        'secondary'
+      )
+    : baseMetabolicEfficiencySecondary;
+
   return {
     trophicLevel: resolveExpressedTrait(carrier, 'trophic_level'),
     defenseLevel: resolveExpressedTrait(carrier, 'defense_level'),
-    metabolicEfficiencyPrimary: resolveExpressedTrait(carrier, 'metabolic_efficiency_primary'),
-    metabolicEfficiencySecondary: resolveExpressedTrait(carrier, 'metabolic_efficiency_secondary'),
+    metabolicEfficiencyPrimary,
+    metabolicEfficiencySecondary,
     reproductionHarvestThreshold: resolveExpressedTrait(carrier, 'reproduction_harvest_threshold'),
     reproductionHarvestThresholdSteepness: resolveExpressedTrait(
       carrier,
@@ -61,6 +86,42 @@ export function realizePhenotype(carrier: PhenotypeCarrier): RealizedPhenotype {
     harvestPrimaryThresholdSteepness: resolveExpressedTrait(carrier, 'harvest_primary_threshold_steepness'),
     spendingSecondaryPreference: resolveExpressedTrait(carrier, 'spending_secondary_preference')
   };
+}
+
+function realizeContextDependentMetabolicEfficiency(
+  baseEfficiency: number | undefined,
+  context: LocalEcologicalContext,
+  resourceType: 'primary' | 'secondary'
+): number | undefined {
+  if (baseEfficiency === undefined) {
+    return undefined;
+  }
+
+  const fertilityModulation = computeFertilityModulation(context.localFertility);
+  const crowdingModulation = computeCrowdingModulation(context.localCrowding);
+  const disturbanceModulation = computeDisturbanceModulation(context.disturbancePhase);
+
+  const contextualMultiplier = fertilityModulation * crowdingModulation * disturbanceModulation;
+
+  const modulated = baseEfficiency * contextualMultiplier;
+  return Math.max(0, Math.min(1, modulated));
+}
+
+function computeFertilityModulation(localFertility: number): number {
+  const normalizedFertility = Math.max(0, Math.min(2, localFertility));
+  return 0.8 + 0.2 * normalizedFertility;
+}
+
+function computeCrowdingModulation(localCrowding: number): number {
+  const normalizedCrowding = Math.max(0, Math.min(1, localCrowding / 8));
+  return 1 - 0.3 * normalizedCrowding;
+}
+
+function computeDisturbanceModulation(disturbancePhase: number): number {
+  if (disturbancePhase > 0) {
+    return 0.7;
+  }
+  return 1.0;
 }
 
 function clampLegacyPolicyValue(key: string, value: number): number {

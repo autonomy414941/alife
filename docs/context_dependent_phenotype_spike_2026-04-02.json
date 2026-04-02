@@ -1,0 +1,41 @@
+{
+  "generatedAt": "2026-04-02T00:00:00.000Z",
+  "description": "Context-dependent phenotype realization spike",
+  "implementation": {
+    "trait": "metabolic_efficiency_primary and metabolic_efficiency_secondary",
+    "contextFactors": [
+      "localFertility",
+      "localCrowding",
+      "disturbancePhase"
+    ],
+    "modulationRules": {
+      "fertility": "0.8 + 0.2 * normalizedFertility (range [0, 2])",
+      "crowding": "1 - 0.3 * normalizedCrowding (range [0, 1])",
+      "disturbance": "0.7 when disturbancePhase > 0, 1.0 otherwise"
+    },
+    "combinationMethod": "multiplicative (fertility * crowding * disturbance * baseEfficiency)"
+  },
+  "evidence": {
+    "mechanism": "Context-dependent phenotype realization allows metabolic efficiency to vary based on local ecological conditions",
+    "testCoverage": [
+      "Fertility modulation increases efficiency in high-fertility contexts",
+      "Crowding modulation decreases efficiency under crowding",
+      "Disturbance modulation decreases efficiency during disturbance events",
+      "Multiple factors combine multiplicatively",
+      "Other traits remain unchanged",
+      "Backward compatible when no context is provided"
+    ],
+    "testsPassed": 6,
+    "testsFailed": 0
+  },
+  "differences": {
+    "directEncoding": "Traits are read directly from genotype as fixed scalars",
+    "contextDependent": "Traits are modulated by local environmental context (fertility, crowding, disturbance) at phenotype realization time"
+  },
+  "limitationsAndFuture": [
+    "Current implementation only modulates metabolic efficiency",
+    "Could extend to other traits (harvest efficiency, movement bias, reproduction threshold)",
+    "Could add genetically-encoded context-sensitivity parameters",
+    "Could test whether context-conditioned phenotypes rescue policy-bearing cohorts under matched controls"
+  ]
+}
