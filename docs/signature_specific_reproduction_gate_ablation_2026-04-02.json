@@ -1,0 +1,149 @@
+{
+  "generatedAt": "2026-04-02T05:17:32.094Z",
+  "question": "Does the April 1 signature validation show differential policy effects across reproduction gate strength classes (open/guarded/strict)?",
+  "prediction": "If reproduction gating harm is non-uniform, signatures with strict gates should show materially different matched-control deltas than signatures with open gates.",
+  "methodology": "Re-analyze the April 1 policy signature matched control validation artifact, grouping signatures by reproduction gate class (open/guarded/strict). For each gate class, compute exposure-weighted averages of matched harvest, survival, and reproduction advantages. Compare gate classes to test whether policy effects are uniform or concentrated in specific gate strength regimes.",
+  "sourceArtifact": "docs/policy_signature_matched_control_validation_2026-04-01.json",
+  "strata": [
+    {
+      "reproductionGateClass": "open",
+      "totalExposures": 316851,
+      "signatures": 9,
+      "weightedHarvestAdvantage": 0.05556648188515444,
+      "weightedSurvivalAdvantage": 0,
+      "weightedReproductionAdvantage": -0.0009533646189849164,
+      "topSignatures": [
+        {
+          "key": "open|strict|balanced",
+          "exposures": 60168,
+          "harvest": 0.04768136685087109,
+          "survival": 0,
+          "reproduction": -0.0015159313591709045
+        },
+        {
+          "key": "open|open|balanced",
+          "exposures": 52438,
+          "harvest": 0.08533620775194048,
+          "survival": 0,
+          "reproduction": 0.0008529523506660529
+        },
+        {
+          "key": "open|strict|primary",
+          "exposures": 42766,
+          "harvest": 0.03594528438779838,
+          "survival": 0,
+          "reproduction": -0.0010389708349250269
+        },
+        {
+          "key": "open|strict|secondary",
+          "exposures": 38779,
+          "harvest": 0.09529813168117729,
+          "survival": 0,
+          "reproduction": -0.001512094266800884
+        },
+        {
+          "key": "open|guarded|balanced",
+          "exposures": 37222,
+          "harvest": 0.049592789749647134,
+          "survival": 0,
+          "reproduction": -0.003956307104198486
+        }
+      ]
+    },
+    {
+      "reproductionGateClass": "strict",
+      "totalExposures": 188281,
+      "signatures": 9,
+      "weightedHarvestAdvantage": 0.03339825040461087,
+      "weightedSurvivalAdvantage": 0,
+      "weightedReproductionAdvantage": -0.0007499611681933234,
+      "topSignatures": [
+        {
+          "key": "strict|strict|balanced",
+          "exposures": 40405,
+          "harvest": 0.060926854121985646,
+          "survival": 0,
+          "reproduction": -0.000575790270916642
+        },
+        {
+          "key": "strict|strict|secondary",
+          "exposures": 33227,
+          "harvest": 0.0501650603127888,
+          "survival": 0,
+          "reproduction": 0.0007618343784708973
+        },
+        {
+          "key": "strict|strict|primary",
+          "exposures": 27172,
+          "harvest": -0.016973841057312224,
+          "survival": 0,
+          "reproduction": 0.000011809481354836917
+        },
+        {
+          "key": "strict|guarded|balanced",
+          "exposures": 20658,
+          "harvest": 0.08519638902467373,
+          "survival": 0,
+          "reproduction": -0.0012931519178632912
+        },
+        {
+          "key": "strict|open|balanced",
+          "exposures": 16390,
+          "harvest": 0.051536296791474145,
+          "survival": 0,
+          "reproduction": -0.0006962817607876964
+        }
+      ]
+    },
+    {
+      "reproductionGateClass": "guarded",
+      "totalExposures": 142329,
+      "signatures": 9,
+      "weightedHarvestAdvantage": 0.0530847191858301,
+      "weightedSurvivalAdvantage": 0,
+      "weightedReproductionAdvantage": -0.0005720847993945368,
+      "topSignatures": [
+        {
+          "key": "guarded|strict|balanced",
+          "exposures": 32686,
+          "harvest": 0.06139071103911361,
+          "survival": 0,
+          "reproduction": -0.0023286045716055933
+        },
+        {
+          "key": "guarded|strict|secondary",
+          "exposures": 19004,
+          "harvest": 0.07829955765639408,
+          "survival": 0,
+          "reproduction": 0.0006552600126019792
+        },
+        {
+          "key": "guarded|guarded|balanced",
+          "exposures": 18067,
+          "harvest": 0.07283363156833178,
+          "survival": 0,
+          "reproduction": -0.007088746051729702
+        },
+        {
+          "key": "guarded|strict|primary",
+          "exposures": 17710,
+          "harvest": 0.006230900530165795,
+          "survival": 0,
+          "reproduction": 0.0003802516046533296
+        },
+        {
+          "key": "guarded|open|balanced",
+          "exposures": 14709,
+          "harvest": 0.10622435567945918,
+          "survival": 0,
+          "reproduction": -0.0005644151052732412
+        }
+      ]
+    }
+  ],
+  "conclusion": {
+    "mostHarmfulGateClass": "open",
+    "leastHarmfulGateClass": "guarded",
+    "summary": "Policy effects are approximately uniform across reproduction gate classes. Reproduction advantage ranges from -0.0010 (open) to -0.0006 (guarded), a spread of 0.0004."
+  }
+}

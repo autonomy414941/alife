@@ -46,6 +46,7 @@
     "study:post-coupling-diversification-revalidation": "tsx src/post-coupling-diversification-revalidation.ts",
     "study:policy-operator-sign-ablation-panel": "tsx src/policy-operator-sign-ablation-panel.ts",
     "study:policy-signature-matched-control-validation": "tsx src/policy-signature-matched-control-validation.ts",
+    "study:signature-specific-reproduction-gate-ablation": "tsx src/signature-specific-reproduction-gate-ablation.ts",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-smoke": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-smoke-study.ts",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-horizon": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-horizon-study.ts",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-review": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-review.ts",
