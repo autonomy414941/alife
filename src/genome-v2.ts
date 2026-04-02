@@ -218,6 +218,101 @@ const GENOME_V2_TRAIT_DEFINITIONS: GenomeV2TraitDefinition[] = [
     distanceCategory: 'policyBounded',
     includeInDefaultMutationLoci: true,
     activationMode: 'presence'
+  },
+  {
+    key: 'action_priority_harvest_primary',
+    meaning: 'Priority for primary harvest action',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'policyBounded',
+    activationMode: 'presence'
+  },
+  {
+    key: 'action_priority_harvest_secondary',
+    meaning: 'Priority for secondary harvest action',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'policyBounded',
+    activationMode: 'presence'
+  },
+  {
+    key: 'action_priority_move_toward_fertility',
+    meaning: 'Priority for movement toward fertility action',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'policyBounded',
+    activationMode: 'presence'
+  },
+  {
+    key: 'action_priority_reproduce_cautiously',
+    meaning: 'Priority for cautious reproduction action',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'policyBounded',
+    activationMode: 'presence'
+  },
+  {
+    key: 'action_priority_rest',
+    meaning: 'Priority for rest action',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0.5,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'policyBounded',
+    activationMode: 'presence'
+  },
+  {
+    key: 'action_threshold_harvest_primary',
+    meaning: 'Threshold for primary harvest action',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0,
+    clamp: NON_NEGATIVE_CLAMP,
+    distanceCategory: 'policyThreshold'
+  },
+  {
+    key: 'action_threshold_harvest_secondary',
+    meaning: 'Threshold for secondary harvest action',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0,
+    clamp: NON_NEGATIVE_CLAMP,
+    distanceCategory: 'policyThreshold'
+  },
+  {
+    key: 'action_threshold_move_toward_fertility',
+    meaning: 'Threshold for movement toward fertility action',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0,
+    clamp: NON_NEGATIVE_CLAMP,
+    distanceCategory: 'policyThreshold'
+  },
+  {
+    key: 'action_threshold_reproduce_cautiously',
+    meaning: 'Threshold for cautious reproduction action',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0,
+    clamp: NON_NEGATIVE_CLAMP,
+    distanceCategory: 'policyThreshold'
+  },
+  {
+    key: 'action_threshold_rest',
+    meaning: 'Threshold for rest action',
+    role: 'policy',
+    mutationMode: 'policy',
+    defaultValue: 0,
+    clamp: NON_NEGATIVE_CLAMP,
+    distanceCategory: 'policyThreshold'
   }
 ];
 
