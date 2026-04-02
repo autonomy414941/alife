@@ -1,0 +1,2849 @@
+{
+  "generatedAt": "2026-04-02T00:00:00.000Z",
+  "question": "Does multi-horizon credit assignment (+5, +20, +50 tick survival and reproduction windows) reveal positive policy effects that remain invisible under one-tick scoring?",
+  "methodology": "Run 120-step matched-control panels for 2 shared seeds with policyMutationProbability=0.65. Both arms start from the same genomeV2-backed population with neutral policy loci present. For each agent exposure at tick T, track survival and reproduction at horizons 1, 5, 20, 50 ticks forward. Within matched fertility, crowding, age, and disturbance bins, compare policy-coupled versus policy-decoupled exposures across all horizons.",
+  "config": {
+    "seeds": [
+      9201,
+      9202
+    ],
+    "steps": 120,
+    "horizons": [
+      1,
+      5,
+      20,
+      50
+    ],
+    "policyMutationProbability": 0.65,
+    "baseConfig": {
+      "maxResource2": 8,
+      "resource2Regen": 0.7,
+      "resource2SeasonalRegenAmplitude": 0.75,
+      "resource2SeasonalFertilityContrastAmplitude": 1,
+      "resource2SeasonalPhaseOffset": 0.5,
+      "resource2BiomeShiftX": 2,
+      "resource2BiomeShiftY": 1
+    }
+  },
+  "signatures": [
+    {
+      "signature": {
+        "key": "open|strict|balanced",
+        "reproductionGate": "open",
+        "movementGate": "strict",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0,
+          "movementGateValue": 0.248950128396973,
+          "resourceBiasValue": 0.4587100026197731
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 12630,
+          "decoupledExposures": 11973,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.0525455975385532,
+              "weightedSurvivalAdvantage": -0.0012442395555389086,
+              "weightedReproductionAdvantage": 0.004645863988139924
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.0525455975385532,
+              "weightedSurvivalAdvantage": 0.0021925332424826585,
+              "weightedReproductionAdvantage": 0.004164196893769814
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.0525455975385532,
+              "weightedSurvivalAdvantage": 0.0171788159418606,
+              "weightedReproductionAdvantage": 0.0008520529755962486
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.0525455975385532,
+              "weightedSurvivalAdvantage": -0.0015903152559205926,
+              "weightedReproductionAdvantage": 0.0009089992179458909
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 15951,
+          "decoupledExposures": 14916,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.005233539546262943,
+              "weightedSurvivalAdvantage": 0.0034531865962264077,
+              "weightedReproductionAdvantage": 0.004392727048660901
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.005233539546262943,
+              "weightedSurvivalAdvantage": 0.016917112715051863,
+              "weightedReproductionAdvantage": 0.0039728320519894335
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.005233539546262943,
+              "weightedSurvivalAdvantage": 0.04379719521575175,
+              "weightedReproductionAdvantage": 0.00047231299887630325
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.005233539546262943,
+              "weightedSurvivalAdvantage": 0.01405434766314809,
+              "weightedReproductionAdvantage": -0.001077684461268486
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 28581,
+            "policyNegativeExposures": 26889,
+            "weightedHarvestAdvantage": 0.02631299902121063,
+            "weightedSurvivalAdvantage": 0.0013723158533546164,
+            "weightedReproductionAdvantage": 0.004474198544928172
+          },
+          "5": {
+            "policyPositiveExposures": 28581,
+            "policyNegativeExposures": 26889,
+            "weightedHarvestAdvantage": 0.02631299902121063,
+            "weightedSurvivalAdvantage": 0.010255781184446932,
+            "weightedReproductionAdvantage": 0.004019567361771142
+          },
+          "20": {
+            "policyPositiveExposures": 28581,
+            "policyNegativeExposures": 26889,
+            "weightedHarvestAdvantage": 0.02631299902121063,
+            "weightedSurvivalAdvantage": 0.03158658952784459,
+            "weightedReproductionAdvantage": 0.0006307975279599214
+          },
+          "50": {
+            "policyPositiveExposures": 28581,
+            "policyNegativeExposures": 26889,
+            "weightedHarvestAdvantage": 0.02631299902121063,
+            "weightedSurvivalAdvantage": 0.00704592367259777,
+            "weightedReproductionAdvantage": -0.0001976926112260174
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "open|open|balanced",
+        "reproductionGate": "open",
+        "movementGate": "open",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0,
+          "movementGateValue": 0,
+          "resourceBiasValue": 0.5
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 15851,
+          "decoupledExposures": 11399,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.016689025619623595,
+              "weightedSurvivalAdvantage": -0.0009839692533480336,
+              "weightedReproductionAdvantage": -0.0023068749434974846
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.016689025619623595,
+              "weightedSurvivalAdvantage": 0.002183757013079846,
+              "weightedReproductionAdvantage": -0.0015171688642648797
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.016689025619623595,
+              "weightedSurvivalAdvantage": 0.013133111997902082,
+              "weightedReproductionAdvantage": -0.0010902572810839756
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.016689025619623595,
+              "weightedSurvivalAdvantage": 0.029112022236552904,
+              "weightedReproductionAdvantage": 0.0002878684372700359
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 9967,
+          "decoupledExposures": 11370,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.038420852573390556,
+              "weightedSurvivalAdvantage": 0.0014728726686468049,
+              "weightedReproductionAdvantage": 0.00003518705943094205
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.038420852573390556,
+              "weightedSurvivalAdvantage": 0.00177933823396157,
+              "weightedReproductionAdvantage": -0.0001277706547699578
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.038420852573390556,
+              "weightedSurvivalAdvantage": 0.0006103292182734162,
+              "weightedReproductionAdvantage": 0.0004706710825240377
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.038420852573390556,
+              "weightedSurvivalAdvantage": -0.0030203850308715367,
+              "weightedReproductionAdvantage": -0.0002848202494110125
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 25818,
+            "policyNegativeExposures": 22769,
+            "weightedHarvestAdvantage": 0.0019771650500942403,
+            "weightedSurvivalAdvantage": -0.00011578255889863481,
+            "weightedReproductionAdvantage": -0.0010687935658798928
+          },
+          "5": {
+            "policyPositiveExposures": 25818,
+            "policyNegativeExposures": 22769,
+            "weightedHarvestAdvantage": 0.0019771650500942403,
+            "weightedSurvivalAdvantage": 0.001918520887367829,
+            "weightedReproductionAdvantage": -0.0005765593468800947
+          },
+          "20": {
+            "policyPositiveExposures": 25818,
+            "policyNegativeExposures": 22769,
+            "weightedHarvestAdvantage": 0.0019771650500942403,
+            "weightedSurvivalAdvantage": 0.007795286124987966,
+            "weightedReproductionAdvantage": 0.000059705569726818726
+          },
+          "50": {
+            "policyPositiveExposures": 25818,
+            "policyNegativeExposures": 22769,
+            "weightedHarvestAdvantage": 0.0019771650500942403,
+            "weightedSurvivalAdvantage": 0.016464569694886102,
+            "weightedReproductionAdvantage": 0.0002148431213341345
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "open|strict|secondary",
+        "reproductionGate": "open",
+        "movementGate": "strict",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0.01762168686836958,
+          "movementGateValue": 0.2983199538197368,
+          "resourceBiasValue": 0.6121209214441479
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 12320,
+          "decoupledExposures": 11052,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.01632430383693358,
+              "weightedSurvivalAdvantage": -0.0020962677863924995,
+              "weightedReproductionAdvantage": 0.00328896435134677
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.01632430383693358,
+              "weightedSurvivalAdvantage": -0.0031257027105290043,
+              "weightedReproductionAdvantage": 0.0027541104392100764
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.01632430383693358,
+              "weightedSurvivalAdvantage": -0.003432714797338017,
+              "weightedReproductionAdvantage": 0.002478606450970961
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.01632430383693358,
+              "weightedSurvivalAdvantage": 0.0023511533554338845,
+              "weightedReproductionAdvantage": 0.00197864531832277
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 13246,
+          "decoupledExposures": 11685,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.04281802168329129,
+              "weightedSurvivalAdvantage": 0.0028079014762670274,
+              "weightedReproductionAdvantage": -0.004958513491593506
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.04281802168329129,
+              "weightedSurvivalAdvantage": 0.010670533245278304,
+              "weightedReproductionAdvantage": -0.005412752258333569
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.04281802168329129,
+              "weightedSurvivalAdvantage": 0.027455700775897148,
+              "weightedReproductionAdvantage": -0.0036922848345601346
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.04281802168329129,
+              "weightedSurvivalAdvantage": 0.010005850683042689,
+              "weightedReproductionAdvantage": -0.0020606166383077096
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 25566,
+            "policyNegativeExposures": 22737,
+            "weightedHarvestAdvantage": 0.030226387572337688,
+            "weightedSurvivalAdvantage": 0.000441021896473897,
+            "weightedReproductionAdvantage": -0.0008880806721745338
+          },
+          "5": {
+            "policyPositiveExposures": 25566,
+            "policyNegativeExposures": 22737,
+            "weightedHarvestAdvantage": 0.030226387572337688,
+            "weightedSurvivalAdvantage": 0.0042303034751748885,
+            "weightedReproductionAdvantage": -0.0013972592595169011
+          },
+          "20": {
+            "policyPositiveExposures": 25566,
+            "policyNegativeExposures": 22737,
+            "weightedHarvestAdvantage": 0.030226387572337688,
+            "weightedSurvivalAdvantage": 0.013449385549162321,
+            "weightedReproductionAdvantage": -0.0006806565715525612
+          },
+          "50": {
+            "policyPositiveExposures": 25566,
+            "policyNegativeExposures": 22737,
+            "weightedHarvestAdvantage": 0.030226387572337688,
+            "weightedSurvivalAdvantage": 0.006371680349055396,
+            "weightedReproductionAdvantage": -0.00009702026259628416
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "strict|strict|secondary",
+        "reproductionGate": "strict",
+        "movementGate": "strict",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0.3641981097869575,
+          "movementGateValue": 0.20315069016069173,
+          "resourceBiasValue": 0.75
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 6569,
+          "decoupledExposures": 10620,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.0018338906598280144,
+              "weightedSurvivalAdvantage": -0.0015694021450239556,
+              "weightedReproductionAdvantage": -0.008415429567494389
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.0018338906598280144,
+              "weightedSurvivalAdvantage": -0.014087926252309072,
+              "weightedReproductionAdvantage": -0.008675851876718214
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.0018338906598280144,
+              "weightedSurvivalAdvantage": -0.05125097022437494,
+              "weightedReproductionAdvantage": -0.0037800436238026765
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.0018338906598280144,
+              "weightedSurvivalAdvantage": -0.04505487654180682,
+              "weightedReproductionAdvantage": -0.0011237906858621455
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 11941,
+          "decoupledExposures": 13996,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.017389868540408075,
+              "weightedSurvivalAdvantage": -0.00638772243141309,
+              "weightedReproductionAdvantage": -0.00008962024623040007
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.017389868540408075,
+              "weightedSurvivalAdvantage": -0.030221815585526446,
+              "weightedReproductionAdvantage": -0.0011788900504465147
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.017389868540408075,
+              "weightedSurvivalAdvantage": -0.08909585571195015,
+              "weightedReproductionAdvantage": -0.00020151520117133072
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.017389868540408075,
+              "weightedSurvivalAdvantage": -0.06226225990732167,
+              "weightedReproductionAdvantage": -0.0009862456475073836
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 18510,
+            "policyNegativeExposures": 24616,
+            "weightedHarvestAdvantage": 0.012694474895215581,
+            "weightedSurvivalAdvantage": -0.0041811943044652335,
+            "weightedReproductionAdvantage": -0.002744022591972233
+          },
+          "5": {
+            "policyPositiveExposures": 18510,
+            "policyNegativeExposures": 24616,
+            "weightedHarvestAdvantage": 0.012694474895215581,
+            "weightedSurvivalAdvantage": -0.022314669798652487,
+            "weightedReproductionAdvantage": -0.00359790102908436
+          },
+          "20": {
+            "policyPositiveExposures": 18510,
+            "policyNegativeExposures": 24616,
+            "weightedHarvestAdvantage": 0.012694474895215581,
+            "weightedSurvivalAdvantage": -0.07118053434073303,
+            "weightedReproductionAdvantage": -0.0013919464000476834
+          },
+          "50": {
+            "policyPositiveExposures": 18510,
+            "policyNegativeExposures": 24616,
+            "weightedHarvestAdvantage": 0.012694474895215581,
+            "weightedSurvivalAdvantage": -0.05419280856710492,
+            "weightedReproductionAdvantage": -0.0010010303371690544
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "open|strict|primary",
+        "reproductionGate": "open",
+        "movementGate": "strict",
+        "resourceBias": "primary",
+        "axisValues": {
+          "reproductionGateValue": 0,
+          "movementGateValue": 0.286993210343644,
+          "resourceBiasValue": 0.2885665955254808
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 7358,
+          "decoupledExposures": 8968,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.0023341793222613175,
+              "weightedSurvivalAdvantage": 0.004238622357414311,
+              "weightedReproductionAdvantage": -0.004896876549541619
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.0023341793222613175,
+              "weightedSurvivalAdvantage": 0.015833220633823766,
+              "weightedReproductionAdvantage": -0.0057299678595690426
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.0023341793222613175,
+              "weightedSurvivalAdvantage": 0.031066081125631775,
+              "weightedReproductionAdvantage": -0.004968357741360358
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.0023341793222613175,
+              "weightedSurvivalAdvantage": -0.003051755181871822,
+              "weightedReproductionAdvantage": -0.0011622168303839268
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 10391,
+          "decoupledExposures": 13876,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.00920688856169382,
+              "weightedSurvivalAdvantage": 0.002601276179608854,
+              "weightedReproductionAdvantage": -0.002270692251823155
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.00920688856169382,
+              "weightedSurvivalAdvantage": 0.008444964864066588,
+              "weightedReproductionAdvantage": -0.0030631777784446857
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.00920688856169382,
+              "weightedSurvivalAdvantage": 0.016303388305921398,
+              "weightedReproductionAdvantage": -0.004547336549697053
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.00920688856169382,
+              "weightedSurvivalAdvantage": -0.005382876473173381,
+              "weightedReproductionAdvantage": -0.0006816376747838085
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 17749,
+            "policyNegativeExposures": 22844,
+            "weightedHarvestAdvantage": -0.0038636352220458555,
+            "weightedSurvivalAdvantage": 0.003356319968236197,
+            "weightedReproductionAdvantage": -0.003375466150132011
+          },
+          "5": {
+            "policyPositiveExposures": 17749,
+            "policyNegativeExposures": 22844,
+            "weightedHarvestAdvantage": -0.0038636352220458555,
+            "weightedSurvivalAdvantage": 0.011854335266976978,
+            "weightedReproductionAdvantage": -0.004213011814416223
+          },
+          "20": {
+            "policyPositiveExposures": 17749,
+            "policyNegativeExposures": 22844,
+            "weightedHarvestAdvantage": -0.0038636352220458555,
+            "weightedSurvivalAdvantage": 0.024040737025743088,
+            "weightedReproductionAdvantage": -0.004699789112164009
+          },
+          "50": {
+            "policyPositiveExposures": 17749,
+            "policyNegativeExposures": 22844,
+            "weightedHarvestAdvantage": -0.0038636352220458555,
+            "weightedSurvivalAdvantage": -0.003828999047913236,
+            "weightedReproductionAdvantage": -0.000828028900692132
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "strict|strict|balanced",
+        "reproductionGate": "strict",
+        "movementGate": "strict",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0.21845103995874524,
+          "movementGateValue": 0.4340500589925796,
+          "resourceBiasValue": 0.5983682754682377
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 7064,
+          "decoupledExposures": 12141,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.062053135575385554,
+              "weightedSurvivalAdvantage": -0.004427939710129874,
+              "weightedReproductionAdvantage": -0.001969258047692301
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.062053135575385554,
+              "weightedSurvivalAdvantage": -0.01852338566664356,
+              "weightedReproductionAdvantage": -0.002773889226632715
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.062053135575385554,
+              "weightedSurvivalAdvantage": -0.02912211193460703,
+              "weightedReproductionAdvantage": 0.000546250879965745
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.062053135575385554,
+              "weightedSurvivalAdvantage": -0.012830874556167503,
+              "weightedReproductionAdvantage": 0.0007550990451991519
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 9913,
+          "decoupledExposures": 10453,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.0060315137119578,
+              "weightedSurvivalAdvantage": 0.003539132476906086,
+              "weightedReproductionAdvantage": -0.004854308445863607
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.0060315137119578,
+              "weightedSurvivalAdvantage": 0.010190094559529989,
+              "weightedReproductionAdvantage": -0.0046419000885473995
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.0060315137119578,
+              "weightedSurvivalAdvantage": 0.006302421106892568,
+              "weightedReproductionAdvantage": -0.0038869976418686135
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.0060315137119578,
+              "weightedSurvivalAdvantage": -0.0028329243390577646,
+              "weightedReproductionAdvantage": -0.0015773571352967412
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 16977,
+            "policyNegativeExposures": 22594,
+            "weightedHarvestAdvantage": 0.028892777060818782,
+            "weightedSurvivalAdvantage": -0.0005298501219784728,
+            "weightedReproductionAdvantage": -0.0035012450376460244
+          },
+          "5": {
+            "policyPositiveExposures": 16977,
+            "policyNegativeExposures": 22594,
+            "weightedHarvestAdvantage": 0.028892777060818782,
+            "weightedSurvivalAdvantage": -0.004079740867636569,
+            "weightedReproductionAdvantage": -0.0037887367504295575
+          },
+          "20": {
+            "policyPositiveExposures": 16977,
+            "policyNegativeExposures": 22594,
+            "weightedHarvestAdvantage": 0.028892777060818782,
+            "weightedSurvivalAdvantage": -0.0111717431462862,
+            "weightedReproductionAdvantage": -0.0019324375391285126
+          },
+          "50": {
+            "policyPositiveExposures": 16977,
+            "policyNegativeExposures": 22594,
+            "weightedHarvestAdvantage": 0.028892777060818782,
+            "weightedSurvivalAdvantage": -0.006856050638957407,
+            "weightedReproductionAdvantage": -0.000553434444019745
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "open|guarded|balanced",
+        "reproductionGate": "open",
+        "movementGate": "guarded",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0,
+          "movementGateValue": 0.1455495589412749,
+          "resourceBiasValue": 0.59542445265688
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 8409,
+          "decoupledExposures": 9450,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.025980321731271672,
+              "weightedSurvivalAdvantage": -0.0018347205379558103,
+              "weightedReproductionAdvantage": -0.007502430788500201
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.025980321731271672,
+              "weightedSurvivalAdvantage": -0.007769134307904833,
+              "weightedReproductionAdvantage": -0.006905140120717192
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.025980321731271672,
+              "weightedSurvivalAdvantage": -0.02386668115005669,
+              "weightedReproductionAdvantage": -0.005510956057418441
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.025980321731271672,
+              "weightedSurvivalAdvantage": -0.0309846980309392,
+              "weightedReproductionAdvantage": -0.0012458400890996894
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 6917,
+          "decoupledExposures": 7641,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.04122081696928063,
+              "weightedSurvivalAdvantage": 0.0005075917997909116,
+              "weightedReproductionAdvantage": 0.0032097993699638084
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.04122081696928063,
+              "weightedSurvivalAdvantage": 0.004481540604640524,
+              "weightedReproductionAdvantage": 0.0026249215932820104
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.04122081696928063,
+              "weightedSurvivalAdvantage": 0.008959132752029239,
+              "weightedReproductionAdvantage": 0.00027437128574926543
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.04122081696928063,
+              "weightedSurvivalAdvantage": 0.017593424855088493,
+              "weightedReproductionAdvantage": -0.0001192821145140659
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 15326,
+            "policyNegativeExposures": 17091,
+            "weightedHarvestAdvantage": 0.03413508534283515,
+            "weightedSurvivalAdvantage": -0.0007316993681681931,
+            "weightedReproductionAdvantage": -0.0027556256883530307
+          },
+          "5": {
+            "policyPositiveExposures": 15326,
+            "policyNegativeExposures": 17091,
+            "weightedHarvestAdvantage": 0.03413508534283515,
+            "weightedSurvivalAdvantage": -0.0021544897754836013,
+            "weightedReproductionAdvantage": -0.0027559495644610943
+          },
+          "20": {
+            "policyPositiveExposures": 15326,
+            "policyNegativeExposures": 17091,
+            "weightedHarvestAdvantage": 0.03413508534283515,
+            "weightedSurvivalAdvantage": -0.007926942261793855,
+            "weightedReproductionAdvantage": -0.0029585168418130186
+          },
+          "50": {
+            "policyPositiveExposures": 15326,
+            "policyNegativeExposures": 17091,
+            "weightedHarvestAdvantage": 0.03413508534283515,
+            "weightedSurvivalAdvantage": -0.007625559763169682,
+            "weightedReproductionAdvantage": -0.000744978737957438
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "guarded|strict|secondary",
+        "reproductionGate": "guarded",
+        "movementGate": "strict",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0.16859433450736105,
+          "movementGateValue": 0.26285344068892297,
+          "resourceBiasValue": 0.6060990107245743
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 4616,
+          "decoupledExposures": 9559,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.017486285895747213,
+              "weightedSurvivalAdvantage": -0.0030804507499168077,
+              "weightedReproductionAdvantage": -0.0097051236246413
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.017486285895747213,
+              "weightedSurvivalAdvantage": -0.018585436313378004,
+              "weightedReproductionAdvantage": -0.0101668607166752
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.017486285895747213,
+              "weightedSurvivalAdvantage": -0.053854155619548774,
+              "weightedReproductionAdvantage": -0.00600736054090654
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.017486285895747213,
+              "weightedSurvivalAdvantage": -0.027273529630304844,
+              "weightedReproductionAdvantage": -0.0016447468402685484
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 8040,
+          "decoupledExposures": 7908,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.06860776066742169,
+              "weightedSurvivalAdvantage": 0.004171695215287979,
+              "weightedReproductionAdvantage": -0.00002035953423711926
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.06860776066742169,
+              "weightedSurvivalAdvantage": 0.020480454681409573,
+              "weightedReproductionAdvantage": -0.0006100180808943336
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.06860776066742169,
+              "weightedSurvivalAdvantage": 0.04762992003192211,
+              "weightedReproductionAdvantage": 0.001779120106997285
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.06860776066742169,
+              "weightedSurvivalAdvantage": 0.020260720877675827,
+              "weightedReproductionAdvantage": 0.0009308783347202798
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 12656,
+            "policyNegativeExposures": 17467,
+            "weightedHarvestAdvantage": 0.03950298457302554,
+            "weightedSurvivalAdvantage": 0.0006408912614066624,
+            "weightedReproductionAdvantage": -0.004469665284921596
+          },
+          "5": {
+            "policyPositiveExposures": 12656,
+            "policyNegativeExposures": 17467,
+            "weightedHarvestAdvantage": 0.03950298457302554,
+            "weightedSurvivalAdvantage": 0.0021877236857598646,
+            "weightedReproductionAdvantage": -0.005047368955685471
+          },
+          "20": {
+            "policyPositiveExposures": 12656,
+            "policyNegativeExposures": 17467,
+            "weightedHarvestAdvantage": 0.03950298457302554,
+            "weightedSurvivalAdvantage": 0.0013086450238129848,
+            "weightedReproductionAdvantage": -0.002249277248352895
+          },
+          "50": {
+            "policyPositiveExposures": 12656,
+            "policyNegativeExposures": 17467,
+            "weightedHarvestAdvantage": 0.03950298457302554,
+            "weightedSurvivalAdvantage": -0.002809809139813938,
+            "weightedReproductionAdvantage": -0.0005710241567602576
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "guarded|strict|balanced",
+        "reproductionGate": "guarded",
+        "movementGate": "strict",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0.17985397246666252,
+          "movementGateValue": 0.2502268466167152,
+          "resourceBiasValue": 0.5
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 5714,
+          "decoupledExposures": 6936,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.06805940567658138,
+              "weightedSurvivalAdvantage": 0.0002009427240321752,
+              "weightedReproductionAdvantage": -0.002036210708004352
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.06805940567658138,
+              "weightedSurvivalAdvantage": -0.0006201235712230947,
+              "weightedReproductionAdvantage": -0.0013226590593027067
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.06805940567658138,
+              "weightedSurvivalAdvantage": -0.0017815312489303352,
+              "weightedReproductionAdvantage": 0.00047107271156354263
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.06805940567658138,
+              "weightedSurvivalAdvantage": -0.013805359462315326,
+              "weightedReproductionAdvantage": 0.0001476698515422889
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 6878,
+          "decoupledExposures": 7951,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.003850244770706206,
+              "weightedSurvivalAdvantage": 0.0013760631801146804,
+              "weightedReproductionAdvantage": 0.004511024629988192
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.003850244770706206,
+              "weightedSurvivalAdvantage": 0.00004598620273881421,
+              "weightedReproductionAdvantage": 0.004022518061138228
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.003850244770706206,
+              "weightedSurvivalAdvantage": -0.007080948683404809,
+              "weightedReproductionAdvantage": 0.0018661840367856061
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.003850244770706206,
+              "weightedSurvivalAdvantage": -0.01316748154953192,
+              "weightedReproductionAdvantage": 0.0003963954225036995
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 12592,
+            "policyNegativeExposures": 14887,
+            "weightedHarvestAdvantage": 0.02912851173941973,
+            "weightedSurvivalAdvantage": 0.000834012977289748,
+            "weightedReproductionAdvantage": 0.0014687134563218201
+          },
+          "5": {
+            "policyPositiveExposures": 12592,
+            "policyNegativeExposures": 14887,
+            "weightedHarvestAdvantage": 0.02912851173941973,
+            "weightedSurvivalAdvantage": -0.00021761619469596783,
+            "weightedReproductionAdvantage": 0.0015864784787024142
+          },
+          "20": {
+            "policyPositiveExposures": 12592,
+            "policyNegativeExposures": 14887,
+            "weightedHarvestAdvantage": 0.02912851173941973,
+            "weightedSurvivalAdvantage": -0.004243978917047566,
+            "weightedReproductionAdvantage": 0.001253197613966616
+          },
+          "50": {
+            "policyPositiveExposures": 12592,
+            "policyNegativeExposures": 14887,
+            "weightedHarvestAdvantage": 0.02912851173941973,
+            "weightedSurvivalAdvantage": -0.013198984926549357,
+            "weightedReproductionAdvantage": 0.00030656686165582935
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "strict|strict|primary",
+        "reproductionGate": "strict",
+        "movementGate": "strict",
+        "resourceBias": "primary",
+        "axisValues": {
+          "reproductionGateValue": 0.38208101196214556,
+          "movementGateValue": 0.2801074268762022,
+          "resourceBiasValue": 0.3521928994217888
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 4565,
+          "decoupledExposures": 5305,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.015279719757860424,
+              "weightedSurvivalAdvantage": 0.00252721100150843,
+              "weightedReproductionAdvantage": -0.002456111351345741
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.015279719757860424,
+              "weightedSurvivalAdvantage": 0.014674981029197617,
+              "weightedReproductionAdvantage": -0.0035498466520081325
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.015279719757860424,
+              "weightedSurvivalAdvantage": 0.036484979169310275,
+              "weightedReproductionAdvantage": -0.001447160760882734
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.015279719757860424,
+              "weightedSurvivalAdvantage": 0.04007790623211964,
+              "weightedReproductionAdvantage": -0.0006281000503965412
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 5605,
+          "decoupledExposures": 11798,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.02404504222528202,
+              "weightedSurvivalAdvantage": -0.0039004959116743856,
+              "weightedReproductionAdvantage": -0.0039032622884596817
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.02404504222528202,
+              "weightedSurvivalAdvantage": -0.014678344957017636,
+              "weightedReproductionAdvantage": -0.004764283166743681
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.02404504222528202,
+              "weightedSurvivalAdvantage": -0.025011715879291026,
+              "weightedReproductionAdvantage": -0.004334916295482199
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.02404504222528202,
+              "weightedSurvivalAdvantage": -0.021895104553850044,
+              "weightedReproductionAdvantage": -0.0005123614358966839
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 10170,
+            "policyNegativeExposures": 17103,
+            "weightedHarvestAdvantage": 0.0226509900402377,
+            "weightedSurvivalAdvantage": -0.0006711578955271584,
+            "weightedReproductionAdvantage": -0.003764703187801899
+          },
+          "5": {
+            "policyPositiveExposures": 10170,
+            "policyNegativeExposures": 17103,
+            "weightedHarvestAdvantage": 0.0226509900402377,
+            "weightedSurvivalAdvantage": -0.0003477467263963226,
+            "weightedReproductionAdvantage": -0.004456627599454487
+          },
+          "20": {
+            "policyPositiveExposures": 10170,
+            "policyNegativeExposures": 17103,
+            "weightedHarvestAdvantage": 0.0226509900402377,
+            "weightedSurvivalAdvantage": 0.005272236698126731,
+            "weightedReproductionAdvantage": -0.0031493278789862383
+          },
+          "50": {
+            "policyPositiveExposures": 10170,
+            "policyNegativeExposures": 17103,
+            "weightedHarvestAdvantage": 0.0226509900402377,
+            "weightedSurvivalAdvantage": 0.0058126900692153085,
+            "weightedReproductionAdvantage": -0.0004243424533761362
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "open|guarded|secondary",
+        "reproductionGate": "open",
+        "movementGate": "guarded",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0,
+          "movementGateValue": 0.1472331529017538,
+          "resourceBiasValue": 0.6312856371281669
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 7095,
+          "decoupledExposures": 7359,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.05210637789730229,
+              "weightedSurvivalAdvantage": -0.0019279527581176983,
+              "weightedReproductionAdvantage": -0.0017261973646511605
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.05210637789730229,
+              "weightedSurvivalAdvantage": -0.008974912519378764,
+              "weightedReproductionAdvantage": -0.0022262440144439205
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.05210637789730229,
+              "weightedSurvivalAdvantage": -0.03141050689072465,
+              "weightedReproductionAdvantage": -0.0026439453133517287
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.05210637789730229,
+              "weightedSurvivalAdvantage": -0.030165981681889956,
+              "weightedReproductionAdvantage": -0.00020690905832948558
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 6012,
+          "decoupledExposures": 4421,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.030364990341033085,
+              "weightedSurvivalAdvantage": -0.0004213862676165387,
+              "weightedReproductionAdvantage": 0.0025411955110932988
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.030364990341033085,
+              "weightedSurvivalAdvantage": 0.00008893496903439297,
+              "weightedReproductionAdvantage": 0.0016516153923245467
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.030364990341033085,
+              "weightedSurvivalAdvantage": 0.005068497422060241,
+              "weightedReproductionAdvantage": -0.000788923644888795
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.030364990341033085,
+              "weightedSurvivalAdvantage": 0.0037802757601043476,
+              "weightedReproductionAdvantage": -0.0016121212089219878
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 13107,
+            "policyNegativeExposures": 11780,
+            "weightedHarvestAdvantage": -0.018989571060120353,
+            "weightedSurvivalAdvantage": -0.001205906105678415,
+            "weightedReproductionAdvantage": -0.0001639761647116678
+          },
+          "5": {
+            "policyPositiveExposures": 13107,
+            "policyNegativeExposures": 11780,
+            "weightedHarvestAdvantage": -0.018989571060120353,
+            "weightedSurvivalAdvantage": -0.0044524449911539045,
+            "weightedReproductionAdvantage": -0.0009080298310414232
+          },
+          "20": {
+            "policyPositiveExposures": 13107,
+            "policyNegativeExposures": 11780,
+            "weightedHarvestAdvantage": -0.018989571060120353,
+            "weightedSurvivalAdvantage": -0.014157084496453611,
+            "weightedReproductionAdvantage": -0.0022290976049885703
+          },
+          "50": {
+            "policyPositiveExposures": 13107,
+            "policyNegativeExposures": 11780,
+            "weightedHarvestAdvantage": -0.018989571060120353,
+            "weightedSurvivalAdvantage": -0.011977585219480768,
+            "weightedReproductionAdvantage": -0.0008426549291158278
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "open|open|secondary",
+        "reproductionGate": "open",
+        "movementGate": "open",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0,
+          "movementGateValue": 0,
+          "resourceBiasValue": 0.6030805442715064
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 8792,
+          "decoupledExposures": 5780,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.03466671135913908,
+              "weightedSurvivalAdvantage": -0.005228255100754559,
+              "weightedReproductionAdvantage": 0.013222442018836364
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.03466671135913908,
+              "weightedSurvivalAdvantage": -0.01935486039121422,
+              "weightedReproductionAdvantage": 0.011589398164068303
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.03466671135913908,
+              "weightedSurvivalAdvantage": -0.06340079041634407,
+              "weightedReproductionAdvantage": 0.009763190063869368
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.03466671135913908,
+              "weightedSurvivalAdvantage": -0.06922685070870298,
+              "weightedReproductionAdvantage": 0.0012774274477075516
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 5312,
+          "decoupledExposures": 2705,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.022836458448746953,
+              "weightedSurvivalAdvantage": -0.0007841078812135981,
+              "weightedReproductionAdvantage": -0.009858163868041997
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.022836458448746953,
+              "weightedSurvivalAdvantage": -0.005718535293154275,
+              "weightedReproductionAdvantage": -0.009017050347929108
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.022836458448746953,
+              "weightedSurvivalAdvantage": -0.011447359753024971,
+              "weightedReproductionAdvantage": -0.008356387471507748
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.022836458448746953,
+              "weightedSurvivalAdvantage": -0.01823253416838013,
+              "weightedReproductionAdvantage": -0.00421043771043771
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 14104,
+            "policyNegativeExposures": 8485,
+            "weightedHarvestAdvantage": -0.015918130192696094,
+            "weightedSurvivalAdvantage": -0.0032553732107107936,
+            "weightedReproductionAdvantage": 0.005224899678922703
+          },
+          "5": {
+            "policyPositiveExposures": 14104,
+            "policyNegativeExposures": 8485,
+            "weightedHarvestAdvantage": -0.015918130192696094,
+            "weightedSurvivalAdvantage": -0.012733742811042418,
+            "weightedReproductionAdvantage": 0.004164835586045226
+          },
+          "20": {
+            "policyPositiveExposures": 14104,
+            "policyNegativeExposures": 8485,
+            "weightedHarvestAdvantage": -0.015918130192696094,
+            "weightedSurvivalAdvantage": -0.0397097177000605,
+            "weightedReproductionAdvantage": 0.0033037383400039166
+          },
+          "50": {
+            "policyPositiveExposures": 14104,
+            "policyNegativeExposures": 8485,
+            "weightedHarvestAdvantage": -0.015918130192696094,
+            "weightedSurvivalAdvantage": -0.04637409321815755,
+            "weightedReproductionAdvantage": -0.0005474637487186787
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "strict|guarded|balanced",
+        "reproductionGate": "strict",
+        "movementGate": "guarded",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0.21845103995874524,
+          "movementGateValue": 0.14912999351508915,
+          "resourceBiasValue": 0.44951329086907205
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 5166,
+          "decoupledExposures": 5408,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.06140183168743233,
+              "weightedSurvivalAdvantage": 0.003649708286693067,
+              "weightedReproductionAdvantage": 0.005721394835412262
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.06140183168743233,
+              "weightedSurvivalAdvantage": 0.01774429920561032,
+              "weightedReproductionAdvantage": 0.00484827031398272
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.06140183168743233,
+              "weightedSurvivalAdvantage": 0.04525299455679119,
+              "weightedReproductionAdvantage": 0.0024745038046237624
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.06140183168743233,
+              "weightedSurvivalAdvantage": 0.055400016734766876,
+              "weightedReproductionAdvantage": 0.0006515580226107864
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 5356,
+          "decoupledExposures": 5861,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.07168193544708401,
+              "weightedSurvivalAdvantage": -0.0032923945706150484,
+              "weightedReproductionAdvantage": -0.004483337612415474
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.07168193544708401,
+              "weightedSurvivalAdvantage": -0.0077598488245927315,
+              "weightedReproductionAdvantage": -0.004708075053764816
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.07168193544708401,
+              "weightedSurvivalAdvantage": -0.01203337087115466,
+              "weightedReproductionAdvantage": -0.003716540758943721
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.07168193544708401,
+              "weightedSurvivalAdvantage": -0.02139038108347141,
+              "weightedReproductionAdvantage": -0.0020127689294478293
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 10522,
+            "policyNegativeExposures": 11269,
+            "weightedHarvestAdvantage": -0.00820380774304016,
+            "weightedSurvivalAdvantage": -0.00005705827206987574,
+            "weightedReproductionAdvantage": 0.0008135262618813559
+          },
+          "5": {
+            "policyPositiveExposures": 10522,
+            "policyNegativeExposures": 11269,
+            "weightedHarvestAdvantage": -0.00820380774304016,
+            "weightedSurvivalAdvantage": 0.0037602638372045793,
+            "weightedReproductionAdvantage": 0.00020805594833377553
+          },
+          "20": {
+            "policyPositiveExposures": 10522,
+            "policyNegativeExposures": 11269,
+            "weightedHarvestAdvantage": -0.00820380774304016,
+            "weightedSurvivalAdvantage": 0.013944347566613552,
+            "weightedReproductionAdvantage": -0.0006154181626207149
+          },
+          "50": {
+            "policyPositiveExposures": 10522,
+            "policyNegativeExposures": 11269,
+            "weightedHarvestAdvantage": -0.00820380774304016,
+            "weightedSurvivalAdvantage": 0.015098071337903213,
+            "weightedReproductionAdvantage": -0.0006963332231964738
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "guarded|strict|primary",
+        "reproductionGate": "guarded",
+        "movementGate": "strict",
+        "resourceBias": "primary",
+        "axisValues": {
+          "reproductionGateValue": 0.18495620624162257,
+          "movementGateValue": 0.2493536758236587,
+          "resourceBiasValue": 0.29026871754322203
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 2971,
+          "decoupledExposures": 3588,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.012150650573068102,
+              "weightedSurvivalAdvantage": 0.002094580546619687,
+              "weightedReproductionAdvantage": -0.000021725223155830524
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.012150650573068102,
+              "weightedSurvivalAdvantage": 0.013787653319692289,
+              "weightedReproductionAdvantage": -0.0004948724824062674
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.012150650573068102,
+              "weightedSurvivalAdvantage": 0.03064825447510811,
+              "weightedReproductionAdvantage": 0.00021494798428849712
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.012150650573068102,
+              "weightedSurvivalAdvantage": 0.028025191546599906,
+              "weightedReproductionAdvantage": -0.00020133111395067739
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 5205,
+          "decoupledExposures": 8011,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.054498286865728676,
+              "weightedSurvivalAdvantage": 0.0020205835709755527,
+              "weightedReproductionAdvantage": -0.0056261144540667085
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.054498286865728676,
+              "weightedSurvivalAdvantage": 0.009497809444515955,
+              "weightedReproductionAdvantage": -0.004555338470192408
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.054498286865728676,
+              "weightedSurvivalAdvantage": 0.018351193728465633,
+              "weightedReproductionAdvantage": -0.004221859547835563
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.054498286865728676,
+              "weightedSurvivalAdvantage": 0.004317452299632063,
+              "weightedReproductionAdvantage": -0.00016066074242322703
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 8176,
+            "policyNegativeExposures": 11599,
+            "weightedHarvestAdvantage": 0.04095656919216813,
+            "weightedSurvivalAdvantage": 0.0019493009475404631,
+            "weightedReproductionAdvantage": -0.003658429235259912
+          },
+          "5": {
+            "policyPositiveExposures": 8176,
+            "policyNegativeExposures": 11599,
+            "weightedHarvestAdvantage": 0.04095656919216813,
+            "weightedSurvivalAdvantage": 0.010924355765639212,
+            "weightedReproductionAdvantage": -0.0030595260557114727
+          },
+          "20": {
+            "policyPositiveExposures": 8176,
+            "policyNegativeExposures": 11599,
+            "weightedHarvestAdvantage": 0.04095656919216813,
+            "weightedSurvivalAdvantage": 0.023523338145397,
+            "weightedReproductionAdvantage": -0.0025484180881757035
+          },
+          "50": {
+            "policyPositiveExposures": 8176,
+            "policyNegativeExposures": 11599,
+            "weightedHarvestAdvantage": 0.04095656919216813,
+            "weightedSurvivalAdvantage": 0.014618912099058795,
+            "weightedReproductionAdvantage": -0.00014721013805907857
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "strict|guarded|secondary",
+        "reproductionGate": "strict",
+        "movementGate": "guarded",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0.2921569406054914,
+          "movementGateValue": 0.1839374634437263,
+          "resourceBiasValue": 0.6426652941619977
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 3261,
+          "decoupledExposures": 6572,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.04069387510005318,
+              "weightedSurvivalAdvantage": -0.0075712903929373325,
+              "weightedReproductionAdvantage": -0.004110698567533583
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.04069387510005318,
+              "weightedSurvivalAdvantage": -0.03875315473227776,
+              "weightedReproductionAdvantage": -0.004416463653905715
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.04069387510005318,
+              "weightedSurvivalAdvantage": -0.10060400993810578,
+              "weightedReproductionAdvantage": -0.003485598077759636
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.04069387510005318,
+              "weightedSurvivalAdvantage": -0.08875677212696127,
+              "weightedReproductionAdvantage": -0.0021407517326703794
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 4718,
+          "decoupledExposures": 4668,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.0188212528585775,
+              "weightedSurvivalAdvantage": -0.006798922775072767,
+              "weightedReproductionAdvantage": -0.0007489043402849362
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.0188212528585775,
+              "weightedSurvivalAdvantage": -0.028548799294604285,
+              "weightedReproductionAdvantage": -0.0015424136060596318
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.0188212528585775,
+              "weightedSurvivalAdvantage": -0.07525575089781528,
+              "weightedReproductionAdvantage": 0.002075409131529839
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.0188212528585775,
+              "weightedSurvivalAdvantage": -0.060440630585602624,
+              "weightedReproductionAdvantage": -0.00019106209369220675
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 7979,
+            "policyNegativeExposures": 11240,
+            "weightedHarvestAdvantage": -0.029678645466683237,
+            "weightedSurvivalAdvantage": -0.006628370575110705,
+            "weightedReproductionAdvantage": -0.0022412181894272153
+          },
+          "5": {
+            "policyPositiveExposures": 7979,
+            "policyNegativeExposures": 11240,
+            "weightedHarvestAdvantage": -0.029678645466683237,
+            "weightedSurvivalAdvantage": -0.031059093210778394,
+            "weightedReproductionAdvantage": -0.0029571028275082807
+          },
+          "20": {
+            "policyPositiveExposures": 7979,
+            "policyNegativeExposures": 11240,
+            "weightedHarvestAdvantage": -0.029678645466683237,
+            "weightedSurvivalAdvantage": -0.08124645445165626,
+            "weightedReproductionAdvantage": -0.0010685297959892074
+          },
+          "50": {
+            "policyPositiveExposures": 7979,
+            "policyNegativeExposures": 11240,
+            "weightedHarvestAdvantage": -0.029678645466683237,
+            "weightedSurvivalAdvantage": -0.06919382338884347,
+            "weightedReproductionAdvantage": -0.001178853951913641
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "open|guarded|primary",
+        "reproductionGate": "open",
+        "movementGate": "guarded",
+        "resourceBias": "primary",
+        "axisValues": {
+          "reproductionGateValue": 0,
+          "movementGateValue": 0.12065656967461108,
+          "resourceBiasValue": 0.2269141353899613
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 4462,
+          "decoupledExposures": 4363,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.05080542114634443,
+              "weightedSurvivalAdvantage": 0.000829588503998176,
+              "weightedReproductionAdvantage": -0.0055365228811431
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.05080542114634443,
+              "weightedSurvivalAdvantage": -0.0017757177009883993,
+              "weightedReproductionAdvantage": -0.005588337502489488
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.05080542114634443,
+              "weightedSurvivalAdvantage": -0.021829464364429237,
+              "weightedReproductionAdvantage": -0.005084593704261028
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.05080542114634443,
+              "weightedSurvivalAdvantage": -0.025509459912866347,
+              "weightedReproductionAdvantage": -0.003236533310197486
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 3570,
+          "decoupledExposures": 6319,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.08317395903326283,
+              "weightedSurvivalAdvantage": 0.0044633670769257845,
+              "weightedReproductionAdvantage": -0.011212803776574125
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.08317395903326283,
+              "weightedSurvivalAdvantage": 0.0014328555306206369,
+              "weightedReproductionAdvantage": -0.010307967690482383
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.08317395903326283,
+              "weightedSurvivalAdvantage": -0.016552276622592257,
+              "weightedReproductionAdvantage": -0.008997087138051599
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.08317395903326283,
+              "weightedSurvivalAdvantage": -0.01449908603531287,
+              "weightedReproductionAdvantage": -0.002401556020815476
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 8032,
+            "policyNegativeExposures": 10682,
+            "weightedHarvestAdvantage": 0.0210143413844227,
+            "weightedSurvivalAdvantage": 0.003054393075751379,
+            "weightedReproductionAdvantage": -0.00970197968266254
+          },
+          "5": {
+            "policyPositiveExposures": 8032,
+            "policyNegativeExposures": 10682,
+            "weightedHarvestAdvantage": 0.0210143413844227,
+            "weightedSurvivalAdvantage": 0.0010654965718059318,
+            "weightedReproductionAdvantage": -0.00895531271008848
+          },
+          "20": {
+            "policyPositiveExposures": 8032,
+            "policyNegativeExposures": 10682,
+            "weightedHarvestAdvantage": 0.0210143413844227,
+            "weightedSurvivalAdvantage": -0.017539976530619644,
+            "weightedReproductionAdvantage": -0.0076080686884854596
+          },
+          "50": {
+            "policyPositiveExposures": 8032,
+            "policyNegativeExposures": 10682,
+            "weightedHarvestAdvantage": 0.0210143413844227,
+            "weightedSurvivalAdvantage": -0.01922117126925389,
+            "weightedReproductionAdvantage": -0.002721099297532649
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "open|open|primary",
+        "reproductionGate": "open",
+        "movementGate": "open",
+        "resourceBias": "primary",
+        "axisValues": {
+          "reproductionGateValue": 0,
+          "movementGateValue": 0,
+          "resourceBiasValue": 0.3691533313132822
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 5493,
+          "decoupledExposures": 3957,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.004360644274066054,
+              "weightedSurvivalAdvantage": 0.0033746374792627664,
+              "weightedReproductionAdvantage": -0.0140216554872535
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.004360644274066054,
+              "weightedSurvivalAdvantage": 0.011839297231939465,
+              "weightedReproductionAdvantage": -0.013877236545525003
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.004360644274066054,
+              "weightedSurvivalAdvantage": 0.02359186978265916,
+              "weightedReproductionAdvantage": -0.008073447085387016
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.004360644274066054,
+              "weightedSurvivalAdvantage": 0.03129886348575973,
+              "weightedReproductionAdvantage": -0.0021285300846908676
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 3036,
+          "decoupledExposures": 5101,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.02339654618239407,
+              "weightedSurvivalAdvantage": 0.0007135907291657455,
+              "weightedReproductionAdvantage": -0.004280463038198671
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.02339654618239407,
+              "weightedSurvivalAdvantage": -0.014887828247363375,
+              "weightedReproductionAdvantage": -0.005289736857169983
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.02339654618239407,
+              "weightedSurvivalAdvantage": -0.06059042535282566,
+              "weightedReproductionAdvantage": -0.002517299817363622
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.02339654618239407,
+              "weightedSurvivalAdvantage": -0.06865213666076102,
+              "weightedReproductionAdvantage": -0.0015878348704435662
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 8529,
+            "policyNegativeExposures": 9058,
+            "weightedHarvestAdvantage": 0.01704142913204159,
+            "weightedSurvivalAdvantage": 0.0016921098349803748,
+            "weightedReproductionAdvantage": -0.007679811056561177
+          },
+          "5": {
+            "policyPositiveExposures": 8529,
+            "policyNegativeExposures": 9058,
+            "weightedHarvestAdvantage": 0.01704142913204159,
+            "weightedSurvivalAdvantage": 0.000535602044119077,
+            "weightedReproductionAdvantage": -0.008021533035447798
+          },
+          "20": {
+            "policyPositiveExposures": 8529,
+            "policyNegativeExposures": 9058,
+            "weightedHarvestAdvantage": 0.01704142913204159,
+            "weightedSurvivalAdvantage": -0.008640208253191412,
+            "weightedReproductionAdvantage": -0.003946565703399746
+          },
+          "50": {
+            "policyPositiveExposures": 8529,
+            "policyNegativeExposures": 9058,
+            "weightedHarvestAdvantage": 0.01704142913204159,
+            "weightedSurvivalAdvantage": -0.0063057153561738,
+            "weightedReproductionAdvantage": -0.001319906834228999
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "strict|open|balanced",
+        "reproductionGate": "strict",
+        "movementGate": "open",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0.2606897241901606,
+          "movementGateValue": 0,
+          "resourceBiasValue": 0.43301666432525965
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 3493,
+          "decoupledExposures": 3969,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.03137592007022234,
+              "weightedSurvivalAdvantage": -0.0033185485211691514,
+              "weightedReproductionAdvantage": -0.007446580812086695
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.03137592007022234,
+              "weightedSurvivalAdvantage": -0.010490781202137976,
+              "weightedReproductionAdvantage": -0.008404652329954236
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.03137592007022234,
+              "weightedSurvivalAdvantage": -0.033591481509717594,
+              "weightedReproductionAdvantage": -0.004104948428287653
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.03137592007022234,
+              "weightedSurvivalAdvantage": -0.06299702894494445,
+              "weightedReproductionAdvantage": -0.005032264790625434
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 3770,
+          "decoupledExposures": 4148,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.01804714517477225,
+              "weightedSurvivalAdvantage": -0.001078408417599671,
+              "weightedReproductionAdvantage": 0.0015421630725511862
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.01804714517477225,
+              "weightedSurvivalAdvantage": 0.008838902611667318,
+              "weightedReproductionAdvantage": 0.00036744545320064427
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.01804714517477225,
+              "weightedSurvivalAdvantage": 0.027212448156887444,
+              "weightedReproductionAdvantage": -0.001043207407335561
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.01804714517477225,
+              "weightedSurvivalAdvantage": 0.03261868728533767,
+              "weightedReproductionAdvantage": 0.001331269494041153
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 7263,
+            "policyNegativeExposures": 8117,
+            "weightedHarvestAdvantage": 0.006143876080181502,
+            "weightedSurvivalAdvantage": -0.002467846346242545,
+            "weightedReproductionAdvantage": -0.003714346498113842
+          },
+          "5": {
+            "policyPositiveExposures": 7263,
+            "policyNegativeExposures": 8117,
+            "weightedHarvestAdvantage": 0.006143876080181502,
+            "weightedSurvivalAdvantage": -0.0025521326402413707,
+            "weightedReproductionAdvantage": -0.004603181935037477
+          },
+          "20": {
+            "policyPositiveExposures": 7263,
+            "policyNegativeExposures": 8117,
+            "weightedHarvestAdvantage": 0.006143876080181502,
+            "weightedSurvivalAdvantage": -0.005530380607869463,
+            "weightedReproductionAdvantage": -0.002913747395509538
+          },
+          "50": {
+            "policyPositiveExposures": 7263,
+            "policyNegativeExposures": 8117,
+            "weightedHarvestAdvantage": 0.006143876080181502,
+            "weightedSurvivalAdvantage": -0.013698319365842197,
+            "weightedReproductionAdvantage": -0.0017068142398205751
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "guarded|guarded|balanced",
+        "reproductionGate": "guarded",
+        "movementGate": "guarded",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0.09050042792223394,
+          "movementGateValue": 0.11729054055176674,
+          "resourceBiasValue": 0.5393197855679319
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 4161,
+          "decoupledExposures": 3784,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.00014613578893725367,
+              "weightedSurvivalAdvantage": -0.0018395557313429366,
+              "weightedReproductionAdvantage": -0.005256696003396846
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.00014613578893725367,
+              "weightedSurvivalAdvantage": -0.007198121604676234,
+              "weightedReproductionAdvantage": -0.005180266521490851
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.00014613578893725367,
+              "weightedSurvivalAdvantage": -0.015310930729981883,
+              "weightedReproductionAdvantage": -0.00006734790784448614
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.00014613578893725367,
+              "weightedSurvivalAdvantage": -0.024624599962688017,
+              "weightedReproductionAdvantage": 0.0020126771048306516
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 2858,
+          "decoupledExposures": 3585,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.05028582079960644,
+              "weightedSurvivalAdvantage": -0.004672534604764414,
+              "weightedReproductionAdvantage": -0.0010384410504674355
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.05028582079960644,
+              "weightedSurvivalAdvantage": -0.024970902171012888,
+              "weightedReproductionAdvantage": -0.0015139025319349856
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.05028582079960644,
+              "weightedSurvivalAdvantage": -0.07071545543877912,
+              "weightedReproductionAdvantage": -0.0008931362938817104
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.05028582079960644,
+              "weightedSurvivalAdvantage": -0.05252223888236813,
+              "weightedReproductionAdvantage": -0.00011976933547693907
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 7019,
+            "policyNegativeExposures": 7369,
+            "weightedHarvestAdvantage": 0.022599860157673003,
+            "weightedSurvivalAdvantage": -0.003119524864558146,
+            "weightedReproductionAdvantage": -0.003450328622340843
+          },
+          "5": {
+            "policyPositiveExposures": 7019,
+            "policyNegativeExposures": 7369,
+            "weightedHarvestAdvantage": 0.022599860157673003,
+            "weightedSurvivalAdvantage": -0.01534489847061195,
+            "weightedReproductionAdvantage": -0.0035014498244139536
+          },
+          "20": {
+            "policyPositiveExposures": 7019,
+            "policyNegativeExposures": 7369,
+            "weightedHarvestAdvantage": 0.022599860157673003,
+            "weightedSurvivalAdvantage": -0.041231850056816184,
+            "weightedReproductionAdvantage": -0.000432657754737472
+          },
+          "50": {
+            "policyPositiveExposures": 7019,
+            "policyNegativeExposures": 7369,
+            "weightedHarvestAdvantage": 0.022599860157673003,
+            "weightedSurvivalAdvantage": -0.03698867773486101,
+            "weightedReproductionAdvantage": 0.0009984259815220048
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "strict|open|secondary",
+        "reproductionGate": "strict",
+        "movementGate": "open",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0.24553683134727178,
+          "movementGateValue": 0,
+          "resourceBiasValue": 0.9663841527886688
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 3643,
+          "decoupledExposures": 3347,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.0729331399592741,
+              "weightedSurvivalAdvantage": -0.004200333228986361,
+              "weightedReproductionAdvantage": 0.004687588562261918
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.0729331399592741,
+              "weightedSurvivalAdvantage": -0.007442005777105746,
+              "weightedReproductionAdvantage": 0.0037928129976685376
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.0729331399592741,
+              "weightedSurvivalAdvantage": -0.028479403959729716,
+              "weightedReproductionAdvantage": 0.004228199250631395
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.0729331399592741,
+              "weightedSurvivalAdvantage": -0.048293740740655025,
+              "weightedReproductionAdvantage": 0.000775761533601255
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 4731,
+          "decoupledExposures": 2124,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.0003402002997733005,
+              "weightedSurvivalAdvantage": -0.0020818750138645336,
+              "weightedReproductionAdvantage": 0.01795597218325286
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.0003402002997733005,
+              "weightedSurvivalAdvantage": 0.000441137121336047,
+              "weightedReproductionAdvantage": 0.01574179778959964
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.0003402002997733005,
+              "weightedSurvivalAdvantage": 0.013690691985821752,
+              "weightedReproductionAdvantage": 0.01204570364514476
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.0003402002997733005,
+              "weightedSurvivalAdvantage": 0.018053615425161085,
+              "weightedReproductionAdvantage": 0.0031126990128624086
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 8374,
+            "policyNegativeExposures": 5471,
+            "weightedHarvestAdvantage": -0.0432124601163649,
+            "weightedSurvivalAdvantage": -0.003289985020792017,
+            "weightedReproductionAdvantage": 0.011047153798332258
+          },
+          "5": {
+            "policyPositiveExposures": 8374,
+            "policyNegativeExposures": 5471,
+            "weightedHarvestAdvantage": -0.0432124601163649,
+            "weightedSurvivalAdvantage": -0.005994683643643878,
+            "weightedReproductionAdvantage": 0.009466059632311
+          },
+          "20": {
+            "policyPositiveExposures": 8374,
+            "policyNegativeExposures": 5471,
+            "weightedHarvestAdvantage": -0.0432124601163649,
+            "weightedSurvivalAdvantage": -0.010603296608548252,
+            "weightedReproductionAdvantage": 0.007247629708566689
+          },
+          "50": {
+            "policyPositiveExposures": 8374,
+            "policyNegativeExposures": 5471,
+            "weightedHarvestAdvantage": -0.0432124601163649,
+            "weightedSurvivalAdvantage": -0.02108190809247894,
+            "weightedReproductionAdvantage": 0.0019285361314790484
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "guarded|open|balanced",
+        "reproductionGate": "guarded",
+        "movementGate": "open",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0.1201171095483005,
+          "movementGateValue": 0,
+          "resourceBiasValue": 0.5480131409829483
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 3848,
+          "decoupledExposures": 2465,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.07002016316786837,
+              "weightedSurvivalAdvantage": 0.0007630167246696976,
+              "weightedReproductionAdvantage": 0.0007101615850761363
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.07002016316786837,
+              "weightedSurvivalAdvantage": 0.009063150159112625,
+              "weightedReproductionAdvantage": 0.0008686517086854118
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.07002016316786837,
+              "weightedSurvivalAdvantage": 0.037585051952676606,
+              "weightedReproductionAdvantage": 0.0019290925885331652
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.07002016316786837,
+              "weightedSurvivalAdvantage": 0.07401195795039159,
+              "weightedReproductionAdvantage": 0.0004670039282118135
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 3230,
+          "decoupledExposures": 2994,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.09243894445297884,
+              "weightedSurvivalAdvantage": 0.0003209897801598837,
+              "weightedReproductionAdvantage": 0.004612103739551103
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.09243894445297884,
+              "weightedSurvivalAdvantage": 0.002680971253594196,
+              "weightedReproductionAdvantage": 0.005616960431681788
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.09243894445297884,
+              "weightedSurvivalAdvantage": 0.020761611400396212,
+              "weightedReproductionAdvantage": 0.003339125829911235
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.09243894445297884,
+              "weightedSurvivalAdvantage": -0.011924709649284118,
+              "weightedReproductionAdvantage": 0.0024455343954612975
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 7078,
+            "policyNegativeExposures": 5459,
+            "weightedHarvestAdvantage": 0.08039883405845726,
+            "weightedSurvivalAdvantage": 0.0006998945399739421,
+            "weightedReproductionAdvantage": 0.0023063089907857967
+          },
+          "5": {
+            "policyPositiveExposures": 7078,
+            "policyNegativeExposures": 5459,
+            "weightedHarvestAdvantage": 0.08039883405845726,
+            "weightedSurvivalAdvantage": 0.006367690060672328,
+            "weightedReproductionAdvantage": 0.0029207474863181776
+          },
+          "20": {
+            "policyPositiveExposures": 7078,
+            "policyNegativeExposures": 5459,
+            "weightedHarvestAdvantage": 0.08039883405845726,
+            "weightedSurvivalAdvantage": 0.03038891155224626,
+            "weightedReproductionAdvantage": 0.0023320619148252024
+          },
+          "50": {
+            "policyPositiveExposures": 7078,
+            "policyNegativeExposures": 5459,
+            "weightedHarvestAdvantage": 0.08039883405845726,
+            "weightedSurvivalAdvantage": 0.03422519310528866,
+            "weightedReproductionAdvantage": 0.0012794918415830094
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "guarded|guarded|secondary",
+        "reproductionGate": "guarded",
+        "movementGate": "guarded",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0.05571418111212552,
+          "movementGateValue": 0.1486621219664812,
+          "resourceBiasValue": 0.6851935131009668
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 2705,
+          "decoupledExposures": 3285,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.030622499389605557,
+              "weightedSurvivalAdvantage": 0.0003639071054045924,
+              "weightedReproductionAdvantage": -0.016450929716428815
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.030622499389605557,
+              "weightedSurvivalAdvantage": -0.011427077379186315,
+              "weightedReproductionAdvantage": -0.01643032791248866
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.030622499389605557,
+              "weightedSurvivalAdvantage": -0.04779363810025023,
+              "weightedReproductionAdvantage": -0.011081871055162706
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.030622499389605557,
+              "weightedSurvivalAdvantage": -0.060001514443884636,
+              "weightedReproductionAdvantage": -0.0027006576096812725
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 2773,
+          "decoupledExposures": 3114,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.04523722255760324,
+              "weightedSurvivalAdvantage": -0.007379781769025277,
+              "weightedReproductionAdvantage": -0.006895671904539286
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.04523722255760324,
+              "weightedSurvivalAdvantage": -0.041017177772046165,
+              "weightedReproductionAdvantage": -0.009305948365864885
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.04523722255760324,
+              "weightedSurvivalAdvantage": -0.13661098350672246,
+              "weightedReproductionAdvantage": -0.006919934644247808
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.04523722255760324,
+              "weightedSurvivalAdvantage": -0.1511627038828922,
+              "weightedReproductionAdvantage": -0.0029817388250639645
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 5478,
+            "policyNegativeExposures": 6399,
+            "weightedHarvestAdvantage": -0.00690560344951886,
+            "weightedSurvivalAdvantage": -0.0033263158532019364,
+            "weightedReproductionAdvantage": -0.012204197879839446
+          },
+          "5": {
+            "policyPositiveExposures": 5478,
+            "policyNegativeExposures": 6399,
+            "weightedHarvestAdvantage": -0.00690560344951886,
+            "weightedSurvivalAdvantage": -0.025603078409275927,
+            "weightedReproductionAdvantage": -0.01345822598958095
+          },
+          "20": {
+            "policyPositiveExposures": 5478,
+            "policyNegativeExposures": 6399,
+            "weightedHarvestAdvantage": -0.00690560344951886,
+            "weightedSurvivalAdvantage": -0.09234429899026252,
+            "weightedReproductionAdvantage": -0.009459785199865081
+          },
+          "50": {
+            "policyPositiveExposures": 5478,
+            "policyNegativeExposures": 6399,
+            "weightedHarvestAdvantage": -0.00690560344951886,
+            "weightedSurvivalAdvantage": -0.10998634535606601,
+            "weightedReproductionAdvantage": -0.003138724745445136
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "strict|guarded|primary",
+        "reproductionGate": "strict",
+        "movementGate": "guarded",
+        "resourceBias": "primary",
+        "axisValues": {
+          "reproductionGateValue": 0.5529510179534554,
+          "movementGateValue": 0.1812491468153894,
+          "resourceBiasValue": 0.3113307303749025
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 2304,
+          "decoupledExposures": 2035,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.04357434808581174,
+              "weightedSurvivalAdvantage": 0.003482412037073035,
+              "weightedReproductionAdvantage": 0.006239829084832599
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.04357434808581174,
+              "weightedSurvivalAdvantage": 0.035797468868479974,
+              "weightedReproductionAdvantage": 0.005396625606477812
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.04357434808581174,
+              "weightedSurvivalAdvantage": 0.10054476920525779,
+              "weightedReproductionAdvantage": 0.007136534995425135
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.04357434808581174,
+              "weightedSurvivalAdvantage": 0.07174972088790385,
+              "weightedReproductionAdvantage": 0.004012036108324975
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 2449,
+          "decoupledExposures": 4763,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.03208894844929057,
+              "weightedSurvivalAdvantage": -0.0013764088255263656,
+              "weightedReproductionAdvantage": -0.00852219222913973
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.03208894844929057,
+              "weightedSurvivalAdvantage": 0.0012259823934765409,
+              "weightedReproductionAdvantage": -0.009134710393353188
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.03208894844929057,
+              "weightedSurvivalAdvantage": 0.019063847278138063,
+              "weightedReproductionAdvantage": -0.001588319898888508
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.03208894844929057,
+              "weightedSurvivalAdvantage": 0.014353261071740219,
+              "weightedReproductionAdvantage": -0.0006623548155720675
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 4753,
+            "policyNegativeExposures": 6798,
+            "weightedHarvestAdvantage": 0.03496982232294903,
+            "weightedSurvivalAdvantage": 0.00002148996716505845,
+            "weightedReproductionAdvantage": -0.002027256494250375
+          },
+          "5": {
+            "policyPositiveExposures": 4753,
+            "policyNegativeExposures": 6798,
+            "weightedHarvestAdvantage": 0.03496982232294903,
+            "weightedSurvivalAdvantage": 0.014478208834188749,
+            "weightedReproductionAdvantage": -0.0027705543053928848
+          },
+          "20": {
+            "policyPositiveExposures": 4753,
+            "policyNegativeExposures": 6798,
+            "weightedHarvestAdvantage": 0.03496982232294903,
+            "weightedSurvivalAdvantage": 0.050703376501942454,
+            "weightedReproductionAdvantage": 0.002435437460595945
+          },
+          "50": {
+            "policyPositiveExposures": 4753,
+            "policyNegativeExposures": 6798,
+            "weightedHarvestAdvantage": 0.03496982232294903,
+            "weightedSurvivalAdvantage": 0.03189317757647621,
+            "weightedReproductionAdvantage": 0.0010270599160196812
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "strict|open|primary",
+        "reproductionGate": "strict",
+        "movementGate": "open",
+        "resourceBias": "primary",
+        "axisValues": {
+          "reproductionGateValue": 0.2889269042294472,
+          "movementGateValue": 0,
+          "resourceBiasValue": 0.3912054968997836
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 1865,
+          "decoupledExposures": 2174,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": -0.004944462829395172,
+              "weightedSurvivalAdvantage": -0.00315438413248062,
+              "weightedReproductionAdvantage": -0.003804805422817294
+            },
+            "5": {
+              "weightedHarvestAdvantage": -0.004944462829395172,
+              "weightedSurvivalAdvantage": -0.005555887908576005,
+              "weightedReproductionAdvantage": -0.006667291774715369
+            },
+            "20": {
+              "weightedHarvestAdvantage": -0.004944462829395172,
+              "weightedSurvivalAdvantage": -0.010731923513877235,
+              "weightedReproductionAdvantage": -0.004751601553991229
+            },
+            "50": {
+              "weightedHarvestAdvantage": -0.004944462829395172,
+              "weightedSurvivalAdvantage": 0.004121389097624095,
+              "weightedReproductionAdvantage": -0.002366457122837633
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 2951,
+          "decoupledExposures": 3383,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.10373965753723607,
+              "weightedSurvivalAdvantage": -0.002396291538825509,
+              "weightedReproductionAdvantage": -0.005542075295677988
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.10373965753723607,
+              "weightedSurvivalAdvantage": -0.005888520508945575,
+              "weightedReproductionAdvantage": -0.002267467514704694
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.10373965753723607,
+              "weightedSurvivalAdvantage": -0.007214881689938582,
+              "weightedReproductionAdvantage": -0.003108075502970839
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.10373965753723607,
+              "weightedSurvivalAdvantage": 0.015497846108989122,
+              "weightedReproductionAdvantage": 0.0003699399533609063
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 6,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 4816,
+            "policyNegativeExposures": 5557,
+            "weightedHarvestAdvantage": 0.061675223101903896,
+            "weightedSurvivalAdvantage": -0.002622500143445086,
+            "weightedReproductionAdvantage": -0.005220949389412367
+          },
+          "5": {
+            "policyPositiveExposures": 4816,
+            "policyNegativeExposures": 5557,
+            "weightedHarvestAdvantage": 0.061675223101903896,
+            "weightedSurvivalAdvantage": -0.005835927890632851,
+            "weightedReproductionAdvantage": -0.004101702556007345
+          },
+          "20": {
+            "policyPositiveExposures": 4816,
+            "policyNegativeExposures": 5557,
+            "weightedHarvestAdvantage": 0.061675223101903896,
+            "weightedSurvivalAdvantage": -0.012044213356248201,
+            "weightedReproductionAdvantage": -0.003947131920338539
+          },
+          "50": {
+            "policyPositiveExposures": 4816,
+            "policyNegativeExposures": 5557,
+            "weightedHarvestAdvantage": 0.061675223101903896,
+            "weightedSurvivalAdvantage": 0.007806737598582657,
+            "weightedReproductionAdvantage": -0.0008054244664436724
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "guarded|open|secondary",
+        "reproductionGate": "guarded",
+        "movementGate": "open",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0.1310734363272786,
+          "movementGateValue": 0.02105608060956001,
+          "resourceBiasValue": 0.6194142317865043
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 2477,
+          "decoupledExposures": 2710,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.06321160888402613,
+              "weightedSurvivalAdvantage": -0.005633690079653022,
+              "weightedReproductionAdvantage": 0.009292931338532762
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.06321160888402613,
+              "weightedSurvivalAdvantage": -0.016440105207603806,
+              "weightedReproductionAdvantage": 0.008541984192449283
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.06321160888402613,
+              "weightedSurvivalAdvantage": -0.043113654174480244,
+              "weightedReproductionAdvantage": 0.006409639181644643
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.06321160888402613,
+              "weightedSurvivalAdvantage": -0.04366532489415743,
+              "weightedReproductionAdvantage": 0.003703024499895801
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 2382,
+          "decoupledExposures": 1377,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.06899602305047103,
+              "weightedSurvivalAdvantage": 0.001394161309223078,
+              "weightedReproductionAdvantage": 0.01607456252416656
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.06899602305047103,
+              "weightedSurvivalAdvantage": 0.019000631904690413,
+              "weightedReproductionAdvantage": 0.01434312266275774
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.06899602305047103,
+              "weightedSurvivalAdvantage": 0.04850356350455259,
+              "weightedReproductionAdvantage": 0.007043407306133015
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.06899602305047103,
+              "weightedSurvivalAdvantage": 0.09813437826430939,
+              "weightedReproductionAdvantage": 0.0017451395962458406
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 4859,
+            "policyNegativeExposures": 4087,
+            "weightedHarvestAdvantage": 0.06927449548614217,
+            "weightedSurvivalAdvantage": -0.0029961671510073547,
+            "weightedReproductionAdvantage": 0.012881595862964852
+          },
+          "5": {
+            "policyPositiveExposures": 4859,
+            "policyNegativeExposures": 4087,
+            "weightedHarvestAdvantage": 0.06927449548614217,
+            "weightedSurvivalAdvantage": -0.0035411128825831814,
+            "weightedReproductionAdvantage": 0.012132184981183106
+          },
+          "20": {
+            "policyPositiveExposures": 4859,
+            "policyNegativeExposures": 4087,
+            "weightedHarvestAdvantage": 0.06927449548614217,
+            "weightedSurvivalAdvantage": -0.0075633827491833235,
+            "weightedReproductionAdvantage": 0.007486815184192911
+          },
+          "50": {
+            "policyPositiveExposures": 4859,
+            "policyNegativeExposures": 4087,
+            "weightedHarvestAdvantage": 0.06927449548614217,
+            "weightedSurvivalAdvantage": 0.008123401054341771,
+            "weightedReproductionAdvantage": 0.003140781474624901
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "guarded|guarded|primary",
+        "reproductionGate": "guarded",
+        "movementGate": "guarded",
+        "resourceBias": "primary",
+        "axisValues": {
+          "reproductionGateValue": 0.13586895503103733,
+          "movementGateValue": 0.18878415548242627,
+          "resourceBiasValue": 0.33929187890607865
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 1666,
+          "decoupledExposures": 1526,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.004830382839323827,
+              "weightedSurvivalAdvantage": -0.00042627435560539136,
+              "weightedReproductionAdvantage": 0.017690884356516605
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.004830382839323827,
+              "weightedSurvivalAdvantage": -0.0010414920033479601,
+              "weightedReproductionAdvantage": 0.014879273387352713
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.004830382839323827,
+              "weightedSurvivalAdvantage": 0.012161263116458957,
+              "weightedReproductionAdvantage": 0.012411463588939698
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.004830382839323827,
+              "weightedSurvivalAdvantage": 0.03603103879892771,
+              "weightedReproductionAdvantage": 0.0038781765613791
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 1420,
+          "decoupledExposures": 2663,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.0025047048955744136,
+              "weightedSurvivalAdvantage": 0.003967601263462199,
+              "weightedReproductionAdvantage": 0.0029593523183049013
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.0025047048955744136,
+              "weightedSurvivalAdvantage": 0.015527307059548927,
+              "weightedReproductionAdvantage": 0.0038008657530862466
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.0025047048955744136,
+              "weightedSurvivalAdvantage": 0.026433106527175523,
+              "weightedReproductionAdvantage": 0.0020564813950597143
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.0025047048955744136,
+              "weightedSurvivalAdvantage": 0.02563443846495608,
+              "weightedReproductionAdvantage": -0.00028196164746162593
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 3086,
+            "policyNegativeExposures": 4189,
+            "weightedHarvestAdvantage": -0.00040205599018547583,
+            "weightedSurvivalAdvantage": 0.0011469099395833736,
+            "weightedReproductionAdvantage": 0.009154739886785767
+          },
+          "5": {
+            "policyPositiveExposures": 3086,
+            "policyNegativeExposures": 4189,
+            "weightedHarvestAdvantage": -0.00040205599018547583,
+            "weightedSurvivalAdvantage": 0.006326659970105654,
+            "weightedReproductionAdvantage": 0.008568174324705835
+          },
+          "20": {
+            "policyPositiveExposures": 3086,
+            "policyNegativeExposures": 4189,
+            "weightedHarvestAdvantage": -0.00040205599018547583,
+            "weightedSurvivalAdvantage": 0.021145915733770504,
+            "weightedReproductionAdvantage": 0.006956193647450048
+          },
+          "50": {
+            "policyPositiveExposures": 3086,
+            "policyNegativeExposures": 4189,
+            "weightedHarvestAdvantage": -0.00040205599018547583,
+            "weightedSurvivalAdvantage": 0.03318185810123427,
+            "weightedReproductionAdvantage": 0.0014250919941376802
+          }
+        }
+      }
+    },
+    {
+      "signature": {
+        "key": "guarded|open|primary",
+        "reproductionGate": "guarded",
+        "movementGate": "open",
+        "resourceBias": "primary",
+        "axisValues": {
+          "reproductionGateValue": 0.11090937391854823,
+          "movementGateValue": 0,
+          "resourceBiasValue": 0.38131317428778855
+        }
+      },
+      "runs": [
+        {
+          "seed": 9201,
+          "coupledExposures": 1881,
+          "decoupledExposures": 1713,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.03172480996840035,
+              "weightedSurvivalAdvantage": 0.002389582536790443,
+              "weightedReproductionAdvantage": -0.00372434545649425
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.03172480996840035,
+              "weightedSurvivalAdvantage": 0.001115518929303917,
+              "weightedReproductionAdvantage": -0.004965257630543563
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.03172480996840035,
+              "weightedSurvivalAdvantage": -0.003353440248650159,
+              "weightedReproductionAdvantage": -0.00445386803265131
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.03172480996840035,
+              "weightedSurvivalAdvantage": -0.021165189982116188,
+              "weightedReproductionAdvantage": 0.0015344614327135447
+            }
+          }
+        },
+        {
+          "seed": 9202,
+          "coupledExposures": 1849,
+          "decoupledExposures": 1770,
+          "horizons": {
+            "1": {
+              "weightedHarvestAdvantage": 0.04640405144284491,
+              "weightedSurvivalAdvantage": -0.00036133923282629385,
+              "weightedReproductionAdvantage": 0.01357941587322383
+            },
+            "5": {
+              "weightedHarvestAdvantage": 0.04640405144284491,
+              "weightedSurvivalAdvantage": -0.006043976517808852,
+              "weightedReproductionAdvantage": 0.011814146974462678
+            },
+            "20": {
+              "weightedHarvestAdvantage": 0.04640405144284491,
+              "weightedSurvivalAdvantage": -0.028211415965047608,
+              "weightedReproductionAdvantage": 0.004512329951870261
+            },
+            "50": {
+              "weightedHarvestAdvantage": 0.04640405144284491,
+              "weightedSurvivalAdvantage": -0.0042503512373377956,
+              "weightedReproductionAdvantage": 0.0005914328023982375
+            }
+          }
+        }
+      ],
+      "overall": {
+        "matchedBins": 7,
+        "horizons": {
+          "1": {
+            "policyPositiveExposures": 3730,
+            "policyNegativeExposures": 3483,
+            "weightedHarvestAdvantage": 0.03836140815500277,
+            "weightedSurvivalAdvantage": 0.0011008770685730248,
+            "weightedReproductionAdvantage": 0.005521362916303906
+          },
+          "5": {
+            "policyPositiveExposures": 3730,
+            "policyNegativeExposures": 3483,
+            "weightedHarvestAdvantage": 0.03836140815500277,
+            "weightedSurvivalAdvantage": -0.0017155576230373103,
+            "weightedReproductionAdvantage": 0.004241672083920696
+          },
+          "20": {
+            "policyPositiveExposures": 3730,
+            "policyNegativeExposures": 3483,
+            "weightedHarvestAdvantage": 0.03836140815500277,
+            "weightedSurvivalAdvantage": -0.01306986870493374,
+            "weightedReproductionAdvantage": 0.0007533881178827716
+          },
+          "50": {
+            "policyPositiveExposures": 3730,
+            "policyNegativeExposures": 3483,
+            "weightedHarvestAdvantage": 0.03836140815500277,
+            "weightedSurvivalAdvantage": -0.009193453924302934,
+            "weightedReproductionAdvantage": 0.0011730624958343678
+          }
+        }
+      }
+    }
+  ],
+  "interpretation": {
+    "summary": "Found 83 positive multi-horizon effects. Top: strict|guarded|primary at horizon=20 (survival=0.0507).",
+    "positiveHorizonEffects": [
+      {
+        "signature": "strict|guarded|primary",
+        "horizon": 20,
+        "metric": "survival",
+        "advantage": 0.050703376501942454
+      },
+      {
+        "signature": "guarded|open|balanced",
+        "horizon": 50,
+        "metric": "survival",
+        "advantage": 0.03422519310528866
+      },
+      {
+        "signature": "guarded|guarded|primary",
+        "horizon": 50,
+        "metric": "survival",
+        "advantage": 0.03318185810123427
+      },
+      {
+        "signature": "strict|guarded|primary",
+        "horizon": 50,
+        "metric": "survival",
+        "advantage": 0.03189317757647621
+      },
+      {
+        "signature": "open|strict|balanced",
+        "horizon": 20,
+        "metric": "survival",
+        "advantage": 0.03158658952784459
+      },
+      {
+        "signature": "guarded|open|balanced",
+        "horizon": 20,
+        "metric": "survival",
+        "advantage": 0.03038891155224626
+      },
+      {
+        "signature": "open|strict|primary",
+        "horizon": 20,
+        "metric": "survival",
+        "advantage": 0.024040737025743088
+      },
+      {
+        "signature": "guarded|strict|primary",
+        "horizon": 20,
+        "metric": "survival",
+        "advantage": 0.023523338145397
+      },
+      {
+        "signature": "guarded|guarded|primary",
+        "horizon": 20,
+        "metric": "survival",
+        "advantage": 0.021145915733770504
+      },
+      {
+        "signature": "open|open|balanced",
+        "horizon": 50,
+        "metric": "survival",
+        "advantage": 0.016464569694886102
+      }
+    ]
+  }
+}
