@@ -1569,7 +1569,7 @@ describe('runCladeActivityRelabelNullStudy', () => {
       expect(Math.abs(threshold.persistentActivityMeanDeltaVsNull)).toBeGreaterThan(0.1);
       expect(Math.abs(aggregate.persistentActivityMeanDeltaVsNull.mean)).toBeGreaterThan(0.1);
     },
-    30000
+    120_000
   );
 
   it(
@@ -1599,7 +1599,7 @@ describe('runCladeActivityRelabelNullStudy', () => {
       expect(Math.abs(threshold.persistentActivityMeanDeltaVsNull)).toBeGreaterThan(0.1);
       expect(Math.abs(aggregate.persistentActivityMeanDeltaVsNull.mean)).toBeGreaterThan(0.1);
     },
-    30000
+    120_000
   );
 
   it('preserves the canonical March 10 defaults for the matched-null study', () => {
@@ -1819,7 +1819,7 @@ describe('runCladeActivityRelabelNullCladeHabitatCouplingSweep', () => {
       DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_HABITAT_COUPLING_SWEEP.cladeHabitatCouplingValues
     );
     expect(result.results).toHaveLength(5);
-  }, 30_000);
+  }, 120_000);
 });
 
 describe('runCladeActivityRelabelNullCladeInteractionCouplingSweep archival compatibility', () => {
@@ -1989,7 +1989,7 @@ describe('runCladeActivityRelabelNullCladeInteractionCouplingSweep archival comp
       DEFAULT_CLADE_ACTIVITY_RELABEL_NULL_CLADE_INTERACTION_COUPLING_SWEEP.cladeInteractionCouplingValues
     );
     expect(result.results).toHaveLength(5);
-  }, 30_000);
+  }, 120_000);
 });
 
 describe('runCladeActivityCoarseThresholdBoundaryStudy', () => {

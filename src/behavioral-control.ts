@@ -106,6 +106,10 @@ function getHarvestHistory(agent: Pick<BehavioralStateCarrier, 'transientState'>
 
 function setHarvestHistory(agent: Agent, history: HarvestHistory): void {
   if (!agent.transientState) {
+    if (!shouldPersistBehavioralMemory(agent)) {
+      return;
+    }
+
     agent.transientState = new Map();
   }
 
@@ -237,7 +241,7 @@ export function inheritBehavioralState(
 
 export function setTransientStateValue(agent: Agent, key: string, value: number): void {
   if (!agent.transientState) {
-    if (!agent.policyState) {
+    if (!shouldPersistBehavioralMemory(agent)) {
       return;
     }
 
@@ -245,6 +249,10 @@ export function setTransientStateValue(agent: Agent, key: string, value: number)
   }
 
   agent.transientState.set(key, value);
+}
+
+function shouldPersistBehavioralMemory(agent: Agent): boolean {
+  return resolveBehavioralPolicyFlags(agent).hasAnyPolicy;
 }
 
 export function updateHarvestMemory(agent: Agent, harvestTotal: number): void {

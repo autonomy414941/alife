@@ -1,4 +1,5 @@
 import { BehavioralPolicyFlags } from './behavioral-control';
+import { LocalObservationMap } from './phenotype';
 import { StepSummary } from './types';
 
 export const DEFAULT_POLICY_FITNESS_FERTILITY_BINS = 4;
@@ -19,6 +20,7 @@ export interface PolicyFitnessRecord extends BehavioralPolicyFlags {
   movementPolicyGated: boolean;
   reproductionPolicyGated: boolean;
   harvestPolicyGuided: boolean;
+  observation?: LocalObservationMap;
   policyValues?: Record<string, number>;
 }
 

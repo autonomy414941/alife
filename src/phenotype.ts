@@ -10,6 +10,28 @@ export interface LocalEcologicalContext {
   localFertility: number;
   localCrowding: number;
   disturbancePhase: number;
+  age?: number;
+  ticksSinceDisturbance?: number;
+  recentDisturbanceCount?: number;
+  primaryResourceLevel?: number;
+  secondaryResourceLevel?: number;
+  secondaryResourceFraction?: number;
+  sameLineageCrowding?: number;
+  sameLineageShare?: number;
+}
+
+export interface LocalObservationMap {
+  age: number;
+  localFertility: number;
+  localCrowding: number;
+  disturbancePhase: number;
+  ticksSinceDisturbance: number;
+  recentDisturbanceCount: number;
+  primaryResourceLevel: number;
+  secondaryResourceLevel: number;
+  secondaryResourceFraction: number;
+  sameLineageCrowding: number;
+  sameLineageShare: number;
 }
 
 export interface RealizedPhenotype {
@@ -167,4 +189,8 @@ function clampLegacyPolicyValue(key: string, value: number): number {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+export function cloneLocalObservationMap(observation: LocalObservationMap): LocalObservationMap {
+  return { ...observation };
 }

@@ -24,8 +24,30 @@ describe('context-dependent harvest expression', () => {
 
     const directMeanHarvest = mean(directSeries.records.map((record) => record.harvestIntake));
     const contextualMeanHarvest = mean(contextualSeries.records.map((record) => record.harvestIntake));
+    const firstObservation = contextualSeries.records[0]?.observation;
+    const observationSummary = contextualSeries.summaries[0]?.policyObservability?.observations;
 
     expect(contextualMeanHarvest).toBeLessThan(directMeanHarvest);
+    expect(firstObservation?.age).toBe(1);
+    expect(firstObservation?.recentDisturbanceCount).toBe(0);
+    expect(firstObservation?.primaryResourceLevel).toBeGreaterThan(0);
+    expect(firstObservation?.primaryResourceLevel).toBeLessThanOrEqual(100);
+    expect(firstObservation?.secondaryResourceLevel).toBeGreaterThan(0);
+    expect(firstObservation?.secondaryResourceLevel).toBeLessThanOrEqual(100);
+    expect(firstObservation?.secondaryResourceFraction).toBeGreaterThan(0);
+    expect(firstObservation?.secondaryResourceFraction).toBeLessThan(1);
+    expect(observationSummary).toMatchObject({
+      decisions: 8,
+      meanAge: 1,
+      meanRecentDisturbanceCount: 0
+    });
+    expect(observationSummary?.meanPrimaryResourceLevel).toBeGreaterThan(0);
+    expect(observationSummary?.meanPrimaryResourceLevel).toBeLessThan(100);
+    expect(observationSummary?.meanSecondaryResourceLevel).toBeGreaterThan(0);
+    expect(observationSummary?.meanSecondaryResourceLevel).toBeLessThan(100);
+    expect(observationSummary?.meanSecondaryResourceFraction).toBeGreaterThan(0.4);
+    expect(observationSummary?.meanSecondaryResourceFraction).toBeLessThan(0.6);
+    expect(observationSummary?.meanSameLineageShare).toBeGreaterThanOrEqual(0);
   });
 
   it('produces a paired artifact comparing contextual harvest expression against direct encoding', () => {

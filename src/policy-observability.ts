@@ -92,7 +92,39 @@ export function summarizePolicyObservability(
       suppressedByHarvestThreshold: decisionStats.reproduction.suppressedByHarvestThreshold,
       harvestThresholdNearThreshold: decisionStats.reproduction.harvestThresholdNearThreshold
     },
+    observations: summarizeDecisionObservations(records),
     parameters: POLICY_PARAMETER_KEYS.map((key) => summarizePolicyParameter(key, agents, records))
+  };
+}
+
+function summarizeDecisionObservations(
+  records: ReadonlyArray<PolicyFitnessRecord>
+): PolicyObservabilitySummary['observations'] {
+  const observations = records
+    .map((record) => record.observation)
+    .filter((observation): observation is NonNullable<PolicyFitnessRecord['observation']> => observation !== undefined);
+
+  return {
+    decisions: observations.length,
+    meanAge: arithmeticMean(observations.map((observation) => observation.age)),
+    meanLocalFertility: arithmeticMean(observations.map((observation) => observation.localFertility)),
+    meanLocalCrowding: arithmeticMean(observations.map((observation) => observation.localCrowding)),
+    meanPrimaryResourceLevel: arithmeticMean(
+      observations.map((observation) => observation.primaryResourceLevel)
+    ),
+    meanSecondaryResourceLevel: arithmeticMean(
+      observations.map((observation) => observation.secondaryResourceLevel)
+    ),
+    meanSecondaryResourceFraction: arithmeticMean(
+      observations.map((observation) => observation.secondaryResourceFraction)
+    ),
+    meanTicksSinceDisturbance: arithmeticMean(
+      observations.map((observation) => observation.ticksSinceDisturbance)
+    ),
+    meanRecentDisturbanceCount: arithmeticMean(
+      observations.map((observation) => observation.recentDisturbanceCount)
+    ),
+    meanSameLineageShare: arithmeticMean(observations.map((observation) => observation.sameLineageShare))
   };
 }
 

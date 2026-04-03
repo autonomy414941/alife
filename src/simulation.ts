@@ -102,7 +102,7 @@ import {
   PolicyFitnessRunSeries,
   resolveDisturbancePhase
 } from './policy-fitness';
-import { LocalEcologicalContext } from './phenotype';
+import { cloneLocalObservationMap, LocalObservationMap } from './phenotype';
 import { PolicyDecisionStats, summarizePolicyObservability } from './policy-observability';
 import {
   summarizePhenotypeDiversity,
@@ -517,9 +517,7 @@ export class LifeSimulation {
     this.applyDisturbanceIfScheduled(nextTick);
 
     const occupancy = buildOccupancyGrid(this.config.width, this.config.height, this.agents);
-    const lineageOccupancy = this.usesAdultLineageOccupancy()
-      ? buildLineageOccupancyGrid(this.config.width, this.config.height, this.agents)
-      : undefined;
+    const lineageOccupancy = buildLineageOccupancyGrid(this.config.width, this.config.height, this.agents);
     const descentEdges: DescentEdge[] = [];
     const policyFitnessByAgentId = this.initializePolicyFitnessTracking(nextTick, occupancy);
     const turnOrder = this.rng.shuffle([...this.agents]);
@@ -1762,7 +1760,7 @@ export class LifeSimulation {
   private processAgentTurn(
     agent: Agent,
     occupancy: number[][],
-    lineageOccupancy: LineageOccupancyGrid | undefined,
+    lineageOccupancy: LineageOccupancyGrid,
     policyFitnessByAgentId: Map<number, PolicyFitnessRecord>,
     policyDecisionStats: PolicyDecisionStats
   ): void {
@@ -1862,7 +1860,7 @@ export class LifeSimulation {
 
     const available = this.resources[agent.y][agent.x];
     const available2 = this.resources2[agent.y][agent.x];
-    const localEcologicalContext = this.resolveLocalEcologicalContext(agent.x, agent.y, occupancy);
+    const localObservation = this.resolveLocalObservationMap(agent, occupancy, lineageOccupancy);
     const habitatEfficiency = this.habitatMatchEfficiency(agent, agent.x, agent.y);
     const trophicEfficiency = this.trophicForagingEfficiency(agent.species, agent.lineage);
     const defenseEfficiency = this.defenseForagingEfficiency(agent.species, agent.lineage);
@@ -1873,7 +1871,7 @@ export class LifeSimulation {
       agent,
       available,
       this.policyCoupling.harvestGuidance,
-      this.config.contextualHarvestExpression ? localEcologicalContext : undefined
+      this.config.contextualHarvestExpression ? localObservation : undefined
     );
     const defaultHarvestShares = resolveResourceHarvestShares(agent.genome);
     const harvest = resolveDualResourceHarvest({
@@ -1935,8 +1933,8 @@ export class LifeSimulation {
           Math.abs(harvest.secondaryShare - defaultHarvestShares.secondaryShare) > 1e-9);
       policyFitness.harvestIntake = totalHarvest;
 
-      const decisionTimeFertility = localEcologicalContext.localFertility;
-      const decisionTimeCrowding = localEcologicalContext.localCrowding;
+      const decisionTimeFertility = localObservation.localFertility;
+      const decisionTimeCrowding = localObservation.localCrowding;
 
       policyFitness.fertilityBin = binPolicyFitnessValue(
         decisionTimeFertility,
@@ -1959,6 +1957,7 @@ export class LifeSimulation {
 
       const lastDisturbance = latestDisturbanceEvent(this.disturbanceEvents);
       policyFitness.disturbancePhase = resolveDisturbancePhase(this.tickCount + 1, lastDisturbance?.tick ?? null);
+      policyFitness.observation = cloneLocalObservationMap(localObservation);
     }
   }
 
@@ -2310,29 +2309,56 @@ export class LifeSimulation {
     });
   }
 
-  private resolveLocalEcologicalContext(x: number, y: number, occupancy: number[][]): LocalEcologicalContext {
+  private resolveLocalObservationMap(
+    agent: Pick<Agent, 'age' | 'lineage' | 'x' | 'y'>,
+    occupancy: number[][],
+    lineageOccupancy: LineageOccupancyGrid
+  ): LocalObservationMap {
     const currentTick = this.tickCount + 1;
-    const localFertility = this.effectiveBiomeFertilityAt(x, y, currentTick);
+    const localFertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, currentTick);
     const localCrowding = neighborhoodCrowding({
-      x,
-      y,
+      x: agent.x,
+      y: agent.y,
       occupancy,
       dispersalRadius: this.normalizedDispersalRadius(),
       wrapX: (nextX) => this.wrapX(nextX),
       wrapY: (nextY) => this.wrapY(nextY)
     });
     const lastDisturbance = latestDisturbanceEvent(this.disturbanceEvents);
-    const disturbancePhase =
-      lastDisturbance === null
-        ? 0
-        : currentTick - lastDisturbance.tick <= DISTURBANCE_PHASE_RECENT_WINDOW
-          ? 1
-          : 0;
+    const ticksSinceDisturbance =
+      lastDisturbance === null ? DISTURBANCE_PHASE_RECENT_WINDOW + 1 : currentTick - lastDisturbance.tick;
+    const sameLineageCrowding = sameLineageNeighborhoodCrowdingAt({
+      width: this.config.width,
+      lineage: agent.lineage,
+      x: agent.x,
+      y: agent.y,
+      lineageOccupancy,
+      dispersalRadius: this.normalizedDispersalRadius(),
+      cellIndex: (x, y) => this.cellIndex(x, y),
+      wrapX: (x) => this.wrapX(x),
+      wrapY: (y) => this.wrapY(y),
+      excludedPosition: { x: agent.x, y: agent.y }
+    });
+    const primaryResourceLevel = this.resources[agent.y][agent.x];
+    const secondaryResourceLevel = this.resources2[agent.y][agent.x];
+    const totalResourceLevel = primaryResourceLevel + secondaryResourceLevel;
 
     return {
+      age: agent.age,
       localFertility,
       localCrowding,
-      disturbancePhase
+      disturbancePhase: ticksSinceDisturbance <= DISTURBANCE_PHASE_RECENT_WINDOW ? 1 : 0,
+      ticksSinceDisturbance,
+      recentDisturbanceCount: countDisturbanceEventsInWindow(this.disturbanceEvents, {
+        startTick: currentTick - DISTURBANCE_PHASE_RECENT_WINDOW,
+        endTick: currentTick,
+        size: DISTURBANCE_PHASE_RECENT_WINDOW + 1
+      }),
+      primaryResourceLevel,
+      secondaryResourceLevel,
+      secondaryResourceFraction: totalResourceLevel > 0 ? secondaryResourceLevel / totalResourceLevel : 0,
+      sameLineageCrowding,
+      sameLineageShare: localCrowding > 0 ? clamp(sameLineageCrowding / localCrowding, 0, 1) : 0
     };
   }
 
@@ -2943,6 +2969,7 @@ function cloneLocalityFrame(frame: SimulationLocalityFrameState): SimulationLoca
 function clonePolicyFitnessRecord(record: PolicyFitnessRecord): PolicyFitnessRecord {
   return {
     ...record,
+    observation: record.observation ? cloneLocalObservationMap(record.observation) : undefined,
     policyValues: record.policyValues ? { ...record.policyValues } : undefined
   };
 }

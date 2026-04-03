@@ -422,10 +422,24 @@ export interface PolicyReproductionDecisionObservability {
   harvestThresholdNearThreshold: number;
 }
 
+export interface PolicyDecisionObservationObservability {
+  decisions: number;
+  meanAge: number;
+  meanLocalFertility: number;
+  meanLocalCrowding: number;
+  meanPrimaryResourceLevel: number;
+  meanSecondaryResourceLevel: number;
+  meanSecondaryResourceFraction: number;
+  meanTicksSinceDisturbance: number;
+  meanRecentDisturbanceCount: number;
+  meanSameLineageShare: number;
+}
+
 export interface PolicyObservabilitySummary {
   activation: PolicyActivationObservability;
   movement: PolicyMovementDecisionObservability;
   reproduction: PolicyReproductionDecisionObservability;
+  observations: PolicyDecisionObservationObservability;
   parameters: PolicyParameterObservability[];
 }
 

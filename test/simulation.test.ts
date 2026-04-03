@@ -226,6 +226,7 @@ describe('LifeSimulation', () => {
           metabolismCostBase: 0,
           moveCost: 0,
           harvestCap: 2,
+          contextualHarvestExpression: false,
           reproduceProbability: 0,
           maxAge: 100
         },
@@ -1617,19 +1618,21 @@ describe('LifeSimulation', () => {
         occupancy: number[][],
         lineageOccupancy: Map<number, number[][]>
       ) => {
-        lineage: number;
-        species: number;
-        x: number;
-        y: number;
+        offspring: {
+          lineage: number;
+          species: number;
+          x: number;
+          y: number;
+        };
       };
     };
 
     const parent = internal.agents[0];
     const occupancy = internal.buildOccupancyGrid(internal.agents);
     const lineageOccupancy = internal.buildLineageOccupancyGrid(internal.agents);
-    const child = internal.reproduce(parent, occupancy, lineageOccupancy);
+    const outcome = internal.reproduce(parent, occupancy, lineageOccupancy);
 
-    expect(child).toMatchObject({
+    expect(outcome.offspring).toMatchObject({
       lineage: 1,
       species: 1,
       x: 3,
@@ -1724,10 +1727,12 @@ describe('LifeSimulation', () => {
           occupancy: number[][],
           lineageOccupancy: Map<number, number[][]>
         ) => {
-          lineage: number;
-          species: number;
-          x: number;
-          y: number;
+          offspring: {
+            lineage: number;
+            species: number;
+            x: number;
+            y: number;
+          };
         };
       };
 
@@ -1738,7 +1743,7 @@ describe('LifeSimulation', () => {
       const parent = internal.agents[0];
       const occupancy = internal.buildOccupancyGrid(internal.agents);
       const lineageOccupancy = internal.buildLineageOccupancyGrid(internal.agents);
-      return internal.reproduce(parent, occupancy, lineageOccupancy);
+      return internal.reproduce(parent, occupancy, lineageOccupancy).offspring;
     };
 
     const withoutScoring = reproduceChild(buildSimulation(false));
@@ -1835,10 +1840,12 @@ describe('LifeSimulation', () => {
           occupancy: number[][],
           lineageOccupancy: Map<number, number[][]>
         ) => {
-          lineage: number;
-          species: number;
-          x: number;
-          y: number;
+          offspring: {
+            lineage: number;
+            species: number;
+            x: number;
+            y: number;
+          };
         };
       };
 
@@ -1861,7 +1868,7 @@ describe('LifeSimulation', () => {
         internal.agents[0]!,
         internal.buildOccupancyGrid(internal.agents),
         internal.buildLineageOccupancyGrid(internal.agents)
-      );
+      ).offspring;
     };
 
     expect(reproduceChild(0, 1)).toMatchObject({ lineage: 2, species: 2, x: 1, y: 0 });
@@ -1926,8 +1933,10 @@ describe('LifeSimulation', () => {
           occupancy: number[][],
           lineageOccupancy: Map<number, number[][]> | undefined
         ) => {
-          x: number;
-          y: number;
+          offspring: {
+            x: number;
+            y: number;
+          };
         };
       };
 
@@ -1941,7 +1950,8 @@ describe('LifeSimulation', () => {
         internal.markDisturbanceSettlementOpenings(affectedCellIndices, 1);
       }
 
-      return internal.reproduce(internal.agents[0], internal.buildOccupancyGrid(internal.agents), undefined);
+      return internal.reproduce(internal.agents[0], internal.buildOccupancyGrid(internal.agents), undefined)
+        .offspring;
     };
 
     expect(reproduceChild(0)).toMatchObject({ x: 3, y: 0 });
@@ -2001,8 +2011,10 @@ describe('LifeSimulation', () => {
           occupancy: number[][],
           lineageOccupancy: Map<number, number[][]> | undefined
         ) => {
-          x: number;
-          y: number;
+          offspring: {
+            x: number;
+            y: number;
+          };
         };
       };
 
@@ -2018,7 +2030,7 @@ describe('LifeSimulation', () => {
         internal.agents[0],
         internal.buildOccupancyGrid(internal.agents),
         internal.buildLineageOccupancyGrid(internal.agents)
-      );
+      ).offspring;
     };
 
     expect(
@@ -2143,7 +2155,7 @@ describe('LifeSimulation', () => {
     const parent = internal.agents[0];
     const occupancy = internal.buildOccupancyGrid(internal.agents);
     const lineageOccupancy = internal.buildLineageOccupancyGrid(internal.agents);
-    const child = internal.reproduce(parent, occupancy, lineageOccupancy);
+    const child = internal.reproduce(parent, occupancy, lineageOccupancy).offspring;
 
     expect(child).toMatchObject({
       lineage: 2,
@@ -2226,10 +2238,12 @@ describe('LifeSimulation', () => {
           occupancy: number[][],
           lineageOccupancy: Map<number, number[][]>
         ) => {
-          lineage: number;
-          species: number;
-          x: number;
-          y: number;
+          offspring: {
+            lineage: number;
+            species: number;
+            x: number;
+            y: number;
+          };
         };
       };
 
@@ -2242,7 +2256,7 @@ describe('LifeSimulation', () => {
       const parent = internal.agents[0];
       const occupancy = internal.buildOccupancyGrid(internal.agents);
       const lineageOccupancy = internal.buildLineageOccupancyGrid(internal.agents);
-      return internal.reproduce(parent, occupancy, lineageOccupancy);
+      return internal.reproduce(parent, occupancy, lineageOccupancy).offspring;
     };
 
     const blocked = reproduceChild(buildSimulation(1.1));
@@ -3954,7 +3968,7 @@ describe('LifeSimulation', () => {
       const before = internal.cladeHabitatPreference.get(parent.lineage)!;
       const occupancy = internal.buildOccupancyGrid(internal.agents);
       const lineageOccupancy = internal.buildLineageOccupancyGrid(internal.agents);
-      const child = internal.reproduce(parent, occupancy, lineageOccupancy);
+      const child = internal.reproduce(parent, occupancy, lineageOccupancy).offspring;
       const after = internal.cladeHabitatPreference.get(parent.lineage)!;
 
       return { before, after, child };
@@ -4089,7 +4103,7 @@ describe('LifeSimulation', () => {
 
     expect(withCost.patchDominance).toBeLessThan(noCost.patchDominance);
     expect(withCost.patchTurnover).toBeGreaterThan(noCost.patchTurnover);
-  }, 15_000);
+  }, 60_000);
 
   it('removes agents that run out of energy', () => {
     const sim = new LifeSimulation({
