@@ -622,5 +622,22 @@ describe('GenomeV2', () => {
         })
       ).toThrow(/finite non-negative number/);
     });
+
+    it('quarantines action loci from distance with zero weight', () => {
+      const a = createCoreGenomeV2();
+      const b = createCoreGenomeV2();
+
+      setTrait(b, 'action_priority_harvest_primary', 0.9);
+      setTrait(b, 'action_threshold_move_toward_fertility', 10);
+
+      const distanceWithActionLoci = genomeV2Distance(a, b, {
+        traits: {
+          action_priority_harvest_primary: 0,
+          action_threshold_move_toward_fertility: 0
+        }
+      });
+
+      expect(distanceWithActionLoci).toBe(0);
+    });
   });
 });
