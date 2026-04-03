@@ -1,0 +1,259 @@
+{
+  "generatedAt": "2026-04-03T00:00:00.000Z",
+  "question": "Do the strongest delayed-survival policy signatures from the April 2 matched-control panel remain positive once context matching uses richer local observations instead of only coarse fertility, crowding, age, and disturbance bins?",
+  "methodology": "Run 120-step shared-seed matched-control panels for 2 seeds with policyMutationProbability=0.65. Both arms start from the same genomeV2-backed population with neutral policy loci present. Rank signatures by their strongest coarse-bin delayed-survival advantage at +20 or +50 ticks, then re-score those signatures under a richer observation-aware match key built from local fertility, local crowding, age, disturbance recency, disturbance count, resource mix, and same-lineage share.",
+  "config": {
+    "seeds": [
+      9201,
+      9202
+    ],
+    "steps": 120,
+    "delayedHorizons": [
+      20,
+      50
+    ],
+    "targetSignatureCount": 4,
+    "policyMutationProbability": 0.65,
+    "baseConfig": {
+      "maxResource2": 8,
+      "resource2Regen": 0.7,
+      "resource2SeasonalRegenAmplitude": 0.75,
+      "resource2SeasonalFertilityContrastAmplitude": 1,
+      "resource2SeasonalPhaseOffset": 0.5,
+      "resource2BiomeShiftX": 2,
+      "resource2BiomeShiftY": 1
+    }
+  },
+  "selectedSignatures": [
+    {
+      "signature": {
+        "key": "open|guarded|secondary",
+        "reproductionGate": "open",
+        "movementGate": "guarded",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0,
+          "movementGateValue": 0.0908535957802087,
+          "resourceBiasValue": 0.603342347079888
+        }
+      },
+      "selectedByMaxDelayedSurvival": 0.06071248010174076,
+      "totalCoupledExposures": 11282,
+      "totalDecoupledExposures": 12051,
+      "delayedHorizons": [
+        {
+          "horizon": 20,
+          "coarse": {
+            "matchedContexts": 7,
+            "matchedExposureWeight": 10781,
+            "weightedHarvestAdvantage": 0.1014115424482483,
+            "weightedSurvivalAdvantage": 0.06071248010174076,
+            "weightedReproductionAdvantage": -0.002854306876079527
+          },
+          "richObservation": {
+            "matchedContexts": 466,
+            "matchedExposureWeight": 8452,
+            "weightedHarvestAdvantage": 0.03362728721915096,
+            "weightedSurvivalAdvantage": -0.018094474367733662,
+            "weightedReproductionAdvantage": -0.0036157636676027193
+          },
+          "survivalDeltaShift": -0.07880695446947442,
+          "outcome": "disappears_or_reverses"
+        },
+        {
+          "horizon": 50,
+          "coarse": {
+            "matchedContexts": 7,
+            "matchedExposureWeight": 10781,
+            "weightedHarvestAdvantage": 0.1014115424482483,
+            "weightedSurvivalAdvantage": 0.05148690142489859,
+            "weightedReproductionAdvantage": -0.0009470192460529479
+          },
+          "richObservation": {
+            "matchedContexts": 466,
+            "matchedExposureWeight": 8452,
+            "weightedHarvestAdvantage": 0.03362728721915096,
+            "weightedSurvivalAdvantage": 0.0001781379752404038,
+            "weightedReproductionAdvantage": -0.0014113506445248968
+          },
+          "survivalDeltaShift": -0.051308763449658186,
+          "outcome": "weakens_but_positive"
+        }
+      ]
+    },
+    {
+      "signature": {
+        "key": "guarded|open|balanced",
+        "reproductionGate": "guarded",
+        "movementGate": "open",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0.12310782428830862,
+          "movementGateValue": 0.040518968878313896,
+          "resourceBiasValue": 0.5
+        }
+      },
+      "selectedByMaxDelayedSurvival": 0.05290225917846494,
+      "totalCoupledExposures": 6748,
+      "totalDecoupledExposures": 7358,
+      "delayedHorizons": [
+        {
+          "horizon": 20,
+          "coarse": {
+            "matchedContexts": 7,
+            "matchedExposureWeight": 6552,
+            "weightedHarvestAdvantage": 0.1006768540646472,
+            "weightedSurvivalAdvantage": 0.05290225917846494,
+            "weightedReproductionAdvantage": -0.00044637668928556283
+          },
+          "richObservation": {
+            "matchedContexts": 393,
+            "matchedExposureWeight": 4953,
+            "weightedHarvestAdvantage": 0.0037443157924037076,
+            "weightedSurvivalAdvantage": -0.0031223681382290414,
+            "weightedReproductionAdvantage": -0.0012423037633827684
+          },
+          "survivalDeltaShift": -0.05602462731669398,
+          "outcome": "disappears_or_reverses"
+        },
+        {
+          "horizon": 50,
+          "coarse": {
+            "matchedContexts": 7,
+            "matchedExposureWeight": 6552,
+            "weightedHarvestAdvantage": 0.1006768540646472,
+            "weightedSurvivalAdvantage": 0.05168801306462718,
+            "weightedReproductionAdvantage": 0.0005955708433157153
+          },
+          "richObservation": {
+            "matchedContexts": 393,
+            "matchedExposureWeight": 4953,
+            "weightedHarvestAdvantage": 0.0037443157924037076,
+            "weightedSurvivalAdvantage": 0.010599970503911382,
+            "weightedReproductionAdvantage": 0.0007856477921770994
+          },
+          "survivalDeltaShift": -0.0410880425607158,
+          "outcome": "weakens_but_positive"
+        }
+      ]
+    },
+    {
+      "signature": {
+        "key": "guarded|guarded|secondary",
+        "reproductionGate": "guarded",
+        "movementGate": "guarded",
+        "resourceBias": "secondary",
+        "axisValues": {
+          "reproductionGateValue": 0.19660782124847173,
+          "movementGateValue": 0.1424489045049995,
+          "resourceBiasValue": 0.6280710601247848
+        }
+      },
+      "selectedByMaxDelayedSurvival": 0.05143215780955718,
+      "totalCoupledExposures": 5599,
+      "totalDecoupledExposures": 5681,
+      "delayedHorizons": [
+        {
+          "horizon": 20,
+          "coarse": {
+            "matchedContexts": 7,
+            "matchedExposureWeight": 5406,
+            "weightedHarvestAdvantage": 0.10252977882844246,
+            "weightedSurvivalAdvantage": 0.042163827242238744,
+            "weightedReproductionAdvantage": 0.0039666855985819325
+          },
+          "richObservation": {
+            "matchedContexts": 323,
+            "matchedExposureWeight": 3818,
+            "weightedHarvestAdvantage": 0.030613597001537485,
+            "weightedSurvivalAdvantage": -0.036869164491274406,
+            "weightedReproductionAdvantage": 0.0033282029514294844
+          },
+          "survivalDeltaShift": -0.07903299173351315,
+          "outcome": "disappears_or_reverses"
+        },
+        {
+          "horizon": 50,
+          "coarse": {
+            "matchedContexts": 7,
+            "matchedExposureWeight": 5406,
+            "weightedHarvestAdvantage": 0.10252977882844246,
+            "weightedSurvivalAdvantage": 0.05143215780955718,
+            "weightedReproductionAdvantage": 0.0018488153981560602
+          },
+          "richObservation": {
+            "matchedContexts": 323,
+            "matchedExposureWeight": 3818,
+            "weightedHarvestAdvantage": 0.030613597001537485,
+            "weightedSurvivalAdvantage": 0.012214150152668385,
+            "weightedReproductionAdvantage": 0.0018983925352106838
+          },
+          "survivalDeltaShift": -0.03921800765688879,
+          "outcome": "weakens_but_positive"
+        }
+      ]
+    },
+    {
+      "signature": {
+        "key": "open|open|balanced",
+        "reproductionGate": "open",
+        "movementGate": "open",
+        "resourceBias": "balanced",
+        "axisValues": {
+          "reproductionGateValue": 0,
+          "movementGateValue": 0,
+          "resourceBiasValue": 0.5
+        }
+      },
+      "selectedByMaxDelayedSurvival": 0.0498305302628498,
+      "totalCoupledExposures": 22557,
+      "totalDecoupledExposures": 25327,
+      "delayedHorizons": [
+        {
+          "horizon": 20,
+          "coarse": {
+            "matchedContexts": 7,
+            "matchedExposureWeight": 22192,
+            "weightedHarvestAdvantage": 0.07164421724254963,
+            "weightedSurvivalAdvantage": 0.04474546188643794,
+            "weightedReproductionAdvantage": -0.0028009486314864037
+          },
+          "richObservation": {
+            "matchedContexts": 600,
+            "matchedExposureWeight": 18337,
+            "weightedHarvestAdvantage": -0.05484506392920353,
+            "weightedSurvivalAdvantage": 0.0036816438227500613,
+            "weightedReproductionAdvantage": -0.0054848691171524916
+          },
+          "survivalDeltaShift": -0.041063818063687876,
+          "outcome": "weakens_but_positive"
+        },
+        {
+          "horizon": 50,
+          "coarse": {
+            "matchedContexts": 7,
+            "matchedExposureWeight": 22192,
+            "weightedHarvestAdvantage": 0.07164421724254963,
+            "weightedSurvivalAdvantage": 0.0498305302628498,
+            "weightedReproductionAdvantage": -0.0010227516131516836
+          },
+          "richObservation": {
+            "matchedContexts": 600,
+            "matchedExposureWeight": 18337,
+            "weightedHarvestAdvantage": -0.05484506392920353,
+            "weightedSurvivalAdvantage": 0.017163129668776558,
+            "weightedReproductionAdvantage": -0.0014096306151222607
+          },
+          "survivalDeltaShift": -0.03266740059407325,
+          "outcome": "weakens_but_positive"
+        }
+      ]
+    }
+  ],
+  "interpretation": {
+    "remainsPositiveCount": 0,
+    "weakensButPositiveCount": 5,
+    "disappearsOrReversesCount": 3,
+    "summary": "0 delayed horizon results remain positive under richer observation matching, 5 stay positive but weaken, and 3 disappear or reverse."
+  }
+}

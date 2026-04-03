@@ -1,54 +1,26 @@
 import { runGeneratedAtStudyCli } from './clade-activity-relabel-null-smoke-study';
-import { DEFAULT_TRAIT_VALUES, fromGenome, POLICY_TRAITS, setTrait } from './genome-v2';
-import { PolicyFitnessRecord } from './policy-fitness';
+import { compareExposureArmsAtHorizon } from './policy-horizon-matching';
+import {
+  DEFAULT_MULTI_HORIZON_BASE_CONFIG,
+  DEFAULT_MULTI_HORIZON_HORIZONS,
+  DEFAULT_MULTI_HORIZON_POLICY_MUTATION_PROBABILITY,
+  DEFAULT_MULTI_HORIZON_SEEDS,
+  DEFAULT_MULTI_HORIZON_STEPS,
+  ExposureWithHorizons,
+  runSimulationWithHorizons
+} from './policy-horizon-shared';
 import { classifyPolicySignature, PolicySignature } from './policy-signature';
-import { LifeSimulation } from './simulation';
-import { AgentSeed, SimulationConfig } from './types';
+import { SimulationConfig } from './types';
 
 export const MULTI_HORIZON_POLICY_CREDIT_ASSIGNMENT_ARTIFACT =
   'docs/multi_horizon_policy_credit_assignment_2026-04-02.json';
 
-const DEFAULT_SEEDS = [9201, 9202];
-const DEFAULT_STEPS = 120;
-const POLICY_MUTATION_PROBABILITY = 0.65;
-const HORIZONS = [1, 5, 20, 50];
+const DEFAULT_SEEDS = DEFAULT_MULTI_HORIZON_SEEDS;
+const DEFAULT_STEPS = DEFAULT_MULTI_HORIZON_STEPS;
+const POLICY_MUTATION_PROBABILITY = DEFAULT_MULTI_HORIZON_POLICY_MUTATION_PROBABILITY;
+const HORIZONS = DEFAULT_MULTI_HORIZON_HORIZONS;
 
-const BASE_CONFIG: Partial<SimulationConfig> = {
-  maxResource2: 8,
-  resource2Regen: 0.7,
-  resource2SeasonalRegenAmplitude: 0.75,
-  resource2SeasonalFertilityContrastAmplitude: 1,
-  resource2SeasonalPhaseOffset: 0.5,
-  resource2BiomeShiftX: 2,
-  resource2BiomeShiftY: 1
-};
-
-interface HorizonOutcome {
-  survived: boolean;
-  reproduced: boolean;
-}
-
-interface ExposureWithHorizons {
-  record: PolicyFitnessRecord;
-  horizons: Map<number, HorizonOutcome>;
-}
-
-interface HorizonMetrics {
-  exposures: number;
-  meanHarvestIntake: number;
-  survivalRate: number;
-  reproductionRate: number;
-}
-
-interface HorizonComparison {
-  policyPositive: HorizonMetrics;
-  policyNegative: HorizonMetrics;
-  delta: {
-    harvestIntake: number;
-    survivalRate: number;
-    reproductionRate: number;
-  };
-}
+const BASE_CONFIG: Partial<SimulationConfig> = DEFAULT_MULTI_HORIZON_BASE_CONFIG;
 
 interface SignatureHorizonSummary {
   signature: PolicySignature;
@@ -117,8 +89,22 @@ export function runMultiHorizonPolicyCreditAssignment(input: {
   >();
 
   for (const seed of seeds) {
-    const coupledExposures = runSimulationWithHorizons(seed, steps, true);
-    const decoupledExposures = runSimulationWithHorizons(seed, steps, false);
+    const coupledExposures = runSimulationWithHorizons({
+      seed,
+      steps,
+      horizons: HORIZONS,
+      policyCouplingEnabled: true,
+      baseConfig: BASE_CONFIG,
+      policyMutationProbability: POLICY_MUTATION_PROBABILITY
+    });
+    const decoupledExposures = runSimulationWithHorizons({
+      seed,
+      steps,
+      horizons: HORIZONS,
+      policyCouplingEnabled: false,
+      baseConfig: BASE_CONFIG,
+      policyMutationProbability: POLICY_MUTATION_PROBABILITY
+    });
 
     const runSignatureData = new Map<
       string,
@@ -190,87 +176,6 @@ export function runMultiHorizonPolicyCreditAssignment(input: {
   };
 }
 
-function runSimulationWithHorizons(seed: number, steps: number, policyCouplingEnabled: boolean): ExposureWithHorizons[] {
-  const simulation = new LifeSimulation({
-    seed,
-    config: {
-      ...BASE_CONFIG,
-      policyMutationProbability: POLICY_MUTATION_PROBABILITY
-    },
-    initialAgents: buildInitialAgents(seed),
-    policyCouplingEnabled
-  });
-
-  const recordsByTick: PolicyFitnessRecord[][] = [];
-  const agentIdsByTick: Map<number, PolicyFitnessRecord>[] = [];
-
-  for (let tick = 0; tick < steps; tick += 1) {
-    simulation.step();
-    const records = simulation.policyFitnessRecords();
-    recordsByTick.push(records);
-    const agentMap = new Map<number, PolicyFitnessRecord>();
-    for (const record of records) {
-      agentMap.set(record.agentId, record);
-    }
-    agentIdsByTick.push(agentMap);
-  }
-
-  const exposures: ExposureWithHorizons[] = [];
-
-  for (let tick = 0; tick < recordsByTick.length; tick += 1) {
-    const records = recordsByTick[tick];
-
-    for (const record of records) {
-      const horizons = new Map<number, HorizonOutcome>();
-
-      for (const horizon of HORIZONS) {
-        const futureTick = tick + horizon;
-        if (futureTick >= agentIdsByTick.length) {
-          horizons.set(horizon, { survived: false, reproduced: false });
-          continue;
-        }
-
-        const futureRecord = agentIdsByTick[futureTick].get(record.agentId);
-        const survived = futureRecord !== undefined;
-        const reproduced = futureRecord !== undefined && futureRecord.offspringProduced > 0;
-
-        horizons.set(horizon, { survived, reproduced });
-      }
-
-      exposures.push({ record, horizons });
-    }
-  }
-
-  return exposures;
-}
-
-function buildInitialAgents(seed: number): AgentSeed[] {
-  const seeder = new LifeSimulation({
-    seed,
-    config: BASE_CONFIG
-  });
-
-  return seeder.snapshot().agents.map((agent) => {
-    const genomeV2 = fromGenome(agent.genome);
-    for (const key of POLICY_TRAITS) {
-      setTrait(genomeV2, key, DEFAULT_TRAIT_VALUES[key] ?? 0);
-    }
-
-    return {
-      x: agent.x,
-      y: agent.y,
-      energy: agent.energy,
-      energyPrimary: agent.energyPrimary,
-      energySecondary: agent.energySecondary,
-      age: agent.age,
-      lineage: agent.lineage,
-      species: agent.species,
-      genome: { ...agent.genome },
-      genomeV2
-    };
-  });
-}
-
 function buildSignatureHorizonSummary(data: {
   signature: PolicySignature;
   runs: Array<{
@@ -287,7 +192,7 @@ function buildSignatureHorizonSummary(data: {
     }> = {};
 
     for (const horizon of HORIZONS) {
-      const comparison = compareArmsAtHorizon(run.coupled, run.decoupled, horizon);
+      const comparison = compareExposureArmsAtHorizon(run.coupled, run.decoupled, horizon, 'coarse_bins');
       horizonMetrics[horizon] = {
         weightedHarvestAdvantage: comparison.weightedHarvestAdvantage,
         weightedSurvivalAdvantage: comparison.weightedSurvivalAdvantage,
@@ -314,10 +219,10 @@ function buildSignatureHorizonSummary(data: {
     weightedReproductionAdvantage: number;
   }> = {};
 
-  const matchedBins = compareArmsAtHorizon(allCoupled, allDecoupled, 1).matchedBins;
+  const matchedBins = compareExposureArmsAtHorizon(allCoupled, allDecoupled, 1, 'coarse_bins').matchedContexts;
 
   for (const horizon of HORIZONS) {
-    const comparison = compareArmsAtHorizon(allCoupled, allDecoupled, horizon);
+    const comparison = compareExposureArmsAtHorizon(allCoupled, allDecoupled, horizon, 'coarse_bins');
     overallHorizons[horizon] = {
       policyPositiveExposures: allCoupled.length,
       policyNegativeExposures: allDecoupled.length,
@@ -334,104 +239,6 @@ function buildSignatureHorizonSummary(data: {
       matchedBins,
       horizons: overallHorizons
     }
-  };
-}
-
-function compareArmsAtHorizon(
-  coupledExposures: ExposureWithHorizons[],
-  decoupledExposures: ExposureWithHorizons[],
-  horizon: number
-): {
-  matchedBins: number;
-  weightedHarvestAdvantage: number;
-  weightedSurvivalAdvantage: number;
-  weightedReproductionAdvantage: number;
-} {
-  const bins = new Map<
-    string,
-    {
-      coupled: ExposureWithHorizons[];
-      decoupled: ExposureWithHorizons[];
-    }
-  >();
-
-  for (const exposure of coupledExposures) {
-    const record = exposure.record;
-    const key = `${record.fertilityBin}:${record.crowdingBin}:${record.ageBin}:${record.disturbancePhase}`;
-    if (!bins.has(key)) {
-      bins.set(key, { coupled: [], decoupled: [] });
-    }
-    bins.get(key)!.coupled.push(exposure);
-  }
-
-  for (const exposure of decoupledExposures) {
-    const record = exposure.record;
-    const key = `${record.fertilityBin}:${record.crowdingBin}:${record.ageBin}:${record.disturbancePhase}`;
-    if (!bins.has(key)) {
-      bins.set(key, { coupled: [], decoupled: [] });
-    }
-    bins.get(key)!.decoupled.push(exposure);
-  }
-
-  let totalWeight = 0;
-  let weightedHarvest = 0;
-  let weightedSurvival = 0;
-  let weightedReproduction = 0;
-  let matchedBins = 0;
-
-  for (const bin of bins.values()) {
-    if (bin.coupled.length === 0 || bin.decoupled.length === 0) {
-      continue;
-    }
-
-    matchedBins += 1;
-    const weight = Math.min(bin.coupled.length, bin.decoupled.length);
-
-    const coupledMetrics = summarizeHorizonMetrics(bin.coupled, horizon);
-    const decoupledMetrics = summarizeHorizonMetrics(bin.decoupled, horizon);
-
-    totalWeight += weight;
-    weightedHarvest += weight * (coupledMetrics.meanHarvestIntake - decoupledMetrics.meanHarvestIntake);
-    weightedSurvival += weight * (coupledMetrics.survivalRate - decoupledMetrics.survivalRate);
-    weightedReproduction += weight * (coupledMetrics.reproductionRate - decoupledMetrics.reproductionRate);
-  }
-
-  return {
-    matchedBins,
-    weightedHarvestAdvantage: totalWeight === 0 ? 0 : weightedHarvest / totalWeight,
-    weightedSurvivalAdvantage: totalWeight === 0 ? 0 : weightedSurvival / totalWeight,
-    weightedReproductionAdvantage: totalWeight === 0 ? 0 : weightedReproduction / totalWeight
-  };
-}
-
-function summarizeHorizonMetrics(exposures: ExposureWithHorizons[], horizon: number): HorizonMetrics {
-  if (exposures.length === 0) {
-    return {
-      exposures: 0,
-      meanHarvestIntake: 0,
-      survivalRate: 0,
-      reproductionRate: 0
-    };
-  }
-
-  let harvestTotal = 0;
-  let survivalTotal = 0;
-  let reproductionTotal = 0;
-
-  for (const exposure of exposures) {
-    harvestTotal += exposure.record.harvestIntake;
-    const outcome = exposure.horizons.get(horizon);
-    if (outcome) {
-      survivalTotal += outcome.survived ? 1 : 0;
-      reproductionTotal += outcome.reproduced ? 1 : 0;
-    }
-  }
-
-  return {
-    exposures: exposures.length,
-    meanHarvestIntake: harvestTotal / exposures.length,
-    survivalRate: survivalTotal / exposures.length,
-    reproductionRate: reproductionTotal / exposures.length
   };
 }
 
