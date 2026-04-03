@@ -336,6 +336,7 @@ export interface SimulationConfig {
   cladogenesisTraitNoveltyThreshold: number;
   cladogenesisEcologyAdvantageThreshold: number;
   harvestCap: number;
+  contextualHarvestExpression: boolean;
   reproduceThreshold: number;
   reproduceProbability: number;
   offspringEnergyFraction: number;

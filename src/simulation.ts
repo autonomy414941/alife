@@ -97,10 +97,12 @@ import {
   DEFAULT_POLICY_FITNESS_AGE_BINS,
   DEFAULT_POLICY_FITNESS_CROWDING_BINS,
   DEFAULT_POLICY_FITNESS_FERTILITY_BINS,
+  DISTURBANCE_PHASE_RECENT_WINDOW,
   PolicyFitnessRecord,
   PolicyFitnessRunSeries,
   resolveDisturbancePhase
 } from './policy-fitness';
+import { LocalEcologicalContext } from './phenotype';
 import { PolicyDecisionStats, summarizePolicyObservability } from './policy-observability';
 import {
   summarizePhenotypeDiversity,
@@ -203,6 +205,7 @@ const DEFAULT_CONFIG: SimulationConfig = {
   cladogenesisTraitNoveltyThreshold: -1,
   cladogenesisEcologyAdvantageThreshold: -1,
   harvestCap: 2.5,
+  contextualHarvestExpression: true,
   reproduceThreshold: 20,
   reproduceProbability: 0.35,
   offspringEnergyFraction: 0.45,
@@ -1859,6 +1862,7 @@ export class LifeSimulation {
 
     const available = this.resources[agent.y][agent.x];
     const available2 = this.resources2[agent.y][agent.x];
+    const localEcologicalContext = this.resolveLocalEcologicalContext(agent.x, agent.y, occupancy);
     const habitatEfficiency = this.habitatMatchEfficiency(agent, agent.x, agent.y);
     const trophicEfficiency = this.trophicForagingEfficiency(agent.species, agent.lineage);
     const defenseEfficiency = this.defenseForagingEfficiency(agent.species, agent.lineage);
@@ -1868,7 +1872,8 @@ export class LifeSimulation {
     const harvestSecondaryPreference = resolveHarvestSecondaryPreference(
       agent,
       available,
-      this.policyCoupling.harvestGuidance
+      this.policyCoupling.harvestGuidance,
+      this.config.contextualHarvestExpression ? localEcologicalContext : undefined
     );
     const defaultHarvestShares = resolveResourceHarvestShares(agent.genome);
     const harvest = resolveDualResourceHarvest({
@@ -1930,15 +1935,8 @@ export class LifeSimulation {
           Math.abs(harvest.secondaryShare - defaultHarvestShares.secondaryShare) > 1e-9);
       policyFitness.harvestIntake = totalHarvest;
 
-      const decisionTimeFertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, this.tickCount + 1);
-      const decisionTimeCrowding = neighborhoodCrowding({
-        x: agent.x,
-        y: agent.y,
-        occupancy,
-        dispersalRadius: this.normalizedDispersalRadius(),
-        wrapX: (x) => this.wrapX(x),
-        wrapY: (y) => this.wrapY(y)
-      });
+      const decisionTimeFertility = localEcologicalContext.localFertility;
+      const decisionTimeCrowding = localEcologicalContext.localCrowding;
 
       policyFitness.fertilityBin = binPolicyFitnessValue(
         decisionTimeFertility,
@@ -1960,10 +1958,7 @@ export class LifeSimulation {
       );
 
       const lastDisturbance = latestDisturbanceEvent(this.disturbanceEvents);
-      policyFitness.disturbancePhase = resolveDisturbancePhase(
-        this.tickCount + 1,
-        lastDisturbance?.tick ?? null
-      );
+      policyFitness.disturbancePhase = resolveDisturbancePhase(this.tickCount + 1, lastDisturbance?.tick ?? null);
     }
   }
 
@@ -2313,6 +2308,32 @@ export class LifeSimulation {
       cladeHabitatPreference: this.cladeHabitatPreference,
       config: this.config
     });
+  }
+
+  private resolveLocalEcologicalContext(x: number, y: number, occupancy: number[][]): LocalEcologicalContext {
+    const currentTick = this.tickCount + 1;
+    const localFertility = this.effectiveBiomeFertilityAt(x, y, currentTick);
+    const localCrowding = neighborhoodCrowding({
+      x,
+      y,
+      occupancy,
+      dispersalRadius: this.normalizedDispersalRadius(),
+      wrapX: (nextX) => this.wrapX(nextX),
+      wrapY: (nextY) => this.wrapY(nextY)
+    });
+    const lastDisturbance = latestDisturbanceEvent(this.disturbanceEvents);
+    const disturbancePhase =
+      lastDisturbance === null
+        ? 0
+        : currentTick - lastDisturbance.tick <= DISTURBANCE_PHASE_RECENT_WINDOW
+          ? 1
+          : 0;
+
+    return {
+      localFertility,
+      localCrowding,
+      disturbancePhase
+    };
   }
 
   private getSpeciesHabitatPreference(species: number): number {

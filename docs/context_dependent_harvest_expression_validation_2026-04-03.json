@@ -1,0 +1,217 @@
+{
+  "generatedAt": "2026-04-03T03:46:29.966Z",
+  "question": "Does live context-conditioned harvest expression change policy-bearing cohort outcomes relative to the direct-encoding harvest policy path?",
+  "prediction": "Context-conditioned harvest expression should change harvest intake and downstream cohort outcomes once local fertility, crowding, and recent disturbance shape expressed resource preference.",
+  "config": {
+    "seeds": [
+      4101,
+      4102,
+      4103,
+      4104,
+      4105,
+      4106
+    ],
+    "steps": 80,
+    "simulation": {
+      "width": 6,
+      "height": 6,
+      "initialAgents": 18,
+      "initialEnergy": 14,
+      "maxResource": 8,
+      "maxResource2": 8,
+      "resourceRegen": 0.75,
+      "resource2Regen": 0.75,
+      "seasonalFertilityContrastAmplitude": 0.45,
+      "metabolismCostBase": 0.2,
+      "moveCost": 0.12,
+      "harvestCap": 2,
+      "contextualHarvestExpression": true,
+      "reproduceThreshold": 12,
+      "reproduceProbability": 0.55,
+      "offspringEnergyFraction": 0.45,
+      "mutationAmount": 0.08,
+      "policyMutationProbability": 0,
+      "policyMutationMagnitude": 0,
+      "disturbanceInterval": 12,
+      "disturbanceResourceLoss": 1.25,
+      "disturbanceRadius": 1,
+      "disturbanceRefugiaFraction": 0.15,
+      "maxAge": 100
+    }
+  },
+  "summary": {
+    "seeds": 6,
+    "seedsWithPopulationChange": 6,
+    "seedsWithHarvestIntakeChange": 6,
+    "meanFinalPopulationDelta": -22.333333333333332,
+    "meanTotalBirthsDelta": -19.5,
+    "meanPolicyHarvestIntakeDelta": 0.003149454401232136,
+    "meanFinalEnergyDelta": -0.09143105084129233,
+    "meanFinalSecondaryEnergyShareDelta": -0.007647717469906903,
+    "meanHarvestDecisionGuidedFractionDelta": 0
+  },
+  "checks": [
+    {
+      "seed": 4101,
+      "contextual": {
+        "finalPopulation": 368,
+        "totalBirths": 618,
+        "meanPolicyHarvestIntake": 0.20887685563002742,
+        "meanFinalEnergy": 3.7198939031315486,
+        "meanFinalSecondaryEnergyShare": 0.24566984373965187,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "directEncoding": {
+        "finalPopulation": 444,
+        "totalBirths": 678,
+        "meanPolicyHarvestIntake": 0.19525875279684474,
+        "meanFinalEnergy": 4.578411129233909,
+        "meanFinalSecondaryEnergyShare": 0.31858613645911377,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "delta": {
+        "finalPopulation": -76,
+        "totalBirths": -60,
+        "meanPolicyHarvestIntake": 0.013618102833182683,
+        "meanFinalEnergy": -0.8585172261023604,
+        "meanFinalSecondaryEnergyShare": -0.0729162927194619,
+        "meanHarvestDecisionGuidedFraction": 0
+      }
+    },
+    {
+      "seed": 4102,
+      "contextual": {
+        "finalPopulation": 405,
+        "totalBirths": 628,
+        "meanPolicyHarvestIntake": 0.20901253786036886,
+        "meanFinalEnergy": 4.08942486325016,
+        "meanFinalSecondaryEnergyShare": 0.2792144312239414,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "directEncoding": {
+        "finalPopulation": 449,
+        "totalBirths": 661,
+        "meanPolicyHarvestIntake": 0.19158339594328566,
+        "meanFinalEnergy": 3.9468767839270886,
+        "meanFinalSecondaryEnergyShare": 0.24910012801639664,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "delta": {
+        "finalPopulation": -44,
+        "totalBirths": -33,
+        "meanPolicyHarvestIntake": 0.017429141917083196,
+        "meanFinalEnergy": 0.14254807932307179,
+        "meanFinalSecondaryEnergyShare": 0.030114303207544768,
+        "meanHarvestDecisionGuidedFraction": 0
+      }
+    },
+    {
+      "seed": 4103,
+      "contextual": {
+        "finalPopulation": 414,
+        "totalBirths": 633,
+        "meanPolicyHarvestIntake": 0.2013735136058762,
+        "meanFinalEnergy": 3.747865789935879,
+        "meanFinalSecondaryEnergyShare": 0.23185985473310816,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "directEncoding": {
+        "finalPopulation": 447,
+        "totalBirths": 656,
+        "meanPolicyHarvestIntake": 0.20220259575905392,
+        "meanFinalEnergy": 3.7124499185424518,
+        "meanFinalSecondaryEnergyShare": 0.2615758035114425,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "delta": {
+        "finalPopulation": -33,
+        "totalBirths": -23,
+        "meanPolicyHarvestIntake": -0.0008290821531777293,
+        "meanFinalEnergy": 0.03541587139342717,
+        "meanFinalSecondaryEnergyShare": -0.029715948778334333,
+        "meanHarvestDecisionGuidedFraction": 0
+      }
+    },
+    {
+      "seed": 4104,
+      "contextual": {
+        "finalPopulation": 423,
+        "totalBirths": 637,
+        "meanPolicyHarvestIntake": 0.1965031655569169,
+        "meanFinalEnergy": 3.6293261595320576,
+        "meanFinalSecondaryEnergyShare": 0.24338203690382193,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "directEncoding": {
+        "finalPopulation": 429,
+        "totalBirths": 676,
+        "meanPolicyHarvestIntake": 0.18676743436486298,
+        "meanFinalEnergy": 4.325060450480043,
+        "meanFinalSecondaryEnergyShare": 0.2564832337480682,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "delta": {
+        "finalPopulation": -6,
+        "totalBirths": -39,
+        "meanPolicyHarvestIntake": 0.009735731192053926,
+        "meanFinalEnergy": -0.6957342909479856,
+        "meanFinalSecondaryEnergyShare": -0.013101196844246266,
+        "meanHarvestDecisionGuidedFraction": 0
+      }
+    },
+    {
+      "seed": 4105,
+      "contextual": {
+        "finalPopulation": 471,
+        "totalBirths": 677,
+        "meanPolicyHarvestIntake": 0.18126917993679814,
+        "meanFinalEnergy": 3.8609241564065786,
+        "meanFinalSecondaryEnergyShare": 0.2560520219653968,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "directEncoding": {
+        "finalPopulation": 453,
+        "totalBirths": 657,
+        "meanPolicyHarvestIntake": 0.20112426241103487,
+        "meanFinalEnergy": 3.9231690023240215,
+        "meanFinalSecondaryEnergyShare": 0.2697558333044628,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "delta": {
+        "finalPopulation": 18,
+        "totalBirths": 20,
+        "meanPolicyHarvestIntake": -0.01985508247423673,
+        "meanFinalEnergy": -0.06224484591744295,
+        "meanFinalSecondaryEnergyShare": -0.013703811339066008,
+        "meanHarvestDecisionGuidedFraction": 0
+      }
+    },
+    {
+      "seed": 4106,
+      "contextual": {
+        "finalPopulation": 385,
+        "totalBirths": 625,
+        "meanPolicyHarvestIntake": 0.21234894299686105,
+        "meanFinalEnergy": 4.508624411589494,
+        "meanFinalSecondaryEnergyShare": 0.3153220579895761,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "directEncoding": {
+        "finalPopulation": 378,
+        "totalBirths": 607,
+        "meanPolicyHarvestIntake": 0.21355102790437358,
+        "meanFinalEnergy": 3.6186783043859583,
+        "meanFinalSecondaryEnergyShare": 0.26188541633545376,
+        "meanHarvestDecisionGuidedFraction": 1
+      },
+      "delta": {
+        "finalPopulation": 7,
+        "totalBirths": 18,
+        "meanPolicyHarvestIntake": -0.0012020849075125295,
+        "meanFinalEnergy": 0.889946107203536,
+        "meanFinalSecondaryEnergyShare": 0.05343664165412232,
+        "meanHarvestDecisionGuidedFraction": 0
+      }
+    }
+  ]
+}

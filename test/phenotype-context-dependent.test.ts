@@ -102,6 +102,32 @@ describe('Context-dependent phenotype realization', () => {
     );
   });
 
+  it('should shift harvest preference toward secondary resources in harsher local contexts', () => {
+    const genome = createGenomeV2();
+    setTrait(genome, 'harvest_secondary_preference', 0.4);
+
+    const favorableContext: LocalEcologicalContext = {
+      localFertility: 2.0,
+      localCrowding: 0,
+      disturbancePhase: 0
+    };
+
+    const harshContext: LocalEcologicalContext = {
+      localFertility: 0,
+      localCrowding: 8,
+      disturbancePhase: 1
+    };
+
+    const favorablePhenotype = realizePhenotype({ genomeV2: genome }, favorableContext);
+    const harshPhenotype = realizePhenotype({ genomeV2: genome }, harshContext);
+    const directPhenotype = realizePhenotype({ genomeV2: genome });
+
+    expect(harshPhenotype.harvestSecondaryPreference).toBeGreaterThan(
+      favorablePhenotype.harvestSecondaryPreference!
+    );
+    expect(directPhenotype.harvestSecondaryPreference).toBe(0.4);
+  });
+
   it('should not modify other traits', () => {
     const genome = createGenomeV2();
     setTrait(genome, 'trophic_level', 0.7);

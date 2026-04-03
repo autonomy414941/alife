@@ -44,6 +44,7 @@ export function resolveExpressedTrait(carrier: PhenotypeCarrier, key: string): n
 export function realizePhenotype(carrier: PhenotypeCarrier, context?: LocalEcologicalContext): RealizedPhenotype {
   const baseMetabolicEfficiencyPrimary = resolveExpressedTrait(carrier, 'metabolic_efficiency_primary');
   const baseMetabolicEfficiencySecondary = resolveExpressedTrait(carrier, 'metabolic_efficiency_secondary');
+  const baseHarvestSecondaryPreference = resolveExpressedTrait(carrier, 'harvest_secondary_preference');
 
   const metabolicEfficiencyPrimary = context
     ? realizeContextDependentMetabolicEfficiency(
@@ -60,6 +61,10 @@ export function realizePhenotype(carrier: PhenotypeCarrier, context?: LocalEcolo
         'secondary'
       )
     : baseMetabolicEfficiencySecondary;
+
+  const harvestSecondaryPreference = context
+    ? realizeContextDependentHarvestSecondaryPreference(baseHarvestSecondaryPreference, context)
+    : baseHarvestSecondaryPreference;
 
   return {
     trophicLevel: resolveExpressedTrait(carrier, 'trophic_level'),
@@ -81,7 +86,7 @@ export function realizePhenotype(carrier: PhenotypeCarrier, context?: LocalEcolo
       carrier,
       'movement_min_recent_harvest_steepness'
     ),
-    harvestSecondaryPreference: resolveExpressedTrait(carrier, 'harvest_secondary_preference'),
+    harvestSecondaryPreference,
     harvestPrimaryThreshold: resolveExpressedTrait(carrier, 'harvest_primary_threshold'),
     harvestPrimaryThresholdSteepness: resolveExpressedTrait(carrier, 'harvest_primary_threshold_steepness'),
     spendingSecondaryPreference: resolveExpressedTrait(carrier, 'spending_secondary_preference')
@@ -105,6 +110,23 @@ function realizeContextDependentMetabolicEfficiency(
 
   const modulated = baseEfficiency * contextualMultiplier;
   return Math.max(0, Math.min(1, modulated));
+}
+
+function realizeContextDependentHarvestSecondaryPreference(
+  basePreference: number | undefined,
+  context: LocalEcologicalContext
+): number | undefined {
+  if (basePreference === undefined) {
+    return undefined;
+  }
+
+  const fertilityPressure = 1 - clamp(context.localFertility, 0, 2);
+  const crowdingPressure = clamp(context.localCrowding / 8, 0, 1);
+  const disturbancePressure = context.disturbancePhase > 0 ? 1 : 0;
+  const adjustedPreference =
+    basePreference + fertilityPressure * 0.18 + crowdingPressure * 0.08 + disturbancePressure * 0.12;
+
+  return clamp(adjustedPreference, 0, 1);
 }
 
 function computeFertilityModulation(localFertility: number): number {

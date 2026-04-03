@@ -5,7 +5,7 @@ import {
   isActiveGenomeV2Trait,
   setTrait
 } from './genome-v2';
-import { realizePhenotype, resolveExpressedTrait } from './phenotype';
+import { LocalEcologicalContext, realizePhenotype, resolveExpressedTrait } from './phenotype';
 
 export const INTERNAL_STATE_LAST_HARVEST = 'last_harvest_total';
 export const INTERNAL_STATE_HARVEST_WINDOW_3 = 'harvest_window_3_mean';
@@ -328,22 +328,24 @@ export function getEffectiveRecentHarvest(
 export function resolveHarvestSecondaryPreference(
   agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 },
   primaryAvailable?: number,
-  enabled = true
+  enabled = true,
+  context?: LocalEcologicalContext
 ): number | undefined {
   if (!enabled) {
     return undefined;
   }
   return resolveHarvestSecondaryPreferenceFromBasePreference(
     agent,
-    getBaseHarvestSecondaryPreference(agent),
+    getBaseHarvestSecondaryPreference(agent, context),
     primaryAvailable
   );
 }
 
 function getBaseHarvestSecondaryPreference(
-  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 }
+  agent: Pick<BehavioralStateCarrier, 'policyState'> & { genomeV2?: GenomeV2 },
+  context?: LocalEcologicalContext
 ): number | undefined {
-  return realizePhenotype(agent).harvestSecondaryPreference;
+  return realizePhenotype(agent, context).harvestSecondaryPreference;
 }
 
 export function resolveSpendingSecondaryPreference(

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createGenomeV2, setTrait } from '../src/genome-v2';
+import { LocalEcologicalContext } from '../src/phenotype';
 import {
   DEFAULT_HARVEST_SECONDARY_PREFERENCE,
   DEFAULT_SPENDING_SECONDARY_PREFERENCE,
@@ -372,6 +373,37 @@ describe('behavioral-control', () => {
       expect(lowPreference).toBeDefined();
       expect(highPreference).toBeDefined();
       expect(lowPreference!).toBeLessThan(highPreference!);
+    });
+
+    it('uses contextual phenotype realization when local ecology is provided', () => {
+      const genome = createGenomeV2();
+      setTrait(genome, INTERNAL_STATE_HARVEST_SECONDARY_PREFERENCE, 0.4);
+      const favorableContext: LocalEcologicalContext = {
+        localFertility: 2,
+        localCrowding: 0,
+        disturbancePhase: 0
+      };
+      const harshContext: LocalEcologicalContext = {
+        localFertility: 0,
+        localCrowding: 8,
+        disturbancePhase: 1
+      };
+
+      const favorablePreference = resolveHarvestSecondaryPreference(
+        { genomeV2: genome },
+        undefined,
+        true,
+        favorableContext
+      );
+      const harshPreference = resolveHarvestSecondaryPreference(
+        { genomeV2: genome },
+        undefined,
+        true,
+        harshContext
+      );
+
+      expect(favorablePreference).toBeLessThan(0.4);
+      expect(harshPreference).toBeGreaterThan(0.4);
     });
   });
 
