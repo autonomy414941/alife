@@ -48,6 +48,7 @@
     "study:policy-signature-matched-control-validation": "tsx src/policy-signature-matched-control-validation.ts",
     "study:signature-specific-reproduction-gate-ablation": "tsx src/signature-specific-reproduction-gate-ablation.ts",
     "study:context-dependent-harvest-expression-validation": "tsx src/context-dependent-harvest-expression-validation.ts",
+    "study:perception-quality-validation": "tsx src/perception-quality-validation.ts --output docs/perception_quality_validation_2026-04-04.json",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-smoke": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-smoke-study.ts",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-horizon": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-horizon-study.ts",
     "archive:clade-activity-relabel-null-new-clade-encounter-restraint-review": "tsx src/clade-activity-relabel-null-new-clade-encounter-restraint-review.ts",

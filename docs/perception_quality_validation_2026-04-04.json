@@ -1,50 +1,283 @@
 {
-  "timestamp": "2026-04-04T04:14:59.518Z",
-  "description": "Matched validation comparing perfect-information versus limited-perception movement under identical environmental conditions",
-  "scenarios": [
+  "generatedAt": "2026-04-04T04:40:42.049Z",
+  "question": "Under a shared-seed matched-control panel, does limited-perception movement outperform or underperform an otherwise identical perfect-information movement baseline on founder survival and descendant outcomes?",
+  "prediction": "If partial observability creates a robustness advantage, limited-perception movement should hold founder survival roughly constant while matching or improving descendant counts; otherwise it should trail the omniscient baseline on final population and births.",
+  "methodology": "Run 35-step shared-seed paired simulations for 8 seeds with contextual harvest disabled so perception differences only affect movement scoring. Both arms start from the same genome-backed cohort and ecology; the limited arm uses fixed perception noise and fidelity loss while the control arm reads exact local observations.",
+  "config": {
+    "seeds": [
+      4401,
+      4402,
+      4403,
+      4404,
+      4405,
+      4406,
+      4407,
+      4408
+    ],
+    "steps": 35,
+    "simulation": {
+      "width": 6,
+      "height": 6,
+      "initialAgents": 12,
+      "initialEnergy": 10.5,
+      "maxResource": 6,
+      "maxResource2": 5,
+      "resourceRegen": 0.5,
+      "resource2Regen": 0.35,
+      "seasonalFertilityContrastAmplitude": 0.4,
+      "dispersalPressure": 0.75,
+      "habitatPreferenceStrength": 0.35,
+      "metabolismCostBase": 0.3,
+      "moveCost": 0.2,
+      "harvestCap": 1.2,
+      "contextualHarvestExpression": false,
+      "reproduceThreshold": 13,
+      "reproduceProbability": 0.32,
+      "offspringEnergyFraction": 0.42,
+      "mutationAmount": 0.03,
+      "policyMutationProbability": 0,
+      "policyMutationMagnitude": 0,
+      "disturbanceInterval": 12,
+      "disturbanceResourceLoss": 1.15,
+      "disturbanceRadius": 1,
+      "disturbanceRefugiaFraction": 0.18,
+      "maxAge": 70
+    },
+    "limitedPerception": {
+      "noise": 0.18,
+      "fidelity": 0.82
+    }
+  },
+  "summary": {
+    "seeds": 8,
+    "seedsWithMovementActivity": 8,
+    "seedsLimitedPopulationAdvantage": 1,
+    "seedsLimitedPopulationDisadvantage": 7,
+    "meanFounderSurvivalRateDelta": 0,
+    "meanFinalPopulationDelta": -1.75,
+    "meanExtantDescendantsDelta": -1.75,
+    "meanTotalBirthsDelta": -1.75,
+    "meanFinalEnergyDelta": 0.35954465629068966,
+    "meanMovementDecisionsPerStepDelta": -0.07142857142857162,
+    "verdict": "negative",
+    "interpretation": "Verdict negative: limited perception changed founder survival by 0.0000, final population by -1.750, extant descendants by -1.750, and total births by -1.750 across 8 paired seeds. Limited perception finished ahead on population in 1/8 seeds, behind in 7/8, and shifted mean final energy by 0.360."
+  },
+  "checks": [
     {
-      "scenarioId": "low_noise",
-      "perfectInfoSurvival": 0,
-      "limitedPerceptionSurvival": 0,
-      "survivalDelta": 0,
-      "perfectInfoDescendants": 1551,
-      "limitedPerceptionDescendants": 1586,
-      "descendantDelta": 35,
-      "perceptionNoise": 0.1,
-      "perceptionFidelity": 1
+      "seed": 4401,
+      "perfectInformation": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 33,
+        "extantDescendants": 21,
+        "totalBirths": 21,
+        "meanFinalEnergy": 9.732362197850836,
+        "meanMovementDecisionsPerStep": 20.82857142857143
+      },
+      "limitedPerception": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 29,
+        "extantDescendants": 17,
+        "totalBirths": 17,
+        "meanFinalEnergy": 10.592197250936593,
+        "meanMovementDecisionsPerStep": 20.514285714285716
+      },
+      "delta": {
+        "founderSurvivalRate": 0,
+        "finalPopulation": -4,
+        "extantDescendants": -4,
+        "totalBirths": -4,
+        "meanFinalEnergy": 0.8598350530857566,
+        "meanMovementDecisionsPerStep": -0.31428571428571317
+      }
     },
     {
-      "scenarioId": "moderate_noise",
-      "perfectInfoSurvival": 0,
-      "limitedPerceptionSurvival": 0,
-      "survivalDelta": 0,
-      "perfectInfoDescendants": 1518,
-      "limitedPerceptionDescendants": 1572,
-      "descendantDelta": 54,
-      "perceptionNoise": 0.3,
-      "perceptionFidelity": 1
+      "seed": 4402,
+      "perfectInformation": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 30,
+        "extantDescendants": 18,
+        "totalBirths": 18,
+        "meanFinalEnergy": 10.333300449083968,
+        "meanMovementDecisionsPerStep": 20.37142857142857
+      },
+      "limitedPerception": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 32,
+        "extantDescendants": 20,
+        "totalBirths": 20,
+        "meanFinalEnergy": 9.481122179236948,
+        "meanMovementDecisionsPerStep": 20.285714285714285
+      },
+      "delta": {
+        "founderSurvivalRate": 0,
+        "finalPopulation": 2,
+        "extantDescendants": 2,
+        "totalBirths": 2,
+        "meanFinalEnergy": -0.8521782698470197,
+        "meanMovementDecisionsPerStep": -0.08571428571428541
+      }
     },
     {
-      "scenarioId": "reduced_fidelity",
-      "perfectInfoSurvival": 0,
-      "limitedPerceptionSurvival": 0,
-      "survivalDelta": 0,
-      "perfectInfoDescendants": 1495,
-      "limitedPerceptionDescendants": 1518,
-      "descendantDelta": 23,
-      "perceptionNoise": 0,
-      "perceptionFidelity": 0.7
+      "seed": 4403,
+      "perfectInformation": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 33,
+        "extantDescendants": 21,
+        "totalBirths": 21,
+        "meanFinalEnergy": 9.59050114889313,
+        "meanMovementDecisionsPerStep": 20.857142857142858
+      },
+      "limitedPerception": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 31,
+        "extantDescendants": 19,
+        "totalBirths": 19,
+        "meanFinalEnergy": 9.888844198716926,
+        "meanMovementDecisionsPerStep": 20.34285714285714
+      },
+      "delta": {
+        "founderSurvivalRate": 0,
+        "finalPopulation": -2,
+        "extantDescendants": -2,
+        "totalBirths": -2,
+        "meanFinalEnergy": 0.2983430498237958,
+        "meanMovementDecisionsPerStep": -0.514285714285716
+      }
     },
     {
-      "scenarioId": "noisy_reduced",
-      "perfectInfoSurvival": 0,
-      "limitedPerceptionSurvival": 0,
-      "survivalDelta": 0,
-      "perfectInfoDescendants": 1535,
-      "limitedPerceptionDescendants": 1556,
-      "descendantDelta": 21,
-      "perceptionNoise": 0.2,
-      "perceptionFidelity": 0.8
+      "seed": 4404,
+      "perfectInformation": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 32,
+        "extantDescendants": 20,
+        "totalBirths": 20,
+        "meanFinalEnergy": 9.726580460458754,
+        "meanMovementDecisionsPerStep": 20.485714285714284
+      },
+      "limitedPerception": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 30,
+        "extantDescendants": 18,
+        "totalBirths": 18,
+        "meanFinalEnergy": 10.378397802428266,
+        "meanMovementDecisionsPerStep": 20.6
+      },
+      "delta": {
+        "founderSurvivalRate": 0,
+        "finalPopulation": -2,
+        "extantDescendants": -2,
+        "totalBirths": -2,
+        "meanFinalEnergy": 0.6518173419695117,
+        "meanMovementDecisionsPerStep": 0.11428571428571743
+      }
+    },
+    {
+      "seed": 4405,
+      "perfectInformation": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 34,
+        "extantDescendants": 22,
+        "totalBirths": 22,
+        "meanFinalEnergy": 9.264369357327787,
+        "meanMovementDecisionsPerStep": 20.82857142857143
+      },
+      "limitedPerception": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 30,
+        "extantDescendants": 18,
+        "totalBirths": 18,
+        "meanFinalEnergy": 10.342690228819524,
+        "meanMovementDecisionsPerStep": 20.457142857142856
+      },
+      "delta": {
+        "founderSurvivalRate": 0,
+        "finalPopulation": -4,
+        "extantDescendants": -4,
+        "totalBirths": -4,
+        "meanFinalEnergy": 1.0783208714917372,
+        "meanMovementDecisionsPerStep": -0.37142857142857366
+      }
+    },
+    {
+      "seed": 4406,
+      "perfectInformation": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 35,
+        "extantDescendants": 23,
+        "totalBirths": 23,
+        "meanFinalEnergy": 8.996633589611303,
+        "meanMovementDecisionsPerStep": 20.6
+      },
+      "limitedPerception": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 34,
+        "extantDescendants": 22,
+        "totalBirths": 22,
+        "meanFinalEnergy": 9.19280578428357,
+        "meanMovementDecisionsPerStep": 20.942857142857143
+      },
+      "delta": {
+        "founderSurvivalRate": 0,
+        "finalPopulation": -1,
+        "extantDescendants": -1,
+        "totalBirths": -1,
+        "meanFinalEnergy": 0.19617219467226654,
+        "meanMovementDecisionsPerStep": 0.34285714285714164
+      }
+    },
+    {
+      "seed": 4407,
+      "perfectInformation": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 34,
+        "extantDescendants": 22,
+        "totalBirths": 22,
+        "meanFinalEnergy": 9.299925513368857,
+        "meanMovementDecisionsPerStep": 21
+      },
+      "limitedPerception": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 33,
+        "extantDescendants": 21,
+        "totalBirths": 21,
+        "meanFinalEnergy": 9.501968108301437,
+        "meanMovementDecisionsPerStep": 21.142857142857142
+      },
+      "delta": {
+        "founderSurvivalRate": 0,
+        "finalPopulation": -1,
+        "extantDescendants": -1,
+        "totalBirths": -1,
+        "meanFinalEnergy": 0.20204259493258014,
+        "meanMovementDecisionsPerStep": 0.14285714285714235
+      }
+    },
+    {
+      "seed": 4408,
+      "perfectInformation": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 33,
+        "extantDescendants": 21,
+        "totalBirths": 21,
+        "meanFinalEnergy": 9.277432049179069,
+        "meanMovementDecisionsPerStep": 20.142857142857142
+      },
+      "limitedPerception": {
+        "founderSurvivalRate": 1,
+        "finalPopulation": 31,
+        "extantDescendants": 19,
+        "totalBirths": 19,
+        "meanFinalEnergy": 9.719436463375958,
+        "meanMovementDecisionsPerStep": 20.257142857142856
+      },
+      "delta": {
+        "founderSurvivalRate": 0,
+        "finalPopulation": -2,
+        "extantDescendants": -2,
+        "totalBirths": -2,
+        "meanFinalEnergy": 0.4420044141968891,
+        "meanMovementDecisionsPerStep": 0.11428571428571388
+      }
     }
   ]
 }
