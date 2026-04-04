@@ -88,6 +88,7 @@ import {
   dominantEncounterOperator
 } from './encounter';
 import {
+  combinedResourceAvailability,
   resolveDualResourceHarvest,
   resolveHarvestPolicyPayoffMultiplier,
   resolveResourceHarvestShares
@@ -2037,29 +2038,15 @@ export class LifeSimulation {
     const lineagePenalty = Math.max(0, this.config.lineageDispersalCrowdingPenalty);
 
     for (const option of options) {
-      const score = resolveSimulationLocalEcologyScore({
-        config: this.config,
-        tickCount: this.tickCount,
-        dispersalRadius: this.normalizedDispersalRadius(),
-        width: this.config.width,
-        cladeHistory: this.cladeHistory,
-        resources: this.resources,
-        resources2: this.resources2,
-        speciesHabitatPreference: this.speciesHabitatPreference,
-        cladeHabitatPreference: this.cladeHabitatPreference,
+      const score = this.resolveObservationBasedEcologyScore(
         agent,
-        x: option.x,
-        y: option.y,
+        option.x,
+        option.y,
         occupancy,
         lineageOccupancy,
         lineagePenalty,
-        excludedPosition: { x: agent.x, y: agent.y },
-        jitter: this.rng.float() * 0.05,
-        effectiveBiomeFertilityAt: (x, y, tick) => this.effectiveBiomeFertilityAt(x, y, tick),
-        wrapX: (x) => this.wrapX(x),
-        wrapY: (y) => this.wrapY(y),
-        cellIndex: (x, y) => this.cellIndex(x, y)
-      });
+        this.rng.float() * 0.05
+      );
       if (score > bestScore) {
         bestScore = score;
         best = option;
@@ -2314,11 +2301,23 @@ export class LifeSimulation {
     occupancy: number[][],
     lineageOccupancy: LineageOccupancyGrid
   ): LocalObservationMap {
+    return this.resolveLocalObservationMapAt(agent.x, agent.y, agent.lineage, agent.age, occupancy, lineageOccupancy, { x: agent.x, y: agent.y });
+  }
+
+  private resolveLocalObservationMapAt(
+    x: number,
+    y: number,
+    lineage: number,
+    age: number,
+    occupancy: number[][],
+    lineageOccupancy: LineageOccupancyGrid,
+    excludedPosition?: { x: number; y: number }
+  ): LocalObservationMap {
     const currentTick = this.tickCount + 1;
-    const localFertility = this.effectiveBiomeFertilityAt(agent.x, agent.y, currentTick);
+    const localFertility = this.effectiveBiomeFertilityAt(x, y, currentTick);
     const localCrowding = neighborhoodCrowding({
-      x: agent.x,
-      y: agent.y,
+      x,
+      y,
       occupancy,
       dispersalRadius: this.normalizedDispersalRadius(),
       wrapX: (nextX) => this.wrapX(nextX),
@@ -2329,22 +2328,22 @@ export class LifeSimulation {
       lastDisturbance === null ? DISTURBANCE_PHASE_RECENT_WINDOW + 1 : currentTick - lastDisturbance.tick;
     const sameLineageCrowding = sameLineageNeighborhoodCrowdingAt({
       width: this.config.width,
-      lineage: agent.lineage,
-      x: agent.x,
-      y: agent.y,
+      lineage,
+      x,
+      y,
       lineageOccupancy,
       dispersalRadius: this.normalizedDispersalRadius(),
-      cellIndex: (x, y) => this.cellIndex(x, y),
-      wrapX: (x) => this.wrapX(x),
-      wrapY: (y) => this.wrapY(y),
-      excludedPosition: { x: agent.x, y: agent.y }
+      cellIndex: (cellX, cellY) => this.cellIndex(cellX, cellY),
+      wrapX: (cellX) => this.wrapX(cellX),
+      wrapY: (cellY) => this.wrapY(cellY),
+      excludedPosition
     });
-    const primaryResourceLevel = this.resources[agent.y][agent.x];
-    const secondaryResourceLevel = this.resources2[agent.y][agent.x];
+    const primaryResourceLevel = this.resources[y][x];
+    const secondaryResourceLevel = this.resources2[y][x];
     const totalResourceLevel = primaryResourceLevel + secondaryResourceLevel;
 
     return {
-      age: agent.age,
+      age,
       localFertility,
       localCrowding,
       disturbancePhase: ticksSinceDisturbance <= DISTURBANCE_PHASE_RECENT_WINDOW ? 1 : 0,
@@ -2360,6 +2359,54 @@ export class LifeSimulation {
       sameLineageCrowding,
       sameLineageShare: localCrowding > 0 ? clamp(sameLineageCrowding / localCrowding, 0, 1) : 0
     };
+  }
+
+  private resolveObservationBasedEcologyScore(
+    agent: Agent,
+    x: number,
+    y: number,
+    occupancy: number[][],
+    lineageOccupancy: LineageOccupancyGrid | undefined,
+    lineagePenalty: number,
+    jitter: number
+  ): number {
+    const observation = this.resolveLocalObservationMapAt(
+      x,
+      y,
+      agent.lineage,
+      agent.age,
+      occupancy,
+      lineageOccupancy ?? new Map(),
+      { x: agent.x, y: agent.y }
+    );
+
+    const primaryAvailable = observation.primaryResourceLevel;
+    const harvestSecondaryPreference = resolveHarvestSecondaryPreference(agent, primaryAvailable);
+    const combinedResource = combinedResourceAvailability(
+      primaryAvailable,
+      observation.secondaryResourceLevel,
+      agent.genome,
+      harvestSecondaryPreference
+    );
+
+    const habitatEfficiency = calculateHabitatMatchEfficiency({
+      agent,
+      fertility: observation.localFertility,
+      speciesHabitatPreference: this.speciesHabitatPreference,
+      cladeHabitatPreference: this.cladeHabitatPreference,
+      config: this.config
+    });
+
+    const food = combinedResource * habitatEfficiency;
+    const crowding = observation.localCrowding;
+    const lineageCrowding = lineagePenalty > 0 ? observation.sameLineageCrowding : 0;
+
+    return (
+      food -
+      this.config.dispersalPressure * crowding -
+      lineagePenalty * lineageCrowding +
+      jitter
+    );
   }
 
   private getSpeciesHabitatPreference(species: number): number {
