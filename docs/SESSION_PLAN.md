@@ -1,94 +1,92 @@
-# Session Plan — 2026-04-03
+# Session Plan — 2026-04-04
 
 ## Compact Context
-- The April 2 multi-horizon artifact (`docs/multi_horizon_policy_credit_assignment_2026-04-02.json`) found 104 positive horizon effects, with the strongest signal at `strict|guarded|primary` and +20-tick survival advantage of +0.0661
-- Action-selection loci and tests now exist, but the live simulation still does not call `selectAction` or `isActionSelectionEnabled`
-- Context-dependent phenotype realization now exists in `src/phenotype.ts`, but only tests and the spike script pass ecological context into `realizePhenotype`
-- Movement and offspring settlement still optimize ground-truth ecology scores, so behavior is still based on perfect information rather than sensed observations
-- Replay branching, genomeV2-backed initialization, multi-tick harvest memory, and matched-control validation infrastructure all exist
-- The checked-in signature-specific reproduction gate artifact is stale relative to the newer replay-branch source path, so evidence freshness needs explicit verification
+- April 3 wired context-dependent phenotype realization into live harvest decisions, added local observation summaries, and implemented richer policy-context matching validation
+- Action-selection loci are now quarantined from distance calculations (zero weights) because they remain unused by the live simulation turn loop
+- The multi-horizon April 2 artifact found 104 positive horizon effects with the strongest signal at `strict|guarded|primary` (+0.0661 survival at +20 ticks)
+- Movement and offspring settlement still optimize ground-truth ecology scores rather than sensed observations
+- The April 3 richer-context matching artifact exists but needs analysis to determine whether April 2 survival gains persist
 
 ## Exploration Axes (last 10 commits)
 | Axis | Count | Last seen |
 |------|-------|-----------|
-| Structural critique and planning | 3 | 1cacee4 |
-| Policy validation and mechanism attribution | 2 | 8e9c4f1 |
-| Context-dependent phenotype realization | 1 | f214df5 |
-| Action model expansion | 1 | 98e57ac |
+| Structural critique and planning | 2 | c63a3f5, 4e5631d |
+| Policy validation and context matching | 2 | 4ec0e97, 8e9c4f1 |
+| Context-dependent phenotype realization | 2 | 5a4ffce, f214df5 |
+| Live mechanism activation | 2 | d0d7b7b, e379533 |
 | Multi-horizon credit assignment | 1 | 91abe10 |
-| Memory and observability expansion | 1 | 7a385f5 |
-| Initialization and infrastructure repair | 1 | be41147 |
-| Replay and counterfactual infrastructure | 0 | none |
-| Perception and sensory limitation | 0 | none |
+| Action model expansion | 1 | 98e57ac |
 
-Dominant axis: Structural critique and planning (3/10)
-Underexplored axes: Context-dependent phenotype realization, Action model expansion, Multi-horizon credit assignment, Memory and observability expansion, Initialization and infrastructure repair, Replay and counterfactual infrastructure, Perception and sensory limitation
+Dominant axis: tie between structural critique/planning, policy validation, context realization, and live activation (2/10 each)
+Underexplored axes: Multi-horizon credit assignment, Action model expansion, Replay infrastructure, Perception layers
 
 ## Project State
-- The repo now contains bounded prototypes for discrete action selection, context-dependent phenotype realization, multi-horizon policy credit assignment, and signature-specific reproduction-gate analysis
-- Recent sessions shifted from isolating which policy operators are harmful to prototyping expressiveness and feedback-horizon expansions
-- The important gap is live activation and evidence fidelity: the main simulation still runs a fixed move-harvest-reproduce loop with mostly direct-encoded traits, perfect-information spatial choice, and coarse policy matching
+- April 3 successfully activated context-dependent harvest expression in the live simulation loop and added local observation summaries to every agent
+- The quarantine commit explicitly separated dormant action-selection loci from active behavioral loci by zeroing their distance weights
+- A new richer-context matching validation artifact was generated on April 3 but has not yet been analyzed to determine whether April 2 multi-horizon gains survive
+- The main gap is now converting the added observation infrastructure into a perception layer that drives spatial choice under partial observability
 
 ## External Context
-- Vroomans, Lehmann, and Hogeweg, ["Facilitation of Evolution by Plasticity Scales with Phenotypic Complexity"](https://pmc.ncbi.nlm.nih.gov/articles/PMC11476054/), Animals 14(19):2804, 2024: environmentally responsive phenotype construction accelerates the evolution of more complex functional systems as phenotype complexity increases
-- Li et al., ["Hippocampus supports multi-task reinforcement learning under partial observability"](https://www.nature.com/articles/s41467-025-64591-9), Nature Communications 16, 2025: agents trained under partial observability can generalize better than full-observability controls, supporting an explicit perception bottleneck instead of ground-truth decision inputs
+- Guided Policy Optimization under Partial Observability (arXiv:2505.15418, 2025, https://arxiv.org/html/2505.15418): co-trains a privileged guider and a constrained learner, where the guider uses full state while ensuring alignment with the learner's partial-observability policy, achieving comparable optimality to direct RL
+- Active Vision Reinforcement Learning under Limited Visual Observability (NeurIPS 2023, https://proceedings.neurips.cc/paper_files/paper/2023/file/20e6b4dd2b1f82bc599c593882f67f75-Paper-Conference.pdf): agents learn simultaneous task and sensory control policies under partial observability; sensory limitations force active perception behavior that can improve generalization
 
 ## Research Gaps
-- Do the April 2 multi-horizon survival-positive signatures remain positive once matching includes richer observation state or replay-grounded comparisons rather than coarse fertility/crowding/age/disturbance bins?
-- Can live-wired action selection plus context-dependent phenotype realization outperform the current fixed turn loop once decisions are driven by sensed observations instead of perfect-information ecology scores?
+- Does the April 3 richer-context matching validation confirm or falsify the April 2 multi-horizon survival advantages, now that matching includes richer local observation state?
+- Can spatial choice driven by limited sensed observations rather than ground-truth ecology scores produce context-conditional movement advantages once perception quality becomes evolvable?
 
 ## Current Anti-Evidence
-- The strongest current reason the project cannot yet claim policy-driven adaptive diversification is that the April 2 mechanisms are still mostly prototype-only: the live simulation does not yet use action selection and does not pass ecological context into phenotype realization during core decisions
-- The current positive evidence chain is still fragile: multi-horizon gains are analytic rather than replay-grounded, and at least one checked-in artifact no longer matches its source methodology, so the reported advantages may not survive stricter validation
+- The strongest current reason the project cannot yet claim adaptive policy-driven diversification is that movement and offspring settlement still read perfect-information ground-truth ecology (fertility, crowding, lineage occupancy) instead of limited sensed observations, so the architecture cannot test whether perception-driven behavior outperforms omniscient choice
+- The April 3 richer-context matching artifact has not yet been analyzed to determine whether the April 2 multi-horizon survival positives survive the new matching logic, so the current positive evidence remains unverified
 
 ## Bet Queue
 
-### Bet 1: [validate] Dormant Action-Locus Attribution Ceiling
-Either wire `action_priority_*` and `action_threshold_*` into the live turn loop or explicitly quarantine those loci from distance, diversity, and policy-analysis claims. The goal is to remove the current ambiguity where the action-selection prototype exists and mutates, but current runs still behave as if those loci do nothing.
+### Bet 1: [validate] Analyze Richer-Context Matching Artifact
+Read and interpret the April 3 `policy_rich_context_matching_validation_2026-04-03.json` artifact to determine whether the strongest April 2 multi-horizon survival-positive signatures remain positive under richer-context matching, or whether the new matching reveals the earlier gains as matching artifacts.
 
 #### Success Evidence
-- Code showing `selectAction` or equivalent action-locus logic affects `processAgentTurn` or reproduction control, or a deliberate quarantine path removing those loci from downstream claims
-- Regression tests proving action loci are either behaviorally live or explicitly excluded from policy-analysis surfaces
+- A concise written interpretation or structured summary stating which signatures remained positive, which weakened, and by how much
+- Direct answer on whether the April 2 +0.0661 survival advantage at +20 ticks persists or disappears under richer matching
 
 #### Stop Conditions
-- Stop once action loci are no longer behaviorally ambiguous
-- Do not generalize to a full action language beyond the bounded existing alphabet
+- Stop after producing one clear verdict on whether April 2 gains survive April 3 matching
+- Do not re-generate the artifact; only interpret the existing one
 
-### Bet 2: [expand] Direct-Encoding Ceiling
-Promote context-dependent phenotype realization from a spike into a live mechanism by passing local fertility, crowding, and disturbance state into phenotype construction for at least one core decision surface such as harvest, movement, or reproduction. The goal is to test whether ecological context can shape expressed behavior in the live simulation rather than only in offline inspection.
+### Bet 2: [expand] Perfect-Information Spatial Choice Ceiling
+Replace adult movement's direct access to ground-truth `fertility`, `crowding`, and `lineage occupancy` with reads from the agent's local observation map, so movement becomes perception-driven rather than omniscient. The goal is to make spatial choice depend on sensed state rather than hidden environment truth.
 
 #### Success Evidence
-- Code path where live simulation decisions use `realizePhenotype(..., context)` or an equivalent intermediate phenotype layer
-- A bounded artifact or matched-control comparison showing whether context-conditioned expression changes policy-bearing cohort outcomes relative to direct encoding
+- Code path where `pickDestination` or equivalent adult-movement logic reads from `localObservationMap` or `observationState` instead of directly accessing world resource stocks and agent counts
+- Regression tests proving movement now uses sensed observations for at least fertility and crowding
 
 #### Stop Conditions
-- Stop after one live decision surface uses context-conditioned phenotype realization
-- Do not redesign the full phenotype pipeline or add a large developmental system in this bet
+- Stop after adult movement uses observation-driven choice for at least two decision inputs
+- Do not redesign offspring settlement or the full spatial-choice architecture in this bet
 
-### Bet 3: [expand] Observability Blind Spots
-Build a bounded read-only observation map that exposes age, disturbance history, resource mix, and local lineage or taxonomic composition to policy logic and analytics. The goal is to give action selection and phenotype realization a coherent sensed state instead of relying on a mix of internal thresholds and hidden ground-truth environment values.
+### Bet 3: [expand] Evolvable Perception Quality
+Add genotype traits controlling observation noise, range, or fidelity so agents can evolve different perception strategies, then test whether limited-perception agents can outperform perfect-information controls in a matched validation. The goal is to determine whether perception as an evolvable trait creates selection for robust policies.
 
 #### Success Evidence
-- New observation structure available during live decisions and analytics
-- At least one live mechanism or validation path consumes the new observations instead of directly reading hidden world state
+- New genotype loci controlling perception parameters such as observation noise, range, or channel fidelity
+- Code path where observation-map population depends on agent-specific perception traits
+- A bounded artifact or matched comparison showing whether limited-perception agents diverge behaviorally from omniscient controls
 
 #### Stop Conditions
-- Stop after a compact high-value observation set exists and is consumed in one place
-- Do not build a general sensor framework for every subsystem
+- Stop after one or two perception-quality traits exist and affect observation construction
+- Do not build a full sensory-modality framework or multi-channel perception system in this bet
 
-### Bet 4: [validate] Coarse Context Matching Ceiling
-Re-run a bounded policy validation panel using richer context keys or nearest-neighbor matching over the new observation state, focusing on the signatures that looked strongest in the April 2 multi-horizon study. The goal is to determine whether the current delayed-survival positives survive stricter context matching.
+### Bet 4: [validate] Perception-Driven Movement Advantage
+Run a bounded matched-control validation comparing movement outcomes for agents using sensed observations versus agents using ground-truth ecology scores, focusing on settlement success, survival, or descendant outcomes. The goal is to test whether partial observability creates different adaptive landscapes.
 
 #### Success Evidence
-- New artifact comparing coarse-bin matching against richer matching for a bounded set of seeds and signatures
-- Direct answer on whether the strongest April 2 survival-positive signatures remain positive, weaken, or disappear under stricter matching
+- New artifact comparing perception-driven versus omniscient movement under matched contexts
+- Direct answer on whether perception-driven movement shows positive, neutral, or negative survival or descendant advantages relative to perfect-information baseline
 
 #### Stop Conditions
-- Stop after one bounded richer-matching validation exists
-- Do not build a full generic replay-counterfactual framework in this bet
+- Stop after one bounded perception-versus-omniscient comparison exists
+- Do not expand to full multi-horizon or replay-branch validation in this bet
 
 ## Assumptions / Unknowns
-- Assumption: the positive +20/+50 tick survival effects are not pure matching artifacts and are worth stress-testing under richer state matching
-- Assumption: a bounded observation map can be added without forcing a full rewrite of movement, settlement, and analytics in one session
-- Unknown: whether live action selection will help once it replaces the current fixed operator order, or whether it will simply expose a deeper physiology or payoff ceiling
-- Unknown: whether context-dependent phenotype realization needs genetically encoded sensitivity parameters immediately, or whether fixed ecological modulation is enough for a first live test
+- Assumption: the April 3 richer-context matching used sufficiently different logic from April 2 coarse bins that it can falsify or confirm the multi-horizon gains
+- Assumption: spatial choice is a high-leverage decision surface where perception-driven behavior can diverge meaningfully from perfect-information behavior
+- Unknown: whether evolvable perception quality requires explicit genotype traits immediately, or whether fixed moderate noise is enough for a first perception-driven test
+- Unknown: whether observation-driven movement will immediately show advantages or whether it will require additional operators (settlement, harvest, encounter) to also become perception-driven before selection can favor robust perception strategies
