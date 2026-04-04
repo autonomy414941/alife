@@ -2297,11 +2297,11 @@ export class LifeSimulation {
   }
 
   private resolveLocalObservationMap(
-    agent: Pick<Agent, 'age' | 'lineage' | 'x' | 'y'>,
+    agent: Pick<Agent, 'age' | 'lineage' | 'x' | 'y' | 'genomeV2'>,
     occupancy: number[][],
     lineageOccupancy: LineageOccupancyGrid
   ): LocalObservationMap {
-    return this.resolveLocalObservationMapAt(agent.x, agent.y, agent.lineage, agent.age, occupancy, lineageOccupancy, { x: agent.x, y: agent.y });
+    return this.resolveLocalObservationMapAt(agent.x, agent.y, agent.lineage, agent.age, agent.genomeV2, occupancy, lineageOccupancy, { x: agent.x, y: agent.y });
   }
 
   private resolveLocalObservationMapAt(
@@ -2309,6 +2309,7 @@ export class LifeSimulation {
     y: number,
     lineage: number,
     age: number,
+    genomeV2: GenomeV2 | undefined,
     occupancy: number[][],
     lineageOccupancy: LineageOccupancyGrid,
     excludedPosition?: { x: number; y: number }
@@ -2342,10 +2343,22 @@ export class LifeSimulation {
     const secondaryResourceLevel = this.resources2[y][x];
     const totalResourceLevel = primaryResourceLevel + secondaryResourceLevel;
 
+    const perceptionNoise = genomeV2 ? getTrait(genomeV2, 'perception_noise') : 0;
+    const perceptionFidelity = genomeV2 ? getTrait(genomeV2, 'perception_fidelity') : 1;
+    const hasLimitedPerception = perceptionNoise > 0 || perceptionFidelity < 1;
+
+    const applyPerception = (value: number) => {
+      if (!hasLimitedPerception) {
+        return value;
+      }
+      const noisyValue = value + (this.rng.float() - 0.5) * 2 * perceptionNoise * value;
+      return noisyValue * perceptionFidelity;
+    };
+
     return {
       age,
-      localFertility,
-      localCrowding,
+      localFertility: applyPerception(localFertility),
+      localCrowding: applyPerception(localCrowding),
       disturbancePhase: ticksSinceDisturbance <= DISTURBANCE_PHASE_RECENT_WINDOW ? 1 : 0,
       ticksSinceDisturbance,
       recentDisturbanceCount: countDisturbanceEventsInWindow(this.disturbanceEvents, {
@@ -2353,11 +2366,11 @@ export class LifeSimulation {
         endTick: currentTick,
         size: DISTURBANCE_PHASE_RECENT_WINDOW + 1
       }),
-      primaryResourceLevel,
-      secondaryResourceLevel,
-      secondaryResourceFraction: totalResourceLevel > 0 ? secondaryResourceLevel / totalResourceLevel : 0,
-      sameLineageCrowding,
-      sameLineageShare: localCrowding > 0 ? clamp(sameLineageCrowding / localCrowding, 0, 1) : 0
+      primaryResourceLevel: applyPerception(primaryResourceLevel),
+      secondaryResourceLevel: applyPerception(secondaryResourceLevel),
+      secondaryResourceFraction: totalResourceLevel > 0 ? applyPerception(secondaryResourceLevel / totalResourceLevel) : 0,
+      sameLineageCrowding: applyPerception(sameLineageCrowding),
+      sameLineageShare: localCrowding > 0 ? clamp(applyPerception(sameLineageCrowding / localCrowding), 0, 1) : 0
     };
   }
 
@@ -2375,6 +2388,7 @@ export class LifeSimulation {
       y,
       agent.lineage,
       agent.age,
+      agent.genomeV2,
       occupancy,
       lineageOccupancy ?? new Map(),
       { x: agent.x, y: agent.y }

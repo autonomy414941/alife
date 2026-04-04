@@ -313,6 +313,26 @@ const GENOME_V2_TRAIT_DEFINITIONS: GenomeV2TraitDefinition[] = [
     defaultValue: 0,
     clamp: NON_NEGATIVE_CLAMP,
     distanceCategory: 'policyThreshold'
+  },
+  {
+    key: 'perception_noise',
+    meaning: 'Noise level in sensory observations',
+    role: 'ecological',
+    mutationMode: 'optional',
+    defaultValue: 0,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'morphology',
+    includeInDefaultMutationLoci: true
+  },
+  {
+    key: 'perception_fidelity',
+    meaning: 'Fidelity of sensory observations',
+    role: 'ecological',
+    mutationMode: 'optional',
+    defaultValue: 1,
+    clamp: UNIT_INTERVAL_CLAMP,
+    distanceCategory: 'morphology',
+    includeInDefaultMutationLoci: true
   }
 ];
 

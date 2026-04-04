@@ -1,0 +1,50 @@
+{
+  "timestamp": "2026-04-04T04:14:59.518Z",
+  "description": "Matched validation comparing perfect-information versus limited-perception movement under identical environmental conditions",
+  "scenarios": [
+    {
+      "scenarioId": "low_noise",
+      "perfectInfoSurvival": 0,
+      "limitedPerceptionSurvival": 0,
+      "survivalDelta": 0,
+      "perfectInfoDescendants": 1551,
+      "limitedPerceptionDescendants": 1586,
+      "descendantDelta": 35,
+      "perceptionNoise": 0.1,
+      "perceptionFidelity": 1
+    },
+    {
+      "scenarioId": "moderate_noise",
+      "perfectInfoSurvival": 0,
+      "limitedPerceptionSurvival": 0,
+      "survivalDelta": 0,
+      "perfectInfoDescendants": 1518,
+      "limitedPerceptionDescendants": 1572,
+      "descendantDelta": 54,
+      "perceptionNoise": 0.3,
+      "perceptionFidelity": 1
+    },
+    {
+      "scenarioId": "reduced_fidelity",
+      "perfectInfoSurvival": 0,
+      "limitedPerceptionSurvival": 0,
+      "survivalDelta": 0,
+      "perfectInfoDescendants": 1495,
+      "limitedPerceptionDescendants": 1518,
+      "descendantDelta": 23,
+      "perceptionNoise": 0,
+      "perceptionFidelity": 0.7
+    },
+    {
+      "scenarioId": "noisy_reduced",
+      "perfectInfoSurvival": 0,
+      "limitedPerceptionSurvival": 0,
+      "survivalDelta": 0,
+      "perfectInfoDescendants": 1535,
+      "limitedPerceptionDescendants": 1556,
+      "descendantDelta": 21,
+      "perceptionNoise": 0.2,
+      "perceptionFidelity": 0.8
+    }
+  ]
+}
